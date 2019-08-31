@@ -1,0 +1,68 @@
+﻿using UnityEngine;
+using UnityEditor;
+
+namespace K10.EditorGUIExtention
+{
+	public static class IconButton
+	{
+		const char DEFAULT_CHAR = ' ';
+		const string DEFAULT_TOOLTIP = null;
+		static Color DEFAULT_FAIL_COLOR = Color.white;
+
+		public static bool Layout( string iconName, char failLetter = ' ', string tooltip = "" ) { return Layout( iconName, EditorGUIUtility.singleLineHeight, failLetter, tooltip, DEFAULT_FAIL_COLOR ); }
+		public static bool Layout( float iconSize, string iconName ) { return Layout( iconName, iconSize, DEFAULT_CHAR, DEFAULT_TOOLTIP, DEFAULT_FAIL_COLOR ); }
+		public static bool Layout( string iconName, char failLetter, Color failColor ) { return Layout( iconName, EditorGUIUtility.singleLineHeight, failLetter, DEFAULT_TOOLTIP, failColor ); }
+		public static bool Layout( string iconName, char failLetter, string tooltip, Color failColor ) { return Layout( iconName, EditorGUIUtility.singleLineHeight, failLetter, tooltip, failColor ); }
+		public static bool Layout( string iconName, float iconSize, char failLetter, string tooltip, Color failColor ) { return Layout( IconCache.Get( iconName ), iconSize, failColor, failLetter, tooltip ); }
+
+		public static bool Layout( IIconCache icon, char failLetter = ' ', string tooltip = "" ) { return Layout( icon, EditorGUIUtility.singleLineHeight, DEFAULT_FAIL_COLOR, failLetter, tooltip ); }
+		public static bool Layout( IIconCache icon, float iconSize, char failLetter = ' ', string tooltip = "" ) { return Layout( icon, iconSize, DEFAULT_FAIL_COLOR, failLetter, tooltip ); }
+		public static bool Layout( IIconCache icon, float iconSize, Color failColor, char failLetter = ' ', string tooltip = "" ) { return Layout( icon.Texture, iconSize, failColor, failLetter, tooltip ); }
+
+		public static bool Layout( Texture2D texture, char failLetter = ' ', string tooltip = "" ) { return Layout( texture, EditorGUIUtility.singleLineHeight, DEFAULT_FAIL_COLOR, failLetter, tooltip ); }
+		public static bool Layout( Texture2D texture, float iconSize, char failLetter = ' ', string tooltip = "" ) { return Layout( texture, iconSize, DEFAULT_FAIL_COLOR, failLetter, tooltip ); }
+		public static bool Layout( Texture2D texture, float iconSize, Color failColor, char failLetter = ' ', string tooltip = "" )
+		{
+			var ret = false;
+			if( texture != null )
+			{
+				ret = GUILayout.Button( new GUIContent( texture, tooltip ), K10GuiStyles.basicStyle, GUILayout.MaxWidth( iconSize ), GUILayout.MaxHeight( iconSize ) );
+			}
+			else
+			{
+				GuiColorManager.New( failColor );
+				ret = GUILayout.Button( new GUIContent( failLetter.ToString(), tooltip ), GUILayout.MaxWidth( 20 ) );
+				GuiColorManager.Revert();
+			}
+			return ret;
+		}
+
+		public static bool Draw( Rect r, string iconName ) { return Draw( r, IconCache.Get( iconName ).Texture, DEFAULT_CHAR, DEFAULT_TOOLTIP, DEFAULT_FAIL_COLOR ); }
+		public static bool Draw( Rect r, string iconName, char failLetter, string tooltip, Color failColor ) { return Draw( r, IconCache.Get( iconName ).Texture, failLetter, tooltip, failColor ); }
+		public static bool Draw( Rect r, Texture2D texture ) { return Draw( r, texture, DEFAULT_CHAR, DEFAULT_TOOLTIP, DEFAULT_FAIL_COLOR ); }
+		public static bool Draw( Rect r, Texture2D texture, char failLetter, string tooltip, Color failColor )
+		{
+			var ret = false;
+			if( texture != null ) ret = GUI.Button( r, new GUIContent( texture, tooltip ), K10GuiStyles.basicStyle );
+			else
+			{
+				GuiColorManager.New( failColor );
+				ret = GUI.Button( r, new GUIContent( failLetter.ToString(), tooltip ) );
+				GuiColorManager.Revert();
+			}
+			return ret;
+		}
+
+		public static class Toggle
+		{
+			public static bool Layout( bool active, float size, string onIcon, string offIcon )
+			{
+				if( IconButton.Layout( size, active ? onIcon : offIcon ) ) active = !active;
+				return active;
+			}
+
+			public static bool TrafficLight( bool active, float size ) { return Toggle.Layout( active, size, "greenLight", "redLight" ); }
+			public static bool Lamp( bool active, float size = 32 ) { return Toggle.Layout( active, size, "on", "off" ); }
+		}
+	}
+}

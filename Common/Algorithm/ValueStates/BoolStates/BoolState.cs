@@ -1,0 +1,58 @@
+using UnityEngine;
+
+public interface IBoolState : IValueState<bool>, IBoolStateObserver
+{
+}
+
+public interface IBoolStateObserver : IValueStateObserver<bool>
+{
+	IEventRegister OnTrueState { get; }
+	IEventRegister OnFalseState { get; }
+}
+
+[System.Serializable]
+public class BoolState : IBoolState
+{
+	[SerializeField] bool _value;
+
+	[System.NonSerialized] private readonly EventSlot<bool> _onChange = new EventSlot<bool>();
+	[System.NonSerialized] private readonly EventSlot _onTrue = new EventSlot();
+	[System.NonSerialized] private readonly EventSlot _onFalse = new EventSlot();
+
+	public bool Value { get => _value; set { Setter( value ); } }
+	public bool Get() => _value;
+
+	public void Setter( bool value )
+	{
+		if( _value == value ) return;
+		_value = value;
+
+		_onChange.Trigger( value );
+		if( value ) _onTrue.Trigger();
+		else _onFalse.Trigger();
+	}
+
+	public IEventRegister<bool> OnChange => _onChange;
+	public IEventRegister OnTrueState => _onTrue;
+	public IEventRegister OnFalseState => _onFalse;
+
+	public BoolState( bool initialValue = false ) { _value = initialValue; }
+
+	public override string ToString() { return string.Format( "BS({0})", _value ); }
+}
+
+public static class BoolStateExtention
+{
+	public static void SetTrue( this IValueState<bool> boolState ) { boolState.Setter( true ); }
+	public static void SetFalse( this IValueState<bool> boolState ) { boolState.Setter( false ); }
+	public static void Flip( this IValueState<bool> boolState ) { boolState.Setter( !boolState.Value ); }
+
+	public static void RegisterOnTrue( this IBoolStateObserver state, IEventTrigger evnt, bool triggerIfValid = true ) { state.OnTrueState.Register( evnt ); if( triggerIfValid && state.Value ) evnt.Trigger(); }
+	public static void RegisterOnTrue( this IBoolStateObserver state, System.Action evnt, bool triggerIfValid = true ) { state.OnTrueState.Register( evnt ); if( triggerIfValid && state.Value ) evnt(); }
+
+	public static void RegisterOnFalse( this IBoolStateObserver state, IEventTrigger evnt, bool triggerIfValid = true ) { state.OnFalseState.Register( evnt ); if( triggerIfValid && !state.Value ) evnt.Trigger(); }
+	public static void RegisterOnFalse( this IBoolStateObserver state, System.Action evnt, bool triggerIfValid = true ) { state.OnFalseState.Register( evnt ); if( triggerIfValid && !state.Value ) evnt(); }
+
+	public static void RegisterOn( this IBoolStateObserver state, bool value, IEventTrigger evnt, bool triggerIfValid = true ) { if( value ) state.RegisterOnTrue( evnt, triggerIfValid ); else state.RegisterOnFalse( evnt, triggerIfValid ); }
+	public static void RegisterOn( this IBoolStateObserver state, bool value, System.Action evnt, bool triggerIfValid = true ) { if( value ) state.RegisterOnTrue( evnt, triggerIfValid ); else state.RegisterOnFalse( evnt, triggerIfValid ); }
+}
