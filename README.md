@@ -34,10 +34,16 @@ Still evolving...
 
 ###### *To get access our private modules please contact us
 
-## How to remove the submodule of your repository
+## To remove submodule on your Unity project repository
 
-1.  Delete the relevant line from the  _.gitmodules_  file.
-2.  Delete the relevant section from  _.git/config_.
+1.  Delete from the  _.gitmodules_  file 
+	`[submodule "Assets/Standard Assets/K10"]`
+	`path = Assets/Standard Assets/K10`
+	`url = https://github.com/k10czar/K10.git`
+2.  Delete from  _.git/config_
+	`[submodule "Assets/Standard Assets/K10"]`
+	`url = https://github.com/k10czar/K10.git`
+	`active = true`
 3.  Run  `git rm --cached "Assets/Standard Assets/K10"`
 4.  Commit the superproject.
-5.  Delete the now untracked submodule files.
+5.  Delete the submodule folder _`Assets/Standard Assets/K10`_.
