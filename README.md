@@ -33,3 +33,11 @@ Still evolving...
 [**Localisation Tool**](https://bitbucket.org/roguesnail/k10localisationtool.git) *
 
 ###### *To get access our private modules please contact us
+
+## How to remove the submodule of your repository
+
+1.  Delete the relevant line from the  _.gitmodules_  file.
+2.  Delete the relevant section from  _.git/config_.
+3.  Run  `git rm --cached "Assets/Standard Assets/K10"`
+4.  Commit the superproject.
+5.  Delete the now untracked submodule files.
