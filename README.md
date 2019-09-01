@@ -34,7 +34,7 @@ Still evolving...
 
 ###### *To get access our private modules please contact us
 
-## To remove submodule on your Unity project repository
+## How To remove the submodule
 
 1.  Delete from the  _.gitmodules_  file:
 
