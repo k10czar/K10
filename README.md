@@ -52,7 +52,9 @@ Still evolving...
 	
 	`active = true`
 	
-3.  Run  `git rm --cached "Assets/Standard Assets/K10"`
+3.  Run:
+
+	`git rm --cached "Assets/Standard Assets/K10"`
 
 4.  Commit the superproject.
 
