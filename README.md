@@ -30,7 +30,7 @@ Still evolving...
 
 [**Dialog Window System**](https://github.com/k10czar/K10-Dialog-Window-System.git) *
 
-[**Localisation Tool**](https://bitbucket.org/roguesnail/k10localisationtool.git) *
+[**Localisation Tool**](https://bitbucket.org/roguesnail/k10-localisation-tool.git) *
 
 ###### *To get access our private modules please contact us
 
