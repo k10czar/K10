@@ -17,6 +17,7 @@ public interface IStateRequesterInteraction
 	void RemoveRequest( object obj );
 	void RequestOn( IBoolStateObserver source );
 	void IgnoreOn( IBoolStateObserver source );
+    void RequestOn( IBoolStateObserver source, System.Func<bool> validation );
 }
 
 public interface IStateRequester : IStateRequesterInfo, IStateRequesterInteraction, IBoolStateObserver { }
@@ -43,6 +44,10 @@ public class StateRequester : IStateRequester
 
 	public void RequestOn( IBoolStateObserver source ) { _semaphore.BlockOn( source ); }
 	public void IgnoreOn( IBoolStateObserver source ) { _semaphore.ReleaseOn( source ); }
+
+    public void RequestOn(IBoolStateObserver source, System.Func<bool> validation ) {
+        _semaphore.BlockOn( source, validation );
+    }
 
 	void InvertedStateChange( bool free ) { _onStateChange.Trigger( !free ); }
 

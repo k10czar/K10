@@ -100,7 +100,36 @@ public static class DebugUtils
 		if( a != last ) Debug.DrawLine( pos + a, pos + last, color );
 	}
 
-	public static void X( Vector3 pos, float radius, Color color, float time = 0 ) { X( pos, Vector3.forward, Vector3.up, radius, color, time ); }
+    public static void Triangle( Vector3 pos, Vector3 forward, Vector3 up, float angle, float distance, Color color )
+    {
+        var first = Quaternion.AngleAxis( -angle / 2 * Mathf.Rad2Deg, up ) * (forward.normalized * distance);
+        var last = Quaternion.AngleAxis( angle / 2 * Mathf.Rad2Deg, up ) * (forward.normalized * distance);
+        Debug.DrawLine( pos, pos + first, color );
+        Debug.DrawLine( pos, pos + last, color );
+
+        Debug.DrawLine( pos + first, pos + last, color );
+    }
+
+    public static void Diamond( Vector3 pos, float angle, float distance, Color color )
+    {
+        var first1 = Quaternion.AngleAxis( -angle / 2 * Mathf.Rad2Deg, Vector3.forward ) * (-Vector3.up.normalized * distance);
+        var last1 = Quaternion.AngleAxis( angle / 2 * Mathf.Rad2Deg, Vector3.forward ) * (-Vector3.up.normalized * distance);
+        Debug.DrawLine( pos, pos + first1, color );
+        Debug.DrawLine( pos, pos + last1, color );
+
+        var first2 = Quaternion.AngleAxis( -angle / 2 * Mathf.Rad2Deg, Vector3.right ) * (-Vector3.up.normalized * distance);
+        var last2 = Quaternion.AngleAxis( angle / 2 * Mathf.Rad2Deg, Vector3.right ) * (-Vector3.up.normalized * distance);
+        Debug.DrawLine( pos, pos + first2, color );
+        Debug.DrawLine( pos, pos + last2, color );
+
+        Debug.DrawLine( pos + first1, pos + first2, color );
+        Debug.DrawLine( pos + last1, pos + last2, color );
+
+        Debug.DrawLine( pos + last1, pos + first2, color );
+        Debug.DrawLine( pos + last2, pos + first1, color );
+    }
+
+    public static void X( Vector3 pos, float radius, Color color, float time = 0 ) { X( pos, Vector3.forward, Vector3.up, radius, color, time ); }
 	public static void X(Vector3 pos, Vector3 forward, Vector3 up, float radius, Color color, float time = 0)
 	{
 		var a = forward.normalized * radius;

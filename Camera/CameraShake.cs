@@ -87,10 +87,10 @@ public class CameraShake : MonoBehaviour
 
 	public static void AddLocal( CameraShakeInfo info, Camera cam )
 	{
-		var shake = cam.GetComponent<CameraShake>();
-		if( shake == null ) shake = cam.gameObject.AddComponent<CameraShake>();
+        var camShake = Singleton<CameraShake>.Instance;
+        if (camShake == null) return;
 
-		shake.AddCameraShake( info );
+        camShake.AddCameraShake( info );
 	}
 
 	void Update()
