@@ -50,9 +50,13 @@ public class GuaranteedSO<T> where T : ScriptableObject
 
 		asset = ScriptableObject.CreateInstance<T>();
 
+		int firstBar = newPath.Length - 1;
+		for (; firstBar >= 0 && newPath[ firstBar ] != '/'; firstBar--) { }
+		if( firstBar >= 0 ) FileAdapter.RequestDirectory( newPath.Substring( 0, firstBar ) );
+
 		string assetPathAndName = UnityEditor.AssetDatabase.GenerateUniqueAssetPath( newPath + ".asset" );
 
-		Debug.Log( "Try create asset at " + assetPathAndName );
+		Debug.Log( $"Try create asset at {newPath} and created at {assetPathAndName}" );
 
 		UnityEditor.AssetDatabase.CreateAsset( asset, assetPathAndName );
 
