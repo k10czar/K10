@@ -13,24 +13,26 @@ public interface IValueCapsule<T>
 public class Persistent<T> : IValueCapsule<T> where T : class
 {
 	string _path;
+	T _defaultValue = null;
 	T _t = null;
 	bool _readed = false;
 
 	static Dictionary<string, Persistent<T>> _dict = new Dictionary<string, Persistent<T>>();
 
-	public static Persistent<T> At( string path )
+	public static Persistent<T> At( string path, T defaultValue = default(T) )
 	{
 		Persistent<T> val;
 		if( !_dict.TryGetValue( path, out val ) )
 		{
-			val = new Persistent<T>( path );
+			val = new Persistent<T>( path, defaultValue );
 			_dict[path] = val;
 		}
 		return val;
 	}
 
-	Persistent( string path )
+	Persistent( string path, T defaultValue = default(T) )
 	{
+		_defaultValue = defaultValue;
 		_path = path;
 	}
 
@@ -41,7 +43,7 @@ public class Persistent<T> : IValueCapsule<T> where T : class
 			if( !_readed )
 			{
 				_readed = true;
-				_t = default( T );
+				_t = _defaultValue;
 				if( FileAdapter.Exists( _path ) )
 				{
 					var readedData = FileAdapter.ReadAllBytes( _path );
