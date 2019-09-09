@@ -28,6 +28,8 @@ Still evolving...
 
 [**DOTS Utils**](https://github.com/k10czar/K10-DOTS.git)
 
+[**Audio Tools**](https://github.com/k10czar/K10-Audio.git)
+
 [**Dialog Window System**](https://github.com/k10czar/K10-Dialog-Window-System.git) *
 
 [**Localization Tool**](https://bitbucket.org/roguesnail/k10-localization-tool.git) *
