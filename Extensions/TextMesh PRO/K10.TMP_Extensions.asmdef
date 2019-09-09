@@ -2,15 +2,14 @@
     "name": "K10.TMP_Extentions",
     "references": [
         "Unity.TextMeshPro",
-        "K10",
-        "K10.Localization"
+        "K10"
     ],
-    "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": []
+    "defineConstraints": [],
+    "versionDefines": []
 }
