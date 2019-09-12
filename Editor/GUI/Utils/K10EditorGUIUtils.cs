@@ -158,8 +158,19 @@ public static class K10EditorGUIUtils
 					GUILayout.Label( typeof( K ).Name + "(s)", K10GuiStyles.boldStyle );
 				}
 				var name = prop.Name;
-				var semaphore = (K)prop.GetValue( t, null );
-				K10EditorGUIUtils.Semaphore( semaphore, name );
+
+				try 
+				{
+					var semaphore = (K)prop.GetValue( t, null );
+					K10EditorGUIUtils.Semaphore( semaphore, name );
+				}
+				catch( System.Exception ex )
+				{
+					GUILayout.BeginHorizontal();
+					K10.EditorGUIExtention.IconButton.Layout( "error", 18, 'X', "", Color.red );
+					GUILayout.Label( $"{name}({ex.Message})", K10GuiStyles.smallStyle );
+					GUILayout.EndHorizontal();
+				}
 				items++;
 
 				if( items >= itemsPerRow )
