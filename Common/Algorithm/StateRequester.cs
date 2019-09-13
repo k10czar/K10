@@ -12,7 +12,7 @@ public interface IStateRequesterInfo
 public interface IStateRequesterInteraction
 {
 	void Toggle( object obj );
-	void Request( object obj );
+	bool Request( object obj, bool increaseRequest = true );
 	bool RequestButDoNotIncrease( object obj );
 	void RemoveRequest( object obj );
 	void RequestOn( IBoolStateObserver source );
@@ -54,9 +54,9 @@ public class StateRequester : IStateRequester
 	public void Clear() { _semaphore.Clear(); }
 
 	public void Toggle( object obj ) { _semaphore.Toggle( obj ); }
-	public void Request( object obj ) { _semaphore.Block( obj ); }
-	public bool RequestButDoNotIncrease( object obj ) => _semaphore.BlockButDoNotIncrease( obj );
-	public void RemoveRequest( object obj ) { _semaphore.Release( obj ); }
+	public bool Request( object obj, bool increaseRequest = true ) => _semaphore.Block( obj, increaseRequest );
+	public bool RequestButDoNotIncrease( object obj ) => Request( obj, false );
+	public void RemoveRequest( object obj ) => _semaphore.Release( obj );
 
 	public override string ToString() => $"( {( Requested ? "Requested" : "False" )} State => {{ !!{_semaphore}!! }} )";
 }

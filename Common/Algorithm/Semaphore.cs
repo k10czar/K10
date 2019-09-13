@@ -13,7 +13,7 @@ public interface ISemaphoreInfo : IBoolStateObserver
 
 public interface ISemaphoreInterection
 {
-	void Block( object obj );
+	bool Block( object obj, bool increaseBlock = true );
 	bool BlockButDoNotIncrease( object obj );
 	void Release( object obj );
 }
@@ -120,30 +120,8 @@ public class Semaphore : ISemaphore
 		else Block( obj );
 	}
 
-	public void Block( object obj )
-	{
-		if( obj == null )
-			return;
-
-		bool trigger = Free;
-
-		SemaphoreObject s;
-		if( !_semaphores.TryGetValue( obj, out s ) )
-		{
-			s = new SemaphoreObject();
-			_semaphores.Add( obj, s );
-		}
-
-		s.Value++;
-
-		if( trigger )
-		{
-			_blockEvent.Trigger();
-			_changeStateEvent.Trigger( false );
-		}
-	}
-
-	public bool BlockButDoNotIncrease( object obj )
+	public bool BlockButDoNotIncrease( object obj ) => Block( obj, false );
+	public bool Block( object obj, bool increaseBlock = true )
 	{
 		if( obj == null )
 			return false;
@@ -152,7 +130,7 @@ public class Semaphore : ISemaphore
 
 		SemaphoreObject s;
 		bool newKey = !_semaphores.TryGetValue( obj, out s );
-		if( newKey )
+		if( newKey || increaseBlock )
 		{
 			s = new SemaphoreObject();
 			_semaphores.Add( obj, s );
@@ -192,12 +170,10 @@ public class Semaphore : ISemaphore
 	{
 		var initialState = Free;
 		_semaphores.Clear();
-		var free = Free;
-		if( free != initialState )
+		if( !initialState && Free )
 		{
-			if( free ) _releaseEvent.Trigger();
-			else _blockEvent.Trigger();
-			_changeStateEvent.Trigger( free );
+			_releaseEvent.Trigger();
+			_changeStateEvent.Trigger( true );
 		}
 	}
 
