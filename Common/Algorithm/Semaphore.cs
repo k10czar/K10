@@ -132,8 +132,11 @@ public class Semaphore : ISemaphore
 		bool newKey = !_semaphores.TryGetValue( obj, out s );
 		if( newKey || increaseBlock )
 		{
-			s = new SemaphoreObject();
-			_semaphores.Add( obj, s );
+			if( newKey )
+			{
+				s = new SemaphoreObject();
+				_semaphores.Add( obj, s );
+			}
 			s.Value++;
 		}
 
