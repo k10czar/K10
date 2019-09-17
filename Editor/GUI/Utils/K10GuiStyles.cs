@@ -14,6 +14,7 @@ public static class K10GuiStyles
 	public static readonly GUIStyle basicCenterStyle = new GUIStyle( EditorStyles.label ) { fontSize = NORMAL_FONT_SIZE, alignment = TextAnchor.MiddleCenter };
 	public static readonly GUIStyle boldCenterStyle = new GUIStyle( EditorStyles.label ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
 	public static readonly GUIStyle basicStyle = new GUIStyle( EditorStyles.label ) { fontSize = NORMAL_FONT_SIZE };
+	public static readonly GUIStyle fieldStyle = new GUIStyle( EditorStyles.textField ) { fontSize = NORMAL_FONT_SIZE };
 	public static readonly GUIStyle boldStyle = new GUIStyle( EditorStyles.label ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold };
 	public static readonly GUIStyle buttonStyle = new GUIStyle( EditorStyles.miniButton ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold };
 	public static readonly GUIStyle bigbuttonStyle = new GUIStyle( EditorStyles.miniButton ) { fontSize = BIG_FONT_SIZE, fontStyle = FontStyle.Bold };
