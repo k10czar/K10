@@ -1,7 +1,12 @@
 using System;
 using UnityEngine;
 
-public abstract class HashedScriptableObject : ScriptableObject
+public interface IHashedSO
+{
+	int HashID { get; }
+}
+
+public abstract class HashedScriptableObject : ScriptableObject, IHashedSO
 {
 	[HideInInspector, SerializeField] int _hashId = -1;
 

@@ -1,17 +1,19 @@
-using System;
 using UnityEngine;
 
+#if UNITY_EDITOR
 public interface IPermanentHashedScriptableObjectEditorView
 {
 	void UpdateGUID();
 }
+#endif
 
-public abstract class PermanentHashedScriptableObject : ScriptableObject, IPermanentHashedScriptableObjectEditorView
+public abstract class PermanentHashedScriptableObject : ScriptableObject, IHashedSO
+#if UNITY_EDITOR
+, IPermanentHashedScriptableObjectEditorView
+#endif
 {
-	[HideInInspector, SerializeField] bool _conflictFlag = false;
-	public bool ConflictFlag => _conflictFlag;
-	[HideInInspector, SerializeField] int _conflictedID = -1;
 	[HideInInspector, SerializeField] int _hashId = -1;
+
 #if UNITY_EDITOR
 	[HideInInspector, SerializeField] string _guid;
 	public string GUID { get { return _guid; } }
@@ -22,20 +24,19 @@ public abstract class PermanentHashedScriptableObject : ScriptableObject, IPerma
 	public void SetHashID( int newID )
 	{
 		_hashId = newID;
+#if UNITY_EDITOR
+		if( !Application.isPlaying ) UnityEditor.EditorUtility.SetDirty( this );
+#endif
 	}
 
 	public abstract IPermanentHashedSOCollection GetCollection();
 
+#if UNITY_EDITOR
 	void IPermanentHashedScriptableObjectEditorView.UpdateGUID()
 	{
-#if UNITY_EDITOR
 		var path = UnityEditor.AssetDatabase.GetAssetPath( this );
 		var guid = UnityEditor.AssetDatabase.AssetPathToGUID( path );
-
-		if( guid != _guid )
-		{
-			_guid = guid;
-		}
-#endif
+		if( guid != _guid ) _guid = guid;
 	}
+#endif
 }
