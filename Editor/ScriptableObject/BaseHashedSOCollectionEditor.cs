@@ -2,8 +2,8 @@
 using UnityEditor;
 using K10.EditorGUIExtention;
 
-[CustomEditor( typeof( PermanentHashedSOBaseCollection ), true )]
-public class PermanentHashedSOBaseCollectionEditor : Editor
+[CustomEditor( typeof( BaseHashedSOCollection ), true )]
+public class BaseHashedSOCollectionEditor : Editor
 {
 	private string _title;
 
@@ -20,7 +20,7 @@ public class PermanentHashedSOBaseCollectionEditor : Editor
 
 	public override void OnInspectorGUI()
 	{
-		var collection = (PermanentHashedSOBaseCollection)target;
+		var collection = (BaseHashedSOCollection)target;
 		int size = collection.Count;
 
 		var count = 0;
@@ -38,7 +38,7 @@ public class PermanentHashedSOBaseCollectionEditor : Editor
 		EditorGUILayout.BeginVertical();
 		for( int i = 0; i < size; i++ )
 		{
-			var entry = collection.GetElementBase( i );
+			var entry = collection.GetElementBase( i ) as IHashedSO;
 			if( entry == null ) continue;
 			EditorGUILayout.BeginHorizontal();
 			var hasConflict = ( entry.HashID < 0 || entry.HashID != i );
@@ -48,9 +48,11 @@ public class PermanentHashedSOBaseCollectionEditor : Editor
 			if( hasConflict ) GUILayout.Button( "!!CONFLICT!!" );
 
 			EditorGUI.BeginDisabledGroup( true );
-			EditorGUILayout.ObjectField( entry, typeof( PermanentHashedScriptableObject ), false );
+			EditorGUILayout.ObjectField( entry as Object, collection.GetElementType(), false );
 			EditorGUI.EndDisabledGroup();
+
 			if( hasConflict ) GuiColorManager.Revert();
+
 			EditorGUILayout.EndHorizontal();
 		}
 		EditorGUILayout.EndVertical();

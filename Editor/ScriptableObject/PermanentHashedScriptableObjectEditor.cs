@@ -2,7 +2,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor( typeof( PermanentHashedScriptableObject ), true )]
+[CustomEditor( typeof( HashedScriptableObject ), true )]
 public class PermanentHashedScriptableObjectEditor : Editor
 {
 	SerializedProperty _hashIdProp;
@@ -21,7 +21,7 @@ public class PermanentHashedScriptableObjectEditor : Editor
 		bool valid = true;
 		for( int i = 0; i < targets.Length; i++ )
 		{
-			var t = targets[i] as PermanentHashedScriptableObject;
+			var t = targets[i] as HashedScriptableObject;
 			var col = t.GetCollection();
 			valid &= col.Contains( t );
 		}
@@ -33,11 +33,11 @@ public class PermanentHashedScriptableObjectEditor : Editor
 		GUILayout.BeginVertical();
 		GUILayout.Space( 2 );
 		GUILayout.BeginHorizontal();
-		var hashs = string.Join( ", ", targets.ToList().ConvertAll( ( t ) => ( t as PermanentHashedScriptableObject ).HashID.ToString() ).ToArray() );
+		var hashs = string.Join( ", ", targets.ToList().ConvertAll( ( t ) => ( t as HashedScriptableObject ).HashID.ToString() ).ToArray() );
 		GUILayout.Label( "HashID: " + hashs, K10GuiStyles.boldStyle );
 		if( GUILayout.Button( "Select Collection", GUILayout.Width( 120f ) ) )
 		{
-			var t = target as PermanentHashedScriptableObject;
+			var t = target as HashedScriptableObject;
 			Selection.activeObject = t.GetCollection() as UnityEngine.Object;
 		}
 		GUILayout.EndHorizontal();

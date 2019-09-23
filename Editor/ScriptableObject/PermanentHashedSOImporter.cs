@@ -8,19 +8,17 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 		for( int i = 0; i < importedAssets.Length; i++ )
 		{
 			var obj = AssetDatabase.LoadAssetAtPath( importedAssets[i], typeof( ScriptableObject ) );
-			if( obj is IPermanentHashedSOCollection collection )
-			{
-				collection.EditorCheckConsistency();
-			}
 
-			if( obj is PermanentHashedScriptableObject so )
+			if( obj is IHashedSOCollection collection ) collection.EditorCheckConsistency();
+
+			if( obj is IHashedSO hso )
 			{
-				var c = so.GetCollection();
-				int id = 0;
-				if( c != null )
+				var col = hso.GetCollection();
+				if( col != null )
 				{
-					Debug.Log( $"AssetPostprocessor of {so.NameOrNull()} on Collection {c.ToStringOrNull()}" );
-					c.EditorRequestMember( so, ref id );
+					var oHso = hso as Object;
+					Debug.Log( $"AssetPostprocessor of {oHso.NameOrNull()} on Collection {col.ToStringOrNull()}" );
+					col.EditorRequestMember( oHso );
 				}
 			}
 		}
