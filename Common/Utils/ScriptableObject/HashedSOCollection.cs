@@ -9,7 +9,7 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IHashedSOC
 	public override int Count => _list.Count;
 
 	public T GetElement( int hashId ) => this[hashId];
-	
+
 	public override System.Type GetElementType() => typeof( T );
 	public override IHashedSO GetElementBase( int hashId ) => this[hashId];
 
@@ -17,7 +17,8 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IHashedSOC
 	public override bool Contains( IHashedSO obj ) => _list.Contains( obj as T );
 
 #if UNITY_EDITOR
-	protected override bool CanChangeIDsToOptimizeSpace => true;
+	protected override void Clear() { _list.Clear(); }
+	public override bool EditorCanChangeIDsToOptimizeSpace => true;
 	protected override bool AddElement( IHashedSO obj ) { if( obj is T t ) _list.Add( t ); return ( obj is T ); }
 	protected override bool ResolveConflictedFile( IHashedSO t, string assetPath ) => true;
 #endif

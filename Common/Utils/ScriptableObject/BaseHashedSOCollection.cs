@@ -3,15 +3,25 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
+#if UNITY_EDITOR
+public interface IHashedSOCollectionEditor
+{
+	void EditorTryOptimize();
+	void EditorCheckConsistency();
+	bool EditorRequestMember( Object t );
+	bool EditorCanChangeIDsToOptimizeSpace { get; }
+}
+#endif
+
 public interface IHashedSOCollection
+#if UNITY_EDITOR
+: IHashedSOCollectionEditor
+#endif
 {
 	bool ContainsHashID( int hashID );
 	bool Contains( IHashedSO obj );
 	int Count { get; }
 	IHashedSO GetElementBase( int hashID );
-
-	void EditorCheckConsistency();
-	bool EditorRequestMember( Object t );
 }
 
 public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollection
@@ -23,27 +33,25 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 	public abstract System.Type GetElementType();
 
-	public void EditorCheckConsistency()
-	{
 #if UNITY_EDITOR
+	void IHashedSOCollectionEditor.EditorCheckConsistency()
+	{
 		Debug.Log( $"Checking consistency of Collection {this.name} / t:{GetElementType().ToString()}" );
 		var guids = AssetDatabase.FindAssets( $"t:{GetElementType().ToString()}" );
 		for( int i = 0; i < guids.Length; i++ )
 		{
 			var path = AssetDatabase.GUIDToAssetPath( guids[i] );
 			var asset = AssetDatabase.LoadAssetAtPath( path, GetElementType() );
-			EditorRequestMember( asset );
+			( (IHashedSOCollectionEditor)this ).EditorRequestMember( asset );
 		}
-#endif
 	}
-
-	public bool EditorRequestMember( Object obj )
+	
+	bool IHashedSOCollectionEditor.EditorRequestMember( Object obj )
 	{
 		var t = obj as IHashedSO;
 		if( t == null ) return false;
 
 		if( Contains( t ) ) return false;
-#if UNITY_EDITOR
 		else
 		{
 			int hashID = t.HashID;
@@ -65,12 +73,18 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 			EditorUtility.SetDirty( (Object)t );
 			EditorUtility.SetDirty( this );
 		}
-#endif
 		return true;
 	}
 
-#if UNITY_EDITOR
-	protected abstract bool CanChangeIDsToOptimizeSpace { get; }
+	void IHashedSOCollectionEditor.EditorTryOptimize()
+	{
+		if( !( (IHashedSOCollectionEditor)this ).EditorCanChangeIDsToOptimizeSpace ) return;
+
+		Clear();
+		((IHashedSOCollectionEditor )this).EditorCheckConsistency();
+	}
+	public abstract bool EditorCanChangeIDsToOptimizeSpace { get; }
+	protected abstract void Clear();
 	protected abstract bool AddElement( IHashedSO obj );
 	protected abstract bool ResolveConflictedFile( IHashedSO t, string assetPath );
 #endif

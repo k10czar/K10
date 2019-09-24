@@ -7,7 +7,8 @@ using UnityEditor;
 public class PermanentHashedSOCollection<T> : HashedSOCollection<T> where T : HashedScriptableObject
 {
 #if UNITY_EDITOR
-	protected override bool CanChangeIDsToOptimizeSpace => false;
+	protected override void Clear() { throw new System.Exception( "PermanentHashedCollection cannot clear already hashed elements" ); }
+	public override bool EditorCanChangeIDsToOptimizeSpace => false;
 	protected override bool ResolveConflictedFile( IHashedSO t, string assetPath )
 	{
 		if( !UnityEditor.EditorUtility.DisplayDialog( "Conflict on PermanentHashedSOCollection",

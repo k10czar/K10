@@ -1,9 +1,9 @@
-using System.Linq;
+﻿using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
 [CustomEditor( typeof( HashedScriptableObject ), true )]
-public class PermanentHashedScriptableObjectEditor : Editor
+public class HashedScriptableObjectEditor : Editor
 {
 	SerializedProperty _hashIdProp;
 	SerializedProperty _guidProp;

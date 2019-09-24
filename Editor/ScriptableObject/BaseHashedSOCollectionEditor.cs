@@ -56,5 +56,18 @@ public class BaseHashedSOCollectionEditor : Editor
 			EditorGUILayout.EndHorizontal();
 		}
 		EditorGUILayout.EndVertical();
+
+		var edit = (IHashedSOCollectionEditor)collection;
+		if( GUILayout.Button( "Find new Elements" ) )
+		{
+			edit.EditorCheckConsistency();
+			EditorUtility.SetDirty( target );
+		}
+
+		if( edit.EditorCanChangeIDsToOptimizeSpace && GUILayout.Button( "Optimize" ) )
+		{
+			edit.EditorTryOptimize();
+			EditorUtility.SetDirty( target );
+		}
 	}
 }
