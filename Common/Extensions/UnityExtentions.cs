@@ -141,6 +141,10 @@ public static class K10UnityExtentions
 		return name;
 	}
 
+	public static IEventTrigger<T, K, J> UntilLifeTime<T, K, J>( this Component c, IEventTrigger<T, K, J> t ) { return new ConditionalEventListener<T, K, J>( t, () => ( c != null ) && t.IsValid ); }
+	public static IEventTrigger<T, K> UntilLifeTime<T, K>( this Component c, IEventTrigger<T, K> t ) { return new ConditionalEventListener<T, K>( t, () => ( c != null ) && t.IsValid ); }
+	public static IEventTrigger<T> UntilLifeTime<T>( this Component c, IEventTrigger<T> t ) { return new ConditionalEventListener<T>( t, () => ( c != null ) && t.IsValid ); }
+	public static IEventTrigger UntilLifeTime( this Component c, IEventTrigger t ) { return new ConditionalEventListener( t, () => ( c != null ) && t.IsValid ); }
 
 	public static IEventTrigger<T, K, J> UntilLifeTime<T, K, J>( this Component c, System.Action<T, K, J> act ) { return new ConditionalEventListener<T, K, J>( act, c.IsAlive ); }
 	public static IEventTrigger<T, K> UntilLifeTime<T, K>( this Component c, System.Action<T, K> act ) { return new ConditionalEventListener<T, K>( act, c.IsAlive ); }
