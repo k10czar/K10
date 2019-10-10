@@ -16,10 +16,7 @@ public class IntState : IValueState<int>
         _onChange.Trigger( value );
     }
 
-    public void Increment( int value = 1 )
-    {
-        Setter( _value + value );
-    }
+    public void Increment( int value = 1 ) { Setter( _value + value ); }
 
     public IEventRegister<int> OnChange { get { return _onChange; } }
 
