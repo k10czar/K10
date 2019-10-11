@@ -19,6 +19,8 @@ public class BoolState : IBoolState
 	[System.NonSerialized] private readonly EventSlot _onTrue = new EventSlot();
 	[System.NonSerialized] private readonly EventSlot _onFalse = new EventSlot();
 
+	public static implicit operator bool( BoolState v ) => v._value;
+
 	public bool Value { get => _value; set { Setter( value ); } }
 	public bool Get() => _value;
 
