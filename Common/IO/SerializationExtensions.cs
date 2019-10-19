@@ -48,13 +48,15 @@ public static class SerializationExtensions
 
 	public static float ReadFloatAsFixedOnBits( this byte[] byteArray, int startingBit, byte bitsToWrite, float minRange, float maxRange )
 	{
-		float value = ( byteArray.ReadUIntAsBits( startingBit, bitsToWrite ) / ( (float)( 1 << bitsToWrite ) ) ) * ( maxRange - minRange );
+		var maxValue = (float)( ( 1 << bitsToWrite ) - 1 );
+		float value = ( byteArray.ReadUIntAsBits( startingBit, bitsToWrite ) / maxValue ) * ( maxRange - minRange );
 		return minRange + value;
 	}
 
 	public static void WriteFloatAsFixedOnBits( this byte[] byteArray, float data, int startingBit, byte bitsToWrite, float minRange, float maxRange )
 	{
-		var value = Mathf.RoundToInt( Mathf.Clamp01( ( data - minRange ) / ( maxRange - minRange ) ) * ( 1 << bitsToWrite ) );
+		var maxValue = ( 1 << bitsToWrite ) - 1;
+		var value = Mathf.RoundToInt( Mathf.Clamp01( ( data - minRange ) / ( maxRange - minRange ) ) * maxValue );
 		byteArray.WriteUIntAsBits( value, startingBit, bitsToWrite );
 	}
 
