@@ -2,7 +2,7 @@ using UnityEngine;
 
 public static class SerializationExtensions
 {
-	public static string DebugBitMask( this byte[] byteArray, byte bitsToRead, int startingBit )
+	public static string DebugBitMask( this byte[] byteArray, int startingBit, int bitsToRead )
 	{
 		string mask = "";
 
@@ -10,7 +10,7 @@ public static class SerializationExtensions
 		{
 			var id = startingBit + i;
 			var arrayId = id >> 3;
-			var bitId = (byte)( id & ( ( arrayId << 4 ) - 1 ) );
+			var bitId = (byte)( id - ( arrayId << 3 ) );
 			var bit = 1 << bitId;
 			mask += ( ( ( byteArray[arrayId] & bit ) != 0 ) ) ? '1' : '0';
 		}
@@ -25,7 +25,7 @@ public static class SerializationExtensions
 		{
 			var id = startingBit + i;
 			var arrayId = id >> 3;
-			var bitId = (byte)( id & ( ( arrayId << 4 ) - 1 ) );
+			var bitId = (byte)( id - ( arrayId << 3 ) );
 			var bit = (byte)( 1 << bitId );
 			if( ( ( byteArray[arrayId] & bit ) != 0 ) ) value |= ( 1 << i );
 		}
@@ -39,7 +39,7 @@ public static class SerializationExtensions
 			var b = ( ( data & ( 1 << i ) ) != 0 );
 			var id = startingBit + i;
 			var arrayId = id >> 3;
-			var bitId = (byte)( id & ( ( arrayId << 4 ) - 1 ) );
+			var bitId = (byte)( id - ( arrayId << 3 ) );
 			var bit = (byte)( ( 1 ) << bitId );
 			if( b ) byteArray[arrayId] |= bit;
 			else byteArray[arrayId] &= (byte)( ~bit );
@@ -54,7 +54,7 @@ public static class SerializationExtensions
 
 	public static void WriteFloatAsFixedOnBits( this byte[] byteArray, float data, int startingBit, byte bitsToWrite, float minRange, float maxRange )
 	{
-		var value = (int)( ( ( data - minRange ) / ( maxRange - minRange ) ) * ( 1 << bitsToWrite ) );
+		var value = Mathf.RoundToInt( Mathf.Clamp01( ( data - minRange ) / ( maxRange - minRange ) ) * ( 1 << bitsToWrite ) );
 		byteArray.WriteUIntAsBits( value, startingBit, bitsToWrite );
 	}
 

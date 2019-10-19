@@ -1,6 +1,6 @@
 namespace K10
 {
-	public static class MathUtils
+	public static class Math
 	{
 		public static int Log2( int v )
 		{
