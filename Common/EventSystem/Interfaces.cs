@@ -9,32 +9,36 @@ public interface IEventRegister
 {
 	void Register( IEventTrigger listener );
 	bool Unregister( IEventTrigger listener );
-	void Register( Action listener );
-	bool Unregister( Action listener );
 }
 
 public interface IEventRegister<T> : IEventRegister
 {
 	void Register( IEventTrigger<T> listener );
 	bool Unregister( IEventTrigger<T> listener );
-	void Register( Action<T> listener );
-	bool Unregister( Action<T> listener );
 }
 
 public interface IEventRegister<T, K> : IEventRegister<T>
 {
 	void Register( IEventTrigger<T, K> listener );
 	bool Unregister( IEventTrigger<T, K> listener );
-	void Register( Action<T, K> listener );
-	bool Unregister( Action<T, K> listener );
 
 }
-public interface IEventRegister<T, K, L> : IEventRegister<T, K>
+public interface IEventRegister<T, K, J> : IEventRegister<T, K>
 {
-	void Register( IEventTrigger<T, K, L> listener );
-	bool Unregister( IEventTrigger<T, K, L> listener );
-	void Register( Action<T, K, L> listener );
-	bool Unregister( Action<T, K, L> listener );
+	void Register( IEventTrigger<T, K, J> listener );
+	bool Unregister( IEventTrigger<T, K, J> listener );
+}
+
+public static class EventExtensions
+{
+	public static void Register( this IEventRegister register, Action act ) => register.Register( new ActionEventCapsule( act ) );
+	public static void Unregister( this IEventRegister register, Action act ) => register.Unregister( new ActionEventCapsule( act ) );
+	public static void Register<T>( this IEventRegister<T> register, Action<T> act ) => register.Register( new ActionEventCapsule<T>( act ) );
+	public static void Unregister<T>( this IEventRegister<T> register, Action<T> act ) => register.Unregister( new ActionEventCapsule<T>( act ) );
+	public static void Register<T,K>( this IEventRegister<T,K> register, Action<T,K> act ) => register.Register( new ActionEventCapsule<T,K>( act ) );
+	public static void Unregister<T,K>( this IEventRegister<T,K> register, Action<T,K> act ) => register.Unregister( new ActionEventCapsule<T,K>( act ) );
+	public static void Register<T,K,J>( this IEventRegister<T,K,J> register, Action<T,K,J> act ) => register.Register( new ActionEventCapsule<T,K,J>( act ) );
+	public static void Unregister<T,K,J>( this IEventRegister<T,K,J> register, Action<T,K,J> act ) => register.Unregister( new ActionEventCapsule<T,K,J>( act ) );
 }
 
 public interface IValidatedObject
@@ -57,7 +61,12 @@ public interface IEventTrigger<T, K> : IValidatedObject
 	void Trigger( T t, K k );
 }
 
-public interface IEventTrigger<T, K, L> : IValidatedObject
+public interface IEventTrigger<T, K, J> : IValidatedObject
 {
-	void Trigger( T t, K k, L l );
+	void Trigger( T t, K k, J j );
+}
+
+public interface IEventTrigger<T, K, J, L> : IValidatedObject
+{
+	void Trigger( T t, K k, J j, L l );
 }

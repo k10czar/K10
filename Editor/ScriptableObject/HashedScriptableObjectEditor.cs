@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -18,8 +18,6 @@ public class HashedScriptableObjectEditor : Editor
 	{
 		K10.EditorGUIExtention.SeparationLine.Horizontal();
 
-		GUILayout.BeginHorizontal();
-
 		bool valid = true;
 		for( int i = 0; i < targets.Length; i++ )
 		{
@@ -28,37 +26,43 @@ public class HashedScriptableObjectEditor : Editor
 			valid &= col.Contains( t );
 		}
 
-		if( K10.EditorGUIExtention.IconButton.Layout( 40, valid ? "greenLight" : "redLight" ) )
-		{
-			for( int i = 0; i < targets.Length; i++ )
-			{
-				var t = targets[i] as HashedScriptableObject;
-				var col = t.GetCollection();
-				col.RequestMember( t );
-				t.CheckIntegrity();
+		GUILayout.BeginHorizontal();
 
-				EditorUtility.SetDirty( (ScriptableObject)col );
-			}
-		}
+		K10.EditorGUIExtention.IconButton.Layout( 25, valid ? "greenLight" : "redLight" );
 
 		GUILayout.BeginVertical();
-
+		GUILayout.Space( 2 );
 		GUILayout.BeginHorizontal();
 		var hashs = string.Join( ", ", targets.ToList().ConvertAll( ( t ) => ( t as HashedScriptableObject ).HashID.ToString() ).ToArray() );
 		GUILayout.Label( "HashID: " + hashs, K10GuiStyles.boldStyle );
+		if( GUILayout.Button( "Select Collection", GUILayout.Width( 120f ) ) )
+		{
+			var t = target as HashedScriptableObject;
+			Selection.activeObject = t.GetCollection() as UnityEngine.Object;
+		}
 		GUILayout.EndHorizontal();
-
-		GUILayout.BeginHorizontal();
-		var guid = ( targets.Length == 1 ) ? _guidProp.stringValue : "...";
-		GUILayout.Label( "GUID: " + guid );
-		GUILayout.EndHorizontal();
-
 		GUILayout.EndVertical();
-
 		GUILayout.EndHorizontal();
 
 		K10.EditorGUIExtention.SeparationLine.Horizontal();
 	}
+
+    public static void DrawIconTexture(SerializedObject obj, Sprite icon)
+    {
+        if (obj == null || icon == null) return;
+
+        var rect = GUILayoutUtility.GetRect(64f, 64f);
+        EditorGUI.DrawTextureTransparent(rect, icon.texture, ScaleMode.ScaleToFit);
+    }
+
+    public static void DrawIconTexture(SerializedObject obj, SerializedProperty iconProp)
+    {
+        if (iconProp != null && iconProp.objectReferenceValue != null)
+        {
+            var rect = GUILayoutUtility.GetRect(64f, 64f);
+            EditorGUI.DrawTextureTransparent(rect, ((Sprite)iconProp.objectReferenceValue).texture, ScaleMode.ScaleToFit);
+        }
+    }
 
 	public override void OnInspectorGUI()
 	{

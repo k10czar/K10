@@ -7,7 +7,6 @@ using UnityEngine.Windows;
 using System.IO;
 #endif
 
-
 public static class FileAdapter
 {
 	public static bool Exists( string path ) { return File.Exists( path ); }

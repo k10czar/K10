@@ -26,6 +26,8 @@ public class CachedDictionary<K,T> : ICachedDictionaryObserver<K,T>
     public bool ContainsKey( K key ) => _dictionary.ContainsKey( key );
 
     public int KeyCount => _dictionary.Count;
+    
+
 
     public IEnumerator<T> GetEnumerator()
     {        
@@ -36,7 +38,22 @@ public class CachedDictionary<K,T> : ICachedDictionaryObserver<K,T>
                 yield return value;
             }
         }
+       
 	}
+
+    public List<K> GetKeys()
+    {
+        List<K> keys = new List<K>();
+
+        foreach (var item in _dictionary)
+        {
+            keys.Add(item.Key);
+        }
+
+        return keys;
+    }
+  
+
 
     public bool GetFirst( K key, out T outValue )
 	{

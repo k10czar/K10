@@ -9,7 +9,7 @@ public class EventSlot : IEvent
 	List<IEventTrigger> _listeners = new List<IEventTrigger>();
 
 	public bool IsValid { get { return true; } }
-	// public int EventCount { get { return _listeners.Count; } }
+	public int EventsCount => _listeners.Count;
 
 	public void Trigger()
 	{
@@ -23,10 +23,7 @@ public class EventSlot : IEvent
 	}
 
 	public void Register( IEventTrigger listener ) { if( listener != null ) _listeners.Add( listener ); }
-	public void Register( Action listener ) { _listeners.Add( new ActionEventCapsule( listener ) ); }
-
 	public bool Unregister( IEventTrigger listener ) { return _listeners.Remove( listener ); }
-	public bool Unregister( Action listener ) { return _listeners.Remove( new ActionEventCapsule( listener ) ); }
 
 	public override string ToString() { return string.Format( "[EventSlot: Count={0}]", _listeners.Count ); }
 }
@@ -37,6 +34,7 @@ public class EventSlot<T> : IEvent<T>
 	List<IEventTrigger<T>> _listeners = new List<IEventTrigger<T>>();
 
 	public bool IsValid { get { return true; } }
+	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
 
 	public void Trigger( T t )
 	{
@@ -52,24 +50,20 @@ public class EventSlot<T> : IEvent<T>
 
 	public void Register( IEventTrigger<T> listener ) { _listeners.Add( listener ); }
 	public void Register( IEventTrigger listener ) { _generic.Register( listener ); }
-	public void Register( Action<T> listener ) { _listeners.Add( new ActionEventCapsule<T>( listener ) ); }
-	public void Register( Action listener ) { _generic.Register( listener ); }
 
 	public bool Unregister( IEventTrigger<T> listener ) { return _listeners.Remove( listener ); }
 	public bool Unregister( IEventTrigger listener ) { return _generic.Unregister( listener ); }
-	public bool Unregister( Action<T> listener ) { return _listeners.Remove( new ActionEventCapsule<T>( listener ) ); }
-	public bool Unregister( Action listener ) { return _generic.Unregister( listener ); }
 
 	public override string ToString() { return string.Format( "[EventSlot<T>: Count={0}, Generic:{1}]", _listeners.Count, _generic ); }
 }
 
 public class EventSlot<T, K> : IEvent<T, K>
 {
-	EventSlot _generic = new EventSlot();
-	EventSlot<T> _genericT = new EventSlot<T>();
+	EventSlot<T> _generic = new EventSlot<T>();
 	List<IEventTrigger<T, K>> _listeners = new List<IEventTrigger<T, K>>();
 
 	public bool IsValid { get { return true; } }
+	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
 
 	public void Trigger( T t, K k )
 	{
@@ -80,36 +74,27 @@ public class EventSlot<T, K> : IEvent<T, K>
 			//NOT else Trigger can invalidate listener
 			if( !listener.IsValid ) _listeners.RemoveAt( i-- );
 		}
-		_genericT.Trigger( t );
-		//		_genericK.Trigger( k );
-		_generic.Trigger();
+		_generic.Trigger( t );
 	}
 
 	public void Register( IEventTrigger<T, K> listener ) { _listeners.Add( listener ); }
-	public void Register( IEventTrigger<T> listener ) { _genericT.Register( listener ); }
+	public void Register( IEventTrigger<T> listener ) { _generic.Register( listener ); }
 	public void Register( IEventTrigger listener ) { _generic.Register( listener ); }
-	public void Register( Action<T, K> listener ) { _listeners.Add( new ActionEventCapsule<T, K>( listener ) ); }
-	public void Register( Action<T> listener ) { _genericT.Register( listener ); }
-	public void Register( Action listener ) { _generic.Register( listener ); }
 
 	public bool Unregister( IEventTrigger<T, K> listener ) { return _listeners.Remove( listener ); }
-	public bool Unregister( IEventTrigger<T> listener ) { return _genericT.Unregister( listener ); }
+	public bool Unregister( IEventTrigger<T> listener ) { return _generic.Unregister( listener ); }
 	public bool Unregister( IEventTrigger listener ) { return _generic.Unregister( listener ); }
-	public bool Unregister( Action<T, K> listener ) { return _listeners.Remove( new ActionEventCapsule<T, K>( listener ) ); }
-	public bool Unregister( Action<T> listener ) { return _genericT.Unregister( listener ); }
-	public bool Unregister( Action listener ) { return _generic.Unregister( listener ); }
 
 	public override string ToString() { return string.Format( "[EventSlot<T,K>: Count={0}, Generic:{1}]", _listeners.Count, _generic ); }
 }
 
 public class EventSlot<T, K, L> : IEvent<T, K, L>
 {
-	EventSlot _generic = new EventSlot();
-	EventSlot<T> _genericT = new EventSlot<T>();
-	EventSlot<T, K> _genericTK = new EventSlot<T, K>();
+	EventSlot<T, K> _generic = new EventSlot<T, K>();
 	List<IEventTrigger<T, K, L>> _listeners = new List<IEventTrigger<T, K, L>>();
 
 	public bool IsValid { get { return true; } }
+	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
 
 	public void Trigger( T t, K k, L l )
 	{
@@ -119,28 +104,18 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>
 			if( listener.IsValid ) listener.Trigger( t, k, l );
 			if( !listener.IsValid ) _listeners.RemoveAt( i );
 		}
-		_genericTK.Trigger( t, k );
-		_genericT.Trigger( t );
-		_generic.Trigger();
+		_generic.Trigger( t, k );
 	}
 
 	public void Register( IEventTrigger<T, K, L> listener ) { _listeners.Add( listener ); }
-	public void Register( IEventTrigger<T, K> listener ) { _genericTK.Register( listener ); }
-	public void Register( IEventTrigger<T> listener ) { _genericT.Register( listener ); }
+	public void Register( IEventTrigger<T, K> listener ) { _generic.Register( listener ); }
+	public void Register( IEventTrigger<T> listener ) { _generic.Register( listener ); }
 	public void Register( IEventTrigger listener ) { _generic.Register( listener ); }
-	public void Register( Action<T, K, L> listener ) { _listeners.Add( new ActionEventCapsule<T, K, L>( listener ) ); }
-	public void Register( Action<T, K> listener ) { _genericTK.Register( listener ); }
-	public void Register( Action<T> listener ) { _genericT.Register( listener ); }
-	public void Register( Action listener ) { _generic.Register( listener ); }
 
 	public bool Unregister( IEventTrigger<T, K, L> listener ) { return _listeners.Remove( listener ); }
-	public bool Unregister( IEventTrigger<T, K> listener ) { return _genericTK.Unregister( listener ); }
-	public bool Unregister( IEventTrigger<T> listener ) { return _genericT.Unregister( listener ); }
+	public bool Unregister( IEventTrigger<T, K> listener ) { return _generic.Unregister( listener ); }
+	public bool Unregister( IEventTrigger<T> listener ) { return _generic.Unregister( listener ); }
 	public bool Unregister( IEventTrigger listener ) { return _generic.Unregister( listener ); }
-	public bool Unregister( Action<T, K, L> listener ) { return _listeners.Remove( new ActionEventCapsule<T, K, L>( listener ) ); }
-	public bool Unregister( Action<T, K> listener ) { return _genericTK.Unregister( listener ); }
-	public bool Unregister( Action<T> listener ) { return _genericT.Unregister( listener ); }
-	public bool Unregister( Action listener ) { return _generic.Unregister( listener ); }
 }
 
 public class VoidableEventTrigger : IEventTrigger

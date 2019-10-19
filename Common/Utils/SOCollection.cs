@@ -1,7 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class SOCollection<T> : ScriptableObject where T : ScriptableObject
+public interface ISOCollection
+{
+	int Count { get; }
+	ScriptableObject GetScriptableObjectAt( int index );
+}
+
+public class SOCollection<T> : ScriptableObject, ISOCollection where T : ScriptableObject
 {
     [SerializeField] List<T> _objects = new List<T>();
 
@@ -10,6 +16,8 @@ public class SOCollection<T> : ScriptableObject where T : ScriptableObject
     public int IndexOf( T element ) { return _objects.IndexOf( element ); }
 
     public IEnumerable<T> Objects { get { return _objects; } }
+
+	public ScriptableObject GetScriptableObjectAt( int index ) => _objects[index];
     
     public void RequestMember( T obj )
     {
