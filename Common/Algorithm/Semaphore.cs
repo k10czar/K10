@@ -188,10 +188,15 @@ public class Semaphore : ISemaphore
 		// return obj.ToStringOrNull();
 	}
 
+	int _toStringCount;
 	public override string ToString()
 	{
-		var elementsStrings = _semaphores.ToList().ConvertAll( ( obj ) => $"{KeyName( obj.Key )}({obj.Value.Value})" );
+		var freeStr = ( Free ? "Free" : "Blocked" );
+		if( _toStringCount > 0 ) return $"**InfinityLoopCondition_{freeStr}Semaphore({this.GetHashCode()})**";
+		_toStringCount++;
+		var elementsStrings = _semaphores.ToList().ConvertAll( ( obj ) => $"{KeyName( obj.Key.ToStringOrNull() )}({obj.Value.Value})" );
 		var elements = String.Join( ", ", elementsStrings );
-		return $"( [{( Free ? "Free" : "Blocked" )} Semaphore => {{ {elements} }}] )";
+		_toStringCount--;
+		return $"( [{freeStr} Semaphore({this.GetHashCode()}) => {{ {elements} }}] )";
 	}
 }
