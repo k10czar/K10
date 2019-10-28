@@ -2,6 +2,11 @@ using UnityEngine;
 
 public static class SerializationExtensions
 {
+	public static void Clear( this byte[] byteArray )
+	{
+		for( int i = 0; i < byteArray.Length; i++ ) byteArray[i] = 0;
+	}
+
 	public static string DebugBitMask( this byte[] byteArray, int startingBit, int bitsToRead )
 	{
 		string mask = "";
@@ -17,6 +22,15 @@ public static class SerializationExtensions
 		return mask;
 	}
 
+	public static byte ReadByteAsBits( this byte[] byteArray, ref int startingBit, byte bitsToRead ) => (byte)ReadUIntAsBits( byteArray, ref startingBit, bitsToRead );
+	public static int ReadUIntAsBits( this byte[] byteArray, ref int startingBit, byte bitsToRead )
+	{
+		var ret = ReadUIntAsBits( byteArray, startingBit, bitsToRead );
+		startingBit += bitsToRead;
+		return ret;
+	}
+
+	public static byte ReadByteAsBits( this byte[] byteArray, int startingBit, byte bitsToRead ) => (byte)ReadUIntAsBits( byteArray, startingBit, bitsToRead );
 	public static int ReadUIntAsBits( this byte[] byteArray, int startingBit, byte bitsToRead )
 	{
 		int value = 0;
@@ -32,6 +46,19 @@ public static class SerializationExtensions
 		return value;
 	}
 
+	public static void WriteByteAsBits( this byte[] byteArray, byte data, ref int startingBit, byte bitsToWrite )
+	{
+		WriteByteAsBits( byteArray, data, startingBit, bitsToWrite );
+		startingBit += bitsToWrite;
+	}
+
+	public static void WriteUIntAsBits( this byte[] byteArray, int data, ref int startingBit, byte bitsToWrite )
+	{
+		WriteUIntAsBits( byteArray, data, startingBit, bitsToWrite );
+		startingBit += bitsToWrite;
+	}
+
+	public static void WriteByteAsBits( this byte[] byteArray, byte data, int startingBit, byte bitsToWrite ) => WriteUIntAsBits( byteArray, data, startingBit, bitsToWrite );
 	public static void WriteUIntAsBits( this byte[] byteArray, int data, int startingBit, byte bitsToWrite )
 	{
 		for( int i = 0; i < bitsToWrite; i++ )
@@ -46,13 +73,56 @@ public static class SerializationExtensions
 		}
 	}
 
-	public static float ReadFloatAsFixedOnBits( this byte[] byteArray, int startingBit, byte bitsToWrite, float minRange, float maxRange )
+	public static bool ReadBit( this byte[] byteArray, ref int bitPos ) 
 	{
-		var maxValue = (float)( ( 1 << bitsToWrite ) - 1 );
-		float value = ( byteArray.ReadUIntAsBits( startingBit, bitsToWrite ) / maxValue ) * ( maxRange - minRange );
+		var ret = ReadBit( byteArray, bitPos );
+		bitPos++;
+		return ret;
+	}
+	public static bool ReadBit( this byte[] byteArray, int bitPos )
+	{		
+		var id = bitPos;
+		var arrayId = id >> 3;
+		var bitId = (byte)( id - ( arrayId << 3 ) );
+		var bit = (byte)( 1 << bitId );
+		return ( byteArray[arrayId] & bit ) != 0;
+	}
+
+	public static void WriteBit( this byte[] byteArray, bool data, ref int bitPos ) 
+	{
+		WriteBit( byteArray, data, bitPos );
+		bitPos++;
+	}
+	public static void WriteBit( this byte[] byteArray, bool data, int bitPos )
+	{
+		var id = bitPos;
+		var arrayId = id >> 3;
+		var bitId = (byte)( id - ( arrayId << 3 ) );
+		var bit = (byte)( ( 1 ) << bitId );
+		if( data ) byteArray[arrayId] |= bit;
+		else byteArray[arrayId] &= (byte)( ~bit );
+	}
+
+	public static float ReadFloatAsFixedOnBits( this byte[] byteArray, ref int startingBit, byte bitsToRead, float minRange, float maxRange )
+	{
+		var ret = ReadFloatAsFixedOnBits( byteArray, startingBit, bitsToRead, minRange, maxRange );
+		startingBit += bitsToRead;
+		return ret;
+	}
+
+	public static float ReadFloatAsFixedOnBits( this byte[] byteArray, int startingBit, byte bitsToRead, float minRange, float maxRange )
+	{
+		var maxValue = (float)( ( 1 << bitsToRead ) - 1 );
+		float value = ( byteArray.ReadUIntAsBits( startingBit, bitsToRead ) / maxValue ) * ( maxRange - minRange );
 		return minRange + value;
 	}
 
+	public static void WriteFloatAsFixedOnBits( this byte[] byteArray, float data, ref int startingBit, byte bitsToWrite, float minRange, float maxRange )
+	{
+		WriteFloatAsFixedOnBits( byteArray, data, startingBit, bitsToWrite, minRange, maxRange );
+		startingBit += bitsToWrite;
+	}
+	
 	public static void WriteFloatAsFixedOnBits( this byte[] byteArray, float data, int startingBit, byte bitsToWrite, float minRange, float maxRange )
 	{
 		var maxValue = ( 1 << bitsToWrite ) - 1;
@@ -60,6 +130,12 @@ public static class SerializationExtensions
 		byteArray.WriteUIntAsBits( value, startingBit, bitsToWrite );
 	}
 
+	public static Vector3 ReadNormalizedVector3AsBits( this byte[] byteArray, ref int startingBit, byte bitsToRead )
+	{
+		var ret = ReadNormalizedVector3AsBits( byteArray, startingBit, bitsToRead );
+		startingBit += bitsToRead;
+		return ret;
+	}
 	public static Vector3 ReadNormalizedVector3AsBits( this byte[] byteArray, int startingBit, byte bitsToRead )
 	{
 		byte lessBits = (byte)( bitsToRead >> 1 );
@@ -80,6 +156,11 @@ public static class SerializationExtensions
 
 	private static float PI_2 = 2 * Mathf.PI;
 	private static float HALF_PI = Mathf.PI / 2;
+	public static void WriteNormalizedVector3AsBits( this byte[] byteArray, Vector3 data, ref int startingBit, byte bitsPrecision )
+	{
+		WriteNormalizedVector3AsBits( byteArray, data, startingBit, bitsPrecision );
+		startingBit += bitsPrecision;
+	}
 	public static void WriteNormalizedVector3AsBits( this byte[] byteArray, Vector3 data, int startingBit, byte bitsPrecision )
 	{
 		byte lessBits = (byte)( bitsPrecision >> 1 );
