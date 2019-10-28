@@ -22,6 +22,18 @@ public static class SerializationExtensions
 		return mask;
 	}
 
+	public static void SerializeUIntAsBits( this byte[] byteArray, bool read, ref int value, ref int startingBit, byte bitsCount )
+	{
+		if( read ) value = ReadUIntAsBits( byteArray, ref startingBit, bitsCount );
+		else WriteUIntAsBits( byteArray, value, ref startingBit, bitsCount );
+	}
+
+	public static void SerializeByteAsBits( this byte[] byteArray, bool read, ref byte value, ref int startingBit, byte bitsCount )
+	{
+		if( read ) value = ReadByteAsBits( byteArray, ref startingBit, bitsCount );
+		else WriteByteAsBits( byteArray, value, ref startingBit, bitsCount );
+	}
+
 	public static byte ReadByteAsBits( this byte[] byteArray, ref int startingBit, byte bitsToRead ) => (byte)ReadUIntAsBits( byteArray, ref startingBit, bitsToRead );
 	public static int ReadUIntAsBits( this byte[] byteArray, ref int startingBit, byte bitsToRead )
 	{

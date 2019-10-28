@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 public interface ICustomTempByteSerialization
 {
-	byte[] Serialize();
+	byte[] WriteBytes();
 }
 
 public static class TempBytes

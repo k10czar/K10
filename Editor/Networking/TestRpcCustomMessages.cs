@@ -19,9 +19,9 @@ public class TestRpcCustomMessages : EditorWindow
 	private readonly List<string> _objectStrings = new List<string>();
 	private readonly List<object> _objects = new List<object>();
 
-	string _serializeMethodName = "Serialize";
+	string _serializeMethodName = "Write";
 	BindingFlags _serializeMethodFlags = BindingFlags.Public | BindingFlags.Static;
-	string _deserializeMethodName = "Deserialize";
+	string _deserializeMethodName = "Read";
 	BindingFlags _deserializeMethodFlags = BindingFlags.Public | BindingFlags.Static;
 
 	public void OnEnable()

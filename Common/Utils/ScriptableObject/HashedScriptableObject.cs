@@ -40,4 +40,6 @@ public abstract class HashedScriptableObject : ScriptableObject, IHashedSO
 		UnityEditor.EditorUtility.SetDirty( this );
 	}
 #endif
+
+	public override string ToString() => $"{name}[{HashID}]";
 }
