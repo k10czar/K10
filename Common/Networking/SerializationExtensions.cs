@@ -22,12 +22,7 @@ public static class SerializationExtensions
 		return mask;
 	}
 
-	public static byte ReadByteAsBits( this byte[] byteArray, ref int startingBit, byte bitsToRead )
-	{
-		var ret = ReadByteAsBits( byteArray, startingBit, bitsToRead );
-		startingBit += bitsToRead;
-		return ret;
-	}
+	public static byte ReadByteAsBits( this byte[] byteArray, ref int startingBit, byte bitsToRead ) => (byte)ReadUIntAsBits( byteArray, ref startingBit, bitsToRead );
 	public static int ReadUIntAsBits( this byte[] byteArray, ref int startingBit, byte bitsToRead )
 	{
 		var ret = ReadUIntAsBits( byteArray, startingBit, bitsToRead );
