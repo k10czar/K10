@@ -9,6 +9,7 @@ public class TestRpcCustomMessages : EditorWindow
 {
 	private const float FIELD_WIDTH = 150;
 	private static readonly GUILayoutOption FIELD_WIDTH_PROP = GUILayout.Width( FIELD_WIDTH );
+	private static readonly GUILayoutOption DOUBLE_FIELD_WIDTH_PROP = GUILayout.Width( 2 * FIELD_WIDTH + 5 );
 	private static readonly GUILayoutOption BITMASK_WIDTH_PROP = GUILayout.Width( 70 );
 
 
@@ -19,10 +20,11 @@ public class TestRpcCustomMessages : EditorWindow
 	private readonly List<string> _objectStrings = new List<string>();
 	private readonly List<object> _objects = new List<object>();
 
-	string _serializeMethodName = "Write";
+	string _serializeMethodName = "WriteBytes";
 	BindingFlags _serializeMethodFlags = BindingFlags.Public | BindingFlags.Static;
-	string _deserializeMethodName = "Read";
+	string _deserializeMethodName = "ReadBytes";
 	BindingFlags _deserializeMethodFlags = BindingFlags.Public | BindingFlags.Static;
+	object _instance;
 
 	public void OnEnable()
 	{
@@ -68,44 +70,62 @@ public class TestRpcCustomMessages : EditorWindow
 		K10.EditorGUIExtention.SeparationLine.Horizontal();
 		var constructors = message.GetConstructors();
 		GUILayout.Label( $"{constructors.Length} Constructor(s)", K10GuiStyles.basicCenterStyle );
-		_selectedConstructor = EditorGUILayout.Popup( _selectedConstructor, constructors.ToList().ConvertAll<string>( ( c ) => DebugConstructor( c ) ).ToArray() );
-		var contructor = constructors[_selectedConstructor];
 
-		var parameters = contructor.GetParameters();
-		while( _objects.Count > parameters.Length ) _objects.RemoveAt( _objects.Count - 1 );
-		while( _objectStrings.Count > parameters.Length ) _objectStrings.RemoveAt( _objectStrings.Count - 1 );
+		var names = new List<string> { "None" };
+		names.AddRange( constructors.ToList().ConvertAll<string>( ( c ) => DebugConstructor( c ) ) );
+		_selectedConstructor = EditorGUILayout.Popup( _selectedConstructor + 1, names.ToArray() );
+		_selectedConstructor--;
 
-		for( int i = 0; i < parameters.Length; i++ )
+		bool hasConstructor = _selectedConstructor >= 0 && _selectedConstructor < constructors.Length;
+		if( hasConstructor )
 		{
-			var p = parameters[i];
-			EditorGUILayout.BeginHorizontal();
-			if( _objectStrings.Count <= i ) _objectStrings.Add( GetDefault( p.ParameterType ).ToString() );
-			var converter = System.ComponentModel.TypeDescriptor.GetConverter( p.ParameterType );
-			var color = Color.white;
-			try { _objects[i] = converter.ConvertFrom( _objectStrings[i] ); }
-			catch { color = Color.red; }
-			GuiColorManager.New( color );
-			if( _objects.Count <= i ) _objects.Add( null );
-			_objectStrings[i] = GUILayout.TextField( _objectStrings[i], FIELD_WIDTH_PROP );
-			EditorGUI.BeginDisabledGroup( true );
-			GUILayout.TextField( _objects[i].ToStringOrNull(), FIELD_WIDTH_PROP );
-			EditorGUI.EndDisabledGroup();
-			GUILayout.Label( p.ToStringOrNull() );
-			GuiColorManager.Revert();
-			try { _objects[i] = converter.ConvertFrom( _objectStrings[i] ); }
-			catch { _objects[i] = GetDefault( p.ParameterType ); }
-			EditorGUILayout.EndHorizontal();
-		}
-		K10.EditorGUIExtention.SeparationLine.Horizontal();
+			var contructor = constructors[_selectedConstructor];
 
-		var instance = contructor.Invoke( _objects.ToArray() );
-		DrawInstanceInspector( "Constructed Instance", instance, message );
+			var parameters = contructor.GetParameters();
+			while( _objects.Count > parameters.Length ) _objects.RemoveAt( _objects.Count - 1 );
+			while( _objectStrings.Count > parameters.Length ) _objectStrings.RemoveAt( _objectStrings.Count - 1 );
+
+			bool isDirty = false;
+
+			for( int i = 0; i < parameters.Length; i++ )
+			{
+				var p = parameters[i];
+				if( _objects.Count <= i )
+				{
+					_objects.Add( GetDefault( p.ParameterType ) );
+					isDirty = true;
+				}
+				if( _objects[i] == null || _objects[i].GetType() != p.ParameterType )
+				{
+					var defVal = GetDefault( p.ParameterType );
+					if( _objects[i] != defVal )
+					{
+						_objects[i] = defVal;
+						isDirty = true;
+					}
+				}
+				var obj = Field( _objects[i], p.ParameterType, p.ToStringOrNull(), true );
+				if( obj != _objects[i] )
+				{
+					_objects[i] = obj;
+					isDirty = true;
+				}
+			}
+			K10.EditorGUIExtention.SeparationLine.Horizontal();
+			if( isDirty ) _instance = contructor.Invoke( _objects.ToArray() );
+			DrawInstanceInspector( "Constructed Instance", _instance, message, false );
+		}
+		else
+		{
+			if( _instance == null || _instance.GetType() != message ) _instance = GetDefault( message );
+			DrawInstanceInspector( "Constructed Instance", _instance, message, true );
+		}
 
 		K10.EditorGUIExtention.SeparationLine.Horizontal();
 		var serializationReturn = TempBytes.Get( 0 );
 		var failToSerialize = false;
 
-		try { serializationReturn = serializeMethod.Invoke( instance, new object[] { instance } ) as byte[]; }
+		try { serializationReturn = serializeMethod.Invoke( _instance, new object[] { _instance } ) as byte[]; }
 		catch( System.Exception ) { failToSerialize = true; }
 
 		var bytes = serializationReturn.Length;
@@ -122,7 +142,7 @@ public class TestRpcCustomMessages : EditorWindow
 
 		if( !failToSerialize )
 		{
-			var deserailizationReturn = deserializeMethod.Invoke( instance, new object[] { serializationReturn } );
+			var deserailizationReturn = deserializeMethod.Invoke( _instance, new object[] { serializationReturn } );
 			K10.EditorGUIExtention.SeparationLine.Horizontal();
 			DrawInstanceInspector( "Deserializated Instance", deserailizationReturn, message );
 		}
@@ -130,32 +150,51 @@ public class TestRpcCustomMessages : EditorWindow
 		K10.EditorGUIExtention.SeparationLine.Horizontal();
 	}
 
-	private static void DrawInstanceInspector( string name, System.Object obj, System.Type type )
+	static object Field( object obj, System.Type type, string name, bool canEdit = false )
 	{
-		GUILayout.Label( $"{name}: {obj.ToStringOrNull()}", K10GuiStyles.basicCenterStyle );
+		EditorGUILayout.BeginHorizontal();
+		if( canEdit )
+		{
+			var converter = System.ComponentModel.TypeDescriptor.GetConverter( type );
+			var retStr = GUILayout.TextField( obj.ToStringOrNull(), FIELD_WIDTH_PROP );
+			EditorGUI.EndDisabledGroup();
+			try { obj = converter.ConvertFrom( retStr ); }
+			catch { obj = GetDefault( type ); }
+			EditorGUI.BeginDisabledGroup( true );
+			GUILayout.TextField( obj.ToStringOrNull(), FIELD_WIDTH_PROP );
+			EditorGUI.EndDisabledGroup();
+		}
+		else 
+		{
+			EditorGUI.BeginDisabledGroup( true );
+			GUILayout.TextField( obj.ToStringOrNull(), DOUBLE_FIELD_WIDTH_PROP );
+			EditorGUI.EndDisabledGroup();
+		}
+		GUILayout.Label( name );
+		EditorGUILayout.EndHorizontal();
+		return obj;
+	}
+
+	private static void DrawInstanceInspector( string name, System.Object instance, System.Type type, bool canEdit = false )
+	{
+		GUILayout.Label( $"{name}: {instance.ToStringOrNull()}", K10GuiStyles.basicCenterStyle );
 
 		var fields = type.GetFields();
+		if( fields.Length > 0 ) GUILayout.Label( "fields", K10GuiStyles.smallStyle );
 		for( int i = 0; i < fields.Length; i++ )
 		{
 			var field = fields[i];
-			EditorGUILayout.BeginHorizontal();
-			EditorGUI.BeginDisabledGroup( true );
-			GUILayout.TextField( field.GetValue( obj ).ToStringOrNull(), FIELD_WIDTH_PROP );
-			EditorGUI.EndDisabledGroup();
-			GUILayout.Label( field.ToStringOrNull() );
-			EditorGUILayout.EndHorizontal();
+			var obj = field.GetValue( instance );
+			var ret = Field( obj, field.FieldType, field.ToStringOrNull(), canEdit );
+			if( canEdit && obj != ret ) field.SetValue( instance, ret );
 		}
 
 		var properties = type.GetProperties();
+		if( properties.Length > 0 ) GUILayout.Label( "properties", K10GuiStyles.smallStyle );
 		for( int i = 0; i < properties.Length; i++ )
 		{
 			var prop = properties[i];
-			EditorGUILayout.BeginHorizontal();
-			EditorGUI.BeginDisabledGroup( true );
-			GUILayout.TextField( prop.GetValue( obj ).ToStringOrNull(), FIELD_WIDTH_PROP );
-			EditorGUI.EndDisabledGroup();
-			GUILayout.Label( prop.ToStringOrNull() );
-			EditorGUILayout.EndHorizontal();
+			Field( prop.GetValue( instance ), prop.PropertyType, prop.ToStringOrNull(), false );
 		}
 	}
 
@@ -184,10 +223,11 @@ public class TestRpcCustomMessages : EditorWindow
 	private static MethodInfo FindMethod( string methodDisplayName, System.Type message, ref string name, ref BindingFlags flags )
 	{
 		EditorGUILayout.BeginHorizontal();
+		GUILayout.Label( $"{methodDisplayName}:" );
 		name = GUILayout.TextField( name );
 		flags = (BindingFlags)EditorGUILayout.EnumFlagsField( flags );
 		var method = message.GetMethod( name, flags );
-		GUILayout.Label( $"{methodDisplayName}: {DebugMethod( method )})" );
+		GUILayout.Label( DebugMethod( method ) );
 		EditorGUILayout.EndHorizontal();
 		return method;
 	}
