@@ -178,7 +178,7 @@ public class TestCustomSerializedMessages : EditorWindow
 	private static void DrawInstanceInspector( string name, System.Object instance, System.Type type, bool canEdit = false )
 	{
 		try { GUILayout.Label( $"{name}: {instance.ToStringOrNull()}", K10GuiStyles.basicCenterStyle ); }
-		catch (System.Exception) { GUILayout.Label( $"{name}: ToString ERROR", K10GuiStyles.basicCenterStyle ); }
+		catch( System.Exception ex ) { GUILayout.Label( $"{name}: ToString ERROR({ex.GetType()})", K10GuiStyles.basicCenterStyle ); }
 
 		var fields = type.GetFields();
 		if( fields.Length > 0 ) GUILayout.Label( "fields", K10GuiStyles.smallStyle );
@@ -186,7 +186,7 @@ public class TestCustomSerializedMessages : EditorWindow
 		{
 			var field = fields[i];
 			object obj = "ERROR";
-			try { obj = field.GetValue( instance ); } catch { }
+			try { obj = field.GetValue( instance ); } catch( System.Exception ex ) { obj = $"ERROR({ex.GetType()})"; }
 			var ret = Field( obj, field.FieldType, field.ToStringOrNull(), canEdit );
 			if( canEdit && obj != ret ) field.SetValue( instance, ret );
 		}
@@ -197,7 +197,7 @@ public class TestCustomSerializedMessages : EditorWindow
 		{
 			var prop = properties[i];
 			object obj = "ERROR";
-			try { obj = prop.GetValue( instance ); } catch { }
+			try { obj = prop.GetValue( instance ); } catch( System.Exception ex ) { obj = $"ERROR({ex.GetType()})"; }
 			Field( obj, prop.PropertyType, prop.ToStringOrNull(), false );
 		}
 	}
