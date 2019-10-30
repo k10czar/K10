@@ -1,11 +1,11 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-public class TestRpcCustomMessages : EditorWindow
+public class TestCustomSerializedMessages : EditorWindow
 {
 	private const float FIELD_WIDTH = 150;
 	private static readonly GUILayoutOption FIELD_WIDTH_PROP = GUILayout.Width( FIELD_WIDTH );
@@ -26,6 +26,12 @@ public class TestRpcCustomMessages : EditorWindow
 	BindingFlags _deserializeMethodFlags = BindingFlags.Public | BindingFlags.Static;
 	object _instance;
 
+	[MenuItem( "K10/Test Serialized Messages" )]
+	private static void Init()
+	{
+		GetWindow<TestCustomSerializedMessages>( "Test RPC Custom Messages" );
+	}
+
 	public void OnEnable()
 	{
 		_messageTypes = GetAllSubTypesInScripts();
@@ -36,12 +42,6 @@ public class TestRpcCustomMessages : EditorWindow
 		}
 	}
 
-	[MenuItem( "Relic/Test RPC Custom Messages" )]
-	private static void Init()
-	{
-		GetWindow<TestRpcCustomMessages>( "Test RPC Custom Messages" );
-	}
-
 	public static System.Type[] GetAllSubTypesInScripts()
 	{
 		var result = new System.Collections.Generic.List<System.Type>();
@@ -50,7 +50,7 @@ public class TestRpcCustomMessages : EditorWindow
 		{
 			if( !A.FullName.StartsWith( "Assembly-" ) ) continue;
 			System.Type[] types = A.GetTypes();
-			foreach( var T in types ) if( T.IsDefined( typeof( RpcMessage ), true ) ) result.Add( T );
+			foreach( var T in types ) if( T.IsDefined( typeof( CustomSerializedMessage ), true ) ) result.Add( T );
 		}
 		return result.ToArray();
 	}
@@ -113,13 +113,13 @@ public class TestRpcCustomMessages : EditorWindow
 			}
 			K10.EditorGUIExtention.SeparationLine.Horizontal();
 			if( isDirty ) _instance = contructor.Invoke( _objects.ToArray() );
-			DrawInstanceInspector( "Constructed Instance", _instance, message, false );
 		}
 		else
 		{
 			if( _instance == null || _instance.GetType() != message ) _instance = GetDefault( message );
-			DrawInstanceInspector( "Constructed Instance", _instance, message, true );
 		}
+
+		DrawInstanceInspector( "Constructed Instance", _instance, message, !hasConstructor );
 
 		K10.EditorGUIExtention.SeparationLine.Horizontal();
 		var serializationReturn = TempBytes.Get( 0 );
