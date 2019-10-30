@@ -9,6 +9,7 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IHashedSOC
 	public override int Count => _list.Count;
 
 	public T GetElement( int hashId ) => this[hashId];
+	public T GetElementOrDefault( int hashId ) { if( hashId >= 0 && hashId < _list.Count ) return this[hashId]; return default( T ); }
 
 	public override System.Type GetElementType() => typeof( T );
 	public override IHashedSO GetElementBase( int hashId ) => this[hashId];

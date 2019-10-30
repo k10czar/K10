@@ -177,14 +177,16 @@ public class TestCustomSerializedMessages : EditorWindow
 
 	private static void DrawInstanceInspector( string name, System.Object instance, System.Type type, bool canEdit = false )
 	{
-		GUILayout.Label( $"{name}: {instance.ToStringOrNull()}", K10GuiStyles.basicCenterStyle );
+		try { GUILayout.Label( $"{name}: {instance.ToStringOrNull()}", K10GuiStyles.basicCenterStyle ); }
+		catch (System.Exception) { GUILayout.Label( $"{name}: ToString ERROR", K10GuiStyles.basicCenterStyle ); }
 
 		var fields = type.GetFields();
 		if( fields.Length > 0 ) GUILayout.Label( "fields", K10GuiStyles.smallStyle );
 		for( int i = 0; i < fields.Length; i++ )
 		{
 			var field = fields[i];
-			var obj = field.GetValue( instance );
+			object obj = "ERROR";
+			try { obj = field.GetValue( instance ); } catch { }
 			var ret = Field( obj, field.FieldType, field.ToStringOrNull(), canEdit );
 			if( canEdit && obj != ret ) field.SetValue( instance, ret );
 		}
@@ -194,7 +196,9 @@ public class TestCustomSerializedMessages : EditorWindow
 		for( int i = 0; i < properties.Length; i++ )
 		{
 			var prop = properties[i];
-			Field( prop.GetValue( instance ), prop.PropertyType, prop.ToStringOrNull(), false );
+			object obj = "ERROR";
+			try { obj = prop.GetValue( instance ); } catch { }
+			Field( obj, prop.PropertyType, prop.ToStringOrNull(), false );
 		}
 	}
 
