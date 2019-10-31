@@ -66,7 +66,7 @@ public interface ISemaphore : ISemaphoreInfo, ISemaphoreInterection { }
 
 public class Semaphore : ISemaphore
 {
-	public class SemaphoreObject { public int Value { get; set; } }
+	public class SemaphoreObject { public int Value { get; set; } public override string ToString() => Value.ToString(); }
 
 	private readonly Dictionary<object, SemaphoreObject> _semaphores = new Dictionary<object, SemaphoreObject>();
 	public bool Free { get { return _semaphores.Count == 0; } }
