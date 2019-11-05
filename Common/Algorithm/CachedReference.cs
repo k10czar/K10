@@ -7,6 +7,7 @@ public interface IReferenceHolder<T>
 	T CurrentReference { get; }
 	IEventRegister<T> OnReferenceSet { get; }
 	IEventRegister<T> OnReferenceRemove { get; }
+	IEventValidator Validator{ get; }
 	bool IsNull { get; }
 }
 
@@ -46,7 +47,10 @@ public class CachedReference<T> : ICachedReference<T>
 	public IEventRegister<T> OnReferenceRemove => _onReferenceRemove;
 
 	public bool IsNull => _current == null;
-	
+
+	private readonly ConditionalEventsCollection _validator = new ConditionalEventsCollection();
+	public IEventValidator Validator => _validator;
+
 	public void Clear() { ChangeReference( default(T) ); }
 
 	public void ChangeReference( T newReference )
@@ -54,9 +58,9 @@ public class CachedReference<T> : ICachedReference<T>
 		var old = _current;
 		if( Algorithm.SafeEquals( old, newReference ) ) return;
 
-		_current = newReference;
-
 		_onReferenceRemove.Trigger( old );
+		_validator.Void();
+		_current = newReference;
 		_onReferenceSet.Trigger( newReference );
 	}
 

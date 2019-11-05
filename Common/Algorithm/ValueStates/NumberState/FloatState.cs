@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class FloatState : IValueState<float>
+public class FloatState : INumericValueState<float>
 {
 	[SerializeField] float _value;
 	[System.NonSerialized] EventSlot<float> _onChange = new EventSlot<float>();
@@ -16,11 +16,10 @@ public class FloatState : IValueState<float>
 		_onChange.Trigger( value );
 	}
 
-	public void Sum( float value )
+	public void Increment( float increment )
 	{
-		if( Mathf.Approximately( 0, value ) ) return;
-		_value += value;
-		_onChange.Trigger( _value );
+		if( Mathf.Approximately( 0, increment ) ) return;
+		Setter( _value + increment );
 	}
 
 	public IEventRegister<float> OnChange { get { return _onChange; } }

@@ -1,7 +1,7 @@
 using UnityEngine;
 using static UnityEngine.Mathf;
 
-public interface IRangedFloatState : IValueState<float>
+public interface IRangedFloatState : INumericValueState<float>
 {
 	IValueState<float> Min { get; }
 	IValueState<float> Max { get; }
@@ -31,6 +31,12 @@ public class RangedFloatState : IRangedFloatState, IRangedFloatStateObserver
 		_value.Setter( val );
 	}
 
+	public void Increment( float increment = 1 )
+	{
+		if( Mathf.Approximately( increment, 0 ) ) return;
+		Setter( _value.Value + increment );
+	}
+
 	void CheckValueRange() { Setter( _value.Value ); }
 
 	public IValueState<float> Min => _min;
@@ -39,6 +45,7 @@ public class RangedFloatState : IRangedFloatState, IRangedFloatStateObserver
 	IValueStateObserver<float> IRangedFloatStateObserver.Min => _min;
 	IValueStateObserver<float> IRangedFloatStateObserver.Max => _max;
 
+	public RangedFloatState( float maxValue ) : this( 0, 0, maxValue ) { }
 	public RangedFloatState( float initialValue, float maxValue ) : this( initialValue, 0, maxValue ) { }
 	public RangedFloatState( float initialValue, float minValue, float maxValue )
 	{

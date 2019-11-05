@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class LongState : IValueState<long>
+public class LongState : INumericValueState<long>
 {
     [SerializeField] long _value;
     [System.NonSerialized] EventSlot<long> _onChange = new EventSlot<long>();
@@ -21,7 +21,8 @@ public class LongState : IValueState<long>
 
     public void Increment( long value = 1 )
     {
-        Setter( _value + value );
+		if( value == 0 ) return;
+		Setter( _value + value );
     }
 
     public IEventRegister<long> OnChange { get { if(_onChange == null) _onChange = new EventSlot<long>(); return _onChange; } }

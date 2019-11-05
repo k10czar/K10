@@ -1,5 +1,11 @@
 using UnityEngine;
 
+public interface INumericValueState<T> : IValueState<T>, INumericValueStateSetter<T> where T : struct { }
+
+public interface INumericValueStateSetter<T> : IValueStateSetter<T> where T : struct
+{
+	void Increment( T t );
+}
 
 public interface IValueState<T> : IValueStateObserver<T>, IValueStateSetter<T> where T : struct { }
 

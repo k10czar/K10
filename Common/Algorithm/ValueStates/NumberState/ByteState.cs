@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class ByteState : IValueState<byte>
+public class ByteState : INumericValueState<byte>
 {
     [SerializeField] byte _value;
     [System.NonSerialized] EventSlot<byte> _onChange = new EventSlot<byte>();
@@ -14,7 +14,13 @@ public class ByteState : IValueState<byte>
         if( _value == value ) return;
         _value = value;
         _onChange.Trigger( value );
-    }
+	}
+
+	public void Increment( byte value )
+	{
+		if( value == 0 ) return;
+		Setter( (byte)(_value + value) );
+	}
 
     public IEventRegister<byte> OnChange { get { return _onChange; } }
 

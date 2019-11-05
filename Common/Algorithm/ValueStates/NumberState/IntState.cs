@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class IntState : IValueState<int>
+public class IntState : INumericValueState<int>
 {
     [SerializeField] int _value;
     [System.NonSerialized] EventSlot<int> _onChange = new EventSlot<int>();
@@ -14,9 +14,13 @@ public class IntState : IValueState<int>
         if( _value == value ) return;
         _value = value;
         _onChange.Trigger( value );
-    }
+	}
 
-    public void Increment( int value = 1 ) { Setter( _value + value ); }
+	public void Increment( int value = 1 )
+	{
+		if( value == 0 ) return;
+		Setter( _value + value );
+	}
 
     public IEventRegister<int> OnChange { get { return _onChange; } }
 
