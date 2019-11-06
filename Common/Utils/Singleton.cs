@@ -8,7 +8,7 @@ public class OnlyOnPlaymodeObject : MonoBehaviour
 {
 	void Start()
 	{
-		if( Application.isEditor )
+		if( Application.isEditor && !Application.isPlaying )
 		{
 			GameObject.DestroyImmediate( gameObject );
 		}
