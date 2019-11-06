@@ -10,7 +10,7 @@ public class OnlyOnPlaymodeObject : MonoBehaviour
 	{
 		if( Application.isEditor )
 		{
-			GameObject.DestroyImmediate( this );
+			GameObject.DestroyImmediate( gameObject );
 		}
 	}
 }
