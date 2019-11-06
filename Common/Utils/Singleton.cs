@@ -2,6 +2,20 @@ using UnityEngine;
 using System.Collections;
 using System;
 
+#if UNITY_EDITOR
+[ExecuteInEditMode]
+public class OnlyOnPlaymodeObject : MonoBehaviour
+{
+	void Start()
+	{
+		if( Application.isEditor )
+		{
+			GameObject.DestroyImmediate( this );
+		}
+	}
+}
+#endif
+
 public abstract class Singleton<T> where T : UnityEngine.Object
 {
 	private static T _instance;
@@ -92,6 +106,9 @@ public abstract class Guaranteed<T> where T : UnityEngine.Component
 			{
 				GameObject obj = new GameObject( string.Format( "_GS_{0}", ( typeof( T ) ).ToString() ) );
 				_instance = obj.AddComponent<T>();
+				#if UNITY_EDITOR
+				obj.AddComponent<OnlyOnPlaymodeObject>();
+				#endif
 			}
 		}
 
