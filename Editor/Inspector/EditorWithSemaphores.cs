@@ -9,6 +9,6 @@ public class EditorWithSemaphores<T> : UnityEditor.Editor where T : Component
 	{
 		K10EditorGUIUtils.DrawReactiveProperties<T>( target );
 		DrawDefaultInspector();
-		EditorUtility.SetDirty( target );
+		// EditorUtility.SetDirty( target );
 	}
 }
