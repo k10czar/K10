@@ -193,6 +193,13 @@ public static class K10UnityExtentions
 		if( go != null && t == null ) t = go.AddComponent<T>();
 	}
 
+	public static T RequestSibling<T>( this GameObject go ) where T : Component
+	{
+		var find = go.GetComponent<T>();
+		if( find != null ) return find;
+		return go.AddComponent<T>();
+	}
+
 	public static void FindAncestry( this Component c, ref GameObject go, string name )
 	{
 		if( c == null || go != null ) return;
