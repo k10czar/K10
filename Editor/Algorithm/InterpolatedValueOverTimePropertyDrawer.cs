@@ -17,11 +17,14 @@ public class InterpolatedValueOverTimePropertyDrawer : PropertyDrawer
 		area = area.CutLeft( lw );
 
 		K10.EditorGUIExtention.IdentLevelManager.New( 0 );
-		EditorGUI.PropertyField( area.VerticalSlice( 0, 6, 2 ), value, GUIContent.none );
-		EditorGUI.PropertyField( area.VerticalSlice( 2, 6 ), seconds, GUIContent.none );
-		EditorGUI.PropertyField( area.VerticalSlice( 3, 6, 3 ), inpterpolation, GUIContent.none );
-		GUI.Label( area.VerticalSlice( 2, 6 ), "seconds", K10GuiStyles.unitStyle );
-		GUI.Label( area.VerticalSlice( 3, 6, 3 ), "inpterpolation", K10GuiStyles.unitStyle );
+		var valueRect = area.VerticalSlice( 0, 9, 3 );
+		var secondsRect = area.VerticalSlice( 3, 9, 2 );
+		var inpterpolationRect = area.VerticalSlice( 5, 9, 4 );
+		EditorGUI.PropertyField( valueRect, value, GUIContent.none );
+		EditorGUI.PropertyField( secondsRect, seconds, GUIContent.none );
+		GUI.Label( secondsRect, "seconds", K10GuiStyles.unitStyle );
+		EditorGUI.PropertyField( inpterpolationRect, inpterpolation, GUIContent.none );
+		GUI.Label( inpterpolationRect, "inpterpolation", K10GuiStyles.unitStyle );
 		K10.EditorGUIExtention.IdentLevelManager.Revert();
 	}
 
