@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 public class PoliModifiedValue
 {
@@ -53,10 +54,12 @@ public class PoliModifiedValue
 		Add( mod, time );
 	}
 
-	public void Add( float value, float time = 0 )
+	public void Add( IInterpolatedValueOverTime value ) { Add( value.Value, value.Seconds, value.Interpolation ); }
+
+	public void Add( float value, float seconds = 0, IInterpolationFunction interpolation = null )
 	{
 		if( Mathf.Approximately( value, 0 ) ) return;
-		if( Mathf.Approximately( time, 0 ) || time < 0 ) _modifiedValue.Increment( value );
-		else { _overTimeModifiers.Add( ObjectPool<InterpolatedOverTimeModifier>.Request().Reseted( value, time, _interpolation, _lastTime - Time.time ) ); }
+		if( Mathf.Approximately( seconds, 0 ) || seconds < 0 ) _modifiedValue.Increment( value );
+		else { _overTimeModifiers.Add( ObjectPool<InterpolatedOverTimeModifier>.Request().Reseted( value, seconds, interpolation ?? _interpolation, _lastTime - Time.time ) ); }
 	}
 }
