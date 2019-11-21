@@ -8,7 +8,8 @@ public interface IHashedSOCollectionEditor
 {
 	void EditorTryOptimize();
 	void EditorCheckConsistency();
-	bool EditorRequestMember( Object t );
+	bool TryResolveConflict( int i );
+	bool EditorRequestMember( Object t, bool forceCorrectPosition = false );
 	bool EditorCanChangeIDsToOptimizeSpace { get; }
 }
 #endif
@@ -42,50 +43,63 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		{
 			var path = AssetDatabase.GUIDToAssetPath( guids[i] );
 			var asset = AssetDatabase.LoadAssetAtPath( path, GetElementType() );
-			( (IHashedSOCollectionEditor)this ).EditorRequestMember( asset );
+			( (IHashedSOCollectionEditor)this ).EditorRequestMember( asset, true );
+		}
+		for( int i = 0; i < guids.Length; i++ )
+		{
+			var path = AssetDatabase.GUIDToAssetPath( guids[i] );
+			var asset = AssetDatabase.LoadAssetAtPath( path, GetElementType() );
+			( (IHashedSOCollectionEditor)this ).EditorRequestMember( asset, true );
 		}
 	}
 	
-	bool IHashedSOCollectionEditor.EditorRequestMember( Object obj )
+	bool IHashedSOCollectionEditor.EditorRequestMember( Object obj, bool forceCorrectPosition = false )
 	{
 		var t = obj as IHashedSO;
 		if( t == null ) return false;
 
-		if( Contains( t ) ) return false;
-		else
+		if( Contains( t ) )
 		{
-			int hashID = t.HashID;
-			if( hashID < 0 || hashID >= Count || GetElementBase( hashID ) != t )
-			{
-				var assetPath = AssetDatabase.GetAssetPath( (Object)t );
-				var assetGuid = UnityEditor.AssetDatabase.AssetPathToGUID( assetPath );
-				bool isDuplicateFromOtherFile = t.GUID != assetGuid;
-
-				if( !isDuplicateFromOtherFile )
-				{
-					if( !ResolveConflictedFile( t, assetPath ) ) return false;
-				}
-			}
-
-			AddElement( t );
-			( (IHashedSOEditor)t ).SetHashID( Count - 1 );
-
-			EditorUtility.SetDirty( (Object)t );
-			EditorUtility.SetDirty( this );
+			var element = GetElementBase( t.HashID );
+			if( element != t || forceCorrectPosition ) SetRealPosition( t );
+			return false;
 		}
+
+		int hashID = t.HashID;
+		if( hashID < 0 || hashID >= Count || GetElementBase( hashID ) != t )
+		{
+			var assetPath = AssetDatabase.GetAssetPath( (Object)t );
+			var assetGuid = UnityEditor.AssetDatabase.AssetPathToGUID( assetPath );
+			bool isDuplicateFromOtherFile = t.GUID != assetGuid;
+
+			if( !isDuplicateFromOtherFile )
+			{
+				if( !ResolveConflictedFile( t, assetPath ) ) return false;
+			}
+		}
+
+		AddElement( t );
+		( (IHashedSOEditor)t ).SetHashID( Count - 1 );
+
+		EditorUtility.SetDirty( (Object)t );
+		EditorUtility.SetDirty( this );
+
 		return true;
 	}
-
+	
 	void IHashedSOCollectionEditor.EditorTryOptimize()
 	{
 		if( !( (IHashedSOCollectionEditor)this ).EditorCanChangeIDsToOptimizeSpace ) return;
 
 		Clear();
-		((IHashedSOCollectionEditor )this).EditorCheckConsistency();
+		( (IHashedSOCollectionEditor)this ).EditorCheckConsistency();
 	}
+
 	public abstract bool EditorCanChangeIDsToOptimizeSpace { get; }
 	protected abstract void Clear();
 	protected abstract bool AddElement( IHashedSO obj );
 	protected abstract bool ResolveConflictedFile( IHashedSO t, string assetPath );
+	public abstract bool TryResolveConflict( int i );
+	protected abstract bool SetRealPosition( IHashedSO obj );
 #endif
 }

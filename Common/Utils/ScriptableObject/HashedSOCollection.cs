@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IHashedSOCollection where T : HashedScriptableObject
+public abstract class HashedSOCollection<T> : BaseHashedSOCollection where T : HashedScriptableObject
 {
 	[SerializeField] List<T> _list = new List<T>();
 
@@ -22,5 +22,27 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IHashedSOC
 	public override bool EditorCanChangeIDsToOptimizeSpace => true;
 	protected override bool AddElement( IHashedSO obj ) { if( obj is T t ) _list.Add( t ); return ( obj is T ); }
 	protected override bool ResolveConflictedFile( IHashedSO t, string assetPath ) => true;
+	public override bool TryResolveConflict( int i )
+	{
+		if( i >= Count ) return false;
+		var element = _list[i];
+		var realId = element.HashID;
+		if( realId == i ) return false;
+		if( _list[realId] != null ) return false;
+		_list[realId] = element;
+		_list[i] = null;
+		UnityEditor.EditorUtility.SetDirty( this );
+		return true;
+	}
+	protected override bool SetRealPosition( IHashedSO obj )
+	{
+		var t = obj as T;
+		if( t == null ) return false;
+		var id = obj.HashID;
+		while( _list.Count <= id ) _list.Add( null );
+		_list[id] = t;
+		UnityEditor.EditorUtility.SetDirty( this );
+		return true;
+	}
 #endif
 }
