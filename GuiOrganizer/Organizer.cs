@@ -13,8 +13,8 @@ public class Organizer : MonoBehaviour
     [SerializeField] bool _countInactive = false;
     [SerializeField] SpriteAlignment _align = SpriteAlignment.Center;
     [SerializeField] float _margin;
-    [SerializeField] float _minimunSpacing = float.MinValue;
-    [SerializeField] float _maximunSpacing = float.MaxValue;
+    [SerializeField,UnityEngine.Serialization.FormerlySerializedAs("_minimunSpacing")] float _minimumSpacing = float.MinValue;
+    [SerializeField, UnityEngine.Serialization.FormerlySerializedAs( "_maximunSpacing" )] float _maximumSpacing = float.MaxValue;
     [SerializeField] List<RectTransform> _ignoreList = new List<RectTransform>();
     float _totalWidth, _totalHeight;
 
@@ -94,8 +94,8 @@ public class Organizer : MonoBehaviour
 			float ddx = restX / spacingCount;
 			float ddy = restY / spacingCount;
 
-	        dx = Mathf.Clamp( ddx, _minimunSpacing, _maximunSpacing );
-	        dy = Mathf.Clamp( ddy, _minimunSpacing, _maximunSpacing );
+	        dx = Mathf.Clamp( ddx, _minimumSpacing, _maximumSpacing );
+	        dy = Mathf.Clamp( ddy, _minimumSpacing, _maximumSpacing );
 
 	        restX = ( ddx - dx ) * spacingCount;
 	        restY = ( ddy - dy ) * spacingCount;
