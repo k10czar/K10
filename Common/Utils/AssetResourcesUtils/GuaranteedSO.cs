@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class GuaranteedSO<T> where T : ScriptableObject
+public class GuaranteedSO<T> where T : ScriptableObject, new()
 {
 	private T _reference;
 	readonly string _path;
@@ -21,6 +21,7 @@ public class GuaranteedSO<T> where T : ScriptableObject
 #if UNITY_EDITOR
 		if( field == null && !Application.isPlaying ) field = RequestResource( collectionName );
 #endif
+		if( field == null ) field = new T();
 		return field;
 	}
 
