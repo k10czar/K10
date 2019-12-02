@@ -1,7 +1,7 @@
 using UnityEngine;
 
 
-public static class RayExtention
+public static class RayExtensions
 {
 	public static Vector3 GetWithY( this Ray ray, float y )
 	{

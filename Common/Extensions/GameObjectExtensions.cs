@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public static class GameObjectExtentions
+public static class GameObjectExtensions
 {
 	public interface IUnityEventsRelay
 	{

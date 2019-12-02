@@ -29,27 +29,10 @@ namespace K10
 
 		public static void GetProjectedRadiusSizes( Camera cam, Vector3 worldPos, float radius, out float right, out float up, out float left, out float down )
 		{
-			// var camForward = cam.transform.forward;
-            // var camUp = cam.transform.up;
-            // var camRight = cam.transform.right;
-
-			// var cwUp = Vector3.Cross( camForward, camUp ) * radius;
-			// var cwDown = Vector3.Cross( camForward, -camUp ) * radius;
-			// var cwRight = Vector3.Cross( camForward, camRight ) * radius;
-			// var cwLeft = Vector3.Cross( camForward, -camRight ) * radius;
-
             var cwUp = Vector3.Cross( cam.transform.forward, cam.transform.up ) * radius;
             var cwDown = Vector3.Cross( cam.transform.forward, -cam.transform.up ) * radius;
             var cwRight = Vector3.Cross( cam.transform.forward, cam.transform.right ) * radius;
             var cwLeft = Vector3.Cross( cam.transform.forward, -cam.transform.right ) * radius;
-
-			// Debug.Log( "Mags: " + Vector3.Cross( cam.transform.forward, cam.transform.up ).magnitude + " "
-            //                     + Vector3.Cross( cam.transform.forward, -cam.transform.up ).magnitude + " "
-            //                     + Vector3.Cross( cam.transform.forward, cam.transform.right ).magnitude + " "
-            //                     + Vector3.Cross( cam.transform.forward, -cam.transform.right ).magnitude + " " );
-
-			// var wtsp = cam.worldToCameraMatrix;
-            // Matrix4x4 mat = cam.projectionMatrix * cam.worldToCameraMatrix;
 
 			Vector2 center = cam.WorldToScreenPoint( worldPos );
 
@@ -57,13 +40,6 @@ namespace K10
 			Vector2 cDown = cam.WorldToScreenPoint( worldPos + cwDown );
 			Vector2 cRight = cam.WorldToScreenPoint( worldPos + cwRight );
 			Vector2 cLeft = cam.WorldToScreenPoint( worldPos + cwLeft );
-
-			// var scl = new Vector2( 1f / Screen.width, 1f / Screen.height );
-            // Debug.Log( "Center: " + center + " => " + ( wtsp * worldPos ) + " => " + Vector2.Scale( center, scl ) + " => " + Test( cam, mat, worldPos )
-            //         	+ "\ncUp: " + cUp + " => " + ( wtsp * ( worldPos + cwUp ) ) + " => " + Vector2.Scale( cUp, scl ) + " => " + Test( cam, mat, ( worldPos + cwUp ) )
-            //         	+ "\ncDown: " + cDown + " => " + ( wtsp * ( worldPos + cwDown ) ) + " => " + Vector2.Scale( cDown, scl ) + " => " + Test( cam, mat, ( worldPos + cwDown ) )
-            //         	+ "\ncRight: " + cRight + " => " + ( wtsp * ( worldPos + cwRight ) ) + " => " + Vector2.Scale( cRight, scl ) + " => " + Test( cam, mat, ( worldPos + cwRight ) )
-            //         	+ "\ncLeft: " + cLeft + " => " + ( wtsp * ( worldPos + cwLeft ) ) + " => " + Vector2.Scale( cLeft, scl ) + " => " + Test( cam, mat, ( worldPos + cwLeft ) ) );
 
 			up = ( cUp - center ).magnitude;
 			down = ( cDown - center ).magnitude;
@@ -175,11 +151,8 @@ namespace K10
 		public static float DistanceToLine( Ray ray, Vector3 point, out Vector3 projectedPoint )
 		{
 			var t = point - ray.origin;
-			var dl = Vector3.Cross( ray.direction, point - ray.origin ).magnitude;
+			var dl = Vector3.Cross( ray.direction, t ).magnitude;
 			var dot = Vector3.Dot( ray.direction, t );
-			//			var hyp = t.magnitude;
-			//			var cat = Mathf.Sqrt( hyp * hyp - dl * dl );
-			//			projectedPoint = ray.origin + ray.direction * cat;
 			projectedPoint = ray.origin + ray.direction * dot;
 			return dl;
 		}
