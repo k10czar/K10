@@ -15,10 +15,5 @@ public static class GameObjectExtensions
 		void OnDestroy() => _onDestroy.Trigger();
 	}
 
-	public static IUnityEventsRelay EventRelay( this GameObject go )
-	{
-		GameObjectEventsRelay relay = null;
-		go.RequestSibling( ref relay );
-		return relay;
-	}
+	public static IUnityEventsRelay EventRelay( this GameObject go ) => go.RequestSibling<GameObjectEventsRelay>();
 }
