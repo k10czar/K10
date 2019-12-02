@@ -61,6 +61,8 @@ public class TestCustomSerializedMessages : EditorWindow
 		K10.EditorGUIExtention.SeparationLine.Horizontal();
 		GUILayout.Label( $"Custom RPC Message ({_displayName.Length})", K10GuiStyles.basicCenterStyle );
 		_selectedMessage = EditorGUILayout.Popup( _selectedMessage, _displayName );
+
+		if( _selectedMessage < 0 || _selectedMessage >= _messageTypes.Length ) return;
 		var message = _messageTypes[_selectedMessage];
 		K10.EditorGUIExtention.SeparationLine.Horizontal();
 
