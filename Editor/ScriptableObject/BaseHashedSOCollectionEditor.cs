@@ -35,6 +35,8 @@ public class BaseHashedSOCollectionEditor : Editor
 		EditorGUILayout.LabelField( $"{_title} ({count})", K10GuiStyles.bigBoldCenterStyle, GUILayout.Height( 28 ) );
 		SeparationLine.Horizontal();
 
+		var edit = (IHashedSOCollectionEditor)collection;
+
 		EditorGUILayout.BeginVertical();
 		for( int i = 0; i < size; i++ )
 		{
@@ -45,7 +47,7 @@ public class BaseHashedSOCollectionEditor : Editor
 			if( hasConflict ) GuiColorManager.New( Color.red );
 			EditorGUILayout.LabelField( "[" + i.ToString() + "]", GUILayout.Width( 30f ) );
 
-			if( hasConflict ) GUILayout.Button( "!!CONFLICT!!" );
+			var tryResolve = hasConflict && GUILayout.Button( "!!CONFLICT!!" );
 
 			EditorGUI.BeginDisabledGroup( true );
 			EditorGUILayout.ObjectField( entry as Object, collection.GetElementType(), false );
@@ -54,20 +56,11 @@ public class BaseHashedSOCollectionEditor : Editor
 			if( hasConflict ) GuiColorManager.Revert();
 
 			EditorGUILayout.EndHorizontal();
+
+			if( tryResolve ) edit.TryResolveConflict( i );
 		}
 		EditorGUILayout.EndVertical();
-
-		var edit = (IHashedSOCollectionEditor)collection;
-		if( GUILayout.Button( "Find new Elements" ) )
-		{
-			edit.EditorCheckConsistency();
-			EditorUtility.SetDirty( target );
-		}
-
-		if( edit.EditorCanChangeIDsToOptimizeSpace && GUILayout.Button( "Optimize" ) )
-		{
-			edit.EditorTryOptimize();
-			EditorUtility.SetDirty( target );
-		}
+		if( GUILayout.Button( "Check Consistency" ) ) edit.EditorCheckConsistency();
+		if( edit.EditorCanChangeIDsToOptimizeSpace && GUILayout.Button( "Optimize" ) ) edit.EditorTryOptimize(); 
 	}
 }

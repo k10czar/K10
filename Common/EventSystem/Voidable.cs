@@ -3,35 +3,39 @@
 
 public class CallOnce : Voidable
 {
-    public CallOnce( System.Action callback ) : base( callback ) { }
+    public CallOnce( IEventTrigger callback ) : base( callback ) { }
+	public CallOnce( System.Action act ) : base( act ) { }
     public override void Trigger() { base.Trigger(); Expire(); }
 }
 
 
 public class CallOnce<T> : Voidable<T>
 {
-    public CallOnce( System.Action<T> callback ) : base( callback ) { }
+    public CallOnce( IEventTrigger<T> callback ) : base( callback ) { }
+	public CallOnce( System.Action<T> act ) : base( act ) { }
     public override void Trigger( T t ) { base.Trigger( t ); Expire(); }
 }
 
 public class Voidable : IEventTrigger
 {
-    System.Action m_callback;
+    IEventTrigger _callback;
     bool _void;
 
-    public Voidable( System.Action callback ) { m_callback = callback; }
-    public virtual void Trigger() { m_callback(); }
-    public bool IsValid { get { return !_void; } }
+    public Voidable( IEventTrigger callback ) { _callback = callback; }
+	public Voidable( System.Action act ) { _callback = new ActionEventCapsule( act ); }
+    public virtual void Trigger() { _callback.Trigger(); }
+    public bool IsValid { get { return !_void && _callback.IsValid; } }
     public void Expire() { _void = true; }
 }
 
 public class Voidable<T> : IEventTrigger<T>
 {
-    System.Action<T> m_callback;
+    IEventTrigger<T> _callback;
 	bool _void;
 
-    public Voidable( System.Action<T> callback ) { m_callback = callback; }
-    public virtual void Trigger( T t ) { m_callback( t ); }
-    public bool IsValid { get { return !_void; } }
+    public Voidable( IEventTrigger<T> callback ) { _callback = callback; }
+	public Voidable( System.Action<T> act ) { _callback = new ActionEventCapsule<T>( act ); }
+    public virtual void Trigger( T t ) { _callback.Trigger( t ); }
+    public bool IsValid { get { return !_void && _callback.IsValid; } }
     public void Expire() { _void = true; }
 }

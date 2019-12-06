@@ -18,5 +18,7 @@ namespace K10
 			r |= ( v >> 1 );
 			return r;
 		}
+		public static byte GetBitsCount( int maxValue ) => (byte)( Log2( maxValue ) + 1 );
+		public static byte GetBytesCount( int bits ) => (byte)( ( ( bits - 1 ) >> 3 ) + 1 );
 	}
 }
