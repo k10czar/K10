@@ -26,9 +26,10 @@ public interface ICachedCollectionInteration<T>
     bool Contains(T t);
 }
 
+[System.Serializable]
 public class CachedCollection<T> : ICachedCollection<T>
 {
-    protected readonly List<T> _list = new List<T>();
+    [SerializeField] protected List<T> _list = new List<T>();
 
     private readonly EventSlot<T> _onElementAdded = new EventSlot<T>();
     private readonly EventSlot<T> _onElementRemoved = new EventSlot<T>();

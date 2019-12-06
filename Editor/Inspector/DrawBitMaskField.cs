@@ -59,3 +59,16 @@ public class EnumBitMaskPropertyDrawer : PropertyDrawer
         prop.intValue = EditorExtension.DrawBitMaskField( position, prop.intValue, typeAttr.propType, label );
     }
 }
+
+
+[CustomPropertyDrawer( typeof( BitMaskUnmaskedAttribute ) )]
+public class EnumBitMaskUnmaskedPropertyDrawer : PropertyDrawer
+{
+	public override void OnGUI( Rect position, SerializedProperty prop, GUIContent label )
+	{
+		var typeAttr = attribute as BitMaskUnmaskedAttribute;
+		// Add the actual int value behind the field name
+		label.text = label.text + "(" + prop.intValue + ")";
+		prop.intValue = EditorGUI.MaskField( position, label, prop.intValue, System.Enum.GetNames( typeAttr.propType ) );
+	}
+}

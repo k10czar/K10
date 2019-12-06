@@ -11,13 +11,13 @@ public interface IBoolStateObserver : IValueStateObserver<bool>
 }
 
 [System.Serializable]
-public class BoolState : IBoolState
+public class BoolState : IBoolState, ISerializationCallbackReceiver
 {
 	[SerializeField] bool _value;
 
-	[System.NonSerialized] private readonly EventSlot<bool> _onChange = new EventSlot<bool>();
-	[System.NonSerialized] private readonly EventSlot _onTrue = new EventSlot();
-	[System.NonSerialized] private readonly EventSlot _onFalse = new EventSlot();
+	[System.NonSerialized] private EventSlot<bool> _onChange = new EventSlot<bool>();
+	[System.NonSerialized] private EventSlot _onTrue = new EventSlot();
+	[System.NonSerialized] private EventSlot _onFalse = new EventSlot();
 
 	public static implicit operator bool( BoolState v ) => v._value;
 
@@ -41,6 +41,15 @@ public class BoolState : IBoolState
 	public BoolState( bool initialValue = false ) { _value = initialValue; }
 
 	public override string ToString() { return string.Format( "BS({0})", _value ); }
+
+	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+
+	void ISerializationCallbackReceiver.OnAfterDeserialize()
+	{
+		if (_onChange == null) _onChange = new EventSlot<bool>();
+		if (_onTrue == null) _onTrue = new EventSlot();
+		if (_onFalse == null) _onFalse = new EventSlot();
+	}
 }
 
 public static class BoolStateExtention

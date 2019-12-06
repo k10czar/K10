@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class IntState : INumericValueState<int>
+public class IntState : INumericValueState<int>, ISerializationCallbackReceiver
 {
     [SerializeField] int _value;
     [System.NonSerialized] EventSlot<int> _onChange = new EventSlot<int>();
@@ -27,4 +27,11 @@ public class IntState : INumericValueState<int>
     public IntState( int initialValue = default( int ) ) { _value = initialValue; }
 
     public override string ToString() { return string.Format( "IS({1})", typeof( int ).ToString(), _value ); }
+
+	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+
+	void ISerializationCallbackReceiver.OnAfterDeserialize()
+	{
+		if (_onChange == null) _onChange = new EventSlot<int>();
+	}
 }
