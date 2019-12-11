@@ -19,9 +19,12 @@ public static class SerializationFloatExtensions
 
 	public static float ReadFloatAsFixedAsBits( this byte[] byteArray, int startingBit, byte bitsToRead, float minRange, float maxRange )
 	{
-		var maxValue = (float)( ( 1 << bitsToRead ) - 1 );
-		float value = ( byteArray.ReadUIntAsBits( startingBit, bitsToRead ) / maxValue ) * ( maxRange - minRange );
-		return minRange + value;
+		var maxValue = ( 1 << bitsToRead ) - 1;
+		var step = ( maxRange - minRange ) / maxValue;
+		float value = minRange + byteArray.ReadUIntAsBits( startingBit, bitsToRead ) * step;
+		var roundBase = K10.Math.Base10( Mathf.Max( (int)(1 / step), 1 ) );
+		var roundedValue = Mathf.Round( value * roundBase ) / roundBase;
+		return roundedValue;
 	}
 
 	public static void WriteFloatAsFixedAsBits( this byte[] byteArray, float data, ref int startingBit, byte bitsToWrite, float minRange, float maxRange )
