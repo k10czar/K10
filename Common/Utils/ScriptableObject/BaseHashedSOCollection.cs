@@ -37,7 +37,6 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 #if UNITY_EDITOR
 	void IHashedSOCollectionEditor.EditorCheckConsistency()
 	{
-		Debug.Log( $"Checking consistency of Collection {this.name} / t:{GetElementType().ToString()}" );
 		var guids = AssetDatabase.FindAssets( $"t:{GetElementType().ToString()}" );
 		for( int i = 0; i < guids.Length; i++ )
 		{

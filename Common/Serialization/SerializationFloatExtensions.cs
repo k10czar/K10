@@ -15,6 +15,8 @@ public static class SerializationFloatExtensions
 		return ret;
 	}
 
+	public static float ReadFloat01AsFixedAsBits( this byte[] byteArray, ref int startingBit, byte bitsToRead ) => ReadFloatAsFixedAsBits( byteArray, ref startingBit, bitsToRead, 0, 1 );
+
 	public static float ReadFloatAsFixedAsBits( this byte[] byteArray, int startingBit, byte bitsToRead, float minRange, float maxRange )
 	{
 		var maxValue = (float)( ( 1 << bitsToRead ) - 1 );
@@ -25,6 +27,12 @@ public static class SerializationFloatExtensions
 	public static void WriteFloatAsFixedAsBits( this byte[] byteArray, float data, ref int startingBit, byte bitsToWrite, float minRange, float maxRange )
 	{
 		WriteFloatAsFixedAsBits( byteArray, data, startingBit, bitsToWrite, minRange, maxRange );
+		startingBit += bitsToWrite;
+	}
+
+	public static void WriteFloat01AsFixedAsBits( this byte[] byteArray, float data, ref int startingBit, byte bitsToWrite )
+	{
+		WriteFloatAsFixedAsBits( byteArray, data, startingBit, bitsToWrite, 0, 1 );
 		startingBit += bitsToWrite;
 	}
 
