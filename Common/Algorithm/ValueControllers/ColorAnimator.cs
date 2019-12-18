@@ -88,6 +88,17 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 		Start();
 	}
 
+	public void Reset(float transitionTime)
+	{
+		var val = Mathf.Approximately( transitionTime, 0 ) ? Mathf.Infinity : ( 2 / ( transitionTime * transitionTime ) );
+
+		_r.Reset(val, val, val);
+		_g.Reset(val, val, val);
+		_b.Reset(val, val, val);
+		_a.Reset(val, val, val);
+
+	}
+
 	public bool Update( float delta )
 	{
 		bool updated = false;
