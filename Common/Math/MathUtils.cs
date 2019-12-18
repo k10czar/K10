@@ -18,7 +18,24 @@ namespace K10
 			r |= ( v >> 1 );
 			return r;
 		}
+
 		public static byte GetBitsCount( int maxValue ) => (byte)( Log2( maxValue ) + 1 );
 		public static byte GetBytesCount( int bits ) => (byte)( ( ( bits - 1 ) >> 3 ) + 1 );
+
+		private static readonly byte[] guess = new byte[]{
+			0, 0, 0, 0, 1, 1, 1, 2, 2, 2,
+			3, 3, 3, 3, 4, 4, 4, 5, 5, 5,
+			6, 6, 6, 6, 7, 7, 7, 8, 8, 8,
+			9, 9, 9
+		};
+
+		private static readonly int[] tenToThe = new int[]{
+			1, 			10, 		100, 		1000, 		10000, 
+			100000,		1000000,	10000000,	100000000,	1000000000,
+		};
+
+		public static int Log10( int x ) => guess[Log2( x )];
+		public static int Pow10( int x ) => tenToThe[x];
+		public static int Base10( int x ) => tenToThe[guess[Log2( x )]];
 	}
 }

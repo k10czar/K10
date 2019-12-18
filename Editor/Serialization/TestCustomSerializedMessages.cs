@@ -25,6 +25,7 @@ public class TestCustomSerializedMessages : EditorWindow
 	string _deserializeMethodName = "ReadBytes";
 	BindingFlags _deserializeMethodFlags = BindingFlags.Public | BindingFlags.Static;
 	object _instance;
+	Vector2 _scroll;
 
 	[MenuItem( "K10/Test Serialized Messages" )]
 	private static void Init()
@@ -65,6 +66,8 @@ public class TestCustomSerializedMessages : EditorWindow
 		if( _selectedMessage < 0 || _selectedMessage >= _messageTypes.Length ) return;
 		var message = _messageTypes[_selectedMessage];
 		K10.EditorGUIExtention.SeparationLine.Horizontal();
+
+		_scroll = GUILayout.BeginScrollView( _scroll );
 
 		var serializeMethod = FindMethod( "serializeMethod", message, ref _serializeMethodName, ref _serializeMethodFlags );
 		var deserializeMethod = FindMethod( "deserializeMethod", message, ref _deserializeMethodName, ref _deserializeMethodFlags );
@@ -150,6 +153,8 @@ public class TestCustomSerializedMessages : EditorWindow
 		}
 
 		K10.EditorGUIExtention.SeparationLine.Horizontal();
+
+		GUILayout.EndScrollView();
 	}
 
 	static object Field( object obj, System.Type type, string name, bool canEdit = false )
