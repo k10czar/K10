@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-
+using System;
 
 public class FloatAnimator01 : FloatAnimator
 {
@@ -8,6 +8,8 @@ public class FloatAnimator01 : FloatAnimator
     public FloatAnimator01( float acceleration, float deceleration, float maxSpeed ) : base( 0, 1, acceleration, deceleration, maxSpeed ) { }
     public FloatAnimator01( IUpdaterOnDemand updater, float baseValue = 10 ) : base( updater, 0, 1, baseValue, baseValue, baseValue ) { }
     public FloatAnimator01( float startValue, IUpdaterOnDemand updater, float baseValue = 10 ) : base( updater, 0, 1, baseValue, baseValue, baseValue ) { Start( startValue ); }
+
+	public void Reset( float acceleration, float deceleration, float maxSpeed ){ SetAcceleration( acceleration );SetDeacceleration(deceleration); SetMaximumVelocity(maxSpeed); Force(0); }
 }
 
 [System.Serializable]
