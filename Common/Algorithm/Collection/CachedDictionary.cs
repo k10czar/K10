@@ -26,14 +26,13 @@ public class CachedDictionary<K,T> : ICachedDictionaryObserver<K,T>
     public bool ContainsKey( K key ) => _dictionary.ContainsKey( key );
 
     public int KeyCount => _dictionary.Count;
-    
-
 
     public IEnumerator<T> GetEnumerator()
     {        
         foreach ( var list in _dictionary )
         {
-            foreach( var value in list.Value )
+			var listValue = list.Value;
+			foreach( var value in listValue )
             {
                 yield return value;
             }
