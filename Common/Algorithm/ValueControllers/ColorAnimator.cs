@@ -166,4 +166,12 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 
 	public void SetAlphaMax( bool max = true ) { SetAlpha( max ? 1 : 0 ); }
 	public void SetAlphaMin( bool min = true ) { SetAlpha( min ? 0 : 1 ); }
+
+	public void GoToEnd()
+	{
+		_r.GoToEnd();
+		_g.GoToEnd();
+		_b.GoToEnd();
+		_a.GoToEnd();
+	}
 }
