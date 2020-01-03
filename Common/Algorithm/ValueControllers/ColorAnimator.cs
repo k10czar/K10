@@ -53,10 +53,10 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 		_updater = updater;
 		var val = Mathf.Approximately( transitionTime, 0 ) ? Mathf.Infinity : ( 2 / ( transitionTime * transitionTime ) );
 
-		_r = new FloatAnimator01( val, val, val );
-		_g = new FloatAnimator01( val, val, val );
-		_b = new FloatAnimator01( val, val, val );
-		_a = new FloatAnimator01( val, val, val );
+		_r = new FloatAnimator01( val, val, float.MaxValue );
+		_g = new FloatAnimator01( val, val, float.MaxValue );
+		_b = new FloatAnimator01( val, val, float.MaxValue );
+		_a = new FloatAnimator01( val, val, float.MaxValue );
 
 		Start();
 	}
@@ -92,10 +92,10 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 	{
 		var val = Mathf.Approximately( transitionTime, 0 ) ? Mathf.Infinity : ( 2 / ( transitionTime * transitionTime ) );
 
-		_r.Reset(val, val, val);
-		_g.Reset(val, val, val);
-		_b.Reset(val, val, val);
-		_a.Reset(val, val, val);
+		_r.Reset(val, val, float.MaxValue);
+		_g.Reset(val, val, float.MaxValue);
+		_b.Reset(val, val, float.MaxValue);
+		_a.Reset(val, val, float.MaxValue);
 
 	}
 
