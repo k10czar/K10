@@ -72,6 +72,8 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand
     public void SetDesiredToMinimum() { SetDesiredMin( true ); }
     public void SetDesiredMin( bool min ) { SetDesire( min ? _min : _max ); }
 
+	public void GoToEnd() {_current = _desired;}
+
 	public void Force( float value )
 	{
         var val = Mathf.Clamp( value, _min, _max );
