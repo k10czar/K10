@@ -19,6 +19,7 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 	float test;
 
 	Color _cachedColor = Color.white;
+	float _transitionTime = 0;
 
 	EventSlot<Color> _desiredReach = new EventSlot<Color>();
 	public IEventRegister<Color> OnDesiredReach { get { return _desiredReach; } }
@@ -27,6 +28,7 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 	public Color Get() { return _cachedColor; }
 	public Color GetColor() { return _cachedColor; }
 
+	public float CurrentDuration => _transitionTime - (_transitionTime * _r.Value);
 	EventSlot<Color> _colorUpdate = new EventSlot<Color>();
 	public IEventRegister<Color> OnChange { get { return _colorUpdate; } }
 
@@ -50,6 +52,7 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 	public ColorAnimator( float transitionTime ) : this( null, transitionTime ) { }
 	public ColorAnimator( IUpdaterOnDemand updater, float transitionTime )
 	{
+		_transitionTime = transitionTime;
 		_updater = updater;
 		var val = Mathf.Approximately( transitionTime, 0 ) ? Mathf.Infinity : ( 2 / ( transitionTime * transitionTime ) );
 
@@ -90,6 +93,7 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 
 	public void Reset(float transitionTime)
 	{
+		_transitionTime = transitionTime;
 		var val = Mathf.Approximately( transitionTime, 0 ) ? Mathf.Infinity : ( 2 / ( transitionTime * transitionTime ) );
 
 		_r.Reset(val, val, float.MaxValue);
