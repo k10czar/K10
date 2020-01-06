@@ -5,7 +5,7 @@ public class CallOnce : Voidable
 {
     public CallOnce( IEventTrigger callback ) : base( callback ) { }
 	public CallOnce( System.Action act ) : base( act ) { }
-    public override void Trigger() { base.Trigger(); Expire(); }
+    public override void Trigger() { Expire(); base.Trigger(); }
 }
 
 
@@ -13,7 +13,7 @@ public class CallOnce<T> : Voidable<T>
 {
     public CallOnce( IEventTrigger<T> callback ) : base( callback ) { }
 	public CallOnce( System.Action<T> act ) : base( act ) { }
-    public override void Trigger( T t ) { base.Trigger( t ); Expire(); }
+    public override void Trigger( T t ) { Expire(); base.Trigger( t ); }
 }
 
 public class Voidable : IEventTrigger
