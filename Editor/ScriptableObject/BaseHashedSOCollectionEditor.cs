@@ -38,10 +38,16 @@ public class BaseHashedSOCollectionEditor : Editor
 		var edit = (IHashedSOCollectionEditor)collection;
 
 		EditorGUILayout.BeginVertical();
+		var lastValid = -1;
 		for( int i = 0; i < size; i++ )
 		{
 			var entry = collection.GetElementBase( i ) as IHashedSO;
-			if( entry == null ) continue;
+			if( entry == null )
+			{
+				if( lastValid + 1 == i ) GUILayout.Space( 5 );
+				continue;
+			}
+			lastValid = i;
 			EditorGUILayout.BeginHorizontal();
 			var hasConflict = ( entry.HashID < 0 || entry.HashID != i );
 			if( hasConflict ) GuiColorManager.New( Color.red );
