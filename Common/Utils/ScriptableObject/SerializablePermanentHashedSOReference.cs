@@ -3,7 +3,7 @@
 public abstract class SerializablePermanentHashedSOReference<T> : BaseSerializablePermanentHashedSOReference<T>
 	 															where T : HashedScriptableObject, new()
 {
-	private static readonly T _dummyInstance = new T();
+	private static readonly T _dummyInstance = ScriptableObject.CreateInstance<T>();
 	// HACK to get the collection that you only can generic get with a class instance
 
 	public SerializablePermanentHashedSOReference( T reference ) : base( reference ) { }
