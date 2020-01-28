@@ -13,7 +13,7 @@ public class DelayedDestroy : MonoBehaviour
                 _life = ps.duration;
         }
 
-        Invoke( "DD", _life );
+        Invoke( nameof(DD), _life );
     }
 
 	void DD()
