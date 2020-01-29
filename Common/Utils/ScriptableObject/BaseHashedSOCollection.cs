@@ -44,12 +44,6 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 			var asset = AssetDatabase.LoadAssetAtPath( path, GetElementType() );
 			( (IHashedSOCollectionEditor)this ).EditorRequestMember( asset, true );
 		}
-		for( int i = 0; i < guids.Length; i++ )
-		{
-			var path = AssetDatabase.GUIDToAssetPath( guids[i] );
-			var asset = AssetDatabase.LoadAssetAtPath( path, GetElementType() );
-			( (IHashedSOCollectionEditor)this ).EditorRequestMember( asset, true );
-		}
 	}
 	
 	bool IHashedSOCollectionEditor.EditorRequestMember( Object obj, bool forceCorrectPosition = false )
