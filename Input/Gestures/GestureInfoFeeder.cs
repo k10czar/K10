@@ -9,8 +9,4 @@ public interface IGestureFeeder
 
 public class UnityGestureInfoFeeder : IGestureFeeder
 {
-	void Update ()
-	{
-		
-	}
 }

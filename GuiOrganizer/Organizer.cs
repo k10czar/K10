@@ -29,8 +29,6 @@ public class Organizer : MonoBehaviour
 
 	public EOrganizerSort Sort { get { return _sort; } set { _sort = value; } }
 
-	void Start() { }
-
     public void Organize()
     {
 		_beforeOrganize.Trigger();
