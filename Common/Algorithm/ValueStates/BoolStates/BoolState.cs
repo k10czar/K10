@@ -46,9 +46,9 @@ public class BoolState : IBoolState, ISerializationCallbackReceiver
 
 	void ISerializationCallbackReceiver.OnAfterDeserialize()
 	{
-		if (_onChange == null) _onChange = new EventSlot<bool>();
-		if (_onTrue == null) _onTrue = new EventSlot();
-		if (_onFalse == null) _onFalse = new EventSlot();
+		if( _onChange == null ) _onChange = new EventSlot<bool>();
+		if( _onTrue == null ) _onTrue = new EventSlot();
+		if( _onFalse == null ) _onFalse = new EventSlot();
 	}
 }
 
