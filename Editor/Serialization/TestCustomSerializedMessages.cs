@@ -7,10 +7,10 @@ using UnityEngine;
 
 public class TestCustomSerializedMessages : EditorWindow
 {
-	private const float FIELD_WIDTH = 150;
-	private static readonly GUILayoutOption FIELD_WIDTH_PROP = GUILayout.Width( FIELD_WIDTH );
-	private static readonly GUILayoutOption DOUBLE_FIELD_WIDTH_PROP = GUILayout.Width( 2 * FIELD_WIDTH + 5 );
-	private static readonly GUILayoutOption BITMASK_WIDTH_PROP = GUILayout.Width( 70 );
+	private static float DEFAULT_FIELD_WIDTH => 150;
+	private static GUILayoutOption FIELD_WIDTH_PROP = GUILayout.Width( DEFAULT_FIELD_WIDTH );
+	private static GUILayoutOption DOUBLE_FIELD_WIDTH_PROP = GUILayout.Width( 2 * DEFAULT_FIELD_WIDTH + 5 );
+	private static GUILayoutOption BITMASK_WIDTH_PROP = GUILayout.Width( 70 );
 
 
 	System.Type[] _messageTypes;
@@ -58,6 +58,11 @@ public class TestCustomSerializedMessages : EditorWindow
 
 	private void OnGUI()
 	{
+		// var r = Screen.width;
+		var w = Screen.width / 3;
+		FIELD_WIDTH_PROP = GUILayout.Width( w );
+		DOUBLE_FIELD_WIDTH_PROP = GUILayout.Width( 2 * w + 5 );
+
 		GUILayout.Label( "Test RPC Custom Messages", K10GuiStyles.bigBoldCenterStyle );
 		K10.EditorGUIExtention.SeparationLine.Horizontal();
 		GUILayout.Label( $"Custom RPC Message ({_displayName.Length})", K10GuiStyles.basicCenterStyle );
@@ -129,15 +134,32 @@ public class TestCustomSerializedMessages : EditorWindow
 		K10.EditorGUIExtention.SeparationLine.Horizontal();
 		var serializationReturn = TempBytes.Get( 0 );
 		var failToSerialize = false;
+		var errorType = "";
+		var errorStack = "";
+		var errorStr = "";
 
 		try { serializationReturn = serializeMethod.Invoke( _instance, new object[] { _instance } ) as byte[]; }
-		catch( System.Exception ) { failToSerialize = true; }
+		catch( System.Exception ex ) 
+		{ 
+			failToSerialize = true; 
+			errorType = ex.GetType().ToString(); 
+			errorStr = ex.Message;
+			errorStack = ex.StackTrace;
+		}
 
 		var bytes = serializationReturn.Length;
 		GUILayout.Label( $"Serialization {bytes} Byte(s)", K10GuiStyles.basicCenterStyle );
 		EditorGUILayout.BeginHorizontal();
 		GUILayout.FlexibleSpace();
-		if( failToSerialize ) GUILayout.Label( "ERROR", BITMASK_WIDTH_PROP );
+		if( failToSerialize )
+		{
+			EditorGUILayout.BeginVertical();
+			GUILayout.Label( "ERROR", BITMASK_WIDTH_PROP );
+			GUILayout.Label( errorType );
+			GUILayout.Label( errorStr );
+			GUILayout.Label( errorStack );
+			EditorGUILayout.EndVertical();
+		}
 		for( int i = 0; i < bytes; i++ )
 		{
 			GUILayout.Label( serializationReturn.DebugBitMask( i << 3, 8 ), BITMASK_WIDTH_PROP );

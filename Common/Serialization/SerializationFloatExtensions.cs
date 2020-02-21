@@ -51,15 +51,27 @@ public static class SerializationFloatExtensions
 		startingBit += bitsToWrite;
 	}
 
+	public static void ConditionalWriteFloatAsFixedAsBits( this byte[] byteArray, float data, ref int startingBit, byte bitsToWrite, float minRange, float maxRange, float ignoredValue = 0 )
+	{
+		var condition = !Mathf.Approximately( data, ignoredValue );
+		byteArray.WriteBit( condition, ref startingBit );
+		if( condition ) WriteFloatAsFixedAsBits( byteArray, data, ref startingBit, bitsToWrite, minRange, maxRange );
+	}
+
 	public static void ConditionalWriteFloatAsFixedAsBits( this byte[] byteArray, float data, bool condition, ref int startingBit, byte bitsToWrite, float minRange, float maxRange )
 	{
 		byteArray.WriteBit( condition, ref startingBit );
 		if( condition ) WriteFloatAsFixedAsBits( byteArray, data, ref startingBit, bitsToWrite, minRange, maxRange );
 	}
 
-	public static void ConditionalWriteFloat01AsFixedAsBits( this byte[] byteArray, float data, bool condition, ref int startingBit, byte bitsToRead )
+	public static void ConditionalWriteFloat01AsFixedAsBits( this byte[] byteArray, float data, bool condition, ref int startingBit, byte bitsToWrite )
 	{
-		byteArray.ConditionalWriteFloatAsFixedAsBits( data, condition, ref startingBit, bitsToRead, 0, 1 );
+		byteArray.ConditionalWriteFloatAsFixedAsBits( data, condition, ref startingBit, bitsToWrite, 0, 1 );
+	}
+
+	public static void ConditionalWriteFloat01AsFixedAsBits( this byte[] byteArray, float data, ref int startingBit, byte bitsToRead, float ignoredValue = 0 )
+	{
+		byteArray.ConditionalWriteFloatAsFixedAsBits( data, ref startingBit, bitsToRead, 0, 1, ignoredValue );
 	}
 
 	public static void WriteFloat01AsFixedAsBits( this byte[] byteArray, float data, ref int startingBit, byte bitsToWrite ) { WriteFloatAsFixedAsBits( byteArray, data, ref startingBit, bitsToWrite, 0, 1 ); }
