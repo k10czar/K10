@@ -51,6 +51,9 @@ public static class SerializationUIntExtensions
 	public static void WriteByteAsBits( this byte[] byteArray, byte data, int startingBit, byte bitsToWrite ) => WriteUIntAsBits( byteArray, data, startingBit, bitsToWrite );
 	public static void WriteUIntAsBits( this byte[] byteArray, int data, int startingBit, byte bitsToWrite )
 	{
+		var max = ( 1 << bitsToWrite ) - 1;
+		if( data > max ) data = max;
+		
 		for( int i = 0; i < bitsToWrite; i++ )
 		{
 			var b = ( ( data & ( 1 << i ) ) != 0 );
