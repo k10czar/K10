@@ -31,4 +31,23 @@ public static class RayExtensions
 		var distance = ( ( y - pos.y ) / dir.y );
 		return pos + ( dir * distance );
 	}
+
+	public static Ray RandomDeviation( this Ray ray, float maxDeviation )
+	{
+		float angleDeviation = K10Random.Value * ( maxDeviation * .5f );
+		float randomAngle = K10Random.Value * 360;
+
+		var a = Mathf.Deg2Rad * randomAngle;
+		var cos = Mathf.Abs( Mathf.Cos( a ) * 1 );
+		var sen = Mathf.Abs( Mathf.Sin( a ) * .2f );
+		var prop = cos + sen;
+
+		var dev = Quaternion.AngleAxis( angleDeviation * prop, Vector3.up );
+		var rnd = Quaternion.AngleAxis( randomAngle, Vector3.forward );
+		var dirRot = Quaternion.LookRotation( ray.direction, Vector3.up );
+
+		var endDir = dirRot * rnd * dev * Vector3.forward;
+
+		return new Ray( ray.origin, endDir );
+	}
 }
