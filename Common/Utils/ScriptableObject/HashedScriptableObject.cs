@@ -43,3 +43,8 @@ public abstract class HashedScriptableObject : ScriptableObject, IHashedSO
 
 	public override string ToString() => $"{name}[{HashID}]";
 }
+
+public static class HashedSOExtentions
+{
+	public static int HashIdOrNull( this IHashedSO hso ) => ( hso != null ) ? hso.HashID : -1;
+}
