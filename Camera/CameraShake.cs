@@ -65,6 +65,7 @@ public class CameraShake : MonoBehaviour
 
 	void AddCameraShake( CameraShakeInfo info )
 	{
+		if( info == null ) return;
 		if( _shakes.Count == 0 ) _randomStart = Random.Range( 0f, 10f );
 		_shakes.Add( new CameraShakeInstance( info ) );
 	}
@@ -87,7 +88,7 @@ public class CameraShake : MonoBehaviour
 
 	public static void AddLocal( CameraShakeInfo info, Camera cam )
 	{
-        var camShake = Singleton<CameraShake>.Instance;
+		var camShake = Singleton<CameraShake>.Instance;
         if (camShake == null) return;
 
         camShake.AddCameraShake( info );

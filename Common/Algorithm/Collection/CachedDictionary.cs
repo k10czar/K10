@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 
 public interface ICachedDictionaryObserver<K, T> : ICachedCollectionObserverEnumerable<T>
 {
 	bool GetFirst( K key, out T outValue );
+	bool TryGetValues( K key, out ReadOnlyCollection<T> outValue );
 	IBoolStateObserver GetEventDrivenContains( K key );
 }
 
@@ -51,9 +53,15 @@ public class CachedDictionary<K,T> : ICachedDictionaryObserver<K,T>
 
         return keys;
     }
+
+	public bool TryGetValues( K key, out ReadOnlyCollection<T> outValue )
+	{
+		var exists = _dictionary.TryGetValue( key, out var list );
+		if( exists ) outValue = list.AsReadOnly();
+		else outValue = default(ReadOnlyCollection<T>);
+		return exists;
+	}
   
-
-
     public bool GetFirst( K key, out T outValue )
 	{
 		List<T> list;

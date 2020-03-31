@@ -51,6 +51,7 @@ public class BaseHashedSOCollectionEditor : Editor
 			EditorGUILayout.BeginHorizontal();
 			var hasConflict = ( entry.HashID < 0 || entry.HashID != i );
 			if( hasConflict ) GuiColorManager.New( Color.red );
+			if( IconButton.Layout( "objective", 's' ) ) Selection.SetActiveObjectWithContext( entry as Object, entry as Object );
 			EditorGUILayout.LabelField( "[" + i.ToString() + "]", GUILayout.Width( 30f ) );
 
 			var tryResolve = hasConflict && GUILayout.Button( "!!CONFLICT!!" );
