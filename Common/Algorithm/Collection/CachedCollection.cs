@@ -68,6 +68,8 @@ public class CachedCollection<T> : ICachedCollection<T>
         return _list.Contains(t);
     }
 
+	public T Find( System.Predicate<T> findCondition ) => _list.Find( findCondition );
+
     public void Clear(){
         _list.Clear();
     }
