@@ -37,4 +37,6 @@ public abstract class BaseSerializablePermanentHashedSOReference<T> where T : Ha
 			return _reference;
 		}
 	}
+
+	public override string ToString() => $"[{_referenceHashID}]=>{_reference.ToStringOrNull()}({_reference.NameOrNull()})";
 }
