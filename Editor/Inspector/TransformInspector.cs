@@ -42,8 +42,6 @@ public class K10TransformInspector : Editor
 		}
 		
 		Transform t = (Transform)target;
-		EditorGUIUtility.LookLikeControls();
-		EditorGUI.indentLevel = 0;
 
 		Vector3 initialposition = t.localPosition;
 		Vector3 initialeulerAngles = t.localEulerAngles;
@@ -204,8 +202,6 @@ public class K10TransformInspector : Editor
 			SeparationLine.Horizontal();
 		}
 		GUI.color = color;
-
-		EditorGUIUtility.LookLikeInspector();
 
 		if( GUI.changed )
 		{

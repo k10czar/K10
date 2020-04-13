@@ -12,24 +12,30 @@ public interface IPercentageRangedFloatStateObserver : IRangedFloatStateObserver
 }
 
 [System.Serializable]
-public class PercentageRangedFloatState : RangedFloatState, IPercentageRangedFloatState, IPercentageRangedFloatStateObserver
+public class PercentageRangedFloatState : RangedFloatState, IPercentageRangedFloatState, IPercentageRangedFloatStateObserver, ISerializationCallbackReceiver
 {
-	[SerializeField] private readonly FloatState _percentage = new FloatState( 0 );
+	public const string PERCENTAGE_PROPERTY_NAME = nameof(Percentage);
+
+	[System.NonSerialized] private FloatState _percentage = new FloatState( 0 );
+	[System.NonSerialized] private bool _percentageInited;
 
 	public IValueStateObserver<float> Percentage => _percentage;
 
 	public PercentageRangedFloatState( float percentage, float maxValue ) : this( percentage, 0, maxValue ) { }
 	public PercentageRangedFloatState( float percentage, float minValue, float maxValue ) : base( percentage * ( maxValue - minValue ) + minValue, minValue, maxValue )
 	{
-		RegisterPercentageEvents();
-		UpdatePercentage();
+		InitPercentage();
 	}
 
-	void RegisterPercentageEvents()
+	void InitPercentage()
 	{
+		if( _percentageInited ) return;
+		_percentageInited = true;
+		if( _percentage == null ) _percentage = new FloatState( 0 );
 		_min.OnChange.Register( UpdatePercentage );
 		_max.OnChange.Register( UpdatePercentage );
 		_value.OnChange.Register( UpdatePercentage );
+		UpdatePercentage();
 	}
 
 	void UpdatePercentage()
@@ -46,4 +52,7 @@ public class PercentageRangedFloatState : RangedFloatState, IPercentageRangedFlo
 
 		_percentage.Value = ( _value.Value - min ) / delta;
 	}
+
+	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); InitPercentage(); }
 }

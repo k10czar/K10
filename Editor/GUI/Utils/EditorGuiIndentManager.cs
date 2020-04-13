@@ -24,5 +24,24 @@ namespace K10
 				}
 			}
 		}
+
+		public class FakeIndentManager
+		{
+			static List<int> _widths = new List<int>();
+
+			public static UnityEngine.Rect New( UnityEngine.Rect area, float widthOffset = 0 )
+			{
+				var indentedArea = EditorGUI.IndentedRect( area );
+				EditorGuiIndentManager.New( 0 );
+				GuiLabelWidthManager.New( EditorGUIUtility.labelWidth + widthOffset - ( ( indentedArea.x - area.x ) ) );
+				return indentedArea;
+			}
+
+			public static void Revert()
+			{
+				GuiLabelWidthManager.Revert();
+				EditorGuiIndentManager.Revert();
+			}
+		}
 	}
 }

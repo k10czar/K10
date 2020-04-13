@@ -22,7 +22,7 @@ public interface IValueStateObserver<T> where T : struct
 }
 
 [System.Serializable]
-public class ValueState<T> : IValueState<T> where T : struct
+public class ValueState<T> : IValueState<T>, ISerializationCallbackReceiver where T : struct
 {
 	[SerializeField] T _value;
 
@@ -43,6 +43,13 @@ public class ValueState<T> : IValueState<T> where T : struct
 	public ValueState( T initialValue = default( T ) ) { _value = initialValue; }
 
 	public override string ToString() { return string.Format( $"VS<{typeof( T )}>({_value})" ); }
+	void Init()
+	{
+		if( _onChange == null ) _onChange = new EventSlot<T>();
+	}
+
+	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); }
 }
 
 public static class ValueStateExtention

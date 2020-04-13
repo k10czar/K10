@@ -26,25 +26,5 @@ namespace K10
 				}
 			}
 		}
-
-		public class IdentLevelManager
-		{
-			static List<int> _levels = new List<int>();
-
-			public static void New( int level )
-			{
-				_levels.Add( EditorGUI.indentLevel );
-				EditorGUI.indentLevel = level;
-			}
-
-			public static void Revert()
-			{
-				if( _levels.Count > 0 )
-				{
-					EditorGUI.indentLevel = _levels[_levels.Count - 1];
-					_levels.RemoveAt( _levels.Count - 1 );
-				}
-			}
-		}
 	}
 }

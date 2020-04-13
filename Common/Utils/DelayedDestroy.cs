@@ -9,8 +9,8 @@ public class DelayedDestroy : MonoBehaviour
     {
         foreach( var ps in GetComponentsInChildren<ParticleSystem>() ) 
         {
-            if( _life < ps.duration )
-                _life = ps.duration;
+            if( _life < ps.main.duration )
+                _life = ps.main.duration;
         }
 
         Invoke( nameof(DD), _life );

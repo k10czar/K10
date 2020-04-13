@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class LongState : INumericValueState<long>
+public class LongState : INumericValueState<long>, ISerializationCallbackReceiver
 {
     [SerializeField] long _value;
     [System.NonSerialized] EventSlot<long> _onChange = new EventSlot<long>();
@@ -27,7 +27,14 @@ public class LongState : INumericValueState<long>
 
     public IEventRegister<long> OnChange { get { if(_onChange == null) _onChange = new EventSlot<long>(); return _onChange; } }
 
-    public LongState( long initialValue = default( long) ) { _value = initialValue; }
+    public LongState( long initialValue = default( long) ) { _value = initialValue; Init(); }
+	void Init()
+	{
+		if( _onChange == null ) _onChange = new EventSlot<long>();
+	}
 
-    public override string ToString() { return string.Format( "LS({1})", typeof( long ).ToString(), _value ); }
+	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); }
+
+	public override string ToString() { return string.Format( "LS({1})", typeof( long ).ToString(), _value ); }
 }

@@ -91,7 +91,7 @@ public static class K10EditorGUIUtils
 
 			if( !FileAdapter.Exists( newPath + ".prefab" ) || EditorUtility.DisplayDialog( "Warning!", "File (" + newPath + ".prefab" + ") already exists you want to replace that file? This will delete the already existing Prefab", "Yes", "No" ) )
 			{
-				var refGo = PrefabUtility.CreatePrefab( newPath + ".prefab", go, ReplacePrefabOptions.ReplaceNameBased );
+				var refGo = PrefabUtility.SaveAsPrefabAsset( go, newPath + ".prefab", out var success );
 				ret = refGo.GetComponent<T>();
 			}
 		}

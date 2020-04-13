@@ -24,14 +24,15 @@ public class IntState : INumericValueState<int>, ISerializationCallbackReceiver
 
     public IEventRegister<int> OnChange { get { return _onChange; } }
 
-    public IntState( int initialValue = default( int ) ) { _value = initialValue; }
-
-    public override string ToString() { return string.Format( "IS({1})", typeof( int ).ToString(), _value ); }
+    public IntState( int initialValue = default( int ) ) { _value = initialValue; Init(); }
+	void Init()
+	{
+		if( _onChange == null ) _onChange = new EventSlot<int>();
+	}
 
 	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); }
+	
 
-	void ISerializationCallbackReceiver.OnAfterDeserialize()
-	{
-		if (_onChange == null) _onChange = new EventSlot<int>();
-	}
+	public override string ToString() { return string.Format( "IS({1})", typeof( int ).ToString(), _value ); }
 }

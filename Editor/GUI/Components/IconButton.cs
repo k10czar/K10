@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System;
 
 namespace K10.EditorGUIExtention
 {
@@ -55,14 +56,26 @@ namespace K10.EditorGUIExtention
 
 		public static class Toggle
 		{
-			public static bool Layout( bool active, float size, string onIcon, string offIcon )
+			static Color DEFAULT_ON_FAIL_COLOR = Color.LerpUnclamped( Color.white, Color.green, .25f );
+			static Color DEFAULT_OFF_FAIL_COLOR = Color.LerpUnclamped( Color.white, Color.red, .25f );
+
+			private static Color GetFailColor( bool active ) => active ? DEFAULT_ON_FAIL_COLOR : DEFAULT_OFF_FAIL_COLOR;
+			private static char GetFailChar( bool active ) => active ? 'O' : '-';
+
+			public static bool Layout( bool active, float size, string onIcon, string offIcon, string tooltip = "" )
 			{
-				if( IconButton.Layout( size, active ? onIcon : offIcon ) ) active = !active;
+				if( IconButton.Layout( active ? onIcon : offIcon, size, GetFailChar( active ), "", GetFailColor( active ) ) ) active = !active;
 				return active;
 			}
 
-			public static bool TrafficLight( bool active, float size ) { return Toggle.Layout( active, size, "greenLight", "redLight" ); }
-			public static bool Lamp( bool active, float size = 32 ) { return Toggle.Layout( active, size, "on", "off" ); }
+			public static bool TrafficLight( bool active, float size, string tooltip = "" ) { return Toggle.Layout( active, size, "greenLight", "redLight" ); }
+			public static bool Lamp( bool active, float size = 32, string tooltip = "" ) { return Toggle.Layout( active, size, "on", "off" ); }
+
+			public static bool Draw( Rect rect, bool active, string onIcon, string offIcon, string tooltip = "" )
+			{
+				if( IconButton.Draw( rect, active ? onIcon : offIcon, GetFailChar( active ), "", GetFailColor( active ) ) ) active = !active;
+				return active;
+			}
 		}
 	}
 }

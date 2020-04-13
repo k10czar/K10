@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class Vector2State : IValueState<Vector2>
+public class Vector2State : IValueState<Vector2>, ISerializationCallbackReceiver
 {
     [SerializeField] Vector2 _value;
     [System.NonSerialized] EventSlot<Vector2> _onChange = new EventSlot<Vector2>();
@@ -18,7 +18,15 @@ public class Vector2State : IValueState<Vector2>
 
     public IEventRegister<Vector2> OnChange { get { return _onChange; } }
 
-    public Vector2State( Vector2 initialValue = default( Vector2 ) ) { _value = initialValue; }
+    public Vector2State( Vector2 initialValue = default( Vector2 ) ) { _value = initialValue; Init(); }
+	void Init()
+	{
+		if( _onChange == null ) _onChange = new EventSlot<Vector2>();
+	}
 
-    public override string ToString() { return string.Format( "V2S({1})", typeof( Vector2 ).ToString(), _value ); }
+	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); }
+	
+
+	public override string ToString() { return string.Format( "V2S({1})", typeof( Vector2 ).ToString(), _value ); }
 }

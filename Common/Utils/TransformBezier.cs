@@ -54,7 +54,7 @@ public class Bezier
 	public void FillLine( LineRenderer line, float start, float end, int interactions )
 	{
 		var dif = end - start;
-		line.SetVertexCount( interactions );
+		line.positionCount = interactions;
 		for( int i = 0; i < interactions; i++ )
 		{
 			line.SetPosition( i, GetPoint( start + ( dif * i / ( interactions - 1 ) ) ) );

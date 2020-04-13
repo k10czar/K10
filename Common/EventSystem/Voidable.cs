@@ -1,5 +1,10 @@
 
 
+public interface IVoidable
+{
+	void Expire();
+}
+
 
 public class CallOnce : Voidable
 {
@@ -16,7 +21,7 @@ public class CallOnce<T> : Voidable<T>
     public override void Trigger( T t ) { Expire(); base.Trigger( t ); }
 }
 
-public class Voidable : IEventTrigger
+public class Voidable : IEventTrigger, IVoidable
 {
     IEventTrigger _callback;
     bool _void;
@@ -28,7 +33,7 @@ public class Voidable : IEventTrigger
     public void Expire() { _void = true; }
 }
 
-public class Voidable<T> : IEventTrigger<T>
+public class Voidable<T> : IEventTrigger<T>, IVoidable
 {
     IEventTrigger<T> _callback;
 	bool _void;

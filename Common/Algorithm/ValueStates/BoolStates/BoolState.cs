@@ -13,6 +13,8 @@ public interface IBoolStateObserver : IValueStateObserver<bool>
 [System.Serializable]
 public class BoolState : IBoolState, ISerializationCallbackReceiver
 {
+	public const string SET_METHOD_NAME = nameof( Setter );
+	public const string ON_CHANGE_PROP_NAME = nameof( OnChange );
 	[SerializeField] bool _value;
 
 	[System.NonSerialized] private EventSlot<bool> _onChange = new EventSlot<bool>();
@@ -38,18 +40,19 @@ public class BoolState : IBoolState, ISerializationCallbackReceiver
 	public IEventRegister OnTrueState => _onTrue;
 	public IEventRegister OnFalseState => _onFalse;
 
-	public BoolState( bool initialValue = false ) { _value = initialValue; }
+	public BoolState( bool initialValue = false ) { _value = initialValue; Init(); }
 
-	public override string ToString() { return string.Format( "BS({0})", _value ); }
-
-	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
-
-	void ISerializationCallbackReceiver.OnAfterDeserialize()
+	void Init()
 	{
 		if( _onChange == null ) _onChange = new EventSlot<bool>();
 		if( _onTrue == null ) _onTrue = new EventSlot();
 		if( _onFalse == null ) _onFalse = new EventSlot();
 	}
+
+	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+	void ISerializationCallbackReceiver.OnAfterDeserialize(){ Init(); }
+
+	public override string ToString() { return string.Format( "BS({0})", _value ); }
 }
 
 public static class BoolStateExtention

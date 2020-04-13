@@ -20,7 +20,6 @@ public static class EditorExtention
 
 public abstract class ReorderableListPropertyDrawer : PropertyDrawer
 {
-	static bool ANALISE = false;
 	static readonly Dictionary<SerializedProperty, Analysis> _analysis = new Dictionary<SerializedProperty, Analysis>();
 	System.Diagnostics.Stopwatch _stopwatch = new System.Diagnostics.Stopwatch();
 
@@ -65,25 +64,8 @@ public abstract class ReorderableListPropertyDrawer : PropertyDrawer
 
 	public override void OnGUI( Rect area, SerializedProperty property, GUIContent label )
 	{
-		if( ANALISE )
-		{
-			_stopwatch.Reset();
-			_stopwatch.Start();
-		}
 		var list = RequestList( property );
 		list.DoList( area );
-		if( ANALISE )
-		{
-			_stopwatch.Stop();
-			var ms = _stopwatch.ElapsedMilliseconds;
-			var a = RequestAnalysis( property );
-			a.SetOnGUI( ms );
-
-			var areaProf = area.RequestBottom( 16 );
-			areaProf.x = 100;
-			// a.Draw( area.RequestBottom( 16 ).HorizontalShrink( 150 ), CalculateTotalTime() );
-			a.Draw( areaProf, CalculateTotalTime() );
-		}
 	}
 
 	private float CalculateTotalTime()
@@ -104,20 +86,8 @@ public abstract class ReorderableListPropertyDrawer : PropertyDrawer
 
 	public override float GetPropertyHeight( SerializedProperty property, GUIContent label )
 	{
-		if( ANALISE )
-		{
-			_stopwatch.Reset();
-			_stopwatch.Start();
-		}
 		var list = RequestList( property );
 		return list.Height();
-		if( ANALISE )
-		{
-			_stopwatch.Stop();
-			var ms = _stopwatch.ElapsedMilliseconds;
-			var a = RequestAnalysis( property );
-			a.SetHeightTime( ms );
-		}
 	}
 
 	protected UnityEditorInternal.ReorderableList RequestList( SerializedProperty prop ) { return _listCollection.Request( prop, CreateNewList ); }

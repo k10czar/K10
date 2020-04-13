@@ -14,11 +14,12 @@ public interface IRangedFloatStateObserver : IValueStateObserver<float>
 }
 
 [System.Serializable]
-public class RangedFloatState : IRangedFloatState, IRangedFloatStateObserver
+public class RangedFloatState : IRangedFloatState, IRangedFloatStateObserver, ISerializationCallbackReceiver
 {
-	[SerializeField] protected readonly FloatState _value;
-	[SerializeField] protected readonly FloatState _min;
-	[SerializeField] protected readonly FloatState _max;
+	[SerializeField] protected FloatState _value;
+	[SerializeField] protected FloatState _min;
+	[SerializeField] protected FloatState _max;
+	[System.NonSerialized] private bool _inited;
 
 	public float Value => _value.Value;
 	public IEventRegister<float> OnChange => _value.OnChange;
@@ -53,7 +54,17 @@ public class RangedFloatState : IRangedFloatState, IRangedFloatStateObserver
 		_min = new FloatState( minValue );
 		_value = new FloatState( Clamp( initialValue, _min.Value, _max.Value ) );
 
+		Init();
+	}
+
+	protected void Init()
+	{
+		if( _inited ) return;
+		_inited = true;
 		_min.OnChange.Register( CheckValueRange );
 		_max.OnChange.Register( CheckValueRange );
 	}
+
+	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); }
 }

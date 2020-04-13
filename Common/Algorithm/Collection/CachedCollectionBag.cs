@@ -16,7 +16,6 @@ public interface ICachedCollectionBag<T> : ICachedCollectionBagObserver<T>
 	void Add( T t );
 	T Pull();
 	void ShuffleBag();
-	IEventRegister<int[]> OnBagShuffled { get; }
 }
 
 public class CachedCollectionBag<T> : ICachedCollectionBag<T>
