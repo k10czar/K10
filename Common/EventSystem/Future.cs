@@ -55,8 +55,7 @@ public class Future<Result> : IFuture<Result>
 
 	public void ForceComplete( Result result )
 	{
-		if( _isComplete )
-			return;
+		if( _isComplete ) return;
 
 		_isComplete = true;
 		_completion.Trigger( result );
