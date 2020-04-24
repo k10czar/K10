@@ -22,6 +22,9 @@ public class IntState : INumericValueState<int>, ISerializationCallbackReceiver
 		Setter( _value + value );
 	}
 
+	public void PlusOne() => Setter( _value + 1 );
+	public void MinusOne() => Setter( _value - 1 );
+
     public IEventRegister<int> OnChange { get { return _onChange; } }
 
     public IntState( int initialValue = default( int ) ) { _value = initialValue; }
