@@ -60,6 +60,32 @@ public static class ISemaphoreInterectionExtentions
 		source.RegisterOnTrue( new ConditionalEventListener( () => semaphore.Release( source ), eventValidation.CurrentValidationCheck ) );
 		source.RegisterOnFalse( new ConditionalEventListener( () => semaphore.Block( source ), eventValidation.CurrentValidationCheck ) );
 	}
+
+	public static void BlockOn( this ISemaphoreInterection semaphore, UnityEngine.GameObject go, IBoolStateObserver additionalCondition = null )
+	{
+		var goEvents = go.EventRelay();
+		bool isValid = true;
+		var name = go.HierarchyNameOrNull();
+		var condition = goEvents.IsActive;
+		if( additionalCondition != null ) condition = new BoolStateOperations.And( condition, additionalCondition );
+		Func<bool> eventValidation = () => isValid;
+		condition.RegisterOnTrue( new ConditionalEventListener( () => semaphore.Block( condition ), eventValidation ) );
+		condition.RegisterOnFalse( new ConditionalEventListener( () => semaphore.Release( condition ), eventValidation ) );
+		goEvents.OnDestroy.Register( () => { isValid = false; semaphore.Release( condition ); } );
+	}
+
+	public static void ReleaseOn( this ISemaphoreInterection semaphore, UnityEngine.GameObject go, IBoolStateObserver additionalCondition = null )
+	{
+		var goEvents = go.EventRelay();
+		bool isValid = true;
+		var name = go.HierarchyNameOrNull();
+		IBoolStateObserver condition = new BoolStateOperations.Not( goEvents.IsActive );
+		if( additionalCondition != null ) condition = new BoolStateOperations.And( condition, additionalCondition );
+		Func<bool> eventValidation = () => isValid;
+		condition.RegisterOnTrue( new ConditionalEventListener( () => semaphore.Release( condition ), eventValidation ) );
+		condition.RegisterOnFalse( new ConditionalEventListener( () => semaphore.Block( condition ), eventValidation ) );
+		goEvents.OnDestroy.Register( () => { isValid = false; semaphore.Release( condition ); } );
+	}
 }
 
 public interface ISemaphore : ISemaphoreInfo, ISemaphoreInterection { }

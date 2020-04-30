@@ -45,6 +45,9 @@ public class StateRequester : IStateRequester
 	public void RequestOn( IBoolStateObserver source ) { _semaphore.BlockOn( source ); }
 	public void IgnoreOn( IBoolStateObserver source ) { _semaphore.ReleaseOn( source ); }
 
+	public void RequestOn( GameObject gameObject, IBoolStateObserver additionalCondition = null ) { _semaphore.BlockOn( gameObject, additionalCondition ); }
+	public void IgnoreOn( GameObject gameObject, IBoolStateObserver additionalCondition = null ) { _semaphore.ReleaseOn( gameObject, additionalCondition ); }
+
     public void RequestOn(IBoolStateObserver source, System.Func<bool> validation ) {
         _semaphore.BlockOn( source, validation );
     }
