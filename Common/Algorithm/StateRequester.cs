@@ -18,6 +18,8 @@ public interface IStateRequesterInteraction
 	void RequestOn( IBoolStateObserver source );
 	void IgnoreOn( IBoolStateObserver source );
     void RequestOn( IBoolStateObserver source, System.Func<bool> validation );
+	void RequestOn( GameObject gameObject, IBoolStateObserver additionalCondition = null );
+	void IgnoreOn( GameObject gameObject, IBoolStateObserver additionalCondition = null );
 }
 
 public interface IStateRequester : IStateRequesterInfo, IStateRequesterInteraction, IBoolStateObserver { }
@@ -48,9 +50,7 @@ public class StateRequester : IStateRequester
 	public void RequestOn( GameObject gameObject, IBoolStateObserver additionalCondition = null ) { _semaphore.BlockOn( gameObject, additionalCondition ); }
 	public void IgnoreOn( GameObject gameObject, IBoolStateObserver additionalCondition = null ) { _semaphore.ReleaseOn( gameObject, additionalCondition ); }
 
-    public void RequestOn(IBoolStateObserver source, System.Func<bool> validation ) {
-        _semaphore.BlockOn( source, validation );
-    }
+    public void RequestOn(IBoolStateObserver source, System.Func<bool> validation ) { _semaphore.BlockOn( source, validation ); }
 
 	void InvertedStateChange( bool free ) { _onStateChange.Trigger( !free ); }
 
