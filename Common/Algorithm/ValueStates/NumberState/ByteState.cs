@@ -16,7 +16,7 @@ public class ByteState : INumericValueState<byte>, ISerializationCallbackReceive
 		_onChange.Trigger( value );
 	}
 
-	public void Increment( byte value )
+	public void Increment( byte value = 1 )
 	{
 		if( value == 0 ) return;
 		Setter( (byte)( _value + value ) );
