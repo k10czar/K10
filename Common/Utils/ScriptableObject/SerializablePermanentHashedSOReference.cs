@@ -27,6 +27,18 @@ public abstract class BaseSerializablePermanentHashedSOReference<T> where T : Ha
 		_referenceHashID = _reference.HashID;
 	}
 
+	public void Set( T refrence )
+	{
+		_reference = refrence;
+		_referenceHashID = refrence.HashID;
+	}
+
+	public void Set( int id )
+	{
+		_reference = GetCollection().GetElementBase( id ) as T;
+		_referenceHashID = id;
+	}
+
 	protected abstract IHashedSOCollection GetCollection();
 
 	public T Reference
