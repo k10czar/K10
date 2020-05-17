@@ -35,7 +35,12 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand
 
     float _velocity, _current, _desired;
 
-	void CheckOnMin() { _isOnMinimumValue.Value = Mathf.Approximately( _current, _min ) && Mathf.Approximately( _desired, _min ); }
+	void CheckOnMin() 
+	{ 
+		var isOnMin = Mathf.Approximately( _current, _min ) && Mathf.Approximately( _desired, _min );
+		_isOnMinimumValue.Value = isOnMin;
+		_notOnMinimumValue.Value = !isOnMin;
+	}
     void CheckOnMax() { _isOnMaximumValue.Value = Mathf.Approximately( _current, _max ) && Mathf.Approximately( _desired, _max ); }
     void CheckDesired() { _isOnDesired.Value = Mathf.Approximately( _current, _desired ); }
 
@@ -43,12 +48,13 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand
     public IEventRegister OnValueReach { get { return _isOnDesired.OnTrueState; } }
 
     BoolState _isOnDesired = new BoolState( false );
-    public IBoolStateObserver IsOnDesired { get { return _isOnDesired; } }
-
+	BoolState _notOnMinimumValue = new BoolState();
     BoolState _isOnMinimumValue = new BoolState();
-    public IBoolStateObserver IsOnMinimumValue { get { return _isOnMinimumValue; } }
-
     BoolState _isOnMaximumValue = new BoolState();
+
+    public IBoolStateObserver IsOnDesired { get { return _isOnDesired; } }
+	public IBoolStateObserver IsOnMinimumValue { get { return _isOnMinimumValue; } }
+	public IBoolStateObserver NotOnMinimumValue { get { return _notOnMinimumValue; } }
     public IBoolStateObserver IsOnMaximumValue { get { return _isOnMaximumValue; } }
 
 	EventSlot<float> _onValueUpdate = new EventSlot<float>();

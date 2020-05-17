@@ -291,11 +291,16 @@ public static class K10UnityExtensions
 
 	public static void FindDescendent<T>( this Component c, ref T t, string name ) where T : Component { if( c == null ) return; FindDescendent( c.transform, ref t, name ); }
 	public static void FindDescendent<T>( this GameObject go, ref T t, string name ) where T : Component { if( go == null ) return; FindDescendent( go.transform, ref t, name ); }
-	public static void FindDescendent<C>( this Transform t, ref C c, string name ) where C : Component
+	public static void FindDescendent<T>( this Transform transform, ref T t, string name ) where T : Component
 	{
-		if( t == null || c != null ) return;
+		if( transform == null || t != null ) return;
 
-		List<Transform> list = new List<Transform> { t };
+		List<Transform> list = new List<Transform> { transform };
+		if( string.IsNullOrEmpty( name ) )
+		{
+			transform.FindDescendent<T>( ref t );
+			return;
+		}
 		var lowerName = name.ToLower();
 
 		while( list.Count > 0 )
@@ -303,8 +308,8 @@ public static class K10UnityExtensions
 			var elemet = list[0];
 			if( elemet.name.ToLower() == lowerName )
 			{
-				c = elemet.GetComponent<C>();
-				if( c != null ) return;
+				t = elemet.GetComponent<T>();
+				if( t != null ) return;
 			}
 
 			list.RemoveAt( 0 );
