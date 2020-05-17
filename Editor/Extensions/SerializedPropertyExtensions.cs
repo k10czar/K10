@@ -60,7 +60,7 @@ public static class SerializedPropertyExtensions
 	public static void DebugWatcherField<T>( string key, object obj, System.Type objType, Rect rect )
 	{
 		var debug = _events.TryGetValue( key, out var evnt );
-		var newDebug = K10.EditorGUIExtention.IconButton.Toggle.Draw( rect, debug, "spy", "DebugOff" );
+		var newDebug = K10.EditorGUIExtention.IconButton.Toggle.Draw( rect, debug, "DebugOn", "DebugOff" );
 		if( newDebug != debug )
 		{
 			if( newDebug )
