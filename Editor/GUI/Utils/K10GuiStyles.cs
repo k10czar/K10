@@ -9,6 +9,7 @@ public static class K10GuiStyles
 
 	public static readonly Color ERROR_TINT_COLOR = Color.LerpUnclamped( Color.red, Color.white, .75f );
 
+	public static readonly GUIStyle richLabel = new GUIStyle( EditorStyles.label ) { richText = true };
 	public static readonly GUIStyle titleStyle = new GUIStyle( EditorStyles.label ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
 	public static readonly GUIStyle bigBoldCenterStyle = new GUIStyle( EditorStyles.label ) { fontSize = BIG_FONT_SIZE, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
 	public static readonly GUIStyle bigBold = new GUIStyle( EditorStyles.label ) { fontSize = BIG_FONT_SIZE, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
