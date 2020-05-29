@@ -107,6 +107,33 @@ public static class K10UnityExtensions
 	public static Rect RequestLeft( this Rect r, float width ) { return CutRight( r, r.width - width ); }
 	public static Rect RequestRight( this Rect r, float width ) { return CutLeft( r, r.width - width ); }
 
+	public static Rect GetLineTop( this ref Rect rect, float lineHeight, float spacing = 0 )
+	{
+		var line = rect.RequestTop( lineHeight + spacing / 2 );
+		rect = rect.CutTop( lineHeight + spacing );
+		return line;
+	}
+	public static Rect GetLineBottom( this ref Rect rect, float lineHeight, float spacing = 0 )
+	{
+		var line = rect.RequestBottom( lineHeight + spacing / 2 );
+		rect = rect.CutBottom( lineHeight + spacing );
+		return line;
+	}
+
+	public static Rect GetColumnLeft( this ref Rect rect, float width, float spacing = 0 )
+	{
+		var column = rect.RequestLeft( width );
+		rect = rect.CutLeft( width + spacing );
+		return column;
+	}
+
+	public static Rect GetColumnRight( this ref Rect rect, float width, float spacing = 0 )
+	{
+		var column = rect.RequestRight( width );
+		rect = rect.CutRight( width + spacing );
+		return column;
+	}
+
 	public static Rect ExpandTop( this Rect r, float height ) { return new Rect( r.x, r.y + height, r.width, r.height + height ); }
 	public static Rect ExpandBottom( this Rect r, float height ) { return new Rect( r.x, r.y, r.width, r.height + height ); }
 	public static Rect ExpandLeft( this Rect r, float width ) { return new Rect( r.x + width, r.y, r.width + width, r.height ); }
