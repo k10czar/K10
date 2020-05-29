@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -25,12 +26,21 @@ public interface IHashedSOCollection
 	IHashedSO GetElementBase( int hashID );
 }
 
-public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollection
+public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollection, System.Collections.IEnumerable
 {
 	public abstract int Count { get; }
 	public abstract IHashedSO GetElementBase( int index );
 	public abstract bool Contains( IHashedSO element );
 	public abstract bool ContainsHashID( int hashID );
+
+	IEnumerator IEnumerable.GetEnumerator()
+	{
+		var count = Count;
+		for( int i = 0; i < count; i++ ) {
+			var element = GetElementBase( i );
+			if( element != null ) yield return element;
+		}
+	}
 
 	public abstract System.Type GetElementType();
 

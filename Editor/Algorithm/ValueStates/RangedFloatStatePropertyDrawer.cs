@@ -26,7 +26,7 @@ public class RangedFloatStatePropertyDrawer : PropertyDrawer
 		var minVal = minProp.FindPropertyRelative( "_value" ).floatValue;
 		var maxVal = maxProp.FindPropertyRelative( "_value" ).floatValue;
 		bool invalid = ( val < minVal && !Mathf.Approximately( val, minVal ) ) || ( val > maxVal && !Mathf.Approximately( val, maxVal ) );
-		if( invalid ) GuiColorManager.New( K10GuiStyles.ERROR_TINT_COLOR );
+		if( invalid ) GuiColorManager.New( K10GuiStyles.RED_TINT_COLOR );
 		changed |= valueProp.ValueStateField<float>( area.VerticalSlice( 3, 10, 4 ), GUIContent.none );
 		if( invalid ) GuiColorManager.Revert();
 		EditorGUI.LabelField( minArea.Shrink( 2 ), "min", K10GuiStyles.unitStyle );
