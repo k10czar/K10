@@ -14,7 +14,9 @@ public static class JsonUtilities
 		if( !string.IsNullOrEmpty( prefix ) ) fileName = prefix + "_" + fileName;
 		if( !string.IsNullOrEmpty( suffix ) ) fileName = fileName + "_" + suffix;
 		FileAdapter.SaveHasUTF8( DEBUG_FOLDER + fileName + ".json", formattedJson );
+		#if UNITY_EDITOR
 		Debug.Log( fileName + ": " + rawJson.FormatAsJson( "    " ) );
+		#endif //UNITY_EDITOR
 	}
 
 	private static readonly StringBuilder sb = new StringBuilder();

@@ -65,7 +65,7 @@ public static class Cache
 		}
 		else
 		{
-			if( logErrorOnCacheMiss ) Debug.Log( $"Cannot find cache of {reference.NameOrNull()} so we create a new one" );
+			// if( logErrorOnCacheMiss ) Debug.Log( $"Cannot find cache of {reference.NameOrNull()} so we create a new one" );
 			if( transform != null ) go = GameObject.Instantiate( reference, transform.position, transform.rotation, transform );
 			else go = GameObject.Instantiate( reference );
 		}
@@ -85,7 +85,7 @@ public static class Cache
 		}
 		else
 		{
-			if( logErrorOnCacheMiss ) Debug.Log( $"Cannot find cache of {reference.NameOrNull()} so we create a new one" );
+			// if( logErrorOnCacheMiss ) Debug.Log( $"Cannot find cache of {reference.NameOrNull()} so we create a new one" );
 			go = GameObject.Instantiate( reference, position, rotation );
 		}
 		return go;
