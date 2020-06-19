@@ -5,6 +5,15 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
+public static class ReflectionExtensions
+{
+	public static object GetDefaultValue( this System.Type type )
+	{
+		if( type.IsValueType ) return System.Activator.CreateInstance( type );
+		return null;
+	}
+}
+
 public class TestCustomSerializedMessages : EditorWindow
 {
 	private static float DEFAULT_FIELD_WIDTH => 150;
@@ -12,6 +21,94 @@ public class TestCustomSerializedMessages : EditorWindow
 	private static GUILayoutOption DOUBLE_FIELD_WIDTH_PROP = GUILayout.Width( 2 * DEFAULT_FIELD_WIDTH + 5 );
 	private static GUILayoutOption BITMASK_WIDTH_PROP = GUILayout.Width( 70 );
 
+	public class ConstructorData
+	{
+		int _selectedConstructor = -1;
+		string _objectStr;
+		string _name;
+		object _instance;
+		ConstructorInfo[] _constructors;
+		string[] _constructorNames;
+		bool _hasConstructors = false;
+		System.Type _type;
+		private readonly List<ConstructorData> _parameters = new List<ConstructorData>();
+
+		public object Instance => _instance;
+
+		public bool SetType( System.Type type, string name )
+		{
+			if( type == _type ) return false;
+			_type = type;
+			_constructors = type.GetConstructors();
+			_hasConstructors = _constructors.Length > 0;
+			_instance = type.GetDefaultValue();
+			var names = new List<string> { "None" };
+			names.AddRange( _constructors.ToList().ConvertAll<string>( ( c ) => DebugConstructor( c ) ) );
+			_constructorNames = names.ToArray();
+			_name = name + ": " + _type.ToStringOrNull();
+			return true;
+		}
+
+		public bool Draw()
+		{
+			EditorGUILayout.BeginHorizontal();
+			bool isDirty = false;
+
+			if( _hasConstructors )
+			{
+				var initialSelection = _selectedConstructor;
+				_selectedConstructor = EditorGUILayout.Popup( _selectedConstructor + 1, _constructorNames );
+				_selectedConstructor--;
+				isDirty |= initialSelection != _selectedConstructor;
+			}
+
+			if( _instance == null || _instance.GetType() != _type )
+			{
+				_instance = _type.GetDefaultValue();
+				isDirty |= true;
+			}
+
+			bool hasConstructor = _hasConstructors && _selectedConstructor >= 0 && _selectedConstructor < _constructors.Length;
+			if( !hasConstructor )
+			{
+				// var indentLevel = EditorGUI.indentLevel;
+				// EditorGUI.indentLevel = 0;
+				var obj = Field( _instance, _type, _name, true );
+				// EditorGUI.indentLevel = indentLevel;
+				if( obj != _instance )
+				{
+					_instance = obj;
+					isDirty = true;
+				}
+			}
+			else
+			{
+				GUILayout.Label( _name );
+			}
+
+			EditorGUILayout.EndHorizontal();
+			if( !hasConstructor ) return isDirty;
+
+			var contructor = _constructors[_selectedConstructor];
+
+			var parameters = contructor.GetParameters();
+			while( _parameters.Count > parameters.Length ) _parameters.RemoveAt( _parameters.Count - 1 );
+			while( _parameters.Count < parameters.Length ) _parameters.Add( new ConstructorData() );
+
+			EditorGUI.indentLevel++;
+			for( int i = 0; i < parameters.Length; i++ )
+			{
+				var p = parameters[i];
+				var cd = _parameters[i];
+				isDirty |= cd.SetType( p.ParameterType, p.Name );
+				isDirty |= cd.Draw();
+			}
+			EditorGUI.indentLevel--;
+			if( isDirty ) _instance = contructor.Invoke( _parameters.ConvertAll( ( cd ) => cd.Instance ).ToArray() );
+
+			return isDirty;
+		}
+	}
 
 	System.Type[] _messageTypes;
 	string[] _displayName;
@@ -19,6 +116,8 @@ public class TestCustomSerializedMessages : EditorWindow
 	private int _selectedConstructor;
 	private readonly List<string> _objectStrings = new List<string>();
 	private readonly List<object> _objects = new List<object>();
+
+	private readonly ConstructorData _data = new ConstructorData();
 
 	string _serializeMethodName = "WriteBytes";
 	BindingFlags _serializeMethodFlags = BindingFlags.Public | BindingFlags.Static;
@@ -78,58 +177,12 @@ public class TestCustomSerializedMessages : EditorWindow
 		var deserializeMethod = FindMethod( "deserializeMethod", message, ref _deserializeMethodName, ref _deserializeMethodFlags );
 
 		K10.EditorGUIExtention.SeparationLine.Horizontal();
-		var constructors = message.GetConstructors();
-		GUILayout.Label( $"{constructors.Length} Constructor(s)", K10GuiStyles.basicCenterStyle );
 
-		var names = new List<string> { "None" };
-		names.AddRange( constructors.ToList().ConvertAll<string>( ( c ) => DebugConstructor( c ) ) );
-		_selectedConstructor = EditorGUILayout.Popup( _selectedConstructor + 1, names.ToArray() );
-		_selectedConstructor--;
+		_data.SetType( message, "message" );
+		_data.Draw();
+		_instance = _data.Instance;
 
-		bool hasConstructor = _selectedConstructor >= 0 && _selectedConstructor < constructors.Length;
-		if( hasConstructor )
-		{
-			var contructor = constructors[_selectedConstructor];
-
-			var parameters = contructor.GetParameters();
-			while( _objects.Count > parameters.Length ) _objects.RemoveAt( _objects.Count - 1 );
-			while( _objectStrings.Count > parameters.Length ) _objectStrings.RemoveAt( _objectStrings.Count - 1 );
-
-			bool isDirty = false;
-
-			for( int i = 0; i < parameters.Length; i++ )
-			{
-				var p = parameters[i];
-				if( _objects.Count <= i )
-				{
-					_objects.Add( GetDefault( p.ParameterType ) );
-					isDirty = true;
-				}
-				if( _objects[i] == null || _objects[i].GetType() != p.ParameterType )
-				{
-					var defVal = GetDefault( p.ParameterType );
-					if( _objects[i] != defVal )
-					{
-						_objects[i] = defVal;
-						isDirty = true;
-					}
-				}
-				var obj = Field( _objects[i], p.ParameterType, p.ToStringOrNull(), true );
-				if( obj != _objects[i] )
-				{
-					_objects[i] = obj;
-					isDirty = true;
-				}
-			}
-			K10.EditorGUIExtention.SeparationLine.Horizontal();
-			if( isDirty ) _instance = contructor.Invoke( _objects.ToArray() );
-		}
-		else
-		{
-			if( _instance == null || _instance.GetType() != message ) _instance = GetDefault( message );
-		}
-
-		DrawInstanceInspector( "Constructed Instance", _instance, message, !hasConstructor );
+		DrawInstanceInspector( "Constructed Instance", _instance, message, true );
 
 		K10.EditorGUIExtention.SeparationLine.Horizontal();
 		var serializationReturn = TempBytes.Get( 0 );
@@ -182,13 +235,18 @@ public class TestCustomSerializedMessages : EditorWindow
 	static object Field( object obj, System.Type type, string name, bool canEdit = false )
 	{
 		EditorGUILayout.BeginHorizontal();
+		if( EditorGUI.indentLevel > 0 )
+		{
+			GUILayout.Space( EditorGUI.indentLevel * 20 );
+		}
+
 		if( canEdit )
 		{
 			var converter = System.ComponentModel.TypeDescriptor.GetConverter( type );
 			var retStr = GUILayout.TextField( obj.ToStringOrNull(), FIELD_WIDTH_PROP );
 			EditorGUI.EndDisabledGroup();
 			try { obj = converter.ConvertFrom( retStr ); }
-			catch { obj = GetDefault( type ); }
+			catch { obj = type.GetDefaultValue(); }
 			EditorGUI.BeginDisabledGroup( true );
 			GUILayout.TextField( obj.ToStringOrNull(), FIELD_WIDTH_PROP );
 			EditorGUI.EndDisabledGroup();
@@ -229,12 +287,6 @@ public class TestCustomSerializedMessages : EditorWindow
 			try { obj = prop.GetValue( instance ); } catch( System.Exception ex ) { obj = $"ERROR({ex.GetType()})"; }
 			Field( obj, prop.PropertyType, prop.ToStringOrNull(), false );
 		}
-	}
-
-	private static object GetDefault( System.Type type )
-	{
-		if( type.IsValueType ) return System.Activator.CreateInstance( type );
-		return null;
 	}
 
 	private static string DebugConstructor( ConstructorInfo cons ) => cons != null ? $"new({DebugParameters( cons.GetParameters() )})" : "Null";
