@@ -49,17 +49,32 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 	void IHashedSOCollectionEditor.Editor_HACK_EnforceHashIDs() {
 		HashSet<IHashedSO> _alreadyVisited = new HashSet<IHashedSO> ();
+
 		for (int i = 0; i < Count; i++) {
 			var element = GetElementBase (i);
 			if (element == null) continue;
+			if (element.HashID != i) continue;
+
+			_alreadyVisited.Add (element);
+		}
+
+		for (int j = 0; j < Count; j++) {
+			var element = GetElementBase (j);
+			if (element == null) continue;
+			
 			if (_alreadyVisited.Contains (element)) {
-				Editor_HACK_Remove (i);
-				i--;
+				
+				if (element.HashID != j) 
+				{
+					Editor_HACK_Remove (j);
+					j--;
+				}
+
 				continue;
 			}
 			_alreadyVisited.Add (element);
-			if (element.HashID == i) continue;
-			element.SetHashID (i);
+			if (element.HashID == j) continue;
+			element.SetHashID (j);
 			EditorUtility.SetDirty (element as ScriptableObject);
 		}
 	}

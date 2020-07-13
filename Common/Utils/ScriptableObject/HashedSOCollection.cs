@@ -23,7 +23,7 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	protected override void Clear() { _list.Clear(); }
 	public override bool EditorCanChangeIDsToOptimizeSpace => true;
 
-	public override void Editor_HACK_Remove(int id){ _list.RemoveAt(id); }
+	public override void Editor_HACK_Remove(int id){ _list[id] = null; }
 	protected override bool AddElement( IHashedSO obj ) { if( obj is T t ) _list.Add( t ); return ( obj is T ); }
 	protected override bool ResolveConflictedFile( IHashedSO t, string assetPath ) => true;
 	public override bool TryResolveConflict( int i )
