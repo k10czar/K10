@@ -22,6 +22,8 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 #if UNITY_EDITOR
 	protected override void Clear() { _list.Clear(); }
 	public override bool EditorCanChangeIDsToOptimizeSpace => true;
+
+	public override void Editor_HACK_Remove(int id){ _list.RemoveAt(id); }
 	protected override bool AddElement( IHashedSO obj ) { if( obj is T t ) _list.Add( t ); return ( obj is T ); }
 	protected override bool ResolveConflictedFile( IHashedSO t, string assetPath ) => true;
 	public override bool TryResolveConflict( int i )
