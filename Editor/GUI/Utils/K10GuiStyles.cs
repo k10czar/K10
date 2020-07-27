@@ -16,7 +16,7 @@ public static class K10GuiStyles
 	public static readonly Color CYAN_TINT_COLOR = DefaultGUIColorLerp( Color.cyan );
 	public static readonly Color GREY_TINT_COLOR = DefaultGUIColorLerp( Color.grey );
 	public static readonly Color DARKER_TINT_COLOR = DefaultGUIColorLerp( Color.black, .5f );
-	public static readonly Color LIME_TINT_COLOR = DefaultGUIColorLerp( Color.LerpUnclamped( Color.yellow, Color.green, .25f ), .25f );
+	public static readonly Color LIME_TINT_COLOR = DefaultGUIColorLerp( Color.LerpUnclamped( Color.yellow, Color.green, .25f ), .75f );
 
 	public static readonly GUIStyle richLabel = new GUIStyle( EditorStyles.label ) { richText = true };
 	public static readonly GUIStyle titleStyle = new GUIStyle( EditorStyles.label ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
