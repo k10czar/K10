@@ -4,6 +4,26 @@ using System.Collections.Generic;
 
 public static class SOCollectionUtils
 {
+	public static List<T> FindAllAssetsOfType<T>() where T : UnityEngine.Object
+	{
+		var list = new List<T>();
+		FindAllAssetsOfTypeNonAlloc<T>( list );
+		return list;
+	}
+
+	public static void FindAllAssetsOfTypeNonAlloc<T>( IList<T> list ) where T : UnityEngine.Object
+	{
+		list.Clear();
+		var assets = AssetDatabase.FindAssets( $"t:{ typeof(T) }" );
+		for( int i = 0; i < assets.Length; i++ )
+		{
+			var guid = assets[i];
+			var path = AssetDatabase.GUIDToAssetPath( guid );
+			var exp = AssetDatabase.LoadAssetAtPath<T>( path );
+			list.Add( exp );
+		}
+	}
+
     public static void AddAllNew<T>( SerializedObject serializedObject, bool removeNulls = false ) where T : ScriptableObject
     {
         // var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();

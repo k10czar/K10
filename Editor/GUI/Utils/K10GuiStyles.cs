@@ -7,13 +7,16 @@ public static class K10GuiStyles
 	const int BIG_FONT_SIZE = 20;
 	const int SMALL_FONT_SIZE = 12;
 
-	public static readonly Color RED_TINT_COLOR = Color.LerpUnclamped( Color.red, Color.white, .75f );
-	public static readonly Color YELLOW_TINT_COLOR = Color.LerpUnclamped( Color.yellow, Color.white, .75f );
-	public static readonly Color GREEN_TINT_COLOR = Color.LerpUnclamped( Color.green, Color.white, .75f );
-	public static readonly Color BLUE_TINT_COLOR = Color.LerpUnclamped( Color.blue, Color.white, .75f );
-	public static readonly Color CYAN_TINT_COLOR = Color.LerpUnclamped( Color.cyan, Color.white, .75f );
-	public static readonly Color GREY_TINT_COLOR = Color.LerpUnclamped( Color.grey, Color.white, .75f );
-	public static readonly Color DARKER_TINT_COLOR = Color.LerpUnclamped( Color.black, Color.white, .5f );
+	private static Color DefaultGUIColorLerp( Color color, float whiteFactor = 75f ) => Color.LerpUnclamped( color, Color.white, .75f );
+
+	public static readonly Color RED_TINT_COLOR = DefaultGUIColorLerp( Color.red );
+	public static readonly Color YELLOW_TINT_COLOR = DefaultGUIColorLerp( Color.yellow );
+	public static readonly Color GREEN_TINT_COLOR = DefaultGUIColorLerp( Color.green );
+	public static readonly Color BLUE_TINT_COLOR = DefaultGUIColorLerp( Color.blue );
+	public static readonly Color CYAN_TINT_COLOR = DefaultGUIColorLerp( Color.cyan );
+	public static readonly Color GREY_TINT_COLOR = DefaultGUIColorLerp( Color.grey );
+	public static readonly Color DARKER_TINT_COLOR = DefaultGUIColorLerp( Color.black, .5f );
+	public static readonly Color LIME_TINT_COLOR = DefaultGUIColorLerp( Color.LerpUnclamped( Color.yellow, Color.green, .25f ), .25f );
 
 	public static readonly GUIStyle richLabel = new GUIStyle( EditorStyles.label ) { richText = true };
 	public static readonly GUIStyle titleStyle = new GUIStyle( EditorStyles.label ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
