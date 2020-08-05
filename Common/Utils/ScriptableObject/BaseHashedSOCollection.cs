@@ -15,6 +15,7 @@ public interface IHashedSOCollectionEditor
 	bool EditorCanChangeIDsToOptimizeSpace { get; }
 	void Editor_HACK_Remove( int id );
 	void Editor_HACK_EnforceHashIDs();
+	void EditorRemoveWrongElements();
 }
 #endif
 
@@ -87,7 +88,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		}
 	}
 
-	void IHashedSOCollectionEditor.EditorCheckConsistency()
+	void IHashedSOCollectionEditor.EditorRemoveWrongElements()
 	{
 		for( int i = 0; i < Count; i++ )
 		{
@@ -95,6 +96,13 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 			if( element == null ) continue;
 			if( element.HashID != i ) Editor_HACK_Remove( i );
 		}
+
+		UnityEditor.EditorUtility.SetDirty( this );
+	}
+
+	void IHashedSOCollectionEditor.EditorCheckConsistency()
+	{
+		( (IHashedSOCollectionEditor)this ).EditorRemoveWrongElements();
 
 		var guids = AssetDatabase.FindAssets( $"t:{GetElementType().ToString()}" );
 
