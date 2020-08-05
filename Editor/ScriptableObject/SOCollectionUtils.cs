@@ -19,8 +19,14 @@ public static class SOCollectionUtils
 		{
 			var guid = assets[i];
 			var path = AssetDatabase.GUIDToAssetPath( guid );
-			var exp = AssetDatabase.LoadAssetAtPath<T>( path );
-			list.Add( exp );
+			try{
+				var exp = AssetDatabase.LoadAssetAtPath<T>( path );
+				list.Add( exp );
+			}
+			catch
+			{
+				Debug.LogError( $"Fail to load asset at path: {path}" );
+			}
 		}
 	}
 
@@ -46,14 +52,22 @@ public static class SOCollectionUtils
         for( int i = 0; i < guids.Length; i++ )
         {
             var assetPath = AssetDatabase.GUIDToAssetPath( guids[i] );
-            var t = AssetDatabase.LoadAssetAtPath<T>( assetPath );
+			try
+			{
+				var t = AssetDatabase.LoadAssetAtPath<T>( assetPath );
 
-            if( _set.Contains( t ) ) continue;
-
-            var id = prop.arraySize;
-            prop.InsertArrayElementAtIndex( id );
-            var element = prop.GetArrayElementAtIndex( id );
-            element.objectReferenceValue = t;
+				if( !_set.Contains( t ) ) 
+				{
+					var id = prop.arraySize;
+					prop.InsertArrayElementAtIndex( id );
+					var element = prop.GetArrayElementAtIndex( id );
+					element.objectReferenceValue = t;
+				}
+			}
+			catch
+			{
+				Debug.LogError( $"Fail to load asset at path: {assetPath}" );
+			}
         }
     }
 
@@ -74,8 +88,15 @@ public static class SOCollectionUtils
         for( int i = 0; i < guids.Length; i++ )
         {
             var assetPath = AssetDatabase.GUIDToAssetPath( guids[i] );
-            var t = AssetDatabase.LoadAssetAtPath<T>( assetPath );
-            if( !set.Contains( t ) ) list.Add( t );
+			try
+			{
+				var t = AssetDatabase.LoadAssetAtPath<T>( assetPath );
+				if( !set.Contains( t ) ) list.Add( t );
+			}
+			catch
+			{
+				Debug.LogError( $"Fail to load asset at path: {assetPath}" );
+			}
         }
     }
 }
