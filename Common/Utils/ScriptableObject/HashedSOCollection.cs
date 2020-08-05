@@ -20,7 +20,11 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	public IEnumerator<T> GetEnumerator() => _list.GetEnumerator();
 
 #if UNITY_EDITOR
-	protected override void Clear() { _list.Clear(); }
+	protected override void Clear() 
+	{ 
+		_list.Clear();
+		UnityEditor.EditorUtility.SetDirty( this );
+	}
 	public override bool EditorCanChangeIDsToOptimizeSpace => true;
 
 	public override void Editor_HACK_Remove(int id){ _list[id] = null; }
@@ -49,4 +53,16 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		return true;
 	}
 #endif
+
+	public override string ToString()
+	{
+		string s = "";
+		for( int i = 0; i < _list.Count; i++ )
+		{
+			var element = _list[i];
+			if( element == null ) s += $"[{i}] => NULL\n";
+			else s += $"[{i}] => {_list[i].NameOrNull()}[{_list[i].HashID}]\n";
+		}
+		return $"{this.GetType()}:\n{s}";
+	}
 }
