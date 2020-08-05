@@ -25,7 +25,7 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 			Debug.Log( $"OnPostprocessAllAssets After EditorRemoveWrongElements( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
 		}
 
-		for( int i = 0; i < collections.Count; i++ )
+		for( int i = 0; i < elements.Count; i++ )
 		{
 			var hso = elements[i];
 			var col = hso.GetCollection();
