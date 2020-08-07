@@ -32,10 +32,29 @@ public interface IHashedSOCollection
 
 public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollection, System.Collections.IEnumerable
 {
+#if UNITY_EDITOR
+	[SerializeField] EditorLog _log;
+#endif
+
 	public abstract int Count { get; }
 	public abstract IHashedSO GetElementBase( int index );
 	public abstract bool Contains( IHashedSO element );
 	public abstract bool ContainsHashID( int hashID );
+
+#if UNITY_EDITOR
+	public EditorLog Editor_Log 
+	{
+		get
+		{
+			if( _log == null )
+			{
+				_log = EditorLog.CreateNewOne( name, true );
+				UnityEditor.EditorUtility.SetDirty( this );
+			}
+			return _log;
+		}
+	}
+#endif
 
 	IEnumerator IEnumerable.GetEnumerator()
 	{
@@ -90,12 +109,25 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 	void IHashedSOCollectionEditor.EditorRemoveWrongElements()
 	{
+		List<int> _elementsToRemove = new List<int>();
 		for( int i = 0; i < Count; i++ )
 		{
 			var element = GetElementBase( i );
 			if( element == null ) continue;
-			if( element.HashID != i ) Editor_HACK_Remove( i );
+			if( element.HashID == i ) continue;
+			_elementsToRemove.Add( i );
 		}
+
+		if( _elementsToRemove.Count > 0 )
+		{
+			var strs = _elementsToRemove.ConvertAll<string>( ( id ) => {
+				var element = GetElementBase( id );
+				return $"[{id}] => {element.ToStringOrNull()}";
+			} );
+			Editor_Log.Add( $"Remove Wrong Elements:\n{string.Join( ",\n", strs )}" );
+		}
+
+		for( int i = 0; i < _elementsToRemove.Count; i++ ) Editor_HACK_Remove( _elementsToRemove[i] );
 
 		UnityEditor.EditorUtility.SetDirty( this );
 	}
@@ -127,15 +159,21 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		if( element == null )
 		{
 			SetRealPosition( t );
+			Editor_Log.Add( $"Request Member:\nOn [{hashID}] set {t.ToStringOrNull()}, was NULL before" );
 			return false;
 		}
 
 		if( Contains( t ) )
 		{
-			if( ( t != element && hashID != element.HashID ) || forceCorrectPosition ) SetRealPosition( t );
+			if( ( t != element && hashID != element.HashID ) || forceCorrectPosition )
+			{
+				Editor_Log.Add( $"Request Member:\nOn [{hashID}] removed {element.ToStringOrNull()} and replace with {t.ToStringOrNull()}" );
+				SetRealPosition( t );
+			}
 			return false;
 		}
 
+		bool fromDialog = false;
 		if( hashID < 0 || hashID >= Count || element != t )
 		{
 			var assetPath = AssetDatabase.GetAssetPath( (Object)t );
@@ -145,11 +183,14 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 			if( !isDuplicateFromOtherFile )
 			{
 				if( !ResolveConflictedFile( t, assetPath ) ) return false;
+				fromDialog = !EditorCanChangeIDsToOptimizeSpace;
 			}
 		}
 
+		var newID = Count;
+		Editor_Log.Add( $"Request Member:\nOn [{newID}] setted {t.ToStringOrNull()} with new hashID{(fromDialog ? " with dialog permission" : "")}" );
 		AddElement( t );
-		( (IHashedSOEditor)t ).SetHashID( Count - 1 );
+		( (IHashedSOEditor)t ).SetHashID( newID );
 
 		UnityEditor.EditorUtility.SetDirty( (Object)t );
 		UnityEditor.EditorUtility.SetDirty( this );
@@ -161,7 +202,12 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 	{
 		var editor = ( (IHashedSOCollectionEditor)this );
 		if( !editor.EditorCanChangeIDsToOptimizeSpace ) return;
-		
+
+		var before = new List<string>();
+		var after = new List<string>();
+
+		for( int i = 0; i < Count; i++ ) before.Add( GetElementBase( i ).ToStringOrNull() );
+
 		Clear();
 
 		var guids = AssetDatabase.FindAssets( $"t:{GetElementType().ToString()}" );
@@ -176,6 +222,15 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 				( (IHashedSOEditor)t ).SetHashID( Count - 1 );
 			}
 		}
+
+		for( int i = 0; i < Count; i++ ) after.Add( GetElementBase( i ).ToStringOrNull() );
+		var logs = new List<string>();
+		var count = Mathf.Min( before.Count, after.Count );
+		for( int i = 0; i < count; i++ ) logs.Add( $"[{i}]\t\t=>\t\t{before[i]}\t\t=>\t\t{after[i]}" );
+		for( int i = count; i < before.Count; i++ ) logs.Add( $"[{i}]\t\t=>\t\t{before[i]}\t\t=>\t\t-" );
+		for( int i = count; i < after.Count; i++ ) logs.Add( $"[{i}]\t\t=>\t\t-\t\t=>\t\t{after[i]}" );
+
+		Editor_Log.Add( $"Collection Optimized:\n{string.Join( ",\n", logs )}" );
 	}
 
 	public abstract bool EditorCanChangeIDsToOptimizeSpace { get; }
