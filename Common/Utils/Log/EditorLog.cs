@@ -18,11 +18,14 @@ public class EditorLog : ScriptableObject
 		_log.Add( line );
 #endif
 		if( _alsoLogToConsole ) Debug.Log( this.NameOrNull() + " logged new Line\n" + line );
+#if UNITY_EDITOR
 		UnityEditor.EditorUtility.SetDirty( this );
+#endif
 	}
 
 	public static EditorLog CreateNewOne( string name, bool editorOnly = false )
 	{
+#if UNITY_EDITOR
 		var dir = DEFAULT_DIRECTORY + ( editorOnly ? "Editor/" : string.Empty );
 		var path = dir + name + "Log";
 		var asset = ScriptableObject.CreateInstance<EditorLog>();
@@ -38,6 +41,10 @@ public class EditorLog : ScriptableObject
 		UnityEditor.AssetDatabase.Refresh();
 
 		return asset;
+#else
+		Debug.Log( "You shouldnt call this function(EditorLog.CreateNewOne) outside of editor" );
+		return null;
+#endif
 	}
 
 	[System.Serializable]
