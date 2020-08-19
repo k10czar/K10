@@ -38,9 +38,19 @@ public class CachedCollection<T> : ICachedCollection<T>
     public IEventRegister<T> OnElementAdded { get { return _onElementAdded; } }
     public IEventRegister<T> OnElementRemoved { get { return _onElementRemoved; } }
     public IEventRegister<T> OnNotNullElementRemoved { get { return _onNotNullElementRemoved; } }
-	
 
-	public T this[int id] { get { return _list[id]; } }
+
+    public T this[int id]
+    {
+        get { return _list[id]; }
+        
+        set
+        {
+            TriggerRemoveEvents(_list[id]);
+            _list[id] = value;
+            _onElementAdded.Trigger(_list[id]);
+        }
+    }
 
 	public virtual int Count { get { return _list.Count; } }
 
