@@ -48,7 +48,7 @@ public class CachedCollection<T> : ICachedCollection<T>
         {
             TriggerRemoveEvents(_list[id]);
             _list[id] = value;
-            _onElementAdded.Trigger(_list[id]);
+            _onElementAdded.Trigger(value);
         }
     }
 
