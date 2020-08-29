@@ -1,6 +1,6 @@
 
 
-public interface ICachedReference<T> : IReferenceHolder<T>, IReferenceSetter<T> { }
+public interface ICachedReference<T> : IReferenceHolder<T>, IReferenceSetter<T> { } //where T : class
 
 public interface IReferenceHolder<T>
 {
