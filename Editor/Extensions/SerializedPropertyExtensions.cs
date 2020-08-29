@@ -157,7 +157,7 @@ public static class SerializedPropertyExtensions
 		return default(T);
 	}
 
-	public static bool CheckIfChanged<T>( this SerializedProperty property, T value ) => ( value == null || property.Get<T>().Equals( value ) );
+	public static bool CheckIfChanged<T>( this SerializedProperty property, T value ) => ( value == null || !property.Get<T>().Equals( value ) );
 
 	public static T FieldReturnDoNotSet<T>( this SerializedProperty property, GUIContent label, Rect area )
 	{
