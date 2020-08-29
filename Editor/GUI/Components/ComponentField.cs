@@ -6,7 +6,7 @@ namespace K10.EditorGUIExtention
 {
 	public static class ComponentField
 	{
-		public static void Draw<T>( Rect r, SerializedProperty prop, string newPath ) where T : MonoBehaviour
+		public static void Draw<T>( Rect r, SerializedProperty prop, string newFolderPath ) where T : MonoBehaviour
 		{
 			var obj = prop.objectReferenceValue;
 
@@ -16,7 +16,7 @@ namespace K10.EditorGUIExtention
 				var create = GUI.Button( new Rect( r.x, r.y + ( r.height - iconSize ) / 2, iconSize, iconSize ), IconCache.Get( "match" ).Texture, new GUIStyle() );
 				if( create )
 				{
-					var go = K10EditorGUIUtils.CreateSequentialGO<T>( newPath );
+					var go = K10EditorGUIUtils.CreateSequentialGO<T>( newFolderPath + prop.ToFileName() );
 					prop.objectReferenceValue = go;
 					prop.serializedObject.ApplyModifiedProperties();
 				}
@@ -77,7 +77,7 @@ namespace K10.EditorGUIExtention
 			}
 		}
 
-		public static void Layout<T>( SerializedProperty prop, string newPath ) where T : Behaviour
+		public static void Layout<T>( SerializedProperty prop, string newFolderPath ) where T : Behaviour
 		{
 			var obj = prop.objectReferenceValue;
 
@@ -86,7 +86,7 @@ namespace K10.EditorGUIExtention
 				var create = GUILayout.Button( IconCache.Get( "match" ).Texture, new GUIStyle(), GUILayout.Width( 16 ) );
 				if( create )
 				{
-					var go = K10EditorGUIUtils.CreateSequentialGO<T>( newPath );
+					var go = K10EditorGUIUtils.CreateSequentialGO<T>( newFolderPath + prop.ToFileName() );
 					prop.objectReferenceValue = go;
 					prop.serializedObject.ApplyModifiedProperties();
 				}
@@ -117,8 +117,9 @@ namespace K10.EditorGUIExtention
 
 	public static class ScriptableObjectField
 	{
-		public static void Draw<T>( Rect r, SerializedProperty prop, string newPath ) where T : ScriptableObject
+		public static bool Draw<T>( Rect r, SerializedProperty prop, string newFolderPath ) where T : ScriptableObject
 		{
+			var createdNewSO = false;
 			var obj = prop.objectReferenceValue;
 
 			if( obj == null )
@@ -127,14 +128,16 @@ namespace K10.EditorGUIExtention
 				var create = GUI.Button( new Rect( r.x, r.y + ( r.height - iconSize ) / 2, iconSize, iconSize ), IconCache.Get( "match" ).Texture, new GUIStyle() );
 				if( create )
 				{
-					var go = ScriptableObjectUtils.CreateSequential<T>( newPath );
+					var go = ScriptableObjectUtils.CreateSequential<T>( newFolderPath + prop.ToFileName() );
 					prop.objectReferenceValue = go;
 					prop.serializedObject.ApplyModifiedProperties();
+					createdNewSO = true;
 				}
 				r = r.CutLeft( iconSize + 2 );
 			}
 
 			Draw<T>( r, prop, false );
+			return createdNewSO;
 		}
 
 		public static void Draw<T>( Rect r, SerializedProperty prop, bool allowSceneObjects ) where T : ScriptableObject
@@ -149,8 +152,9 @@ namespace K10.EditorGUIExtention
 			}
 		}
 
-		public static void Layout<T>( SerializedProperty prop, string newPath, params GUILayoutOption[] options ) where T : ScriptableObject
+		public static bool Layout<T>( SerializedProperty prop, string newFolderPath, params GUILayoutOption[] options ) where T : ScriptableObject
 		{
+			var createdNewSO = false;
 			var obj = prop.objectReferenceValue;
 
 			GUILayout.BeginHorizontal();
@@ -161,14 +165,16 @@ namespace K10.EditorGUIExtention
 				var create = GUILayout.Button( icon, new GUIStyle(), GUILayout.Width( ( icon.width / icon.height ) * slh ), GUILayout.Height( slh ) );
 				if( create )
 				{
-					var go = ScriptableObjectUtils.CreateSequential<T>( newPath );
+					var go = ScriptableObjectUtils.CreateSequential<T>( newFolderPath + prop.ToFileName() );
 					prop.objectReferenceValue = go;
 					prop.serializedObject.ApplyModifiedProperties();
+					createdNewSO = true;
 				}
 			}
 
 			Layout<T>( prop, false, options );
 			GUILayout.EndHorizontal();
+			return createdNewSO;
 		}
 
 		public static void Layout<T>( SerializedProperty prop, bool allowSceneObjects, params GUILayoutOption[] options ) where T : ScriptableObject

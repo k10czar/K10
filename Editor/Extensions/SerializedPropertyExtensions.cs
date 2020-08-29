@@ -15,6 +15,15 @@ public static class SerializedPropertyExtensions
 		method.Invoke( obj, parameters );
 	}
 
+	public static string ToFileName( this SerializedProperty prop )
+	{
+		var path = prop.propertyPath;
+		path = path.Replace( "._", "_" );
+		path = path.Replace( ".", "_" );
+		if( path.StartsWith( "_" ) ) path = path.Substring( 1, path.Length - 1 );
+		return prop.serializedObject.targetObject.GetType() + "_" + path;
+	}
+
 	public static object GetInstance( this SerializedProperty property, out System.Type objType, BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance )
 	{
 		var uobj = property.serializedObject.targetObject;
@@ -121,32 +130,34 @@ public static class SerializedPropertyExtensions
 		else Debug.LogError( $"Set not implemented for type {typeof(T)} value {value}" );
 	}
 
-	public static bool CheckIfChanged<T>( this SerializedProperty property, T value )
+	public static T Get<T>( this SerializedProperty property )
 	{
-		if( typeof( T ) == typeof( float ) ) return value == null || !value.Equals( property.floatValue );
-		if( typeof( T ) == typeof( long ) ) return value == null || !value.Equals( property.longValue );
-		if( typeof( T ) == typeof( uint ) ) return value == null || !value.Equals( property.longValue );
-		if( typeof( T ) == typeof( int ) ) return value == null || !value.Equals( property.intValue );
-		if( typeof( T ) == typeof( Vector2 ) ) return value == null || !value.Equals( property.vector2Value );
-		if( typeof( T ) == typeof( Vector3 ) ) return value == null || !value.Equals( property.vector3Value );
-		if( typeof( T ) == typeof( Vector2Int ) ) return value == null || !value.Equals( property.vector2IntValue );
-		if( typeof( T ) == typeof( Vector3Int ) ) return value == null || !value.Equals( property.vector3IntValue );
-		if( typeof( T ) == typeof( byte ) ) return value == null || !value.Equals( property.intValue );
-		if( typeof( T ) == typeof( bool ) ) return value == null || !value.Equals( property.boolValue );
-		if( typeof( T ) == typeof( string ) ) return value == null || !value.Equals( property.stringValue );
-		if( typeof( T ) == typeof( Color ) ) return value == null || !value.Equals( property.colorValue );
-		if( typeof( T ) == typeof( AnimationCurve ) ) return value == null || !value.Equals( property.animationCurveValue );
-		if( typeof( T ) == typeof( Bounds ) ) return value == null || !value.Equals( property.boundsValue );
-		if( typeof( T ) == typeof( BoundsInt ) ) return value == null || !value.Equals( property.boundsIntValue );
-		if( typeof( T ) == typeof( double ) ) return value == null || !value.Equals( property.doubleValue );
-		if( typeof( T ) == typeof( Vector4 ) ) return value == null || !value.Equals( property.vector4Value );
-		if( typeof( T ) == typeof( Quaternion ) ) return value == null || !value.Equals( property.quaternionValue );
-		if( typeof( T ) == typeof( Rect ) ) return value == null || !value.Equals( property.rectValue );
-		if( typeof( T ) == typeof( RectInt ) ) return value == null || !value.Equals( property.rectIntValue );
-		if( typeof( T ) == typeof( Object ) ) return value == null || !value.Equals( property.objectReferenceValue );
-		Debug.LogError( $"CheckIfChanged not implemented for type {typeof( T )}" );
-		return false;
+		if( typeof( T ) == typeof( float ) ) return (T)(object)property.floatValue;
+		if( typeof( T ) == typeof( long ) ) return (T)(object)property.longValue;
+		if( typeof( T ) == typeof( uint ) ) return (T)(object)property.longValue;
+		if( typeof( T ) == typeof( int ) ) return (T)(object)property.intValue;
+		if( typeof( T ) == typeof( Vector2 ) ) return (T)(object)property.vector2Value;
+		if( typeof( T ) == typeof( Vector3 ) ) return (T)(object)property.vector3Value;
+		if( typeof( T ) == typeof( Vector2Int ) ) return (T)(object)property.vector2IntValue;
+		if( typeof( T ) == typeof( Vector3Int ) ) return (T)(object)property.vector3IntValue;
+		if( typeof( T ) == typeof( byte ) ) return (T)(object)property.intValue;
+		if( typeof( T ) == typeof( bool ) ) return (T)(object)property.boolValue;
+		if( typeof( T ) == typeof( string ) ) return (T)(object)property.stringValue;
+		if( typeof( T ) == typeof( Color ) ) return (T)(object)property.colorValue;
+		if( typeof( T ) == typeof( AnimationCurve ) ) return (T)(object)property.animationCurveValue;
+		if( typeof( T ) == typeof( Bounds ) ) return (T)(object)property.boundsValue;
+		if( typeof( T ) == typeof( BoundsInt ) ) return (T)(object)property.boundsIntValue;
+		if( typeof( T ) == typeof( double ) ) return (T)(object)property.doubleValue;
+		if( typeof( T ) == typeof( Vector4 ) ) return (T)(object)property.vector4Value;
+		if( typeof( T ) == typeof( Quaternion ) ) return (T)(object)property.quaternionValue;
+		if( typeof( T ) == typeof( Rect ) ) return (T)(object)property.rectValue;
+		if( typeof( T ) == typeof( RectInt ) ) return (T)(object)property.rectIntValue;
+		if( typeof( T ) == typeof( Object ) ) return (T)(object)property.objectReferenceValue;
+		Debug.LogError( $"Get<T> not implemented for type {typeof( T )}" );
+		return default(T);
 	}
+
+	public static bool CheckIfChanged<T>( this SerializedProperty property, T value ) => ( value == null || property.Get<T>().Equals( value ) );
 
 	public static T FieldReturnDoNotSet<T>( this SerializedProperty property, GUIContent label, Rect area )
 	{
@@ -171,6 +182,32 @@ public static class SerializedPropertyExtensions
 		if( typeof( T ) == typeof( Rect ) ) return (T)(object)EditorGUI.RectField( area, label, property.rectValue );
 		if( typeof( T ) == typeof( RectInt ) ) return (T)(object)EditorGUI.RectIntField( area, label, property.rectIntValue );
 		if( typeof( T ) == typeof( Object ) ) return (T)(object)EditorGUI.ObjectField( area, label, property.objectReferenceValue, typeof( T ), true );
+		Debug.LogError( $"Field not implemented for type {typeof( T )}" );
+		return default( T );
+	}
+	public static T FieldOf<T>( this Rect area, GUIContent label, T value )
+	{
+		if( typeof( T ) == typeof( float ) ) return (T)(object)EditorGUI.FloatField( area, label, (float)(object)value );
+		if( typeof( T ) == typeof( long ) ) return (T)(object)EditorGUI.LongField( area, label, (long)(object)value );
+		if( typeof( T ) == typeof( uint ) ) return (T)(object)(uint)EditorGUI.LongField( area, label, (uint)(object)value );
+		if( typeof( T ) == typeof( int ) ) return (T)(object)EditorGUI.IntField( area, label, (int)(object)value );
+		if( typeof( T ) == typeof( Vector2 ) ) return (T)(object)EditorGUI.Vector2Field( area, label, (Vector2)(object)value );
+		if( typeof( T ) == typeof( Vector3 ) ) return (T)(object)EditorGUI.Vector3Field( area, label, (Vector3)(object)value );
+		if( typeof( T ) == typeof( Vector2Int ) ) return (T)(object)EditorGUI.Vector2IntField( area, label, (Vector2Int)(object)value );
+		if( typeof( T ) == typeof( Vector3Int ) ) return (T)(object)EditorGUI.Vector3IntField( area, label, (Vector3Int)(object)value );
+		if( typeof( T ) == typeof( byte ) ) return (T)(object)(byte)EditorGUI.IntField( area, label, (byte)(object)value );
+		if( typeof( T ) == typeof( bool ) ) return (T)(object)EditorGUI.ToggleLeft( area, label, (bool)(object)value );
+		if( typeof( T ) == typeof( string ) ) return (T)(object)EditorGUI.TextField( area, label, (string)(object)value );
+		if( typeof( T ) == typeof( Color ) ) return (T)(object)EditorGUI.ColorField( area, label, (Color)(object)value );
+		if( typeof( T ) == typeof( AnimationCurve ) ) return (T)(object)EditorGUI.CurveField( area, label, (AnimationCurve)(object)value );
+		if( typeof( T ) == typeof( Bounds ) ) return (T)(object)EditorGUI.BoundsField( area, label, (Bounds)(object)value );
+		if( typeof( T ) == typeof( BoundsInt ) ) return (T)(object)EditorGUI.BoundsIntField( area, label, (BoundsInt)(object)value );
+		if( typeof( T ) == typeof( double ) ) return (T)(object)EditorGUI.DoubleField( area, label, (double)(object)value );
+		if( typeof( T ) == typeof( Vector4 ) ) return (T)(object)EditorGUI.Vector4Field( area, label, (Vector4)(object)value );
+		if( typeof( T ) == typeof( Quaternion ) ) return (T)(object)Quaternion.Euler( (Vector3)(object)EditorGUI.Vector3Field( area, label, ( (Quaternion)(object)value ).eulerAngles ) );
+		if( typeof( T ) == typeof( Rect ) ) return (T)(object)EditorGUI.RectField( area, label, (Rect)(object)value );
+		if( typeof( T ) == typeof( RectInt ) ) return (T)(object)EditorGUI.RectIntField( area, label, (RectInt)(object)value );
+		if( typeof( T ) == typeof( Object ) ) return (T)(object)EditorGUI.ObjectField( area, label, (Object)(object)value, typeof( T ), true );
 		Debug.LogError( $"Field not implemented for type {typeof( T )}" );
 		return default( T );
 	}
