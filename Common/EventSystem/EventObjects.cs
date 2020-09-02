@@ -7,7 +7,7 @@ using System;
 public class EventSlot : IEvent
 {
 	private readonly List<IEventTrigger> _listeners = new List<IEventTrigger>();
-	private static readonly List<IEventTrigger> _listenersToTrigger = new List<IEventTrigger>();
+	private readonly List<IEventTrigger> _listenersToTrigger = new List<IEventTrigger>();
 
 	public bool IsValid { get { return true; } }
 	public int EventsCount => _listeners.Count;
@@ -31,14 +31,14 @@ public class EventSlot : IEvent
 	public void Register( IEventTrigger listener ) { if( listener != null ) _listeners.Add( listener ); }
 	public bool Unregister( IEventTrigger listener ) { return _listeners.Remove( listener ); }
 
-	public override string ToString() { return string.Format( "[EventSlot: Count={0}]", _listeners.Count ); }
+	public override string ToString() { return $"[EventSlot:{_listeners.Count}]"; }
 }
 
 public class EventSlot<T> : IEvent<T>
 {
 	private readonly EventSlot _generic = new EventSlot();
 	private readonly List<IEventTrigger<T>> _listeners = new List<IEventTrigger<T>>();
-	private static readonly List<IEventTrigger<T>> _listenersToTrigger = new List<IEventTrigger<T>>();
+	private readonly List<IEventTrigger<T>> _listenersToTrigger = new List<IEventTrigger<T>>();
 
 	public bool IsValid { get { return true; } }
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
@@ -66,14 +66,14 @@ public class EventSlot<T> : IEvent<T>
 	public bool Unregister( IEventTrigger<T> listener ) { return _listeners.Remove( listener ); }
 	public bool Unregister( IEventTrigger listener ) { return _generic.Unregister( listener ); }
 
-	public override string ToString() { return string.Format( "[EventSlot<T>: Count={0}, Generic:{1}]", _listeners.Count, _generic ); }
+	public override string ToString() { return $"[EventSlot<{typeof(T)}>:{_listeners.Count}, Generic:{_generic}]"; }
 }
 
 public class EventSlot<T, K> : IEvent<T, K>
 {
 	private readonly EventSlot<T> _generic = new EventSlot<T>();
 	private readonly List<IEventTrigger<T, K>> _listeners = new List<IEventTrigger<T, K>>();
-	private static readonly List<IEventTrigger<T,K>> _listenersToTrigger = new List<IEventTrigger<T,K>>();
+	private readonly List<IEventTrigger<T,K>> _listenersToTrigger = new List<IEventTrigger<T,K>>();
 
 	public bool IsValid { get { return true; } }
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
@@ -103,14 +103,14 @@ public class EventSlot<T, K> : IEvent<T, K>
 	public bool Unregister( IEventTrigger<T> listener ) { return _generic.Unregister( listener ); }
 	public bool Unregister( IEventTrigger listener ) { return _generic.Unregister( listener ); }
 
-	public override string ToString() { return string.Format( "[EventSlot<T,K>: Count={0}, Generic:{1}]", _listeners.Count, _generic ); }
+	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)}>:{_listeners.Count}, Generic:{_generic}]"; }
 }
 
 public class EventSlot<T, K, L> : IEvent<T, K, L>
 {
 	private readonly EventSlot<T, K> _generic = new EventSlot<T, K>();
 	private readonly List<IEventTrigger<T, K, L>> _listeners = new List<IEventTrigger<T, K, L>>();
-	private static readonly List<IEventTrigger<T, K, L>> _listenersToTrigger = new List<IEventTrigger<T, K, L>>();
+	private readonly List<IEventTrigger<T, K, L>> _listenersToTrigger = new List<IEventTrigger<T, K, L>>();
 
 	public bool IsValid { get { return true; } }
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
@@ -141,6 +141,8 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>
 	public bool Unregister( IEventTrigger<T, K> listener ) { return _generic.Unregister( listener ); }
 	public bool Unregister( IEventTrigger<T> listener ) { return _generic.Unregister( listener ); }
 	public bool Unregister( IEventTrigger listener ) { return _generic.Unregister( listener ); }
+
+	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)},{typeof(L)}>:{_listeners.Count}, Generic:{_generic}]"; }
 }
 
 public class VoidableEventTrigger : IEventTrigger
