@@ -43,7 +43,12 @@ public class EventSlot<T> : IEvent<T>
 			var listener = _listeners[i];
 			if( listener.IsValid ) listener.Trigger( t );
 			//NOT else Trigger can invalidate listener
-			if( !listener.IsValid ) _listeners.RemoveAt( i-- );
+			if( !listener.IsValid )
+			{
+				if( i >= _listeners.Count ) Debug.Log( $"NotValid {i}/{_listeners.Count}" );
+				_listeners.RemoveAt( i );
+				i--;
+			}
 		}
 		_generic.Trigger();
 	}
