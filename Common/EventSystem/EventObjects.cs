@@ -45,9 +45,8 @@ public class EventSlot<T> : IEvent<T>
 			//NOT else Trigger can invalidate listener
 			if( !listener.IsValid )
 			{
-				if( i >= _listeners.Count ) Debug.Log( $"NotValid {i}/{_listeners.Count}" );
-				_listeners.RemoveAt( i );
-				i--;
+				var wasRemoved = _listeners.Remove( listener );
+				if( wasRemoved ) i--;
 			}
 		}
 		_generic.Trigger();
@@ -77,7 +76,11 @@ public class EventSlot<T, K> : IEvent<T, K>
 			var listener = _listeners[i];
 			if( listener.IsValid ) listener.Trigger( t, k );
 			//NOT else Trigger can invalidate listener
-			if( !listener.IsValid ) _listeners.RemoveAt( i-- );
+			if( !listener.IsValid )
+			{
+				var wasRemoved = _listeners.Remove( listener );
+				if( wasRemoved ) i--;
+			}
 		}
 		_generic.Trigger( t );
 	}
@@ -107,7 +110,12 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>
 		{
 			var listener = _listeners[i];
 			if( listener.IsValid ) listener.Trigger( t, k, l );
-			if( !listener.IsValid ) _listeners.RemoveAt( i );
+			//NOT else Trigger can invalidate listener
+			if( !listener.IsValid )
+			{
+				var wasRemoved = _listeners.Remove( listener );
+				if( wasRemoved ) i--;
+			}
 		}
 		_generic.Trigger( t, k );
 	}
