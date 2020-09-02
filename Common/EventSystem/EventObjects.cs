@@ -7,19 +7,25 @@ using System;
 public class EventSlot : IEvent
 {
 	private readonly List<IEventTrigger> _listeners = new List<IEventTrigger>();
+	private static readonly List<IEventTrigger> _listenersToTrigger = new List<IEventTrigger>();
 
 	public bool IsValid { get { return true; } }
 	public int EventsCount => _listeners.Count;
 
 	public void Trigger()
 	{
-		for( int i = 0; i < _listeners.Count; i++ )
+		_listenersToTrigger.Clear();
+		_listenersToTrigger.AddRange( _listeners );
+
+		for( int i = 0; i < _listenersToTrigger.Count; i++ )
 		{
-			var listener = _listeners[i];
+			var listener = _listenersToTrigger[i];
 			if( listener.IsValid ) listener.Trigger();
 			//NOT else Trigger can invalidate listener
-			if( !listener.IsValid ) _listeners.RemoveAt( i-- );
+			if( !listener.IsValid ) _listeners.Remove( listener );
 		}
+
+		_listenersToTrigger.Clear();
 	}
 
 	public void Register( IEventTrigger listener ) { if( listener != null ) _listeners.Add( listener ); }
@@ -32,24 +38,26 @@ public class EventSlot<T> : IEvent<T>
 {
 	private readonly EventSlot _generic = new EventSlot();
 	private readonly List<IEventTrigger<T>> _listeners = new List<IEventTrigger<T>>();
+	private static readonly List<IEventTrigger<T>> _listenersToTrigger = new List<IEventTrigger<T>>();
 
 	public bool IsValid { get { return true; } }
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
 
 	public void Trigger( T t )
 	{
-		for( int i = 0; i < _listeners.Count; i++ )
+		_listenersToTrigger.Clear();
+		_listenersToTrigger.AddRange( _listeners );
+
+		for( int i = 0; i < _listenersToTrigger.Count; i++ )
 		{
-			var listener = _listeners[i];
+			var listener = _listenersToTrigger[i];
 			if( listener.IsValid ) listener.Trigger( t );
 			//NOT else Trigger can invalidate listener
-			if( !listener.IsValid )
-			{
-				var wasRemoved = _listeners.Remove( listener );
-				if( wasRemoved ) i--;
-			}
+			if( !listener.IsValid ) _listeners.Remove( listener );
 		}
 		_generic.Trigger();
+
+		_listenersToTrigger.Clear();
 	}
 
 	public void Register( IEventTrigger<T> listener ) { _listeners.Add( listener ); }
@@ -65,24 +73,26 @@ public class EventSlot<T, K> : IEvent<T, K>
 {
 	private readonly EventSlot<T> _generic = new EventSlot<T>();
 	private readonly List<IEventTrigger<T, K>> _listeners = new List<IEventTrigger<T, K>>();
+	private static readonly List<IEventTrigger<T,K>> _listenersToTrigger = new List<IEventTrigger<T,K>>();
 
 	public bool IsValid { get { return true; } }
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
 
 	public void Trigger( T t, K k )
 	{
-		for( int i = 0; i < _listeners.Count; i++ )
+		_listenersToTrigger.Clear();
+		_listenersToTrigger.AddRange( _listeners );
+
+		for( int i = 0; i < _listenersToTrigger.Count; i++ )
 		{
-			var listener = _listeners[i];
+			var listener = _listenersToTrigger[i];
 			if( listener.IsValid ) listener.Trigger( t, k );
 			//NOT else Trigger can invalidate listener
-			if( !listener.IsValid )
-			{
-				var wasRemoved = _listeners.Remove( listener );
-				if( wasRemoved ) i--;
-			}
+			if( !listener.IsValid ) _listeners.Remove( listener );
 		}
 		_generic.Trigger( t );
+
+		_listenersToTrigger.Clear();
 	}
 
 	public void Register( IEventTrigger<T, K> listener ) { _listeners.Add( listener ); }
@@ -100,24 +110,26 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>
 {
 	private readonly EventSlot<T, K> _generic = new EventSlot<T, K>();
 	private readonly List<IEventTrigger<T, K, L>> _listeners = new List<IEventTrigger<T, K, L>>();
+	private static readonly List<IEventTrigger<T, K, L>> _listenersToTrigger = new List<IEventTrigger<T, K, L>>();
 
 	public bool IsValid { get { return true; } }
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
 
 	public void Trigger( T t, K k, L l )
 	{
-		for( int i = _listeners.Count - 1; i >= 0; i-- )
+		_listenersToTrigger.Clear();
+		_listenersToTrigger.AddRange( _listeners );
+
+		for( int i = 0; i < _listenersToTrigger.Count; i++ )
 		{
-			var listener = _listeners[i];
+			var listener = _listenersToTrigger[i];
 			if( listener.IsValid ) listener.Trigger( t, k, l );
 			//NOT else Trigger can invalidate listener
-			if( !listener.IsValid )
-			{
-				var wasRemoved = _listeners.Remove( listener );
-				if( wasRemoved ) i--;
-			}
+			if( !listener.IsValid ) _listeners.Remove( listener );
 		}
 		_generic.Trigger( t, k );
+
+		_listenersToTrigger.Clear();
 	}
 
 	public void Register( IEventTrigger<T, K, L> listener ) { _listeners.Add( listener ); }
