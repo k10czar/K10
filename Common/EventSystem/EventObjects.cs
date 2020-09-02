@@ -6,7 +6,7 @@ using System;
 
 public class EventSlot : IEvent
 {
-	List<IEventTrigger> _listeners = new List<IEventTrigger>();
+	private readonly List<IEventTrigger> _listeners = new List<IEventTrigger>();
 
 	public bool IsValid { get { return true; } }
 	public int EventsCount => _listeners.Count;
@@ -30,8 +30,8 @@ public class EventSlot : IEvent
 
 public class EventSlot<T> : IEvent<T>
 {
-	EventSlot _generic = new EventSlot();
-	List<IEventTrigger<T>> _listeners = new List<IEventTrigger<T>>();
+	private readonly EventSlot _generic = new EventSlot();
+	private readonly List<IEventTrigger<T>> _listeners = new List<IEventTrigger<T>>();
 
 	public bool IsValid { get { return true; } }
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
@@ -59,8 +59,8 @@ public class EventSlot<T> : IEvent<T>
 
 public class EventSlot<T, K> : IEvent<T, K>
 {
-	EventSlot<T> _generic = new EventSlot<T>();
-	List<IEventTrigger<T, K>> _listeners = new List<IEventTrigger<T, K>>();
+	private readonly EventSlot<T> _generic = new EventSlot<T>();
+	private readonly List<IEventTrigger<T, K>> _listeners = new List<IEventTrigger<T, K>>();
 
 	public bool IsValid { get { return true; } }
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
@@ -90,8 +90,8 @@ public class EventSlot<T, K> : IEvent<T, K>
 
 public class EventSlot<T, K, L> : IEvent<T, K, L>
 {
-	EventSlot<T, K> _generic = new EventSlot<T, K>();
-	List<IEventTrigger<T, K, L>> _listeners = new List<IEventTrigger<T, K, L>>();
+	private readonly EventSlot<T, K> _generic = new EventSlot<T, K>();
+	private readonly List<IEventTrigger<T, K, L>> _listeners = new List<IEventTrigger<T, K, L>>();
 
 	public bool IsValid { get { return true; } }
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
