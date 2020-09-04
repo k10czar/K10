@@ -60,7 +60,7 @@ public static class SerializedPropertyExtensions
 			}
 			else
 			{
-				evnt.Expire();
+				evnt.Void();
 				_events.Remove( key );
 			}
 		}
@@ -82,7 +82,7 @@ public static class SerializedPropertyExtensions
 			}
 			else
 			{
-				evnt.Expire();
+				evnt.Void();
 				_events.Remove( key );
 			}
 		}
