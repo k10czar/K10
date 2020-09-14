@@ -37,5 +37,11 @@ namespace K10
 		public static int Log10( int x ) => guess[Log2( x )];
 		public static int Pow10( int x ) => tenToThe[x];
 		public static int Base10( int x ) => tenToThe[guess[Log2( x )]];
+
+		public static float SafeDivision(float x, float y)
+		{
+			if(y == 0) return 0;
+			return x / y;
+		}
 	}
 }
