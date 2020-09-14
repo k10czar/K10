@@ -38,9 +38,9 @@ namespace K10
 		public static int Pow10( int x ) => tenToThe[x];
 		public static int Base10( int x ) => tenToThe[guess[Log2( x )]];
 
-		public static float SafeDivision(float x, float y)
+		public static float SafeDivision(float x, float y, float valueIfZero = 0)
 		{
-			if(y == 0) return 0;
+			if(y == 0) return valueIfZero;
 			return x / y;
 		}
 	}
