@@ -31,6 +31,7 @@ public abstract class HangingFeedback : MonoBehaviour
 	protected virtual void OnMessageChange( Message msg )
 	{
 		_validator.Void();
+		if( msg == null ) return;
 		_isFullActive.Synchronize( ( (IValueStateSetter<bool>)msg.IsFullActive ), _validator );
 	}
 
