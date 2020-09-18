@@ -28,6 +28,11 @@ public abstract class HangingFeedback : MonoBehaviour
 		_message.Synchronize( OnMessageChange );
 	}
 
+	void OnEnable()
+	{
+		ReallyUpdateData();
+	}
+
 	protected virtual void OnMessageChange( Message msg )
 	{
 		_validator.Void();
@@ -70,7 +75,7 @@ public abstract class HangingFeedback : MonoBehaviour
 	{
 		var message = new Message( messageText );
 		_messages.Add( message );
-		message.RegisterOnFalse( UpdateData );
+		message.OnFalseState.Register( UpdateData );
 		UpdateData();
 		return message;
 	}
