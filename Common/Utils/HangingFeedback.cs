@@ -7,13 +7,17 @@ public abstract class HangingFeedback : MonoBehaviour
 	private static HangingFeedback _instance;
 
 	private static readonly List<Message> _messages = new List<Message>();
-	private CachedReference<Message> _message = new CachedReference<Message>();
+	private static StateRequester _hasSomeActive = new StateRequester();
+	public static IBoolStateObserver HasSomeActive => _hasSomeActive;
 
+	private readonly CachedReference<Message> _message = new CachedReference<Message>();
 	private readonly IntState _activesCount = new IntState();
 	private readonly BoolState _isActive = new BoolState();
 
-	private static StateRequester _hasSomeActive = new StateRequester();
-	public static IBoolStateObserver HasSomeActive => _hasSomeActive;
+	protected readonly BoolState _isFullActive = new BoolState();
+	public IBoolStateObserver IsFullActive => _isFullActive;
+
+	protected readonly ConditionalEventsCollection _validator = new ConditionalEventsCollection();
 
 	void Awake()
 	{
@@ -24,8 +28,17 @@ public abstract class HangingFeedback : MonoBehaviour
 		_message.Synchronize( OnMessageChange );
 	}
 
-	protected abstract void OnMessageChange( Message msg );
-	protected abstract void ChangeActivity( bool isActive );
+	protected virtual void OnMessageChange( Message msg )
+	{
+		_validator.Void();
+		_isFullActive.Synchronize( ( (IValueStateSetter<bool>)msg.IsFullActive ), _validator );
+	}
+
+	protected virtual void ChangeActivity( bool isActive )
+	{
+		_isFullActive.Setter( isActive );
+		if( !isActive ) _validator.Void();
+	}
 
 	void ReallyUpdateData()
 	{
@@ -75,6 +88,9 @@ public abstract class HangingFeedback : MonoBehaviour
 		public bool IsValid => _isValid;
 
 		public IEventRegister<bool> OnChange => _onChange;
+
+		private readonly BoolState _isFullActive = new BoolState();
+		public IBoolStateObserver IsFullActive => _isFullActive;
 
 		public bool Get() => _isValid;
 		void IEventTrigger.Trigger() => Void();
