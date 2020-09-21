@@ -108,6 +108,8 @@ public static class BaseEventValidator
 	public static IEventTrigger Validated( this IEventValidator validator, Action act ) => new ConditionalEventListener( act, validator.CurrentValidationCheck );
 	public static IEventTrigger Validated( this IEventValidator validator, IEventTrigger act ) => new ConditionalEventListener( act, CombinedCondition( validator, act ) );
 
+	public static IEventTrigger ValidatedVoid( this IVoidableEventValidator validator ) => validator.Validated( validator.Void );
+
 	public static IEventTrigger<T> Validated<T>( this IEventValidator validator, Action<T> act, UnityEngine.Transform transform ) => new ConditionalEventListener<T>( act, CombinedCondition( validator, transform ) );
 	public static IEventTrigger Validated( this IEventValidator validator, Action act, UnityEngine.Transform transform ) => new ConditionalEventListener( act, CombinedCondition( validator, transform ) );
 

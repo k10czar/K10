@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 public interface IEvent : IEventRegister, IEventTrigger { }
 public interface IEvent<T> : IEventRegister<T>, IEventTrigger<T> { }
@@ -39,6 +40,14 @@ public static class EventExtensions
 	public static void Unregister<T,K>( this IEventRegister<T,K> register, Action<T,K> act ) => register.Unregister( new ActionEventCapsule<T,K>( act ) );
 	public static void Register<T,K,J>( this IEventRegister<T,K,J> register, Action<T,K,J> act ) => register.Register( new ActionEventCapsule<T,K,J>( act ) );
 	public static void Unregister<T,K,J>( this IEventRegister<T,K,J> register, Action<T,K,J> act ) => register.Unregister( new ActionEventCapsule<T,K,J>( act ) );
+
+	#region Enumerables
+	public static void Register( this IEnumerable<IEventRegister> registers, Action act ) => registers.Register( new ActionEventCapsule( act ) );
+	public static void Register( this IEnumerable<IEventRegister> registers, IEventTrigger listener )
+	{
+		foreach( var register in registers ) { register.Register( listener ); }
+	}
+	#endregion //Enumerables
 
 	public static IEventTrigger<T> Filtered<T, K>( this IEventTrigger<K> register, Func<T, K> filter ) => new EventFilter<T,K>( register, filter );
 }
