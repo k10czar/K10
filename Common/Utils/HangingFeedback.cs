@@ -71,10 +71,11 @@ public abstract class HangingFeedback : MonoBehaviour
 		if( _instance != null ) _instance.ReallyUpdateData();
 	}
 
-	public static Message CreateNewMessage( string messageText )
+	public static Message CreateNewMessage( string messageText, IEventTrigger executeBeforeVanish = null )
 	{
 		var message = new Message( messageText );
 		_messages.Add( message );
+		if( executeBeforeVanish != null ) message.OnFalseState.Register( executeBeforeVanish );
 		message.OnFalseState.Register( UpdateData );
 		UpdateData();
 		return message;
