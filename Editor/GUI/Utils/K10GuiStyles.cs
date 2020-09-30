@@ -7,9 +7,10 @@ public static class K10GuiStyles
 	const int BIG_FONT_SIZE = 20;
 	const int SMALL_FONT_SIZE = 12;
 
-	private static Color DefaultGUIColorLerp( Color color, float whiteFactor = 75f ) => Color.LerpUnclamped( color, Color.white, .75f );
+	public static Color DefaultGUIColorLerp( Color color, float whiteFactor = 75f ) => Color.LerpUnclamped( color, Color.white, .75f );
 
 	public static readonly Color RED_TINT_COLOR = DefaultGUIColorLerp( Color.red );
+	public static readonly Color MAGENTA_TINT_COLOR = DefaultGUIColorLerp( Color.magenta );
 	public static readonly Color YELLOW_TINT_COLOR = DefaultGUIColorLerp( Color.yellow );
 	public static readonly Color GREEN_TINT_COLOR = DefaultGUIColorLerp( Color.green );
 	public static readonly Color BLUE_TINT_COLOR = DefaultGUIColorLerp( Color.blue );
