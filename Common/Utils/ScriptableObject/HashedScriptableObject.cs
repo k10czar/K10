@@ -9,6 +9,11 @@ public interface IHashedSOEditor
 }
 #endif
 
+public interface IExportIgnorable
+{
+	bool Ignore { get; }
+}
+
 public interface IHashedSO
 #if UNITY_EDITOR
 : IHashedSOEditor
@@ -18,8 +23,9 @@ public interface IHashedSO
 	IHashedSOCollection GetCollection();
 }
 
-public abstract class HashedScriptableObject : ScriptableObject, IHashedSO
+public abstract class HashedScriptableObject : ScriptableObject, IHashedSO, IExportIgnorable
 {
+	[SerializeField] private bool _ignoreFromExport = false;
 	[HideInInspector, SerializeField] int _hashId = -1;
 
 	#if UNITY_EDITOR
@@ -42,6 +48,7 @@ public abstract class HashedScriptableObject : ScriptableObject, IHashedSO
 #endif
 
 	public override string ToString() => $"{name}[{HashID}]";
+	public bool Ignore => _ignoreFromExport;
 }
 
 public static class HashedSOExtentions
