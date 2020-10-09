@@ -25,8 +25,11 @@ public static class Cache
 	static System.Collections.IEnumerator CO_DisableAndReturnToCacheOn( GameObject gameObject, GameObject listReference, float seconds )
 	{
 		yield return new WaitForSeconds( seconds );
-		gameObject.SetActive( false );
-		RequestCacheList( listReference ).Add( gameObject );
+		if( gameObject != null )
+		{
+			gameObject.SetActive( false );
+			RequestCacheList( listReference ).Add( gameObject );
+		}
 	}
 
 	static List<GameObject> RequestCacheList( GameObject listReference )
