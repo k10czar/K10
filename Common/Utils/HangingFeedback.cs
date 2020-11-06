@@ -99,6 +99,10 @@ public abstract class HangingFeedback : MonoBehaviour
 		private readonly BoolState _isFullActive = new BoolState();
 		public IBoolStateObserver IsFullActive => _isFullActive;
 
+		private CanvasGroup _alphaCanvas;
+
+		public float Alpha => (_alphaCanvas == null) ? _alphaCanvas.alpha : 1;
+
 		public bool Get() => _isValid;
 		void IEventTrigger.Trigger() => Void();
 
@@ -152,6 +156,11 @@ public abstract class HangingFeedback : MonoBehaviour
 		{
 			yield return new WaitForSecondsRealtime( seconds );
 			Void();
+		}
+
+		public void SetAlphaCanvas( CanvasGroup alpha )
+		{
+			_alphaCanvas = alpha;
 		}
 	}
 }
