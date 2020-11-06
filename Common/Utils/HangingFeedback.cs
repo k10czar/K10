@@ -101,7 +101,7 @@ public abstract class HangingFeedback : MonoBehaviour
 
 		private CanvasGroup _alphaCanvas;
 
-		public float Alpha => (_alphaCanvas == null) ? _alphaCanvas.alpha : 1;
+		public float Alpha => _alphaCanvas.alpha;
 
 		public bool Get() => _isValid;
 		void IEventTrigger.Trigger() => Void();
