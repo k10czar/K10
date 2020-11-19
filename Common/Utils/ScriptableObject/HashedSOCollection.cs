@@ -47,7 +47,8 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		var t = obj as T;
 		if( t == null ) return false;
 		var id = obj.HashID;
-		while( _list.Count <= id ) _list.Add( null );
+		if( id < 0 ) return false;
+		while( id >= _list.Count ) _list.Add( null );
 		_list[id] = t;
 		UnityEditor.EditorUtility.SetDirty( this );
 		return true;

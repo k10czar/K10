@@ -156,7 +156,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		int hashID = t.HashID;
 		IHashedSO element = ( hashID < Count && hashID >= 0 ) ? GetElementBase( hashID ) : null;
 
-		if( element == null )
+		if( element == null && hashID >= 0 )
 		{
 			SetRealPosition( t );
 			Editor_Log.Add( $"Request Member:\nOn [{hashID}] set {t.ToStringOrNull()}, was NULL before" );
