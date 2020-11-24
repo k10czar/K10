@@ -111,6 +111,9 @@ public class Semaphore : ISemaphore
 	public IEventRegister OnTrueState { get { return _releaseEvent; } }
 	public IEventRegister OnFalseState { get { return _blockEvent; } }
 
+	private readonly EventSlot _onInteraction = new EventSlot();
+	public IEventRegister OnInteraction { get { return _onInteraction; } }
+
 	public void RegisterAndStart( IEventTrigger<bool> evnt ) { _changeStateEvent.Register( evnt ); evnt.Trigger( Free ); }
 	public void RegisterAndStart( System.Action<bool> evnt ) { _changeStateEvent.Register( evnt ); evnt( Free ); }
 
@@ -164,6 +167,7 @@ public class Semaphore : ISemaphore
 				_semaphores.Add( obj, s );
 			}
 			s.Value++;
+			
 		}
 
 		if( trigger )
@@ -171,6 +175,8 @@ public class Semaphore : ISemaphore
 			_blockEvent.Trigger();
 			_changeStateEvent.Trigger( false );
 		}
+
+		_onInteraction.Trigger();
 
 		return newKey;
 	}
@@ -193,6 +199,8 @@ public class Semaphore : ISemaphore
 			_releaseEvent.Trigger();
 			_changeStateEvent.Trigger( true );
 		}
+		
+		_onInteraction.Trigger();
 	}
 
 	public void Clear()
