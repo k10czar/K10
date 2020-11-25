@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 public interface IEventValidator
 {
@@ -52,7 +53,7 @@ public class LifetimeEventValidator : IEventValidator
 	public void Void() { _lifetimeValidatior.SetFalse(); }
 }
 
-public static class BaseEventValidator
+public static class EventValidatorExtentions
 {
 	// public static IEventTrigger<T, K, J> TryValidated<T, K, J>( this IEventValidator validator, Action<T, K, J> act ) => ( validator != null ) ? Validated<T, K, J>( validator, act ) : new ActionEventCapsule<T,K,J>( act );
 	// public static IEventTrigger<T, K, J> TryValidated<T, K, J>( this IEventValidator validator, IEventTrigger<T, K, J> act ) => ( validator != null ) ? Validated<T, K, J>( validator, act ) : act;
@@ -78,6 +79,16 @@ public static class BaseEventValidator
 	// 	return new ConditionalEventListener( act, () => { return transform != null && boxedValidation(); } );
 	// }
 
+	public static System.Func<bool>[] GetCurrentValidators( this IEnumerable<IEventValidator> validators )
+	{
+		var count = 0;
+		foreach( var val in validators ) count++;
+		var vals = new System.Func<bool>[count];
+		int i = 0;
+		foreach( var val in validators ) vals[i++] = val.CurrentValidationCheck;
+		return vals;
+	}
+		
 	static Func<bool> CombinedCondition( IEventValidator validator, IValidatedObject obj )
 	{
 		var boxedValidation = validator.CurrentValidationCheck;
