@@ -117,6 +117,44 @@ namespace K10.EditorGUIExtention
 
 	public static class ScriptableObjectField
 	{
+		public static bool Draw( Rect r, SerializedProperty prop, System.Type type, bool ignoreIdentation = true )
+		{
+			var createdNewSO = false;
+			var obj = prop.objectReferenceValue;
+
+			if( obj == null )
+			{
+				var iconSize = 16;
+				var create = GUI.Button( new Rect( r.x, r.y + ( r.height - iconSize ) / 2, iconSize, iconSize ), IconCache.Get( "match" ).Texture, new GUIStyle() );
+				if( create )
+				{
+					string selectedAssetPath = "Assets";
+					if( prop.serializedObject.targetObject is MonoBehaviour )
+					{
+						MonoScript ms = MonoScript.FromMonoBehaviour( (MonoBehaviour)prop.serializedObject.targetObject );
+						selectedAssetPath = System.IO.Path.GetDirectoryName( AssetDatabase.GetAssetPath( ms ) );
+					}
+
+					var go = ScriptableObjectUtils.CreateSequential( selectedAssetPath + prop.ToFileName(), type );
+					prop.objectReferenceValue = go;
+					prop.serializedObject.ApplyModifiedProperties();
+					createdNewSO = true;
+				}
+				r = r.CutLeft( iconSize + 2 );
+			}
+
+			if( ignoreIdentation ) EditorGuiIndentManager.New( 0 );
+			var newObj = EditorGUI.ObjectField( r, obj, type, false );
+			if( ignoreIdentation ) EditorGuiIndentManager.Revert();
+			if( newObj != obj )
+			{
+				prop.objectReferenceValue = newObj;
+				prop.serializedObject.ApplyModifiedProperties();
+			}
+
+			return createdNewSO;
+		}
+
 		public static bool Draw<T>( Rect r, SerializedProperty prop, string newFolderPath ) where T : ScriptableObject
 		{
 			var createdNewSO = false;

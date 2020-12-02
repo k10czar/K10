@@ -15,38 +15,59 @@ public static partial class ScriptableObjectUtils
         return t;
 	}
 
-    public static T Create<T>( string newPath, bool focus = false ) where T : ScriptableObject
-    {
-        T asset = ScriptableObject.CreateInstance<T>();
+	public static ScriptableObject Create( string newPath, System.Type type, bool focus = false )
+	{
+		ScriptableObject asset = ScriptableObject.CreateInstance( type );
+		return SetSO( ref newPath, focus, asset );
+	}
 
-        if( !newPath.StartsWith( "Assets/" ) ) newPath = "Assets/" + newPath;
-        AssetDatabaseUtils.RequestPath( newPath );
-        string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath( newPath + ".asset" );
+	public static T Create<T>( string newPath, bool focus = false ) where T : ScriptableObject
+	{
+		T asset = ScriptableObject.CreateInstance<T>();
+		return SetSO( ref newPath, focus, asset );
+	}
 
-        Debug.Log( "Try create asset at " + assetPathAndName );
+	private static T SetSO<T>( ref string newPath, bool focus, T asset ) where T : ScriptableObject
+	{
+		if( !newPath.StartsWith( "Assets/" ) ) newPath = "Assets/" + newPath;
+		AssetDatabaseUtils.RequestPath( newPath );
+		string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath( newPath + ".asset" );
 
-        AssetDatabase.CreateAsset( asset, assetPathAndName );
+		Debug.Log( "Try create asset at " + assetPathAndName );
 
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
+		AssetDatabase.CreateAsset( asset, assetPathAndName );
 
-        if( focus )
-        {
-            EditorUtility.FocusProjectWindow();
-            Selection.activeObject = asset;
-        }
+		AssetDatabase.SaveAssets();
+		AssetDatabase.Refresh();
 
-        return asset;
-    }
+		if( focus )
+		{
+			EditorUtility.FocusProjectWindow();
+			Selection.activeObject = asset;
+		}
 
-    public static T CreateSequential<T>( string newPrefabPrefix, bool focus = false ) where T : ScriptableObject
-    {
-        if( !newPrefabPrefix.StartsWith( "Assets/" ) ) newPrefabPrefix = "Assets/" + newPrefabPrefix;
-        if( !FileAdapter.Exists( newPrefabPrefix + ".asset" ) ) return Create<T>( newPrefabPrefix, focus );
+		return asset;
+	}
 
-        int id = 2;
-        while( FileAdapter.Exists( newPrefabPrefix + id + ".asset" ) ) id++;
+	public static T CreateSequential<T>( string newPrefabPrefix, bool focus = false ) where T : ScriptableObject
+	{
+		if( !newPrefabPrefix.StartsWith( "Assets/" ) ) newPrefabPrefix = "Assets/" + newPrefabPrefix;
+		if( !FileAdapter.Exists( newPrefabPrefix + ".asset" ) ) return Create<T>( newPrefabPrefix, focus );
 
-        return Create<T>( newPrefabPrefix + id, focus );
-    }
+		int id = 2;
+		while( FileAdapter.Exists( newPrefabPrefix + id + ".asset" ) ) id++;
+
+		return Create<T>( newPrefabPrefix + id, focus );
+	}
+
+	public static ScriptableObject CreateSequential( string newPrefabPrefix, System.Type type, bool focus = false )
+	{
+		if( !newPrefabPrefix.StartsWith( "Assets/" ) ) newPrefabPrefix = "Assets/" + newPrefabPrefix;
+		if( !FileAdapter.Exists( newPrefabPrefix + ".asset" ) ) return Create( newPrefabPrefix, type, focus );
+
+		int id = 2;
+		while( FileAdapter.Exists( newPrefabPrefix + id + ".asset" ) ) id++;
+
+		return Create( newPrefabPrefix + id, type, focus );
+	}
 }
