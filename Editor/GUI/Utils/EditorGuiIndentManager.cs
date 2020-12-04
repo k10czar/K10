@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEditor;
-
 namespace K10
 {
 	namespace EditorGUIExtention

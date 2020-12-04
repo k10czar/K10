@@ -2,29 +2,49 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using K10.EditorGUIExtention;
+using System.Collections;
+using System.Linq;
 
-[CustomPropertyDrawer( typeof( HashedBitMaskArrayAttribute ) )]
-public class HashedBitMaskArrayDrawer : PropertyDrawer
+[CustomPropertyDrawer( typeof( HashedElementFilterBitsAttribute ) )]
+public class HashedElementFilterBitsDrawer : PropertyDrawer
 {
 	private const int BATCH_SIZE = 32;
 
 	public override void OnGUI( Rect area, SerializedProperty prop, GUIContent label )
 	{
-		var typeAttr = attribute as HashedBitMaskArrayAttribute;
+		if( prop.type != nameof( Bits ) )
+		{
+			EditorGUI.HelpBox( area, $"This field {prop.displayName} need to be from type {nameof( Bits )}, {prop.type} is not a valid type", MessageType.Error );
+			return;
+		}
 
+		var typeAttr = attribute as HashedElementFilterBitsAttribute;
 		var inst = ScriptableObject.CreateInstance( typeAttr.propType ) as HashedScriptableObject;
 
-		if( inst == null ) return;
+		if( inst == null )
+		{
+			EditorGUI.HelpBox( area, $"The editor for {prop.displayName} need to be derived from type {nameof( HashedScriptableObject )}, {typeAttr.propType} is not a valid type", MessageType.Error );
+			return;
+		}
+
+		// return;
+
+		var bits = prop.FindPropertyRelative( "_array" );
+		var adapter = new PropIntListAdapter( bits );
 
 		var col = inst.GetCollection();
 		var steps = ( ( col.Count - 1 ) / BATCH_SIZE ) + 1;
 
 		var labelArea = area.RequestLeft( EditorGUIUtility.labelWidth );
-		const int BUTTON_WIDTH = 30;
+		const int BUTTON_WIDTH = 40;
 		var masksArea = area.CutLeft( EditorGUIUtility.labelWidth ).CutRight( BUTTON_WIDTH );
 		var buttonArea = area.RequestRight( BUTTON_WIDTH );
 
-		label.text = label.text + ( ( prop.arraySize == 0 ) ? "(ALL)" : "(" + prop.intValue + ")" );
+		var allSet = BitsManipulator.IsAll( adapter, true );
+		var allunset = BitsManipulator.IsAll( adapter, false );
+		if( GUI.Button( buttonArea, allSet ? "ALL" : ( allunset ? "NONE" : "MIX" ) ) ) BitsManipulator.SetAll( adapter, !allSet );
+
+		label.text = label.text + "(" + BitsManipulator.ToString( adapter ) + ") { " + string.Join( ", ", adapter.ToList().ConvertAll( ( v ) => v.ToString() ) ) + " }";
 		GUI.Label( labelArea, label.text );
 
 		EditorGuiIndentManager.New( 0 );
@@ -41,22 +61,21 @@ public class HashedBitMaskArrayDrawer : PropertyDrawer
 				var e = col.GetElementBase( eId );
 				n[j] = e.ToStringOrNull();
 			}
-			var val = 0;
-			if( i <= prop.arraySize ) val = prop.GetArrayElementAtIndex( i ).intValue;
-			var newVal = EditorGUI.MaskField( masksArea.VerticalSlice( 1, steps ), GUIContent.none, val, n );
+			var val = BitsManipulator.QuerySector32( adapter, i );
+			var newVal = EditorGUI.MaskField( masksArea.VerticalSlice( i, steps ), GUIContent.none, val, n );
 
 			if( newVal != val ) 
 			{
-				while( prop.arraySize <= i )
+				var changes = newVal ^ val;
+				for( int j = 0; j < 32; j++ )
 				{
-					prop.InsertArrayElementAtIndex( prop.arraySize );
-					prop.GetArrayElementAtIndex( i ).intValue = 0;
+					var itMask = ( 1 << j );
+					if( ( changes & itMask ) == 0 ) continue;
+					var newBit = ( newVal & itMask ) != 0;
+					BitsManipulator.Set( adapter, init + j, newBit );
 				}
-				prop.GetArrayElementAtIndex( i ).intValue = newVal;
 			}
 		}
 		EditorGuiIndentManager.Revert();
-
-		if( GUI.Button( buttonArea, "ALL" ) ) prop.arraySize = 0;
 	}
 }
