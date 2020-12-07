@@ -66,6 +66,14 @@ public static class BitsManipulator
 		return true;
 	}
 
+	public static int CountSet( IReadOnlyList<int> bits )
+	{
+		var count = 0;
+		if( IsAll( bits, true ) ) return int.MaxValue;
+		for( int i = 0; i < bits.Count; i++ ) for( int j = 0; j < 32; j++ ) if( Query( bits, i * 32 + j ) ) count++;
+		return count;
+	}
+
 	public static bool IsLastBit( IReadOnlyList<int> bits, int id )
 	{
 		GetCoords( id, out var arrayID, out var bitID );

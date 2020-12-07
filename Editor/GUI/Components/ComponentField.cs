@@ -117,7 +117,7 @@ namespace K10.EditorGUIExtention
 
 	public static class ScriptableObjectField
 	{
-		public static bool Draw( Rect r, SerializedProperty prop, System.Type type, bool ignoreIdentation = true )
+		public static bool Draw( Rect r, SerializedProperty prop, System.Type type, string path = null, bool ignoreIdentation = true )
 		{
 			var createdNewSO = false;
 			var obj = prop.objectReferenceValue;
@@ -128,14 +128,11 @@ namespace K10.EditorGUIExtention
 				var create = GUI.Button( new Rect( r.x, r.y + ( r.height - iconSize ) / 2, iconSize, iconSize ), IconCache.Get( "match" ).Texture, new GUIStyle() );
 				if( create )
 				{
-					string selectedAssetPath = "Assets";
-					if( prop.serializedObject.targetObject is MonoBehaviour )
-					{
-						MonoScript ms = MonoScript.FromMonoBehaviour( (MonoBehaviour)prop.serializedObject.targetObject );
-						selectedAssetPath = System.IO.Path.GetDirectoryName( AssetDatabase.GetAssetPath( ms ) );
-					}
+					var target = prop.serializedObject.targetObject;
+					if( prop.serializedObject.targetObject is MonoBehaviour ) target = MonoScript.FromMonoBehaviour( (MonoBehaviour)prop.serializedObject.targetObject );
+					var selectedAssetPath = System.IO.Path.GetDirectoryName( AssetDatabase.GetAssetPath( target ) );
 
-					var go = ScriptableObjectUtils.CreateSequential( selectedAssetPath + prop.ToFileName(), type );
+					var go = ScriptableObjectUtils.CreateSequential( selectedAssetPath + "\\" + prop.ToFileName(), type );
 					prop.objectReferenceValue = go;
 					prop.serializedObject.ApplyModifiedProperties();
 					createdNewSO = true;

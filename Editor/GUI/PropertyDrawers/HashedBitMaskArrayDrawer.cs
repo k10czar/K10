@@ -42,7 +42,7 @@ public class HashedElementFilterBitsDrawer : PropertyDrawer
 
 		var allSet = BitsManipulator.IsAll( adapter, true );
 		var allunset = BitsManipulator.IsAll( adapter, false );
-		if( GUI.Button( buttonArea, allSet ? "ALL" : ( allunset ? "NONE" : "MIX" ) ) ) BitsManipulator.SetAll( adapter, !allSet );
+		if( GUI.Button( buttonArea, allSet ? "ALL" : ( allunset ? "NONE" : BitsManipulator.CountSet( adapter ).ToString() ) ) ) BitsManipulator.SetAll( adapter, !allSet );
 
 		label.text = label.text + "(" + BitsManipulator.ToString( adapter ) + ") { " + string.Join( ", ", adapter.ToList().ConvertAll( ( v ) => v.ToString() ) ) + " }";
 		GUI.Label( labelArea, label.text );

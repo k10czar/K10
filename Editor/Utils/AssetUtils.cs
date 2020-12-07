@@ -10,7 +10,7 @@ public static class AssetDatabaseUtils
         for( int i = 0; i < path.Length; i++ )
         {
             var c = path[i];
-            if( c == '/' )
+            if( c == '/' || c == '\\' )
             {
                 var root = ( last >= 0 ) ? path.Substring( 0, last ) : "";
                 var folder = path.Substring( last + 1, i - ( last + 1 ) );

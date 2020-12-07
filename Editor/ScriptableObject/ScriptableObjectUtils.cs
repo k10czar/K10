@@ -29,7 +29,7 @@ public static partial class ScriptableObjectUtils
 
 	private static T SetSO<T>( ref string newPath, bool focus, T asset ) where T : ScriptableObject
 	{
-		if( !newPath.StartsWith( "Assets/" ) ) newPath = "Assets/" + newPath;
+		if( !newPath.StartsWith( "Assets/" ) && !newPath.StartsWith( "Assets\\" ) ) newPath = "Assets/" + newPath;
 		AssetDatabaseUtils.RequestPath( newPath );
 		string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath( newPath + ".asset" );
 
@@ -51,7 +51,7 @@ public static partial class ScriptableObjectUtils
 
 	public static T CreateSequential<T>( string newPrefabPrefix, bool focus = false ) where T : ScriptableObject
 	{
-		if( !newPrefabPrefix.StartsWith( "Assets/" ) ) newPrefabPrefix = "Assets/" + newPrefabPrefix;
+		if( !newPrefabPrefix.StartsWith( "Assets/" ) && !newPrefabPrefix.StartsWith( "Assets\\" ) ) newPrefabPrefix = "Assets/" + newPrefabPrefix;
 		if( !FileAdapter.Exists( newPrefabPrefix + ".asset" ) ) return Create<T>( newPrefabPrefix, focus );
 
 		int id = 2;
@@ -62,7 +62,7 @@ public static partial class ScriptableObjectUtils
 
 	public static ScriptableObject CreateSequential( string newPrefabPrefix, System.Type type, bool focus = false )
 	{
-		if( !newPrefabPrefix.StartsWith( "Assets/" ) ) newPrefabPrefix = "Assets/" + newPrefabPrefix;
+		if( !newPrefabPrefix.StartsWith( "Assets/" ) && !newPrefabPrefix.StartsWith( "Assets\\" ) ) newPrefabPrefix = "Assets/" + newPrefabPrefix;
 		if( !FileAdapter.Exists( newPrefabPrefix + ".asset" ) ) return Create( newPrefabPrefix, type, focus );
 
 		int id = 2;
