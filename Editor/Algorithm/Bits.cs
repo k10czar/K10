@@ -54,7 +54,11 @@ public static class BitsManipulator
 	{
 		GetCoords( id, out var arrayID, out var bitID );
 		if( bits.Count == 0 ) return false;
-		if( bits.Count <= arrayID ) return bits[bits.Count - 1].AsMaskContainsID( 31 );
+		if( bits.Count <= arrayID )
+		{
+			arrayID = bits.Count - 1;
+			bitID = 31;
+		}
 		return bits[arrayID].AsMaskContainsID( bitID );
 	}
 
@@ -94,7 +98,6 @@ public static class BitsManipulator
 		if( bits.Count <= arrayID )
 		{
 			if( lastBit == value ) return;
-			var newCount = arrayID + 1;
 			while( bits.Count <= arrayID ) bits.Add( fill );
 		}
 
