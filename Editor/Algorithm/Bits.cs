@@ -156,4 +156,14 @@ public static class BitsManipulator
 		SB.Append( "..." );
 		return SB.ToString();
 	}
+
+	public static string ToString( int bits )
+	{
+		SB.Clear();
+		int lastEntropy = 31;
+		while( lastEntropy > 0 && bits.AsMaskContainsID( lastEntropy ) == bits.AsMaskContainsID( lastEntropy - 1 ) ) lastEntropy--;
+		for( int i = 0; i <= lastEntropy; i++ ) SB.Append( bits.AsMaskContainsID(i) ? '1' : '0' );
+		SB.Append( "..." );
+		return SB.ToString();
+	}
 }
