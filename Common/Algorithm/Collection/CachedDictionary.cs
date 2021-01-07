@@ -130,38 +130,38 @@ public class CachedDictionary<K,T> : ICachedDictionaryObserver<K,T>
 
         var deleted = list.Remove( value );
 
-        if( deleted )
-        {
-            _onElementRemoved.Trigger( value );
+        if (!deleted) return;
 
-			var count = list.Count;
-			GetEventDrivenCountEditor( key ).Setter( count );
-			if( list.Count == 0 )
-			{
-				_dictionary.Remove( key );
-				GetEventDrivenContainsEditor( key ).SetFalse();
-			}
-			//_onNotNullElementRemoved.Trigger(value);
-		}
+        var count = list.Count;
+        GetEventDrivenCountEditor( key ).Setter( count );
+        if( list.Count == 0 )
+        {
+            _dictionary.Remove( key );
+            GetEventDrivenContainsEditor( key ).SetFalse();
+        }
+
+        _onElementRemoved.Trigger( value );
+        //_onNotNullElementRemoved.Trigger(value);
     }
 
     public bool Remove( K key )
     {
-        List<T> list;
-        if( !_dictionary.TryGetValue( key, out list ) ) return false;
+        if( !_dictionary.TryGetValue( key, out var list ) ) return false;
 
-		for( int i = list.Count - 1; i >= 0; i-- )
-		{
-			var value = list[i];
-        	_onElementRemoved.Trigger( value );
+        _dictionary.Remove( key );
+
+        for( int i = list.Count - 1; i >= 0; i-- )
+        {
+            var value = list[i];
+            _onElementRemoved.Trigger( value );
             // if( value != null )_ onNotNullElementRemoved.Trigger( value );
         }
 
-		list.Clear();
-		_dictionary.Remove( key );
-		GetEventDrivenContainsEditor( key ).SetFalse();
-		GetEventDrivenCountEditor( key ).Setter( 0 );
+        list.Clear();
 
-		return true;
-	}
+        GetEventDrivenContainsEditor( key ).SetFalse();
+        GetEventDrivenCountEditor( key ).Setter( 0 );
+
+        return true;
+    }
 }
