@@ -134,9 +134,9 @@ public static class K10UnityExtensions
 		return column;
 	}
 
-	public static Rect ExpandTop( this Rect r, float height ) { return new Rect( r.x, r.y + height, r.width, r.height + height ); }
+	public static Rect ExpandTop( this Rect r, float height ) { return new Rect( r.x, r.y - height, r.width, r.height + height ); }
 	public static Rect ExpandBottom( this Rect r, float height ) { return new Rect( r.x, r.y, r.width, r.height + height ); }
-	public static Rect ExpandLeft( this Rect r, float width ) { return new Rect( r.x + width, r.y, r.width + width, r.height ); }
+	public static Rect ExpandLeft( this Rect r, float width ) { return new Rect( r.x - width, r.y, r.width + width, r.height ); }
 	public static Rect ExpandRight( this Rect r, float width ) { return new Rect( r.x, r.y, r.width + width, r.height ); }
 
 	public static Rect Inflated( this Rect r, float x, float y ) { return new Rect( r.x - ( x / 2 ), r.y - ( y / 2 ), r.width + x, r.height + y ); }
