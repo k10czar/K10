@@ -7,6 +7,7 @@ public interface IStateRequesterInfo
 	IEventRegister<bool> OnStateChange { get; }
 	IEventRegister OnIgnore { get; }
 	IEventRegister OnRequest { get; }
+	IEventRegister OnInteraction { get; }
 }
 
 public interface IStateRequesterInteraction
@@ -41,6 +42,7 @@ public class StateRequester : IStateRequester
 	public IEventRegister<bool> OnChange { get { return _onStateChange; } }
 	public IEventRegister OnTrueState { get { return _semaphore.OnBlock; } }
 	public IEventRegister OnFalseState { get { return _semaphore.OnRelease; } }
+	public IEventRegister OnInteraction => _semaphore.OnInteraction;
 
 	public StateRequester() { _semaphore.OnStateChange.Register( InvertedStateChange ); }
 
