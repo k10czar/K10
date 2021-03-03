@@ -1,3 +1,5 @@
+
+
 public static class SerializationUIntExtensions
 {
 	public static void SerializeByteAsBits( this byte[] byteArray, bool read, ref byte value, ref int startingBit, byte bitsCount )
