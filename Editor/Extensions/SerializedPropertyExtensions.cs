@@ -8,11 +8,11 @@ public static class SerializedPropertyExtensions
 {
 	private static readonly Dictionary<string, IVoidable> _events = new Dictionary<string, IVoidable>();
 
-	public static void TriggerMethod( this SerializedProperty property, string name, params object[] parameters )
+	public static object TriggerMethod( this SerializedProperty property, string name, params object[] parameters )
 	{
 		var obj = property.GetInstance( out var objType );
 		var method = objType.GetMethod( name );
-		method.Invoke( obj, parameters );
+		return method.Invoke( obj, parameters );
 	}
 
 	public static string ToFileName( this SerializedProperty prop )
