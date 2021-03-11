@@ -1,13 +1,14 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class SerializationExtensions
 {
-	public static void Clear( this byte[] byteArray )
+	public static void Clear( this IList<byte> byteArray )
 	{
-		for( int i = 0; i < byteArray.Length; i++ ) byteArray[i] = 0;
+		for( int i = 0; i < byteArray.Count; i++ ) byteArray[i] = 0;
 	}
 
-	public static string DebugBitMask( this byte[] byteArray, int startingBit, int bitsToRead )
+	public static string DebugBitMask( this IList<byte> byteArray, int startingBit, int bitsToRead )
 	{
 		string mask = "";
 

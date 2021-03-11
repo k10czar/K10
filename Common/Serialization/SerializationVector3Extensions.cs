@@ -1,20 +1,21 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class SerializationVector3Extensions
 {
-	public static void SerializeNormalizedVector3AsBits( this byte[] byteArray, bool read, ref Vector3 value, ref int startingBit, byte bitsCount )
+	public static void SerializeNormalizedVector3AsBits( this IList<byte> byteArray, bool read, ref Vector3 value, ref int startingBit, byte bitsCount )
 	{
 		if( read ) value = ReadNormalizedVector3AsBits( byteArray, ref startingBit, bitsCount );
 		else WriteNormalizedVector3AsBits( byteArray, value, ref startingBit, bitsCount );
 	}
 
-	public static Vector3 ReadNormalizedVector3AsBits( this byte[] byteArray, ref int startingBit, byte bitsToRead )
+	public static Vector3 ReadNormalizedVector3AsBits( this IList<byte> byteArray, ref int startingBit, byte bitsToRead )
 	{
 		var ret = ReadNormalizedVector3AsBits( byteArray, startingBit, bitsToRead );
 		startingBit += bitsToRead;
 		return ret;
 	}
-	public static Vector3 ReadNormalizedVector3AsBits( this byte[] byteArray, int startingBit, byte bitsToRead )
+	public static Vector3 ReadNormalizedVector3AsBits( this IList<byte> byteArray, int startingBit, byte bitsToRead )
 	{
 		byte lessBits = (byte)( bitsToRead >> 1 );
 		byte moreBits = (byte)( bitsToRead - lessBits );
@@ -34,12 +35,12 @@ public static class SerializationVector3Extensions
 
 	private static float PI_2 = 2 * Mathf.PI;
 	private static float HALF_PI = Mathf.PI / 2;
-	public static void WriteNormalizedVector3AsBits( this byte[] byteArray, Vector3 data, ref int startingBit, byte bitsPrecision )
+	public static void WriteNormalizedVector3AsBits( this IList<byte> byteArray, Vector3 data, ref int startingBit, byte bitsPrecision )
 	{
 		WriteNormalizedVector3AsBits( byteArray, data, startingBit, bitsPrecision );
 		startingBit += bitsPrecision;
 	}
-	public static void WriteNormalizedVector3AsBits( this byte[] byteArray, Vector3 data, int startingBit, byte bitsPrecision )
+	public static void WriteNormalizedVector3AsBits( this IList<byte> byteArray, Vector3 data, int startingBit, byte bitsPrecision )
 	{
 		byte lessBits = (byte)( bitsPrecision >> 1 );
 		byte moreBits = (byte)( bitsPrecision - lessBits );
