@@ -19,12 +19,12 @@ public static class OnPlayerPrefsInt<T> where T : struct, System.IConvertible
 		}
 	}
 
-	private static void UpdatePlayerPrefs( T privacy )
+	private static void UpdatePlayerPrefs( T value )
 	{
-		PlayerPrefs.SetInt( typeof( T ).ToString(), privacy.ToInt32( null ) );
+		PlayerPrefs.SetInt( typeof( T ).ToString(), value.ToInt32( null ) );
 		PlayerPrefs.Save();
 	}
 
-	public static void Set( T privacy ) { _current.Setter( privacy ); }
-	public static void Set( int privacyCode ) { _current.Setter( (T)(object)privacyCode ); }
+	public static void Set( T value ) { _current.Setter( value ); }
+	public static void Set( int valueID ) { _current.Setter( (T)(object)valueID ); }
 }
