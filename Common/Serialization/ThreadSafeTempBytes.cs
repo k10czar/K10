@@ -1,10 +1,5 @@
 using System.Collections.Generic;
 
-public interface ICustomTempByteSerialization
-{
-	byte[] WriteBytes();
-}
-
 public static class ThreadSafeTempBytes
 {
 	private static readonly Dictionary<System.Threading.Thread, Dictionary<int, byte[]>> _arrays = new Dictionary<System.Threading.Thread, Dictionary<int, byte[]>>();
