@@ -29,6 +29,8 @@ public static class SerializationUIntExtensions
 	{
 		int value = 0;
 
+		if (bitsToRead >= 31) bitsToRead = 30;
+
 		for( int i = 0; i < bitsToRead; i++ )
 		{
 			var id = startingBit + i;
@@ -55,6 +57,7 @@ public static class SerializationUIntExtensions
 	public static void WriteByteAsBits( this IList<byte> byteArray, byte data, int startingBit, byte bitsToWrite = 8 ) => WriteUIntAsBits( byteArray, data, startingBit, bitsToWrite );
 	public static void WriteUIntAsBits( this IList<byte> byteArray, int data, int startingBit, byte bitsToWrite )
 	{
+		if (bitsToWrite >= 31) bitsToWrite = 30;
 		var max = ( 1 << bitsToWrite ) - 1;
 		if( data > max ) data = max;
 		
