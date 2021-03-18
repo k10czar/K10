@@ -22,7 +22,7 @@ public static class SerializationStringExtensions
 	public static void SerializeStringAsBitsIfValid( this IList<byte> bytes, bool read, ref string value, ref int startingBit )
 	{
 		bool isValid = false;
-		if( !read ) isValid = string.IsNullOrEmpty( value );
+		if( !read ) isValid = !string.IsNullOrEmpty( value );
 		bytes.SerializeBit( read, ref isValid, ref startingBit );
 		if( isValid ) bytes.SerializeStringAsBits( read, ref value, ref startingBit );
 	}
