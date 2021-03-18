@@ -9,7 +9,7 @@ public static class SerializationGuidExtensions
 	public static void SerializeGuidAsBitsIfValid( this IList<byte> byteArray, bool read, ref System.Guid value, ref int startingBit )
 	{
 		var isValid = false;
-		if( !read ) isValid = System.Guid.Empty == value;
+		if( !read ) isValid = System.Guid.Empty != value;
 		byteArray.SerializeBit( read, ref isValid, ref startingBit );
 		if( isValid ) byteArray.SerializeGuidAsBits( read, ref value, ref startingBit );
 	}
