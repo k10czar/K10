@@ -15,7 +15,7 @@ public interface IGuidState : IGuidStateObserver, IValueState<Guid>
 [System.Serializable]
 public class GuidState : IGuidState
 {
-	[SerializeField] SerializableGUID _value = new SerializableGUID();
+	[SerializeField] SerializableGUID _value = new SerializableGUID( Guid.Empty );
 	[SerializeField] BoolState _isEmpty = new BoolState();
 	[System.NonSerialized] private EventSlot<Guid> _onChange = new EventSlot<Guid>();
 
