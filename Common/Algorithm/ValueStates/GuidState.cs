@@ -16,13 +16,13 @@ public interface IGuidState : IGuidStateObserver, IValueState<Guid>
 public class GuidState : IGuidState
 {
 	[SerializeField] SerializableGUID _value = new SerializableGUID( Guid.Empty );
-	[SerializeField] BoolState _isEmpty = new BoolState();
+	[SerializeField] BoolState _isEmpty = new BoolState( true );
 	[System.NonSerialized] private EventSlot<Guid> _onChange = new EventSlot<Guid>();
 
 	public GuidState()
 	{
 		_value.SetGuid( Guid.Empty );
-		_isEmpty = new BoolState();
+		_isEmpty = new BoolState( true );
 	}
 
 	public Guid Value => _value.Value;
