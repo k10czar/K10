@@ -43,4 +43,6 @@ public class GuidState : IGuidState
 
 	public void Clear() { Setter( Guid.Empty ); }
 	public void Renew() { Setter( Guid.NewGuid() ); }
+
+	public override string ToString() => _value.ToStringOrNull();
 }
