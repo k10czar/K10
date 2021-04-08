@@ -16,20 +16,21 @@ public class CachedDictionary<K,T> : ICachedDictionaryObserver<K,T>
 	private readonly Dictionary<K, BoolState> _eventDrivenContains = new Dictionary<K, BoolState>();
 	private readonly Dictionary<K, IntState> _eventDrivenCount = new Dictionary<K, IntState>();
 
+	private readonly EventSlot _onChange = new EventSlot();
     private readonly EventSlot<T> _onElementAdded = new EventSlot<T>();
     private readonly EventSlot<T> _onElementRemoved = new EventSlot<T>();
-    //private readonly EventSlot<T> _onNotNullElementRemoved = new EventSlot<T>();
 
+	public IEventRegister OnChange => _onChange;
     public IEventRegister<T> OnElementAdded => _onElementAdded;
     public IEventRegister<T> OnElementRemoved => _onElementRemoved;
-    //public IEventRegister<T> OnNotNullElementRemoved => _onNotNullElementRemoved;
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     public bool ContainsKey( K key ) => _dictionary.ContainsKey( key );
 
     public int KeyCount => _dictionary.Count;
 
-    public IEnumerator<T> GetEnumerator()
+
+	public IEnumerator<T> GetEnumerator()
     {        
         foreach ( var list in _dictionary )
         {
@@ -95,6 +96,7 @@ public class CachedDictionary<K,T> : ICachedDictionaryObserver<K,T>
         list.Add( value );
 		GetEventDrivenCountEditor( key ).Setter( list.Count );
 		_onElementAdded.Trigger( value );
+		_onChange.Trigger();
     }
 
 	public IBoolStateObserver GetEventDrivenContains( K key ) => GetEventDrivenContainsEditor( key );
@@ -141,8 +143,9 @@ public class CachedDictionary<K,T> : ICachedDictionaryObserver<K,T>
         }
 
         _onElementRemoved.Trigger( value );
-        //_onNotNullElementRemoved.Trigger(value);
-    }
+		_onChange.Trigger();
+		// if( value != null )_ onNotNullElementRemoved.Trigger( value );
+	}
 
     public bool Remove( K key )
     {
@@ -161,6 +164,8 @@ public class CachedDictionary<K,T> : ICachedDictionaryObserver<K,T>
 
         GetEventDrivenContainsEditor( key ).SetFalse();
         GetEventDrivenCountEditor( key ).Setter( 0 );
+
+		_onChange.Trigger();
 
         return true;
     }

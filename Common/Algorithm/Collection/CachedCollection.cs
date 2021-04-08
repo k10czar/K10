@@ -1,21 +1,20 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public interface ICachedCollection<T> : ICachedCollectionObserver<T>, ICachedCollectionInteration<T> { }
 
 public interface ICachedCollectionObserverEnumerable<T> : IEnumerable<T>
-{  
+{
+	IEventRegister OnChange { get; }
     IEventRegister<T> OnElementAdded { get; }
     IEventRegister<T> OnElementRemoved { get; }
 }
 
-public interface ICachedCollectionObserver<T>
+public interface ICachedCollectionObserver<T> : ICachedCollectionObserverEnumerable<T>, IReadOnlyList<T>
 {
-    int Count { get; }
-    T this[int id] { get; }
-    IEventRegister<T> OnElementAdded { get; }
-    IEventRegister<T> OnElementRemoved { get; }
     IEventRegister<T> OnNotNullElementRemoved { get; }
+	List<TOutput> ConvertAll<TOutput>( System.Converter<T, TOutput> converter );
 }
 
 public interface ICachedCollectionInteration<T>
@@ -31,16 +30,17 @@ public class CachedCollection<T> : ICachedCollection<T>
 {
     [SerializeField] protected List<T> _list = new List<T>();
 
+	private readonly EventSlot _onChange = new EventSlot();
     private readonly EventSlot<T> _onElementAdded = new EventSlot<T>();
     private readonly EventSlot<T> _onElementRemoved = new EventSlot<T>();
     private readonly EventSlot<T> _onNotNullElementRemoved = new EventSlot<T>();
 
+	public IEventRegister OnChange { get { return _onChange; } }
     public IEventRegister<T> OnElementAdded { get { return _onElementAdded; } }
     public IEventRegister<T> OnElementRemoved { get { return _onElementRemoved; } }
     public IEventRegister<T> OnNotNullElementRemoved { get { return _onNotNullElementRemoved; } }
 
-
-    public T this[int id]
+	public T this[int id]
     {
         get { return _list[id]; }
         
@@ -58,7 +58,13 @@ public class CachedCollection<T> : ICachedCollection<T>
     {
         _list.Add( t );
         _onElementAdded.Trigger( t );
-    }
+		_onChange.Trigger();
+	}
+
+	public void AddRange( IEnumerable<T> range )
+	{
+		foreach( var t in range ) Add( t );
+	}
 
     public bool Remove( T t )
     {
@@ -78,19 +84,26 @@ public class CachedCollection<T> : ICachedCollection<T>
         return _list.Contains(t);
     }
 
+	public List<TOutput> ConvertAll<TOutput>( System.Converter<T, TOutput> converter ) => _list.ConvertAll<TOutput>( converter );
+
 	public T Find( System.Predicate<T> findCondition ) => _list.Find( findCondition );
 
     public void Clear(){
         _list.Clear();
-    }
+		_onChange.Trigger();
+	}
 
     void TriggerRemoveEvents( T t )
     {
         _onElementRemoved.Trigger( t );
         if( t != null ) _onNotNullElementRemoved.Trigger( t );
+		_onChange.Trigger();
     }
 
     public override string ToString() { return string.Format( "[CachedCollection<{0}>[{1}]]", typeof(T), string.Join( ", ", _list.ConvertAll( ( t ) => t.ToString() ).ToArray() ) ); }
+
+	public IEnumerator<T> GetEnumerator() => _list.GetEnumerator();
+	IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_list).GetEnumerator();
 }
 
 public sealed class CachedConsistentCollection<T> : CachedCollection<T>
