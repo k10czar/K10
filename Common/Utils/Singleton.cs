@@ -38,7 +38,39 @@ public abstract class Singleton<T> where T : UnityEngine.Object
 		}
 	}
 
+	public static T GetInstance()
+	{
+		if (_instance == null)
+		{
+			_instance = FindObjectOfTypeAll<T>();
+		}
+
+		return _instance;
+	}
+
 	public static void SayHello( T instance ) { if( _instance == null ) _instance = instance; }
+
+	/// <summary>
+	/// Finds the first object (active or inactive)
+	/// </summary>
+	public static T FindObjectOfTypeAll<T>()
+	{
+		for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+		{
+			var s =  UnityEngine.SceneManagement.SceneManager.GetSceneAt(i);
+			var allGameObjects = s.GetRootGameObjects();
+			for (int j = 0; j < allGameObjects.Length; j++)
+			{
+				var go = allGameObjects[j];
+				var obj = go.GetComponentInChildren<T>(true);
+				if (obj != null && obj is T)
+				{
+					return obj;
+				}
+			}
+		}
+		return default;
+	}
 }
 
 public abstract class ClassSingleton<T> where T : new()
