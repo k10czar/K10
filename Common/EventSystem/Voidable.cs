@@ -26,6 +26,18 @@ public static class VoidableExtensions
 }
 
 
+public class ValidatedCallOnce : Voidable
+{
+	private readonly System.Func<bool> _validation;
+	public override bool IsValid { get { return base.IsValid && _validation(); } }
+	public ValidatedCallOnce( System.Func<bool> validation, IEventTrigger callback ) : base( callback ) { _validation = validation; }
+	public ValidatedCallOnce( System.Func<bool> validation, System.Action act ) : base( act ) { _validation = validation; }
+	public ValidatedCallOnce( IEventValidator validator, IEventTrigger callback ) : this( validator.CurrentValidationCheck, callback ) { }
+	public ValidatedCallOnce( IEventValidator validator, System.Action act ) : this( validator.CurrentValidationCheck, act ) { }
+	public override void Trigger() { if( !IsValid ) return; Void(); _callback.Trigger(); }
+}
+
+
 public class CallOnce : Voidable
 {
     public CallOnce( IEventTrigger callback ) : base( callback ) { }
@@ -49,7 +61,7 @@ public class Voidable : IEventTrigger, IVoidable
     public Voidable( IEventTrigger callback ) { _callback = callback; }
 	public Voidable( System.Action act ) { _callback = new ActionEventCapsule( act ); }
     public virtual void Trigger() { if( !IsValid ) return; _callback.Trigger(); }
-    public bool IsValid { get { return !_void && _callback.IsValid; } }
+    public virtual bool IsValid { get { return !_void && _callback.IsValid; } }
     public void Void() { _void = true; }
 }
 

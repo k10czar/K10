@@ -121,9 +121,11 @@ public static class EventValidatorExtentions
 
 	public static IEventTrigger ValidatedVoid( this IVoidableEventValidator validator ) => validator.Validated( validator.Void );
 
+	public static IEventTrigger<T,K> Validated<T,K>( this IEventValidator validator, Action<T, K> act, UnityEngine.Transform transform ) => new ConditionalEventListener<T, K>( act, CombinedCondition( validator, transform ) );
 	public static IEventTrigger<T> Validated<T>( this IEventValidator validator, Action<T> act, UnityEngine.Transform transform ) => new ConditionalEventListener<T>( act, CombinedCondition( validator, transform ) );
 	public static IEventTrigger Validated( this IEventValidator validator, Action act, UnityEngine.Transform transform ) => new ConditionalEventListener( act, CombinedCondition( validator, transform ) );
 
+	public static IEventTrigger<T,K> Validated<T, K>( this IEventValidator validator, Action<T, K> act, System.Func<bool> AdditionalCheck ) => new ConditionalEventListener<T, K>( act, CombinedCondition( validator, AdditionalCheck ) );
 	public static IEventTrigger<T> Validated<T>( this IEventValidator validator, Action<T> act, System.Func<bool> AdditionalCheck ) => new ConditionalEventListener<T>( act, CombinedCondition( validator, AdditionalCheck ) );
 	public static IEventTrigger Validated( this IEventValidator validator, Action act, System.Func<bool> AdditionalCheck ) => new ConditionalEventListener( act, CombinedCondition( validator, AdditionalCheck ) );
 }
