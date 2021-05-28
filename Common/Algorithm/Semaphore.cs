@@ -31,7 +31,7 @@ public static class ISemaphoreInterectionExtentions
 		source.RegisterOnFalse( () => semaphore.Release( source ) );
 	}
 
-	public static void BlockOn( this ISemaphoreInterection semaphore, IBoolStateObserver source, ConditionalEventsCollection eventValidation )
+	public static void BlockOn( this ISemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation )
 	{
 		source.RegisterOnTrue( new ConditionalEventListener( () => semaphore.Block( source ), eventValidation.CurrentValidationCheck ) );
 		source.RegisterOnFalse( new ConditionalEventListener( () => semaphore.Release( source ), eventValidation.CurrentValidationCheck ) );
@@ -55,7 +55,7 @@ public static class ISemaphoreInterectionExtentions
 		source.RegisterOnFalse( new ConditionalEventListener( () => semaphore.Block( source ), eventValidation ) );
 	}
 
-	public static void ReleaseOn( this ISemaphoreInterection semaphore, IBoolStateObserver source, ConditionalEventsCollection eventValidation )
+	public static void ReleaseOn( this ISemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation )
 	{
 		source.RegisterOnTrue( new ConditionalEventListener( () => semaphore.Release( source ), eventValidation.CurrentValidationCheck ) );
 		source.RegisterOnFalse( new ConditionalEventListener( () => semaphore.Block( source ), eventValidation.CurrentValidationCheck ) );

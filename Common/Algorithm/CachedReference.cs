@@ -5,7 +5,7 @@ public interface ICachedReference<T> : IReferenceHolder<T>, IReferenceSetter<T> 
 public interface IReferenceHolder<T>
 {
 	T CurrentReference { get; }
-	IEventRegister<T> OnReferenceSet { get; }
+	IEventRegister<T,IEventValidator> OnReferenceSet { get; }
 	IEventRegister<T> OnReferenceRemove { get; }
 	IEventValidator Validator{ get; }
 	bool IsNull { get; }
@@ -50,11 +50,30 @@ public static class ReferenceHolderExtentions
 		var vals = validators.GetCurrentValidators();
 		Synchronize( referenceHolder, new ConditionalEventListener<T>( evnt, () => vals.And() && evnt.IsValid ) );
 	}
-	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, IEventTrigger<T> evnt, bool evenDefault ) 
-	{ 
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, IEventTrigger<T> evnt, bool evenDefault )
+	{
 		referenceHolder.OnReferenceSet.Register( evnt );
-		if( evenDefault || SafeNotDefault( referenceHolder.CurrentReference ) ) 
+		if( evenDefault || SafeNotDefault( referenceHolder.CurrentReference ) )
 			evnt.Trigger( referenceHolder.CurrentReference );
+	}
+
+
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action<T,IEventValidator> evnt, bool evenDefault ) { Synchronize( referenceHolder, new ActionEventCapsule<T,IEventValidator>( evnt ), evenDefault ); }
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action<T,IEventValidator> evnt ) { Synchronize( referenceHolder, new ActionEventCapsule<T,IEventValidator>( evnt ) ); }
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action<T,IEventValidator> evnt, System.Func<bool> validation ) { Synchronize<T>( referenceHolder, new ConditionalEventListener<T,IEventValidator>( evnt, () => validation() ) ); }
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action<T,IEventValidator> evnt, params IEventValidator[] validators ) { Synchronize( referenceHolder, new ActionEventCapsule<T,IEventValidator>( evnt ), validators ); }
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, IEventTrigger<T,IEventValidator> evnt ) { Synchronize( referenceHolder, evnt, true ); }
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, IEventTrigger<T,IEventValidator> evnt, System.Func<bool> validation ) { Synchronize<T>( referenceHolder, new ConditionalEventListener<T,IEventValidator>( evnt, () => validation() && evnt.IsValid ) ); }
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, IEventTrigger<T, IEventValidator> evnt, params IEventValidator[] validators )
+	{
+		var vals = validators.GetCurrentValidators();
+		Synchronize( referenceHolder, new ConditionalEventListener<T,IEventValidator>( evnt, () => vals.And() && evnt.IsValid ) );
+	}
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, IEventTrigger<T, IEventValidator> evnt, bool evenDefault )
+	{
+		referenceHolder.OnReferenceSet.Register( evnt );
+		if( evenDefault || SafeNotDefault( referenceHolder.CurrentReference ) )
+			evnt.Trigger( referenceHolder.CurrentReference, referenceHolder.Validator );
 	}
 }
 
@@ -63,10 +82,10 @@ public class CachedReference<T> : ICachedReference<T>
 	T _current;
 	public T CurrentReference { get { return _current; } set { ChangeReference( value ); } }
 
-	private readonly EventSlot<T> _onReferenceSet = new EventSlot<T>();
+	private readonly EventSlot<T, IEventValidator> _onReferenceSet = new EventSlot<T, IEventValidator>();
 	private readonly EventSlot<T> _onReferenceRemove = new EventSlot<T>();
 
-	public IEventRegister<T> OnReferenceSet => _onReferenceSet;
+	public IEventRegister<T, IEventValidator> OnReferenceSet => _onReferenceSet;
 	public IEventRegister<T> OnReferenceRemove => _onReferenceRemove;
 
 	public bool IsNull => _current == null;
@@ -84,7 +103,7 @@ public class CachedReference<T> : ICachedReference<T>
 		_onReferenceRemove.Trigger( old );
 		_validator.Void();
 		_current = newReference;
-		_onReferenceSet.Trigger( newReference );
+		_onReferenceSet.Trigger( newReference, _validator );
 	}
 
 	public CachedReference( T startData = default(T) )
