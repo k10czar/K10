@@ -462,5 +462,5 @@ public static class K10UnityExtensions
 	public static string ToStringOrNull( this object obj, string nullString = NULL_STRING ) { return obj != null ? obj.ToString() : nullString; }
 	public static string HierarchyNameOrNull( this GameObject obj, string nullString = NULL_STRING ) { return obj != null ? obj.HierarchyName() : NULL_STRING; }
 	public static string HierarchyNameOrNull( this Transform obj, string nullString = NULL_STRING ) { return obj != null ? obj.HierarchyName() : NULL_STRING; }
-	public static string HierarchyNameOrNull( this Component obj, string nullString = NULL_STRING ) { return obj != null ? obj.transform.HierarchyName() : NULL_STRING; }
+	public static string HierarchyNameOrNull( this Component obj, string nullString = NULL_STRING ) { return ( obj != null ? ( obj.transform.HierarchyName() + $"<{( obj != null ? obj.GetType().ToString() : NULL_STRING )}>" ) : NULL_STRING ); }
 }
