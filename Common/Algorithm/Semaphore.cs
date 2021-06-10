@@ -13,6 +13,7 @@ public interface ISemaphoreInfo : IBoolStateObserver
 
 public interface ISemaphoreInterection
 {
+	void Interact( object key, bool block );
 	bool Block( object obj, bool increaseBlock = true );
 	bool BlockButDoNotIncrease( object obj );
 	void Release( object obj );
@@ -88,7 +89,9 @@ public static class ISemaphoreInterectionExtentions
 	}
 }
 
-public interface ISemaphore : ISemaphoreInfo, ISemaphoreInterection { }
+public interface ISemaphore : ISemaphoreInfo, ISemaphoreInterection
+{
+}
 
 public class Semaphore : ISemaphore
 {
@@ -147,6 +150,12 @@ public class Semaphore : ISemaphore
 	{
 		if( _semaphores.ContainsKey( obj ) ) Release( obj );
 		else Block( obj );
+	}
+
+	public void Interact( object key, bool block )
+	{
+		if( block ) BlockButDoNotIncrease( key );
+		else Release( key );
 	}
 
 	public bool BlockButDoNotIncrease( object obj ) => Block( obj, false );
