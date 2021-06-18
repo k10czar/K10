@@ -4,6 +4,7 @@ using System.Collections.Generic;
 public interface IEventValidator
 {
 	Func<bool> CurrentValidationCheck { get; }
+	IEventRegister OnVoid { get; }
 }
 
 public interface IVoidableEventValidator : IEventValidator
@@ -15,6 +16,8 @@ public class ConditionalEventsCollection : IVoidableEventValidator
 {
 	int _validatorParity = 0;
 	Func<bool> _currentValidationCheck;
+	EventSlot _onVoid = new EventSlot();
+	public IEventRegister OnVoid => _onVoid;
 
 	public Func<bool> CurrentValidationCheck
 	{
@@ -29,7 +32,7 @@ public class ConditionalEventsCollection : IVoidableEventValidator
 		}
 	}
 
-	public void Void() { _currentValidationCheck = null; _validatorParity = ( _validatorParity + 1 ) % int.MaxValue; }
+	public void Void() { _currentValidationCheck = null; _validatorParity = ( _validatorParity + 1 ) % int.MaxValue; _onVoid.Trigger(); }
 }
 
 public class ConditionalEventsCollectionBS : IVoidableEventValidator
@@ -38,10 +41,14 @@ public class ConditionalEventsCollectionBS : IVoidableEventValidator
 	public Func<bool> CurrentValidationCheck { get { return _currentValidation.Get; } }
 	public IBoolStateObserver CurrentEventsValidation { get { return _currentValidation; } }
 
+	EventSlot _onVoid = new EventSlot();
+	public IEventRegister OnVoid => _onVoid;
+
 	public void Void()
 	{
 		_currentValidation.SetFalse();
 		_currentValidation = new BoolState( true );
+		_onVoid.Trigger();
 	}
 }
 
