@@ -34,8 +34,11 @@ public static class ISemaphoreInterectionExtentions
 
 	public static void BlockOn( this ISemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation )
 	{
+		Action releaseAction = () => semaphore.Release( source );
 		source.RegisterOnTrue( new ConditionalEventListener( () => semaphore.Block( source ), eventValidation.CurrentValidationCheck ) );
-		source.RegisterOnFalse( new ConditionalEventListener( () => semaphore.Release( source ), eventValidation.CurrentValidationCheck ) );
+		source.RegisterOnFalse( new ConditionalEventListener( releaseAction, eventValidation.CurrentValidationCheck ) );
+
+		eventValidation.OnVoid.Register( new CallOnce( releaseAction ) );
 	}
 
 	public static void BlockOn( this ISemaphoreInterection semaphore, IBoolStateObserver source, Func<bool> eventValidation )
@@ -58,8 +61,11 @@ public static class ISemaphoreInterectionExtentions
 
 	public static void ReleaseOn( this ISemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation )
 	{
-		source.RegisterOnTrue( new ConditionalEventListener( () => semaphore.Release( source ), eventValidation.CurrentValidationCheck ) );
+		Action releaseAction = () => semaphore.Release( source );
+		source.RegisterOnTrue( new ConditionalEventListener( releaseAction, eventValidation.CurrentValidationCheck ) );
 		source.RegisterOnFalse( new ConditionalEventListener( () => semaphore.Block( source ), eventValidation.CurrentValidationCheck ) );
+
+		eventValidation.OnVoid.Register( new CallOnce( releaseAction ) );
 	}
 
 	public static void BlockOn( this ISemaphoreInterection semaphore, UnityEngine.GameObject go, IBoolStateObserver additionalCondition = null )

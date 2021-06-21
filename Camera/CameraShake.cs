@@ -15,6 +15,8 @@ public class CameraShakeInfo
 	public float Frequency { get { return _shakeFrequency; } }
 	public float DecayPower { get { return _decayPower; } }
 
+	public static readonly CameraShakeInfo Empty = new CameraShakeInfo(0, 0, 0);
+
 	public CameraShakeInfo() { }
 
 	public CameraShakeInfo( float amplitude, float frequency, float time )
