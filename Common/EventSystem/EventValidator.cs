@@ -54,10 +54,12 @@ public class ConditionalEventsCollectionBS : IVoidableEventValidator
 
 public class LifetimeEventValidator : IEventValidator
 {
+	EventSlot _onVoid = new EventSlot();
+	public IEventRegister OnVoid => _onVoid;
 	readonly BoolState _lifetimeValidatior = new BoolState( true );
 	public Func<bool> CurrentValidationCheck { get { return _lifetimeValidatior.Get; } }
 
-	public void Void() { _lifetimeValidatior.SetFalse(); }
+	public void Void() { _lifetimeValidatior.SetFalse(); _onVoid.Trigger(); }
 }
 
 public static class EventValidatorExtentions
