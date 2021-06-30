@@ -6,143 +6,213 @@ using System;
 
 public class EventSlot : IEvent
 {
-	private readonly List<IEventTrigger> _listeners = new List<IEventTrigger>();
-	private readonly List<IEventTrigger> _listenersToTrigger = new List<IEventTrigger>();
+	private List<IEventTrigger> _listeners;
 
-	public bool IsValid { get { return true; } }
-	public int EventsCount => _listeners.Count;
+	public bool IsValid => true;
+	public int EventsCount => _listeners?.Count ?? 0;
+
 
 	public void Trigger()
 	{
-		_listenersToTrigger.Clear();
-		_listenersToTrigger.AddRange( _listeners );
+		if( _listeners == null ) return;
 
-		for( int i = 0; i < _listenersToTrigger.Count; i++ )
+		var executionQueue = Temp<List<IEventTrigger>>.Request();
+		executionQueue.AddRange( _listeners );
+
+		for( int i = 0; i < executionQueue.Count; i++ )
 		{
-			var listener = _listenersToTrigger[i];
+			var listener = executionQueue[i];
 			if( listener.IsValid ) listener.Trigger();
 			//NOT else Trigger can invalidate listener
 			if( !listener.IsValid ) _listeners.Remove( listener );
 		}
 
-		_listenersToTrigger.Clear();
+		Temp<List<IEventTrigger>>.Return( executionQueue );
 	}
 
-	public void Register( IEventTrigger listener ) { if( listener != null ) _listeners.Add( listener ); }
-	public bool Unregister( IEventTrigger listener ) { return _listeners.Remove( listener ); }
+	public void Register( IEventTrigger listener )
+	{
+		if( listener == null ) return;
+		if( _listeners == null ) _listeners = new List<IEventTrigger>();
+		_listeners.Add( listener );
+	}
 
-	public override string ToString() { return $"[EventSlot:{_listeners.Count}]"; }
+	public bool Unregister( IEventTrigger listener ) { return _listeners?.Remove( listener ) ?? false; }
+
+	public override string ToString() { return $"[EventSlot:{EventsCount}]"; }
 }
 
 public class EventSlot<T> : IEvent<T>
 {
-	private readonly EventSlot _generic = new EventSlot();
-	private readonly List<IEventTrigger<T>> _listeners = new List<IEventTrigger<T>>();
-	private readonly List<IEventTrigger<T>> _listenersToTrigger = new List<IEventTrigger<T>>();
+	private EventSlot _generic;
+	private List<IEventTrigger<T>> _listeners;
 
-	public bool IsValid { get { return true; } }
-	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
+	public bool IsValid => true;
+	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
 
 	public void Trigger( T t )
 	{
-		_listenersToTrigger.Clear();
-		_listenersToTrigger.AddRange( _listeners );
+		TryTriggerSpecific( t );
+		TryTriggerGeneric();
+	}
 
-		for( int i = 0; i < _listenersToTrigger.Count; i++ )
+	private void TryTriggerSpecific( T t )
+	{
+		if( _listeners == null ) return;
+		var executionQueue = Temp<List<IEventTrigger<T>>>.Request();
+		executionQueue.AddRange( _listeners );
+
+		for( int i = 0; i < executionQueue.Count; i++ )
 		{
-			var listener = _listenersToTrigger[i];
+			var listener = executionQueue[i];
 			if( listener.IsValid ) listener.Trigger( t );
 			//NOT else Trigger can invalidate listener
 			if( !listener.IsValid ) _listeners.Remove( listener );
 		}
-		_generic.Trigger();
-
-		_listenersToTrigger.Clear();
+		Temp<List<IEventTrigger<T>>>.Return( executionQueue );
 	}
 
-	public void Register( IEventTrigger<T> listener ) { _listeners.Add( listener ); }
-	public void Register( IEventTrigger listener ) { _generic.Register( listener ); }
+	private void TryTriggerGeneric()
+	{
+		if( _generic == null ) return;
+		_generic.Trigger();
+	}
 
-	public bool Unregister( IEventTrigger<T> listener ) { return _listeners.Remove( listener ); }
-	public bool Unregister( IEventTrigger listener ) { return _generic.Unregister( listener ); }
+	public void Register( IEventTrigger<T> listener )
+	{
+		if( listener == null ) return;
+		if( _listeners == null ) _listeners = new List<IEventTrigger<T>>();
+		_listeners.Add( listener ); 
+	}
 
-	public override string ToString() { return $"[EventSlot<{typeof(T)}>:{_listeners.Count}, Generic:{_generic}]"; }
+	public void Register( IEventTrigger listener ) 
+	{
+		if( listener == null ) return;
+		if( _generic == null ) _generic = new EventSlot();
+		_generic.Register( listener );
+	}
+
+	public bool Unregister( IEventTrigger<T> listener ) { return _listeners?.Remove( listener ) ?? false; }
+	public bool Unregister( IEventTrigger listener ) { return _generic?.Unregister( listener ) ?? false; }
+
+	public override string ToString() { return $"[EventSlot<{typeof(T)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
 }
 
 public class EventSlot<T, K> : IEvent<T, K>
 {
-	private readonly EventSlot<T> _generic = new EventSlot<T>();
-	private readonly List<IEventTrigger<T, K>> _listeners = new List<IEventTrigger<T, K>>();
-	private readonly List<IEventTrigger<T,K>> _listenersToTrigger = new List<IEventTrigger<T,K>>();
+	private EventSlot<T> _generic;
+	private List<IEventTrigger<T, K>> _listeners;
 
-	public bool IsValid { get { return true; } }
-	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
+	public bool IsValid => true;
+	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
 
 	public void Trigger( T t, K k )
 	{
-		_listenersToTrigger.Clear();
-		_listenersToTrigger.AddRange( _listeners );
+		TryTriggerSpecific( t, k );
+		TryTriggerGeneric( t );
+	}
 
-		for( int i = 0; i < _listenersToTrigger.Count; i++ )
+	private void TryTriggerSpecific( T t, K k )
+	{
+		if( _listeners == null ) return;
+		var executionQueue = Temp<List<IEventTrigger<T,K>>>.Request();
+		executionQueue.AddRange( _listeners );
+
+		for( int i = 0; i < executionQueue.Count; i++ )
 		{
-			var listener = _listenersToTrigger[i];
+			var listener = executionQueue[i];
 			if( listener.IsValid ) listener.Trigger( t, k );
 			//NOT else Trigger can invalidate listener
 			if( !listener.IsValid ) _listeners.Remove( listener );
 		}
-		_generic.Trigger( t );
-
-		_listenersToTrigger.Clear();
+		Temp<List<IEventTrigger<T,K>>>.Return( executionQueue );
 	}
 
-	public void Register( IEventTrigger<T, K> listener ) { _listeners.Add( listener ); }
-	public void Register( IEventTrigger<T> listener ) { _generic.Register( listener ); }
-	public void Register( IEventTrigger listener ) { _generic.Register( listener ); }
+	private void TryTriggerGeneric( T t )
+	{
+		if( _generic == null ) return;
+		_generic.Trigger( t );
+	}
 
-	public bool Unregister( IEventTrigger<T, K> listener ) { return _listeners.Remove( listener ); }
-	public bool Unregister( IEventTrigger<T> listener ) { return _generic.Unregister( listener ); }
-	public bool Unregister( IEventTrigger listener ) { return _generic.Unregister( listener ); }
+	public void Register( IEventTrigger<T, K> listener )
+	{
+		if( _listeners == null ) _listeners = new List<IEventTrigger<T,K>>();
+		_listeners.Add( listener );
+	}
 
-	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)}>:{_listeners.Count}, Generic:{_generic}]"; }
+	public void Register( IEventTrigger<T> listener ) { RequestGenericEvent().Register( listener ); }
+	public void Register( IEventTrigger listener ) { RequestGenericEvent().Register( listener ); }
+
+	private EventSlot<T> RequestGenericEvent()
+	{
+		if( _generic == null ) _generic = new EventSlot<T>();
+		return _generic;
+	}
+
+	public bool Unregister( IEventTrigger<T, K> listener ) { return _listeners?.Remove( listener ) ?? false; }
+	public bool Unregister( IEventTrigger<T> listener ) { return _generic?.Unregister( listener ) ?? false; }
+	public bool Unregister( IEventTrigger listener ) { return _generic?.Unregister( listener ) ?? false; }
+
+	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
 }
 
 public class EventSlot<T, K, L> : IEvent<T, K, L>
 {
-	private readonly EventSlot<T, K> _generic = new EventSlot<T, K>();
-	private readonly List<IEventTrigger<T, K, L>> _listeners = new List<IEventTrigger<T, K, L>>();
-	private readonly List<IEventTrigger<T, K, L>> _listenersToTrigger = new List<IEventTrigger<T, K, L>>();
+	private EventSlot<T, K> _generic;
+	private List<IEventTrigger<T, K, L>> _listeners;
 
-	public bool IsValid { get { return true; } }
-	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
+	public bool IsValid => true;
+	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
 
 	public void Trigger( T t, K k, L l )
 	{
-		_listenersToTrigger.Clear();
-		_listenersToTrigger.AddRange( _listeners );
+		TryTriggerSpecific( t, k, l );
+		TryTriggerGeneric( t, k );
+	}
 
-		for( int i = 0; i < _listenersToTrigger.Count; i++ )
+	private void TryTriggerSpecific( T t, K k, L l )
+	{
+		if( _listeners == null ) return;
+		var executionQueue = Temp<List<IEventTrigger<T, K, L>>>.Request();
+		executionQueue.AddRange( _listeners );
+
+		for( int i = 0; i < executionQueue.Count; i++ )
 		{
-			var listener = _listenersToTrigger[i];
+			var listener = executionQueue[i];
 			if( listener.IsValid ) listener.Trigger( t, k, l );
 			//NOT else Trigger can invalidate listener
 			if( !listener.IsValid ) _listeners.Remove( listener );
 		}
-		_generic.Trigger( t, k );
-
-		_listenersToTrigger.Clear();
+		Temp<List<IEventTrigger<T, K, L>>>.Return( executionQueue );
 	}
 
-	public void Register( IEventTrigger<T, K, L> listener ) { _listeners.Add( listener ); }
-	public void Register( IEventTrigger<T, K> listener ) { _generic.Register( listener ); }
-	public void Register( IEventTrigger<T> listener ) { _generic.Register( listener ); }
-	public void Register( IEventTrigger listener ) { _generic.Register( listener ); }
+	private void TryTriggerGeneric( T t, K k )
+	{
+		if( _generic == null ) return;
+		_generic.Trigger( t, k );
+	}
 
-	public bool Unregister( IEventTrigger<T, K, L> listener ) { return _listeners.Remove( listener ); }
-	public bool Unregister( IEventTrigger<T, K> listener ) { return _generic.Unregister( listener ); }
-	public bool Unregister( IEventTrigger<T> listener ) { return _generic.Unregister( listener ); }
-	public bool Unregister( IEventTrigger listener ) { return _generic.Unregister( listener ); }
+	public void Register( IEventTrigger<T, K, L> listener ) 
+	{ 
+		if( _listeners == null ) _listeners = new List<IEventTrigger<T, K, L>>();
+		_listeners.Add( listener ); 
+	}
+	public void Register( IEventTrigger<T, K> listener ) { RequestGenericEvent().Register( listener ); }
+	public void Register( IEventTrigger<T> listener ) { RequestGenericEvent().Register( listener ); }
+	public void Register( IEventTrigger listener ) { RequestGenericEvent().Register( listener ); }
 
-	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)},{typeof(L)}>:{_listeners.Count}, Generic:{_generic}]"; }
+	private EventSlot<T, K> RequestGenericEvent()
+	{
+		if( _generic == null ) _generic = new EventSlot<T, K>();
+		return _generic;
+	}
+
+	public bool Unregister( IEventTrigger<T, K, L> listener ) { return _listeners?.Remove( listener ) ?? false; }
+	public bool Unregister( IEventTrigger<T, K> listener ) { return _generic?.Unregister( listener ) ?? false; }
+	public bool Unregister( IEventTrigger<T> listener ) { return _generic?.Unregister( listener ) ?? false; }
+	public bool Unregister( IEventTrigger listener ) { return _generic?.Unregister( listener ) ?? false; }
+
+	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)},{typeof(L)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
 }
 
 public class VoidableEventTrigger : IEventTrigger
