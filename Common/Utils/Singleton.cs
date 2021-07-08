@@ -42,7 +42,7 @@ public abstract class Singleton<T> where T : UnityEngine.Object
 	{
 		if (_instance == null)
 		{
-			_instance = FindObjectOfTypeAll<T>();
+			_instance = FindObjectOfTypeAll();
 		}
 
 		return _instance;
@@ -53,7 +53,7 @@ public abstract class Singleton<T> where T : UnityEngine.Object
 	/// <summary>
 	/// Finds the first object (active or inactive)
 	/// </summary>
-	public static T FindObjectOfTypeAll<T>()
+	public static T FindObjectOfTypeAll()
 	{
 		for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
 		{

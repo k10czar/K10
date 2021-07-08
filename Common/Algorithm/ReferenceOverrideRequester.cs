@@ -15,7 +15,7 @@ public class ReferenceOverrideRequester<T> : IReferenceHolder<T>, IReferenceRequ
 	[SerializeField] private T _default = default( T );
 	[SerializeField] private readonly CachedReference<T> _current = new CachedReference<T>();
 
-	[SerializeField] private readonly System.Collections.Generic.List<Request<T>> _requests = new System.Collections.Generic.List<Request<T>>();
+	[SerializeField] private readonly System.Collections.Generic.List<Request> _requests = new System.Collections.Generic.List<Request>();
 
 	public T CurrentReference => _current.CurrentReference;
 	public IEventRegister<T, IEventValidator> OnReferenceSet => _current.OnReferenceSet;
@@ -47,7 +47,7 @@ public class ReferenceOverrideRequester<T> : IReferenceHolder<T>, IReferenceRequ
 	public void RequestOverride( T value, object key )
 	{
 		RemoveAllRequests( key );
-		_requests.Add( new Request<T>( key, value ) );
+		_requests.Add( new Request( key, value ) );
 		_current.ChangeReference( value );
 	}
 
@@ -65,7 +65,7 @@ public class ReferenceOverrideRequester<T> : IReferenceHolder<T>, IReferenceRequ
 		_current.ChangeReference( newRef );
 	}
 
-	public class Request<T>
+	public class Request
 	{
 		private readonly object _key;
 		public readonly T _value;
