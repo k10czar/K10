@@ -34,6 +34,7 @@ public class CameraShakeInfo
 
 public class CameraShake : MonoBehaviour
 {
+	public static float AmplitudeMultiplier = 1.0f;
 	[SerializeField] CameraShakeInfo _test;
 
 	class CameraShakeInstance
@@ -50,7 +51,7 @@ public class CameraShake : MonoBehaviour
 
 		float AccTime { get { return Time.unscaledTime - _startTime; } }
 		float Percentage { get { return Mathf.Pow( ( _shake.Time - AccTime ) / _shake.Time, _shake.DecayPower ) * Mathf.Clamp01( AccTime * 20 / _shake.Time ); } }
-		public float CurrentAmplitude { get { return _shake.Amplitude * Percentage; } }
+		public float CurrentAmplitude => _shake.Amplitude * Percentage * AmplitudeMultiplier;
 		public float CurrentFrequency { get { return _shake.Frequency * Percentage; } }
 	}
 
@@ -116,7 +117,6 @@ public class CameraShake : MonoBehaviour
 
 			var realAmplitude = Mathf.PerlinNoise( _randomStart + _current, 0 ) * amplitude;
 			float angle = Mathf.PerlinNoise( 0, _randomStart + _current ) * Mathf.PI * 2;
-
 			transform.localPosition = ( Vector3.right * Mathf.Cos( angle ) + Vector3.up * Mathf.Sin( angle ) ) * realAmplitude;
 		}
 		else
