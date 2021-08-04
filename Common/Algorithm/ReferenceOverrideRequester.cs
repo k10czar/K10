@@ -23,6 +23,11 @@ public class ReferenceOverrideRequester<T> : IReferenceHolder<T>, IReferenceRequ
 	public IEventValidator Validator => _current.Validator;
 	public bool IsNull => _current.IsNull;
 
+	public ReferenceOverrideRequester( T defaultValue = default(T) )
+	{
+		ChangeDefault( defaultValue );
+	}
+
 	public void ClearOverrides()
 	{
 		_requests.Clear();
@@ -65,6 +70,8 @@ public class ReferenceOverrideRequester<T> : IReferenceHolder<T>, IReferenceRequ
 		_current.ChangeReference( newRef );
 	}
 
+	public override string ToString() => $"{{ {string.Join( ", ", _requests.ConvertAll( ( t ) => t.ToStringOrNull() ) )} }}";
+
 	public class Request
 	{
 		private readonly object _key;
@@ -78,5 +85,7 @@ public class ReferenceOverrideRequester<T> : IReferenceHolder<T>, IReferenceRequ
 			_key = key;
 			_value = value;
 		}
+
+		public override string ToString() => $"[ {_key}: {_value} ]";
 	}
 }
