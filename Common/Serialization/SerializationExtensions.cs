@@ -18,8 +18,13 @@ public static class SerializationExtensions
 			var arrayId = id >> 3;
 			var bitId = (byte)( id - ( arrayId << 3 ) );
 			var bit = 1 << bitId;
-			mask += ( ( ( byteArray[arrayId] & bit ) != 0 ) ) ? '1' : '0';
+			mask += ( arrayId < byteArray.Count && ( ( byteArray[arrayId] & bit ) != 0 ) ) ? '1' : '0';
 		}
 		return mask;
+	}
+
+	public static string Debug( this byte[] byteArray )
+	{
+		return System.BitConverter.ToString( byteArray );
 	}
 }
