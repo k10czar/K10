@@ -4,6 +4,7 @@ public interface IVoidable
 {
 	bool IsValid { get; }
 	void Void();
+	IEventRegister OnVoid { get; }
 }
 
 public static class VoidableExtensions
@@ -58,11 +59,14 @@ public class Voidable : IEventTrigger, IVoidable
     protected IEventTrigger _callback;
     bool _void;
 
-    public Voidable( IEventTrigger callback ) { _callback = callback; }
+	EventSlot _onVoid;
+	public IEventRegister OnVoid => _onVoid ??= new EventSlot();
+
+	public Voidable( IEventTrigger callback ) { _callback = callback; }
 	public Voidable( System.Action act ) { _callback = new ActionEventCapsule( act ); }
     public virtual void Trigger() { if( !IsValid ) return; _callback.Trigger(); }
     public virtual bool IsValid { get { return !_void && _callback.IsValid; } }
-    public void Void() { _void = true; }
+    public void Void() { if( _void ) return; _void = true; _onVoid?.Trigger(); }
 }
 
 public class Voidable<T> : IEventTrigger<T>, IVoidable
@@ -70,9 +74,12 @@ public class Voidable<T> : IEventTrigger<T>, IVoidable
 	protected IEventTrigger<T> _callback;
 	bool _void;
 
+	EventSlot _onVoid;
+	public IEventRegister OnVoid => _onVoid ??= new EventSlot();
+
     public Voidable( IEventTrigger<T> callback ) { _callback = callback; }
 	public Voidable( System.Action<T> act ) { _callback = new ActionEventCapsule<T>( act ); }
     public virtual void Trigger( T t ) { if( !IsValid ) return; _callback.Trigger( t ); }
     public bool IsValid { get { return !_void && _callback.IsValid; } }
-    public void Void() { _void = true; }
+	public void Void() { if( _void ) return; _void = true; _onVoid?.Trigger(); }
 }

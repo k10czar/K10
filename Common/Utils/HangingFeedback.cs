@@ -87,6 +87,9 @@ public abstract class HangingFeedback : MonoBehaviour
 		private bool _isValid = true;
 		private readonly EventSlot _onFalseState = new EventSlot();
 		private readonly EventSlot<bool> _onChange = new EventSlot<bool>();
+		
+		EventSlot _onVoid;
+		public IEventRegister OnVoid => _onVoid ??= new EventSlot();
 
 		public IEventRegister OnTrueState => FakeEvent.Instance;
 		public IEventRegister OnFalseState => _onFalseState;
@@ -117,6 +120,7 @@ public abstract class HangingFeedback : MonoBehaviour
 			_isValid = false;
 			_onFalseState.Trigger();
 			_onChange.Trigger( false );
+			_onVoid?.Trigger();
 		}
 
 		public System.Action VoidThen( System.Action act = null )
