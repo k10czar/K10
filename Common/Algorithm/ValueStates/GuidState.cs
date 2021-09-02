@@ -19,10 +19,12 @@ public class GuidState : IGuidState
 	[SerializeField] BoolState _isEmpty = new BoolState( true );
 	[System.NonSerialized] private EventSlot<Guid> _onChange = new EventSlot<Guid>();
 
-	public GuidState()
+	public GuidState() : this( Guid.Empty ) { }
+
+	public GuidState( Guid initialGuid )
 	{
-		_value.SetGuid( Guid.Empty );
-		_isEmpty = new BoolState( true );
+		_value.SetGuid( initialGuid );
+		_isEmpty = new BoolState( initialGuid == Guid.Empty );
 	}
 
 	public Guid Value => _value.Value;
