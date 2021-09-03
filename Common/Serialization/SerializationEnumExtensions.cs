@@ -3,6 +3,12 @@ using System.Collections.Generic;
 
 public static class SerializationEnumExtensions
 {
+	public static void SerializeEnumAsBits<T>( this IList<byte> byteArray, bool read, ref int value, ref int startingBit, byte bitsCount ) where T : struct, IConvertible
+	{
+		if( read ) value = ReadEnumAsBits<T>( byteArray, ref startingBit, bitsCount ).ToInt32(null);
+		else WriteEnumAsBits( byteArray, (T)(object)value, ref startingBit, bitsCount );
+	}
+
 	public static void SerializeEnumAsBits<T>( this IList<byte> byteArray, bool read, ref T value, ref int startingBit, byte bitsCount ) where T : struct, IConvertible
 	{
 		if( read ) value = ReadEnumAsBits<T>( byteArray, ref startingBit, bitsCount );
