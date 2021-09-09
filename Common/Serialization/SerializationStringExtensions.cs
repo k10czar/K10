@@ -35,6 +35,8 @@ public static class SerializationStringExtensions
 		if( !read ) len = value.Length;
 		bytes.SerializeUIntAsBits( read, ref len, ref startingBit, MAX_STRING_ARRAY_BITS_COUNT );
 
+		if( read ) value = new string[len];
+
 		for( int i = 0; i < len; i++ ) bytes.SerializeStringAsBits( read, ref value[i], ref startingBit );
 	}
 
