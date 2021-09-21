@@ -185,7 +185,7 @@ public class TestCustomSerializedMessages : EditorWindow
 		DrawInstanceInspector( "Constructed Instance", _instance, message, true );
 
 		K10.EditorGUIExtention.SeparationLine.Horizontal();
-		var serializationReturn = ThreadSafeTempBytes.Get( 0 );
+		var serializationReturn = ThreadSafeTempBytes.GetClean( 0 );
 		var failToSerialize = false;
 		var errorType = "";
 		var errorStack = "";

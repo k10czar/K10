@@ -4,7 +4,7 @@ public static class ThreadSafeTempBytes
 {
 	private static readonly Dictionary<System.Threading.Thread, Dictionary<int, byte[]>> _arrays = new Dictionary<System.Threading.Thread, Dictionary<int, byte[]>>();
 
-	public static byte[] Get( byte bytes )
+	private static byte[] Get( int bytes )
 	{
 		var collection = new Dictionary<int, byte[]>();
 		var thread = System.Threading.Thread.CurrentThread;
@@ -22,7 +22,7 @@ public static class ThreadSafeTempBytes
 		return array;
 	}
 
-	public static byte[] GetClean( byte bytes )
+	public static byte[] GetClean( int bytes )
 	{
 		var array = Get( bytes );
 		array.Clear();
