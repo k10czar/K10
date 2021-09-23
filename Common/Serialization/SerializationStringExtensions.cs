@@ -35,16 +35,9 @@ public static class SerializationStringExtensions
 		if( !read ) len = value.Length;
 		bytes.SerializeUIntAsBits( read, ref len, ref startingBit, MAX_STRING_ARRAY_BITS_COUNT );
 
-		Debug.Log( $"SerializeStringArrayAsBits( {(read?"Read":"Write")}, {(isValid?"isValid":"NotValid")}, Length:{len} )" );
-
 		if( read ) value = new string[len];
 
-		for( int i = 0; i < len; i++ ) 
-		{
-			Debug.Log( $"Before serialize element[{i}] => {value[i].ToStringOrNull()}" );
-			bytes.SerializeStringAsBits( read, ref value[i], ref startingBit );
-			Debug.Log( $"After serialize element[{i}] => {value[i].ToStringOrNull()}" );
-		}
+		for( int i = 0; i < len; i++ ) bytes.SerializeStringAsBits( read, ref value[i], ref startingBit );
 	}
 
 	public static void SerializeStringAsBitsIfValid( this IList<byte> bytes, bool read, ref string value, ref int startingBit )
