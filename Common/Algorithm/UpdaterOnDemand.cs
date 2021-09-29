@@ -49,7 +49,7 @@ public class UpdaterOnDemand : IUpdaterOnDemand
 	public bool RequestUpdate( IUpdatableOnDemand updateRequester )
 	{
 		var contains = _updating.Contains( updateRequester );
-		if( _behaviour.gameObject.activeSelf ) _behaviour.StartCoroutine( UpdateCoroutine( updateRequester ) );
+		if( _behaviour != null && _behaviour.gameObject != null && _behaviour.gameObject.activeSelf ) _behaviour.StartCoroutine( UpdateCoroutine( updateRequester ) );
 		return !contains;
 	}
 
