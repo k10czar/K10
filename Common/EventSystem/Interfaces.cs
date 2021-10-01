@@ -32,6 +32,12 @@ public interface IEventRegister<T, K, J> : IEventRegister<T, K>
 
 public static class EventExtensions
 {
+	public static void TriggerIfValid( this IEventTrigger trigger ) { if( trigger != null && trigger.IsValid ) trigger.Trigger(); }
+	public static void TriggerIfValid<T>( this IEventTrigger<T> trigger, T t ) { if( trigger != null && trigger.IsValid ) trigger.Trigger( t ); }
+	public static void TriggerIfValid<T,K>( this IEventTrigger<T,K> trigger, T t, K k ) { if( trigger != null && trigger.IsValid ) trigger.Trigger( t, k ); }
+	public static void TriggerIfValid<T,K,J>( this IEventTrigger<T,K,J> trigger, T t, K k, J j ) { if( trigger != null && trigger.IsValid ) trigger.Trigger( t, k, j ); }
+	public static void TriggerIfValid<T,K,J,L>( this IEventTrigger<T,K,J,L> trigger, T t, K k, J j, L l ) { if( trigger != null && trigger.IsValid ) trigger.Trigger( t, k, j, l ); }
+
 	public static void Register( this IEventRegister register, Action act ) => register.Register( new ActionEventCapsule( act ) );
 	public static void Unregister( this IEventRegister register, Action act ) => register.Unregister( new ActionEventCapsule( act ) );
 	public static void Register<T>( this IEventRegister<T> register, Action<T> act ) => register.Register( new ActionEventCapsule<T>( act ) );
