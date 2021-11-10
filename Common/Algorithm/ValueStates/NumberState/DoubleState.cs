@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 [System.Serializable]
@@ -13,7 +14,7 @@ public class DoubleState : INumericValueState<double>, ISerializationCallbackRec
 
 	public void Setter( double value )
 	{
-		if( _value - value < double.Epsilon ) return;
+		if( Math.Abs( _value - value ) < double.Epsilon ) return;
 		_value = value;
 		_onChange.Trigger( value );
 	}
@@ -36,5 +37,5 @@ public class DoubleState : INumericValueState<double>, ISerializationCallbackRec
 	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); }
 
 
-	public override string ToString() { return string.Format( "FS({1})", typeof( double ).ToString(), _value ); }
+	public override string ToString() { return $"DS({_value})"; }
 }
