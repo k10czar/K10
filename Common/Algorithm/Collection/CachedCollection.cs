@@ -80,6 +80,13 @@ public class CachedCollection<T> : ICachedCollection<T>
         TriggerRemoveEvents( e );
     }
 
+    public void Insert(int i, T t)
+    {
+        _list.Insert( i, t );
+        _onElementAdded.Trigger( t );
+        _onChange.Trigger();
+    }
+
     public bool Contains( T t ){
         return _list.Contains(t);
     }
