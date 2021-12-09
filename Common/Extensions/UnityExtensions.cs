@@ -7,6 +7,7 @@ using System.Linq;
 public static class K10UnityExtensions
 {
 	public static Vector2 IgnoreY( this Vector3 v3 ) { return new Vector2( v3.x, v3.z ); }
+	public static Vector2 IgnoreZ( this Vector3 v3 ) { return new Vector2( v3.x, v3.y ); }
 
 	public static List<T> Scrambled<T>( this IEnumerable<T> collection )
 	{
