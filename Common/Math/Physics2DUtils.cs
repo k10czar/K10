@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -188,6 +189,26 @@ namespace K10
 		public static float DistanceToLine( Ray ray, float3 point )
 		{
 			return math.length( math.cross( ray.direction, point - ( (float3)ray.origin ) ) );
+		}
+
+		public static float3 PlaneClosestPoint( float3 position, float3 planeNormal, float3 planeOrigin )
+		{
+			var originToPoint = position - planeOrigin;
+			var originToPointDir = math.normalize( originToPoint );
+			if( NormalsAreParallel( planeNormal, originToPointDir ) ) return planeOrigin;
+			var otherComponentDir = math.normalize( math.cross( planeNormal, originToPointDir )  );
+			var planeProjectionDir = math.normalize( math.cross( otherComponentDir, planeNormal ) );
+			var projD = math.dot( originToPoint, planeProjectionDir );
+			var originOffset = projD * planeProjectionDir;
+			// var originOffset = (float3)Vector3.Project(originToPoint, planeProjectionDir);
+			var closestPoint = planeOrigin + originOffset;
+			return closestPoint;
+		}
+
+		public static bool NormalsAreParallel( float3 planeNormal, float3 originToPoint )
+		{
+			return (Aprox(planeNormal.x, originToPoint.x) && Aprox(planeNormal.y, originToPoint.y) && Aprox(planeNormal.z, originToPoint.z)) ||
+					(Aprox(planeNormal.x, -originToPoint.x) && Aprox(planeNormal.y, -originToPoint.y) && Aprox(planeNormal.z, -originToPoint.z));
 		}
 	}
 }
