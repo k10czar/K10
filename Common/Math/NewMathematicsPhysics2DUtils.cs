@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace K10
 {
-	public static class Physics2DUtils
+	public static class NewMathematicsPhysics2DUtils
 	{
 		[MethodImpl( MethodImplOptions.AggressiveInlining )]
 		public static float GetProjectedRadiusMaxSize( Camera cam, float3 worldPos, float radius )
