@@ -8,6 +8,8 @@ public static class K10UnityExtensions
 {
 	public static Vector2 IgnoreY( this Vector3 v3 ) { return new Vector2( v3.x, v3.z ); }
 	public static Vector2 IgnoreZ( this Vector3 v3 ) { return new Vector2( v3.x, v3.y ); }
+	public static Vector3 WithZ( this Vector2 v3, float zValue ) { return new Vector3( v3.x, v3.y, zValue ); }
+	public static Vector3 WithZ0( this Vector2 v3 ) { return new Vector3( v3.x, v3.y, 0 ); }
 
 	public static List<T> Scrambled<T>( this IEnumerable<T> collection )
 	{

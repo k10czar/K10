@@ -7,6 +7,11 @@ namespace K10
 {
 	public static class NewMathematicsPhysics2DUtils
 	{
+		public static float2 IgnoreY( this float3 v3 ) { return new float2( v3.x, v3.z ); }
+		public static float2 IgnoreZ( this float3 v3 ) { return new float2( v3.x, v3.y ); }
+		public static float3 WithZ( this float2 v3, float zValue ) { return new float3( v3.x, v3.y, zValue ); }
+		public static float3 WithZ0( this float2 v3 ) { return new float3( v3.x, v3.y, 0 ); }
+		
 		[MethodImpl( MethodImplOptions.AggressiveInlining )]
 		public static float GetProjectedRadiusMaxSize( Camera cam, float3 worldPos, float radius )
 		{
