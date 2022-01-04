@@ -1,4 +1,6 @@
-﻿using System;
+﻿
+#if USE_NEW_MATHEMATICS
+using System;
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using UnityEngine;
@@ -217,3 +219,4 @@ namespace K10
 		}
 	}
 }
+#endif
