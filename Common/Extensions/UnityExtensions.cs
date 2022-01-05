@@ -10,11 +10,6 @@ public static class K10UnityExtensions
 {
 	const MethodImplOptions AggrInline = MethodImplOptions.AggressiveInlining;
 
-	[MethodImpl( AggrInline )] public static Vector2 IgnoreY( this Vector3 v3 ) { return new Vector2( v3.x, v3.z ); }
-	[MethodImpl( AggrInline )] public static Vector2 IgnoreZ( this Vector3 v3 ) { return new Vector2( v3.x, v3.y ); }
-	[MethodImpl( AggrInline )] public static Vector3 WithZ( this Vector2 v3, float zValue ) { return new Vector3( v3.x, v3.y, zValue ); }
-	[MethodImpl( AggrInline )] public static Vector3 WithZ0( this Vector2 v3 ) { return new Vector3( v3.x, v3.y, 0 ); }
-
 	[MethodImpl( AggrInline )] public static List<T> Scrambled<T>( this IEnumerable<T> collection )
 	{
 		var olist = new List<T>( collection );
