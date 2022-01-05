@@ -9,37 +9,35 @@ namespace K10
 {
 	public static class NewMathematicsPhysics2DUtils
 	{
-		public static float2 IgnoreY( this float3 v3 ) { return new float2( v3.x, v3.z ); }
-		public static float2 IgnoreZ( this float3 v3 ) { return new float2( v3.x, v3.y ); }
-		public static float3 WithZ( this float2 v3, float zValue ) { return new float3( v3.x, v3.y, zValue ); }
-		public static float3 WithZ0( this float2 v3 ) { return new float3( v3.x, v3.y, 0 ); }
+		const MethodImplOptions AggrInline = MethodImplOptions.AggressiveInlining;
+
+		[MethodImpl( AggrInline )] public static float2 IgnoreY( this float3 v3 ) { return new float2( v3.x, v3.z ); }
+		[MethodImpl( AggrInline )] public static float2 IgnoreZ( this float3 v3 ) { return new float2( v3.x, v3.y ); }
+		[MethodImpl( AggrInline )] public static float3 WithZ( this float2 v3, float zValue ) { return new float3( v3.x, v3.y, zValue ); }
+		[MethodImpl( AggrInline )] public static float3 WithZ0( this float2 v3 ) { return new float3( v3.x, v3.y, 0 ); }
 		
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static float GetProjectedRadiusMaxSize( Camera cam, float3 worldPos, float radius )
+		[MethodImpl( AggrInline )] public static float GetProjectedRadiusMaxSize( Camera cam, float3 worldPos, float radius )
 		{
 			float up, down, right, left;
 			GetProjectedRadiusSizes( cam, worldPos, radius, out right, out up, out left, out down );
 			return Mathf.Max( up, Mathf.Max( down, Mathf.Max( right, left ) ) );
 		}
 
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static float GetProjectedRadiusAverageSize( Camera cam, float3 worldPos, float radius )
+		[MethodImpl( AggrInline )] public static float GetProjectedRadiusAverageSize( Camera cam, float3 worldPos, float radius )
 		{
 			float up, down, right, left;
 			GetProjectedRadiusSizes( cam, worldPos, radius, out right, out up, out left, out down );
 			return ( up + down + right + left ) * .25f;
 		}
 
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static float GetProjectedRadiusMinSize( Camera cam, float3 worldPos, float radius )
+		[MethodImpl( AggrInline )] public static float GetProjectedRadiusMinSize( Camera cam, float3 worldPos, float radius )
 		{
 			float up, down, right, left;
 			GetProjectedRadiusSizes( cam, worldPos, radius, out right, out up, out left, out down );
 			return Mathf.Min( up, Mathf.Min( down, Mathf.Min( right, left ) ) );
 		}
 
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static void GetProjectedRadiusSizes( Camera cam, float3 worldPos, float radius, out float right, out float up, out float left, out float down )
+		[MethodImpl( AggrInline )] public static void GetProjectedRadiusSizes( Camera cam, float3 worldPos, float radius, out float right, out float up, out float left, out float down )
 		{
 			var cwUp = math.cross( cam.transform.forward, cam.transform.up ) * radius;
 			var cwDown = math.cross( cam.transform.forward, -cam.transform.up ) * radius;
@@ -67,41 +65,33 @@ namespace K10
 		// 	return temp;
 		// }
 
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static bool Collinear( float2 p, float2 q, float2 r ) { return Aprox( Cross( q - p, r - p ), 0 ); }
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static float Cross( float2 a, float2 b ) { return a.x * b.y - a.y * b.x; }
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static bool CCW( float2 p, float2 q, float2 r ) { return Cross( q - p, r - p ) > 0; }
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static bool Aprox( float a, float b ) => math.abs( a - b ) < 2 * float.Epsilon;
+		[MethodImpl( AggrInline )] public static bool Collinear( float2 p, float2 q, float2 r ) { return Aprox( Cross( q - p, r - p ), 0 ); }
+		[MethodImpl( AggrInline )] public static float Cross( float2 a, float2 b ) { return a.x * b.y - a.y * b.x; }
+		[MethodImpl( AggrInline )] public static bool CCW( float2 p, float2 q, float2 r ) { return Cross( q - p, r - p ) > 0; }
+		[MethodImpl( AggrInline )] public static bool Aprox( float a, float b ) => math.abs( a - b ) < 2 * float.Epsilon;
 
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static float Angle( float2 a, float2 o, float2 b )
+		[MethodImpl( AggrInline )] public static float Angle( float2 a, float2 o, float2 b )
 		{
 			var oa = a - o;
 			var ob = b - o;
 			return math.acos( math.dot( oa, ob ) / math.sqrt( math.lengthsq( oa ) * math.lengthsq( ob ) ) );
 		}
 
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static float DistanceToLine( float2 p, Ray2D ray, out float2 hitPoint )
+		[MethodImpl( AggrInline )] public static float DistanceToLine( float2 p, Ray2D ray, out float2 hitPoint )
 		{
 			var b = ray.origin + ray.direction.normalized;
 			var a = ray.origin;
 			return DistanceToLine( p, a, b, out hitPoint );
 		}
 
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static float DistanceToLine( float2 p, float2 a, float2 b, out float2 hitPoint )
+		[MethodImpl( AggrInline )] public static float DistanceToLine( float2 p, float2 a, float2 b, out float2 hitPoint )
 		{
 			var projA = ( b.x - a.x ) * ( p.x - a.x ) + ( b.y - a.y ) * ( p.y - a.y );
 			var projB = ( a.x - b.x ) * ( p.x - b.x ) + ( a.y - b.y ) * ( p.y - b.y );
 			return DistanceToLine( p, a, b, out hitPoint, projA, projB );
 		}
 
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static float DistanceToLine( float2 p, float2 a, float2 b, out float2 hitPoint, float projA, float projB )
+		[MethodImpl( AggrInline )] public static float DistanceToLine( float2 p, float2 a, float2 b, out float2 hitPoint, float projA, float projB )
 		{
 			var dx = b.x - a.x;
 			var dy = b.y - a.y;
@@ -110,24 +100,21 @@ namespace K10
 			return math.length( p - hitPoint );
 		}
 
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static float DistanceToPoint( float2 p, Ray2D ray, out float2 hitPoint, float range = float.MaxValue )
+		[MethodImpl( AggrInline )] public static float DistanceToPoint( float2 p, Ray2D ray, out float2 hitPoint, float range = float.MaxValue )
 		{
 			var b = ray.origin + ray.direction.normalized * range;
 			var a = ray.origin;
 			return DistanceToPoint( p, a, b, out hitPoint );
 		}
 
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static float DistanceToPoint( float2 p, float2 rayOrigin, float2 rayDir, out float2 hitPoint, float range = float.MaxValue )
+		[MethodImpl( AggrInline )] public static float DistanceToPoint( float2 p, float2 rayOrigin, float2 rayDir, out float2 hitPoint, float range = float.MaxValue )
 		{
 			var b = rayOrigin + rayDir * range;
 			var a = rayOrigin;
 			return DistanceToPoint( p, a, b, out hitPoint );
 		}
 
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static float DistanceToPoint( float2 p, float2 a, float2 b, out float2 hitPoint )
+		[MethodImpl( AggrInline )] public static float DistanceToPoint( float2 p, float2 a, float2 b, out float2 hitPoint )
 		{
 			var projA = ( b.x - a.x ) * ( p.x - a.x ) + ( b.y - a.y ) * ( p.y - a.y );
 			if( Aprox( projA, 0 ) || projA < 0 )
@@ -146,23 +133,20 @@ namespace K10
 			return DistanceToLine( p, a, b, out hitPoint, projA, projB );
 		}
 
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static bool AreParellel( float2 l1a, float2 l1b, float2 l2a, float2 l2b )
+		[MethodImpl( AggrInline )] public static bool AreParellel( float2 l1a, float2 l1b, float2 l2a, float2 l2b )
 		{
 			var l1Dir = math.normalize( l1b - l1b );
 			var l2Dir = math.normalize( l2b - l2b );
 			return Aprox( l1Dir.x, l2Dir.x ) && Aprox( l1Dir.y, l2Dir.y );
 		}
 
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static float FindScale( float2 l1a, float2 l1b )
+		[MethodImpl( AggrInline )] public static float FindScale( float2 l1a, float2 l1b )
 		{
 			if( Aprox( l1a.x, 0 ) ) return l1b.y / l1a.y;
 			return l1b.x / l1a.x;
 		}
 
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static bool Intersects( float2 l1a, float2 l1b, float2 l2a, float2 l2b, out float2 hitPoint )
+		[MethodImpl( AggrInline )] public static bool Intersects( float2 l1a, float2 l1b, float2 l2a, float2 l2b, out float2 hitPoint )
 		{
 			hitPoint = l1a;
 
@@ -182,8 +166,7 @@ namespace K10
 			return true;
 		}
 
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static float DistanceToLine( Ray ray, float3 point, out float3 projectedPoint )
+		[MethodImpl( AggrInline )] public static float DistanceToLine( Ray ray, float3 point, out float3 projectedPoint )
 		{
 			var t = point - ( (float3)ray.origin );
 			var dl = math.length( math.cross( ray.direction, t ) );
@@ -192,13 +175,12 @@ namespace K10
 			return dl;
 		}
 
-		[MethodImpl( MethodImplOptions.AggressiveInlining )]
-		public static float DistanceToLine( Ray ray, float3 point )
+		[MethodImpl( AggrInline )] public static float DistanceToLine( Ray ray, float3 point )
 		{
 			return math.length( math.cross( ray.direction, point - ( (float3)ray.origin ) ) );
 		}
 
-		public static float3 PlaneClosestPoint( float3 position, float3 planeNormal, float3 planeOrigin )
+		[MethodImpl( AggrInline )] public static float3 PlaneClosestPoint( float3 position, float3 planeNormal, float3 planeOrigin )
 		{
 			var originToPoint = position - planeOrigin;
 			var originToPointDir = math.normalize( originToPoint );
@@ -212,7 +194,7 @@ namespace K10
 			return closestPoint;
 		}
 
-		public static bool NormalsAreParallel( float3 planeNormal, float3 originToPoint )
+		[MethodImpl( AggrInline )] public static bool NormalsAreParallel( float3 planeNormal, float3 originToPoint )
 		{
 			return (Aprox(planeNormal.x, originToPoint.x) && Aprox(planeNormal.y, originToPoint.y) && Aprox(planeNormal.z, originToPoint.z)) ||
 					(Aprox(planeNormal.x, -originToPoint.x) && Aprox(planeNormal.y, -originToPoint.y) && Aprox(planeNormal.z, -originToPoint.z));

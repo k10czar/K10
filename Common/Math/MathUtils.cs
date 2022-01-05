@@ -1,8 +1,11 @@
+using System.Runtime.CompilerServices;
+
 namespace K10
 {
 	public static class Math
 	{
-		public static int Log2( int v )
+		const MethodImplOptions AggrInline = MethodImplOptions.AggressiveInlining;
+		[MethodImpl( AggrInline )] public static int Log2( int v )
 		{
 			int r = 0xFFFF - v >> 31 & 0x10;
 			v >>= r;
@@ -19,8 +22,8 @@ namespace K10
 			return r;
 		}
 
-		public static byte GetBitsCount( int maxValue ) => (byte)( Log2( maxValue ) + 1 );
-		public static byte GetBytesCount( int bits ) => (byte)( ( ( bits - 1 ) >> 3 ) + 1 );
+		[MethodImpl( AggrInline )] public static byte GetBitsCount( int maxValue ) => (byte)( Log2( maxValue ) + 1 );
+		[MethodImpl( AggrInline )] public static byte GetBytesCount( int bits ) => (byte)( ( ( bits - 1 ) >> 3 ) + 1 );
 
 		private static readonly byte[] guess = new byte[]{
 			0, 0, 0, 0, 1, 1, 1, 2, 2, 2,
@@ -34,11 +37,11 @@ namespace K10
 			100000,		1000000,	10000000,	100000000,	1000000000,
 		};
 
-		public static int Log10( int x ) => guess[Log2( x )];
-		public static int Pow10( int x ) => tenToThe[x];
-		public static int Base10( int x ) => tenToThe[guess[Log2( x )]];
+		[MethodImpl( AggrInline )] public static int Log10( int x ) => guess[Log2( x )];
+		[MethodImpl( AggrInline )] public static int Pow10( int x ) => tenToThe[x];
+		[MethodImpl( AggrInline )] public static int Base10( int x ) => tenToThe[guess[Log2( x )]];
 
-		public static float SafeDivision(float x, float y, float valueIfZero = 0)
+		[MethodImpl( AggrInline )] public static float SafeDivision(float x, float y, float valueIfZero = 0)
 		{
 			if(y == 0) return valueIfZero;
 			return x / y;
