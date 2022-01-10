@@ -46,7 +46,7 @@ public static class MathAdapter
 	[MethodImpl( AggrInline )] public static float sqrt( float a ) => Mathf.Sqrt( a );
 	[MethodImpl( AggrInline )] public static float sin( float a ) => Mathf.Sin( a );
 	[MethodImpl( AggrInline )] public static float cos( float a ) => Mathf.Cos( a );
-	[MethodImpl( AggrInline )] public static float acos( float a ) => Mathf.acos( a );
+	[MethodImpl( AggrInline )] public static float acos( float a ) => Mathf.Acos( a );
 	[MethodImpl( AggrInline )] public static float atan2( float y, float x ) => Mathf.Atan2( y, x );
 	[MethodImpl( AggrInline )] public static int CeilToInt( float a ) => Mathf.CeilToInt( a );
 	[MethodImpl( AggrInline )] public static int RoundToInt( float a ) => Mathf.RoundToInt( a );
@@ -78,9 +78,9 @@ public static class MathAdapter
 	[MethodImpl( AggrInline )] public static v2 compMul( v2 a, v2 b ) => a * b;
 #else
 	[MethodImpl( AggrInline )] public static float dot( v2 a, v2 b ) => Vector2.Dot( a, b );
-	[MethodImpl( AggrInline )] public static v2 normalize( v2 a ) => Vector2.Normalize( a );
-	[MethodImpl( AggrInline )] public static float length( v2 a ) => Vector2.Magnitude( a );
-	[MethodImpl( AggrInline )] public static float lengthsq( v2 a ) => Vector2.SqrMagnitude( a );
+	[MethodImpl( AggrInline )] public static v2 normalize( v2 a ) => a.normalized;
+	[MethodImpl( AggrInline )] public static float length( v2 a ) => a.magnitude;
+	[MethodImpl( AggrInline )] public static float lengthsq( v2 a ) => a.sqrMagnitude;
 	[MethodImpl( AggrInline )] public static v2 compMul( v2 a, v2 b ) => Vector2.Scale( a, b );
 #endif
 }
