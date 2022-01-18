@@ -62,7 +62,7 @@ namespace K10
 		[MethodImpl( AggrInline )] public static bool Collinear( v2 p, v2 q, v2 r ) { return Aprox( Cross( q - p, r - p ), 0 ); }
 		[MethodImpl( AggrInline )] public static float Cross( v2 a, v2 b ) { return a.x * b.y - a.y * b.x; }
 		[MethodImpl( AggrInline )] public static bool CCW( v2 p, v2 q, v2 r ) { return Cross( q - p, r - p ) > 0; }
-		[MethodImpl( AggrInline )] public static bool Aprox( float a, float b ) => MathAdapter.abs( a - b ) < 2 * float.Epsilon;
+		[MethodImpl( AggrInline )] public static bool Aprox( float a, float b ) => MathAdapter.Approximately( a, b );
 
 		[MethodImpl( AggrInline )] public static float Angle( v2 a, v2 o, v2 b )
 		{
@@ -157,39 +157,6 @@ namespace K10
 			hitPoint.x = ( B2 * C1 - B1 * C2 ) / delta;
 			hitPoint.y = ( A1 * C2 - A2 * C1 ) / delta;
 			return true;
-		}
-
-		[MethodImpl( AggrInline )] public static float DistanceToLine( Ray ray, v3 point, out v3 projectedPoint )
-		{
-			var t = point - ( (v3)ray.origin );
-			var dl = MathAdapter.length( MathAdapter.cross( ray.direction, t ) );
-			var dot = MathAdapter.dot( ray.direction, t );
-			projectedPoint = ray.origin + ray.direction * dot;
-			return dl;
-		}
-
-		[MethodImpl( AggrInline )] public static float DistanceToLine( Ray ray, v3 point )
-		{
-			return MathAdapter.length( MathAdapter.cross( ray.direction, point - ( (v3)ray.origin ) ) );
-		}
-
-		[MethodImpl( AggrInline )] public static v3 PlaneClosestPoint( v3 position, v3 planeNormal, v3 planeOrigin )
-		{
-			var originToPoint = position - planeOrigin;
-			var originToPointDir = MathAdapter.normalize( originToPoint );
-			if( NormalsAreParallel( planeNormal, originToPointDir ) ) return planeOrigin;
-			var otherComponentDir = MathAdapter.normalize( MathAdapter.cross( planeNormal, originToPointDir )  );
-			var planeProjectionDir = MathAdapter.normalize( MathAdapter.cross( otherComponentDir, planeNormal ) );
-			var projD = MathAdapter.dot( originToPoint, planeProjectionDir );
-			var originOffset = projD * planeProjectionDir;
-			var closestPoint = planeOrigin + originOffset;
-			return closestPoint;
-		}
-
-		[MethodImpl( AggrInline )] public static bool NormalsAreParallel( v3 planeNormal, v3 originToPoint )
-		{
-			return (Aprox(planeNormal.x, originToPoint.x) && Aprox(planeNormal.y, originToPoint.y) && Aprox(planeNormal.z, originToPoint.z)) ||
-					(Aprox(planeNormal.x, -originToPoint.x) && Aprox(planeNormal.y, -originToPoint.y) && Aprox(planeNormal.z, -originToPoint.z));
 		}
 	}
 }

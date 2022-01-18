@@ -69,17 +69,43 @@ public static class DebugUtils
 	public static void Circle( Vector3 pos, float radius, Color color ) { Circle( pos, Vector3.forward, Vector3.up, radius, color, false ); }
 	public static void Circle( Vector3 pos, float radius, Color color, float anglePrecision ) { Circle( pos, Vector3.forward, Vector3.up, radius, color, false, anglePrecision ); }
 	public static void Circle( Vector3 pos, Vector3 forward, Vector3 up, float radius, Color color, bool forwardGuide ) { Circle( pos, forward, up, radius, color, forwardGuide, K_DEFAULT_ANGLE_PRECISION ); }
-    public static void Circle( Vector3 pos, Vector3 forward, Vector3 up, float radius, Color color, bool forwardGuide, float anglePrecision )
-    {
-        var a = forward.normalized * radius;
-        if( forwardGuide ) Debug.DrawLine( pos, pos + a, color );
+	public static void Circle(Vector3 pos, Vector3 forward, Vector3 up, float radius, Color color, bool forwardGuide, float anglePrecision)
+	{
+		var a = forward.normalized * radius;
+		if (forwardGuide) Debug.DrawLine(pos, pos + a, color);
 
-        for( float ang = 0; ang <= 2 * Mathf.PI; ang += anglePrecision )
-        {
-            var b = Quaternion.AngleAxis( anglePrecision * Mathf.Rad2Deg, up ) * a;
-            Debug.DrawLine( pos + a, pos + b, color );
-            a = b;
-        }
+		for (float ang = 0; ang <= 2 * Mathf.PI; ang += anglePrecision)
+		{
+			var b = Quaternion.AngleAxis(anglePrecision * Mathf.Rad2Deg, up) * a;
+			Debug.DrawLine(pos + a, pos + b, color);
+			a = b;
+		}
+	}
+
+	private static Vector2 GetElipsePoint(float t, float a, float b) => new Vector2( a * Mathf.Cos( t ),  b * Mathf.Sin( t ) );
+	private static Vector3 To3d(Vector2 v2d, Vector3 origin, Vector3 v3dAxisX, Vector3 v3dAxisY) => origin + v2d.x * v3dAxisX + v2d.y * v3dAxisY;
+
+	public static void Elipse( Vector3 origin, float r, float R, Vector3 majorAxis, Vector3 normal, Color color, float anglePrecision = K_DEFAULT_ANGLE_PRECISION )
+	{
+		var f = Mathf.Sqrt(R * R - r * r);
+		var faxis = f * majorAxis;
+		var f1 = origin + faxis;
+		var f2 = origin - faxis;
+
+		var minorAxis = Vector3.Cross( majorAxis, normal );
+		var p2d = GetElipsePoint( 0, R, r );
+		var a = To3d( p2d, origin, majorAxis, minorAxis );
+
+		for (float ang = anglePrecision; ang <= 2 * Mathf.PI; ang += anglePrecision)
+		{
+			p2d = GetElipsePoint(ang, R, r);
+			var b = To3d(p2d, origin, majorAxis, minorAxis);
+			Debug.DrawLine(a, b, color);
+			a = b;
+		}
+
+		p2d = GetElipsePoint(2 * Mathf.PI, R, r);
+		Debug.DrawLine(a, To3d(p2d, origin, majorAxis, minorAxis), color);
 	}
 
 	public static void Cone( Vector3 pos, Vector3 forward, Vector3 up, float angle, float distance, Color color )
@@ -178,5 +204,12 @@ public static class DebugUtils
 		Debug.DrawLine( pos + Quaternion.AngleAxis( 90, up ) * a, pos + Quaternion.AngleAxis( 0, up ) * a, color, duration );
 		Debug.DrawLine( pos + Quaternion.AngleAxis( 0, up ) * a, pos + Quaternion.AngleAxis( 270, up ) * a, color, duration );
 		Debug.DrawLine( pos + Quaternion.AngleAxis( 0, up ) * a, pos + Quaternion.AngleAxis( 180, up ) * a, color, duration );
+	}
+
+	public static void PointTriAxis( Vector3 point, Color color, float ptSize = .1f )
+	{
+		Debug.DrawRay(point, Vector3.forward * ptSize, color);
+		Debug.DrawRay(point, Vector3.up * ptSize, color);
+		Debug.DrawRay(point, Vector3.right * ptSize, color);
 	}
 }

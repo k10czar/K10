@@ -1,4 +1,5 @@
 
+using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -14,6 +15,7 @@ using v3 = UnityEngine.Vector3;
 public static class MathAdapter
 {
 	const MethodImplOptions AggrInline = MethodImplOptions.AggressiveInlining;
+	public const float EP2 = float.Epsilon * 2;
 
 #if USE_NEW_MATHEMATICS
 	public const float PI = math.PI;
@@ -36,9 +38,12 @@ public static class MathAdapter
 	[MethodImpl( AggrInline )] public static float sin( float a ) => math.sin( a );
 	[MethodImpl( AggrInline )] public static float cos( float a ) => math.cos( a );
 	[MethodImpl( AggrInline )] public static float acos( float a ) => math.acos( a );
+	[MethodImpl( AggrInline )] public static float tan( float a ) => math.tan( a );
 	[MethodImpl( AggrInline )] public static float atan2( float y, float x ) => math.atan2( y, x );
 	[MethodImpl( AggrInline )] public static int CeilToInt( float a ) => Mathf.CeilToInt( a ); // TODO: Change to New Mathematics
 	[MethodImpl( AggrInline )] public static int RoundToInt( float a ) => Mathf.RoundToInt( a ); // TODO: Change to New Mathematics
+	[MethodImpl( AggrInline )] public static bool Approximately(float a, float b) => math.abs( a - b ) < EP2;
+	[MethodImpl( AggrInline )] public static float sign(float x) => x < 0 ? -1 : 1;
 #else
 	[MethodImpl( AggrInline )] public static float abs( float a ) => Mathf.Abs( a );
 	[MethodImpl( AggrInline )] public static float min( float a, float b ) => Mathf.Min( a, b );
@@ -47,9 +52,12 @@ public static class MathAdapter
 	[MethodImpl( AggrInline )] public static float sin( float a ) => Mathf.Sin( a );
 	[MethodImpl( AggrInline )] public static float cos( float a ) => Mathf.Cos( a );
 	[MethodImpl( AggrInline )] public static float acos( float a ) => Mathf.Acos( a );
+	[MethodImpl( AggrInline )] public static float tan( float a ) => Mathf.Tan( a );
 	[MethodImpl( AggrInline )] public static float atan2( float y, float x ) => Mathf.Atan2( y, x );
 	[MethodImpl( AggrInline )] public static int CeilToInt( float a ) => Mathf.CeilToInt( a );
 	[MethodImpl( AggrInline )] public static int RoundToInt( float a ) => Mathf.RoundToInt( a );
+	[MethodImpl(AggrInline)] public static bool Approximately(float a, float b) => Mathf.Abs(a - b) < EP2;
+	[MethodImpl(AggrInline)] public static float sign( float a ) => Mathf.Sign( a );
 #endif
 
 	//Vector3
@@ -83,4 +91,28 @@ public static class MathAdapter
 	[MethodImpl( AggrInline )] public static float lengthsq( v2 a ) => a.sqrMagnitude;
 	[MethodImpl( AggrInline )] public static v2 compMul( v2 a, v2 b ) => Vector2.Scale( a, b );
 #endif
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static v3 To3d( this v2 v2d, v3 origin, v3 v3dAxisX, v3 v3dAxisY) => origin + v2d.x * v3dAxisX + v2d.y * v3dAxisY;
+
+
+	[MethodImpl(AggrInline)]
+	public static void MoveAway( ref v3 a, ref v3 b, float percentage )
+	{
+		var delta = a - b;
+		var interaction = delta * percentage * .5f;
+		a += interaction;
+		b -= interaction;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void Bhaskara(float a, float b, float c, out float root1, out float root2)
+	{
+		var delta = b * b - 4 * a * c;
+		var deltaRoot = sqrt(delta);
+		var bMinus = -b;
+		var a2 = 2 * a;
+		root1 = (bMinus + deltaRoot) / a2;
+		root2 = (bMinus - deltaRoot) / a2;
+	}
 }
