@@ -7,9 +7,11 @@ using UnityEngine;
 using Unity.Mathematics;
 using v2 = Unity.Mathematics.float2;
 using v3 = Unity.Mathematics.float3;
+using m44 = Unity.Mathematics.float4x4;
 #else
 using v2 = UnityEngine.Vector2;
 using v3 = UnityEngine.Vector3;
+using m44 = UnityEngine.Matrix4x4;
 #endif
 
 public static class MathAdapter
@@ -90,6 +92,13 @@ public static class MathAdapter
 	[MethodImpl( AggrInline )] public static float length( v2 a ) => a.magnitude;
 	[MethodImpl( AggrInline )] public static float lengthsq( v2 a ) => a.sqrMagnitude;
 	[MethodImpl( AggrInline )] public static v2 compMul( v2 a, v2 b ) => Vector2.Scale( a, b );
+#endif
+
+	Matrix4x4
+#if USE_NEW_MATHEMATICS
+	// [MethodImpl( AggrInline )] public static m44 mul( m44 a, m44 b ) => math.mul( a, b );
+#else
+	// [MethodImpl(AggrInline)] public static m44 mul(m44 a, m44 b) => a * b;
 #endif
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

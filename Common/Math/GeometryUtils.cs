@@ -31,14 +31,8 @@ public static class GeometryUtils
 	[MethodImpl(AggrInline)] public static v3 PlaneClosestPoint(v3 position, v3 planeNormal, v3 planeOrigin)
 	{
 		var originToPoint = position - planeOrigin;
-		var originToPointDir = MathAdapter.normalize(originToPoint);
-		if (NormalsAreParallel(planeNormal, originToPointDir)) return planeOrigin;
-		var otherComponentDir = MathAdapter.normalize(MathAdapter.cross(planeNormal, originToPointDir));
-		var planeProjectionDir = MathAdapter.normalize(MathAdapter.cross(otherComponentDir, planeNormal));
-		var projD = MathAdapter.dot(originToPoint, planeProjectionDir);
-		var originOffset = projD * planeProjectionDir;
-		var closestPoint = planeOrigin + originOffset;
-		return closestPoint;
+		var dot = MathAdapter.dot( planeNormal, originToPoint );
+		return position - dot * planeNormal;
 	}
 
 	[MethodImpl(AggrInline)] public static bool Aprox(float a, float b) => MathAdapter.Approximately(a, b);
