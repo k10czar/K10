@@ -158,5 +158,27 @@ namespace K10
 			hitPoint.y = ( A1 * C2 - A2 * C1 ) / delta;
 			return true;
 		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool GetCircleCircleIntersections(v2 c1Origin, float c1Radius, v2 c2Origin, float c2Radius, ref v2 ip1, ref v2 ip2)
+		{
+			var oDiff = c2Origin - c1Origin;
+			var distSq = MathAdapter.lengthsq(oDiff);
+			var radiusSum = c1Radius + c2Radius;
+			var radiusSumSq = radiusSum * radiusSum;
+			if (distSq > radiusSumSq) return false;
+			var d = MathAdapter.sqrt(distSq);
+			var c1r2 = c1Radius * c1Radius;
+			var c2r2 = c2Radius * c2Radius;
+			var a = (c1r2 - c2r2 + distSq) / (2 * d);
+			var h = MathAdapter.sqrt(c1r2 - a * a);
+			var p2 = c1Origin + (oDiff * (a / d));
+			var factor = h / d;
+			var xFactor = oDiff.x * factor;
+			var yFactor = oDiff.y * factor;
+			ip1 = new v2(p2.x + yFactor, p2.y - xFactor);
+			ip2 = new v2(p2.x - yFactor, p2.y + xFactor);
+			return true;
+		}
 	}
 }
