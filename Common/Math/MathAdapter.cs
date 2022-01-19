@@ -94,7 +94,6 @@ public static class MathAdapter
 	[MethodImpl( AggrInline )] public static v2 compMul( v2 a, v2 b ) => Vector2.Scale( a, b );
 #endif
 
-	Matrix4x4
 #if USE_NEW_MATHEMATICS
 	// [MethodImpl( AggrInline )] public static m44 mul( m44 a, m44 b ) => math.mul( a, b );
 #else
