@@ -98,6 +98,7 @@ public static class K10UnityExtensions
 	[MethodImpl( AggrInline )] public static Rect CutRight( this Rect r, float width ) { return new Rect( r.x, r.y, r.width - width, r.height ); }
 	[MethodImpl( AggrInline )] public static Rect RequestHeight( this Rect r, float height ) { return new Rect( r.x, r.y + ( r.height - height ) / 2, r.width, height ); }
 	[MethodImpl( AggrInline )] public static Rect RequestWidth( this Rect r, float width ) { return new Rect( r.x + ( r.width - width ) / 2, r.y, width, r.height ); }
+	[MethodImpl( AggrInline )] public static Rect Move( this Rect r, Vector2 offset ) { return new Rect( r.x + offset.x, r.y + offset.y, r.width, r.height ); }
 	[MethodImpl( AggrInline )] public static Rect MoveUp( this Rect r, float distance ) { return new Rect( r.x, r.y - distance, r.width, r.height ); }
 	[MethodImpl( AggrInline )] public static Rect MoveDown( this Rect r, float distance ) { return new Rect( r.x, r.y + distance, r.width, r.height ); }
 	[MethodImpl( AggrInline )] public static Rect MoveLeft( this Rect r, float distance ) { return new Rect( r.x - distance, r.y, r.width, r.height ); }

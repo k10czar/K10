@@ -45,7 +45,6 @@ public static class MathAdapter
 	[MethodImpl( AggrInline )] public static int CeilToInt( float a ) => Mathf.CeilToInt( a ); // TODO: Change to New Mathematics
 	[MethodImpl( AggrInline )] public static int RoundToInt( float a ) => Mathf.RoundToInt( a ); // TODO: Change to New Mathematics
 	[MethodImpl( AggrInline )] public static bool Approximately(float a, float b) => math.abs( a - b ) < EP2;
-	[MethodImpl( AggrInline )] public static float sign(float x) => x < 0 ? -1 : 1;
 #else
 	[MethodImpl( AggrInline )] public static float abs( float a ) => Mathf.Abs( a );
 	[MethodImpl( AggrInline )] public static float min( float a, float b ) => Mathf.Min( a, b );
@@ -59,8 +58,9 @@ public static class MathAdapter
 	[MethodImpl( AggrInline )] public static int CeilToInt( float a ) => Mathf.CeilToInt( a );
 	[MethodImpl( AggrInline )] public static int RoundToInt( float a ) => Mathf.RoundToInt( a );
 	[MethodImpl(AggrInline)] public static bool Approximately(float a, float b) => Mathf.Abs(a - b) < EP2;
-	[MethodImpl(AggrInline)] public static float sign( float a ) => Mathf.Sign( a );
+	// [MethodImpl(AggrInline)] public static float sign( float a ) => Mathf.Sign( a );
 #endif
+	[MethodImpl( AggrInline )] public static int sign( float x ) => x < 0 ? -1 : 1;
 
 	//Vector3
 #if USE_NEW_MATHEMATICS
