@@ -8,11 +8,13 @@ public static class CodeTimingDebug
 	static bool enabled = false;
 
 	public static void Enable() { enabled = true; }
-	public static void Disable() { enabled = false; }
+	public static void Disable() { enabled = false; _logStopwatch.Stop(); }
 
 	private static readonly Dictionary<string,Stopwatch> _watches = new Dictionary<string, Stopwatch>();
 	private static readonly Dictionary<string,double> _accTimmings = new Dictionary<string,double>();
 	private static readonly Dictionary<string,int> _calls = new Dictionary<string,int>();
+
+	private static Stopwatch _logStopwatch = new Stopwatch();
 
 	public static void LogStart( string tag )
 	{
@@ -53,11 +55,22 @@ public static class CodeTimingDebug
 	private static readonly StringBuilder SB = new StringBuilder();
 	private static System.Comparison<KeyValuePair<string,double>> DESCENDING_COMPARISON = ( KeyValuePair<string, double> a, KeyValuePair<string, double> b ) => b.Value.CompareTo( a.Value );
 	// private static System.Comparison<KeyValuePair<string,double>> ASCENDING_COMPARISON = ( KeyValuePair<string, double> a, KeyValuePair<string, double> b ) => b.Value.CompareTo( a.Value );
-	public static string GetLog( string format = "F3" )
+	public static string GetLog( string msFormat = "F3", string percentageFormat = "F1" )
 	{
+		var hasLastLogStopwatch = _logStopwatch.IsRunning;
+		var totalMs = _logStopwatch.Elapsed.TotalMilliseconds;
+		SB.Clear();
+		
+		if( hasLastLogStopwatch )
+		{
+			_logStopwatch.Stop();
+			SB.Append( "Total time: " );
+			SB.Append( totalMs.ToString( msFormat ) );
+			SB.Append( "ms\n" );
+		}
+
 		var timings = _accTimmings.ToList();
 		timings.Sort( DESCENDING_COMPARISON );
-		SB.Clear();
 		foreach( var kvp in timings )
 		{
 			SB.Append( "[" );
@@ -66,12 +79,27 @@ public static class CodeTimingDebug
 			SB.Append( "]" );
 			SB.Append( tag );
 			SB.Append( ":" );
-			SB.Append( kvp.Value.ToString( format ) );
+
+			var ms = kvp.Value;
+
+			SB.Append( ms.ToString( msFormat ) );
 			SB.Append( "ms" );
+
+			if( hasLastLogStopwatch )
+			{
+				SB.Append( " " );
+				SB.Append( ( ms * 100 / totalMs ).ToString( percentageFormat ) );
+				SB.Append( "%" );
+			}
+
 			SB.Append( "\n" );
 		}
 		var log = SB.ToString();
 		SB.Clear();
+
+		_logStopwatch.Reset();
+		_logStopwatch.Start();
+
 		return log;
 	}
 }
