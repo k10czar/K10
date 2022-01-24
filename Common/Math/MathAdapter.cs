@@ -70,6 +70,8 @@ public static class MathAdapter
 	[MethodImpl( AggrInline )] public static float length( v3 a ) => math.length( a );
 	[MethodImpl( AggrInline )] public static float lengthsq( v3 a ) => math.lengthsq( a );
 	[MethodImpl( AggrInline )] public static v3 compMul( v3 a, v3 b ) => a * b;
+	[MethodImpl( AggrInline )] public static v3 max( v3 a, v3 b ) => math.max( a, b );
+	[MethodImpl( AggrInline )] public static v3 min( v3 a, v3 b ) => math.min( a, b );
 #else
 	[MethodImpl( AggrInline )] public static float dot( v3 a, v3 b ) => Vector3.Dot( a, b );
 	[MethodImpl( AggrInline )] public static v3 cross( v3 a, v3 b ) => Vector3.Cross( a, b );
@@ -77,6 +79,8 @@ public static class MathAdapter
 	[MethodImpl( AggrInline )] public static float length( v3 a ) => Vector3.Magnitude( a );
 	[MethodImpl( AggrInline )] public static float lengthsq( v3 a ) => Vector3.SqrMagnitude( a );
 	[MethodImpl( AggrInline )] public static v3 compMul( v3 a, v3 b ) => Vector3.Scale( a, b );
+	[MethodImpl( AggrInline )] public static v3 max( v3 a, v3 b ) => Vector3.Max( a, b );
+	[MethodImpl( AggrInline )] public static v3 min( v3 a, v3 b ) => Vector3.Min( a, b );
 #endif
 
 	//Vector2
