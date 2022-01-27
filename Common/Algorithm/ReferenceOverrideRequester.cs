@@ -23,6 +23,10 @@ public class ReferenceOverrideRequester<T> : IReferenceHolder<T>, IReferenceRequ
 	public IEventValidator Validator => _current.Validator;
 	public bool IsNull => _current.IsNull;
 
+	public T CurrentOriginalValue => _default;
+	public bool HasAnyOverride => _requests.Count > 0;
+	public bool IsOverrideSameAsOriginal => Algorithm.SafeEquals(_current.CurrentReference, _default);
+
 	public ReferenceOverrideRequester( T defaultValue = default(T) )
 	{
 		ChangeDefault( defaultValue );
