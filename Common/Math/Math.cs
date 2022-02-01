@@ -24,6 +24,7 @@ namespace K10
 
 		[MethodImpl( AggrInline )] public static byte GetBitsCount( int maxValue ) => (byte)( Log2( maxValue ) + 1 );
 		[MethodImpl( AggrInline )] public static byte GetBytesCount( int bits ) => (byte)( ( ( bits - 1 ) >> 3 ) + 1 );
+		[MethodImpl( AggrInline )] public static byte GetBytesCountFromMaxValue( int maxValue ) => GetBytesCount( GetBitsCount( maxValue ) );
 
 		private static readonly byte[] guess = new byte[]{
 			0, 0, 0, 0, 1, 1, 1, 2, 2, 2,
