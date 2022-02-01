@@ -1,134 +1,145 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
+using System.Runtime.CompilerServices;
+using Unity.Mathematics;
 using UnityEngine;
+
+#if USE_NEW_MATHEMATICS
+using Unity.Mathematics;
+using v2 = Unity.Mathematics.float2;
+using v3 = Unity.Mathematics.float3;
+#else
+using v2 = UnityEngine.Vector2;
+using v3 = UnityEngine.Vector3;
+#endif
 
 namespace K10
 {
 	public static class Physics2DUtils
 	{
-		public static float GetProjectedRadiusMaxSize( Camera cam, Vector3 worldPos, float radius )
+		const MethodImplOptions AggrInline = MethodImplOptions.AggressiveInlining;
+		
+		[MethodImpl( AggrInline )] public static float GetProjectedRadiusMaxSize( Camera cam, v3 worldPos, float radius )
 		{
 			float up, down, right, left;
 			GetProjectedRadiusSizes( cam, worldPos, radius, out right, out up, out left, out down );
-			return Mathf.Max( up, Mathf.Max( down, Mathf.Max( right, left ) ) );
+			return MathAdapter.max( up, MathAdapter.max( down, MathAdapter.max( right, left ) ) );
 		}
 
-		public static float GetProjectedRadiusAverageSize( Camera cam, Vector3 worldPos, float radius )
+		[MethodImpl( AggrInline )] public static float GetProjectedRadiusAverageSize( Camera cam, v3 worldPos, float radius )
 		{
 			float up, down, right, left;
 			GetProjectedRadiusSizes( cam, worldPos, radius, out right, out up, out left, out down );
 			return ( up + down + right + left ) * .25f;
 		}
 
-		public static float GetProjectedRadiusMinSize( Camera cam, Vector3 worldPos, float radius )
+		[MethodImpl( AggrInline )] public static float GetProjectedRadiusMinSize( Camera cam, v3 worldPos, float radius )
 		{
 			float up, down, right, left;
 			GetProjectedRadiusSizes( cam, worldPos, radius, out right, out up, out left, out down );
-			return Mathf.Min( up, Mathf.Min( down, Mathf.Min( right, left ) ) );
+			return MathAdapter.min( up, MathAdapter.min( down, MathAdapter.min( right, left ) ) );
 		}
 
-		public static void GetProjectedRadiusSizes( Camera cam, Vector3 worldPos, float radius, out float right, out float up, out float left, out float down )
+		[MethodImpl( AggrInline )] public static void GetProjectedRadiusSizes( Camera cam, v3 worldPos, float radius, out float right, out float up, out float left, out float down )
 		{
-            var cwUp = Vector3.Cross( cam.transform.forward, cam.transform.up ) * radius;
-            var cwDown = Vector3.Cross( cam.transform.forward, -cam.transform.up ) * radius;
-            var cwRight = Vector3.Cross( cam.transform.forward, cam.transform.right ) * radius;
-            var cwLeft = Vector3.Cross( cam.transform.forward, -cam.transform.right ) * radius;
+			var cwUp = MathAdapter.cross( cam.transform.forward, cam.transform.up ) * radius;
+			var cwDown = MathAdapter.cross( cam.transform.forward, -cam.transform.up ) * radius;
+			var cwRight = MathAdapter.cross( cam.transform.forward, cam.transform.right ) * radius;
+			var cwLeft = MathAdapter.cross( cam.transform.forward, -cam.transform.right ) * radius;
 
-			Vector2 center = cam.WorldToScreenPoint( worldPos );
+			v2 center = cam.WorldToScreenPoint( worldPos ).IgnoreZ();
 
-			Vector2 cUp = cam.WorldToScreenPoint( worldPos + cwUp );
-			Vector2 cDown = cam.WorldToScreenPoint( worldPos + cwDown );
-			Vector2 cRight = cam.WorldToScreenPoint( worldPos + cwRight );
-			Vector2 cLeft = cam.WorldToScreenPoint( worldPos + cwLeft );
+			v2 cUp = cam.WorldToScreenPoint( worldPos + cwUp ).IgnoreZ();
+			v2 cDown = cam.WorldToScreenPoint( worldPos + cwDown ).IgnoreZ();
+			v2 cRight = cam.WorldToScreenPoint( worldPos + cwRight ).IgnoreZ();
+			v2 cLeft = cam.WorldToScreenPoint( worldPos + cwLeft ).IgnoreZ();
 
-			up = ( cUp - center ).magnitude;
-			down = ( cDown - center ).magnitude;
-			right = ( cRight - center ).magnitude;
-			left = ( cLeft - center ).magnitude;
+			up = MathAdapter.length( cUp - center );
+			down = MathAdapter.length( cDown - center );
+			right = MathAdapter.length( cRight - center );
+			left = MathAdapter.length( cLeft - center );
 		}
 
-		static Vector2 Test( Camera cam, Matrix4x4 mat, Vector3 pos )
-		{
-            var temp = ( mat * new Vector4( pos.x, pos.y, pos.z, 1 ) );
-            temp.x = ( temp.x / temp.w + 1f ) * .5f * cam.pixelWidth;
-            temp.y = ( temp.y / temp.w + 1f ) * .5f * cam.pixelHeight;
-			return temp;
-		}
+		[MethodImpl( AggrInline )] public static bool Collinear( v2 p, v2 q, v2 r ) { return Aprox( Cross( q - p, r - p ), 0 ); }
+		[MethodImpl( AggrInline )] public static float Cross( v2 a, v2 b ) { return a.x * b.y - a.y * b.x; }
+		[MethodImpl( AggrInline )] public static bool CCW( v2 p, v2 q, v2 r ) { return Cross( q - p, r - p ) > 0; }
+		[MethodImpl( AggrInline )] public static bool Aprox( float a, float b ) => MathAdapter.Approximately( a, b );
 
-		public static bool Collinear( Vector2 p, Vector2 q, Vector2 r ) { return Mathf.Approximately( Cross( q - p, r - p ), 0 ); }
-		public static float Cross( Vector2 a, Vector2 b ) { return a.x * b.y - a.y * b.x; }
-		public static bool CCW( Vector2 p, Vector2 q, Vector2 r ) { return Cross( q - p, r - p ) > 0; }
-
-		public static float Angle( Vector2 a, Vector2 o, Vector2 b )
+		[MethodImpl( AggrInline )] public static float Angle( v2 a, v2 o, v2 b )
 		{
 			var oa = a - o;
 			var ob = b - o;
-			return Mathf.Acos( Vector2.Dot( oa, ob ) / Mathf.Sqrt( oa.sqrMagnitude * ob.sqrMagnitude ) );
+			return MathAdapter.acos( MathAdapter.dot( oa, ob ) / MathAdapter.sqrt( MathAdapter.lengthsq( oa ) * MathAdapter.lengthsq( ob ) ) );
 		}
 
-		public static float DistanceToLine( Vector2 p, Ray2D ray, out Vector2 hitPoint )
+		[MethodImpl( AggrInline )] public static float DistanceToLine( v2 p, Ray2D ray, out v2 hitPoint )
 		{
-			var b = ray.origin + ray.direction.normalized;
-			var a = ray.origin;
-			return DistanceToLine( p, a, b, out hitPoint );
+			var b = (v2)ray.origin + MathAdapter.normalize( ray.direction );
+			return DistanceToLine( p, ray.origin, b, out hitPoint );
 		}
 
-		public static float DistanceToLine( Vector2 p, Vector2 a, Vector2 b, out Vector2 hitPoint )
+		[MethodImpl( AggrInline )] public static float DistanceToLine( v2 p, v2 a, v2 b, out v2 hitPoint )
 		{
 			var projA = ( b.x - a.x ) * ( p.x - a.x ) + ( b.y - a.y ) * ( p.y - a.y );
 			var projB = ( a.x - b.x ) * ( p.x - b.x ) + ( a.y - b.y ) * ( p.y - b.y );
 			return DistanceToLine( p, a, b, out hitPoint, projA, projB );
 		}
 
-		public static float DistanceToLine( Vector2 p, Vector2 a, Vector2 b, out Vector2 hitPoint, float projA, float projB )
+		[MethodImpl( AggrInline )] public static float DistanceToLine( v2 p, v2 a, v2 b, out v2 hitPoint, float projA, float projB )
 		{
 			var dx = b.x - a.x;
 			var dy = b.y - a.y;
 			var scale = projA / ( dx * dx + dy * dy );
 			hitPoint = a + scale * ( b - a );
-			return ( p - hitPoint ).magnitude;
+			return MathAdapter.length( p - hitPoint );
 		}
 
-		public static float DistanceToPoint( Vector2 p, Ray2D ray, out Vector2 hitPoint, float range = float.MaxValue )
+		[MethodImpl( AggrInline )] public static float DistanceToPoint( v2 p, Ray2D ray, out v2 hitPoint, float range = float.MaxValue )
 		{
-			var b = ray.origin + ray.direction.normalized * range;
+			var b = (v2)ray.origin + MathAdapter.normalize( ray.direction ) * range;
 			var a = ray.origin;
 			return DistanceToPoint( p, a, b, out hitPoint );
 		}
 
-		public static float DistanceToPoint( Vector2 p, Vector2 a, Vector2 b, out Vector2 hitPoint )
+		[MethodImpl( AggrInline )] public static float DistanceToPoint( v2 p, v2 rayOrigin, v2 rayDir, out v2 hitPoint, float range = float.MaxValue )
+		{
+			var b = rayOrigin + rayDir * range;
+			var a = rayOrigin;
+			return DistanceToPoint( p, a, b, out hitPoint );
+		}
+
+		[MethodImpl( AggrInline )] public static float DistanceToPoint( v2 p, v2 a, v2 b, out v2 hitPoint )
 		{
 			var projA = ( b.x - a.x ) * ( p.x - a.x ) + ( b.y - a.y ) * ( p.y - a.y );
-			if( Mathf.Approximately( projA, 0 ) || projA < 0 )
+			if( Aprox( projA, 0 ) || projA < 0 )
 			{
 				hitPoint = a;
-				return ( p - a ).magnitude;
+				return MathAdapter.length( p - a );
 			}
 
 			var projB = ( a.x - b.x ) * ( p.x - b.x ) + ( a.y - b.y ) * ( p.y - b.y );
-			if( Mathf.Approximately( projB, 0 ) || projB < 0 )
+			if( Aprox( projB, 0 ) || projB < 0 )
 			{
 				hitPoint = b;
-				return ( p - b ).magnitude;
+				return MathAdapter.length( p - b );
 			}
 
 			return DistanceToLine( p, a, b, out hitPoint, projA, projB );
 		}
 
-		public static bool AreParellel( Vector2 l1a, Vector2 l1b, Vector2 l2a, Vector2 l2b )
+		[MethodImpl( AggrInline )] public static bool AreParellel( v2 l1a, v2 l1b, v2 l2a, v2 l2b )
 		{
-			var l1Dir = ( l1b - l1b ).normalized;
-			var l2Dir = ( l2b - l2b ).normalized;
-			return Mathf.Approximately( l1Dir.x, l2Dir.x ) && Mathf.Approximately( l1Dir.y, l2Dir.y );
+			var l1Dir = MathAdapter.normalize( l1b - l1b );
+			var l2Dir = MathAdapter.normalize( l2b - l2b );
+			return Aprox( l1Dir.x, l2Dir.x ) && Aprox( l1Dir.y, l2Dir.y );
 		}
 
-		public static float FindScale( Vector2 l1a, Vector2 l1b )
+		[MethodImpl( AggrInline )] public static float FindScale( v2 l1a, v2 l1b )
 		{
-			if( Mathf.Approximately( l1a.x, 0 ) ) return l1b.y / l1a.y;
+			if( Aprox( l1a.x, 0 ) ) return l1b.y / l1a.y;
 			return l1b.x / l1a.x;
 		}
 
-		public static bool Intersects( Vector2 l1a, Vector2 l1b, Vector2 l2a, Vector2 l2b, out Vector2 hitPoint )
+		[MethodImpl( AggrInline )] public static bool Intersects( v2 l1a, v2 l1b, v2 l2a, v2 l2b, out v2 hitPoint )
 		{
 			hitPoint = l1a;
 
@@ -141,25 +152,33 @@ namespace K10
 			float C2 = A2 * l2a.x + B2 * l2a.y;
 
 			float delta = A1 * B2 - A2 * B1;
-			if( Mathf.Approximately( delta, 0 ) ) return false;
+			if( Aprox( delta, 0 ) ) return false;
 
 			hitPoint.x = ( B2 * C1 - B1 * C2 ) / delta;
 			hitPoint.y = ( A1 * C2 - A2 * C1 ) / delta;
 			return true;
 		}
 
-		public static float DistanceToLine( Ray ray, Vector3 point, out Vector3 projectedPoint )
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool GetCircleCircleIntersections(v2 c1Origin, float c1Radius, v2 c2Origin, float c2Radius, ref v2 ip1, ref v2 ip2)
 		{
-			var t = point - ray.origin;
-			var dl = Vector3.Cross( ray.direction, t ).magnitude;
-			var dot = Vector3.Dot( ray.direction, t );
-			projectedPoint = ray.origin + ray.direction * dot;
-			return dl;
-		}
-
-		public static float DistanceToLine( Ray ray, Vector3 point )
-		{
-			return Vector3.Cross( ray.direction, point - ray.origin ).magnitude;
+			var oDiff = c2Origin - c1Origin;
+			var distSq = MathAdapter.lengthsq(oDiff);
+			var radiusSum = c1Radius + c2Radius;
+			var radiusSumSq = radiusSum * radiusSum;
+			if (distSq > radiusSumSq) return false;
+			var d = MathAdapter.sqrt(distSq);
+			var c1r2 = c1Radius * c1Radius;
+			var c2r2 = c2Radius * c2Radius;
+			var a = (c1r2 - c2r2 + distSq) / (2 * d);
+			var h = MathAdapter.sqrt(c1r2 - a * a);
+			var p2 = c1Origin + (oDiff * (a / d));
+			var factor = h / d;
+			var xFactor = oDiff.x * factor;
+			var yFactor = oDiff.y * factor;
+			ip1 = new v2(p2.x + yFactor, p2.y - xFactor);
+			ip2 = new v2(p2.x - yFactor, p2.y + xFactor);
+			return true;
 		}
 	}
 }
