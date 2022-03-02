@@ -25,6 +25,9 @@ public static class MathAdapter
 	public const float PI = Mathf.PI;
 #endif
 
+	public const float RadiansToDegrees = 180f / PI;
+	public const float DegreesToRadians = 1 / RadiansToDegrees;
+
 #if USE_NEW_MATHEMATICS
 	[MethodImpl( AggrInline )] public static float2 IgnoreY( this float3 v3 ) { return new float2( v3.x, v3.z ); }
 	[MethodImpl( AggrInline )] public static float2 IgnoreZ( this float3 v3 ) { return new float2( v3.x, v3.y ); }
