@@ -6,6 +6,7 @@ public interface ISemaphoreInfo : IBoolStateObserver
 {
 	bool Free { get; }
 
+	int GetBlockCount(object key);
 	IEventRegister OnBlock { get; }
 	IEventRegister OnRelease { get; }
 	IEventRegister<bool> OnStateChange { get; }
@@ -236,6 +237,14 @@ public class Semaphore : ISemaphore
 		return obj.GetType().ToStringOrNull();
 		// return obj.ToStringOrNull();
 	}
+
+	public int GetBlockCount(object key)
+    {
+		if(_semaphores.TryGetValue(key, out SemaphoreObject s))
+			return s.Value;
+		
+		return 0;
+    }
 
 	int _toStringCount;
 	public override string ToString()
