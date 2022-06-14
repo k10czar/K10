@@ -22,6 +22,9 @@ public class ErrorSemaphore : ISemaphore
 	public void Release( object obj ) => Debug.LogError( $"{obj} Release a ERROR Semaphore" );
 	public bool Block( object obj, bool increaseBlock = true ) { Debug.LogError( $"{obj} Blocking {increaseBlock} a ERROR Semaphore" ); return false; }
 
+	public int GetBlockCount(object key) => Free ? 0 : 1;
+
+	public bool HasBlocker(object key) => !Free;
 	public bool BlockButDoNotIncrease( object obj )
 	{
 		Debug.LogError( $"{obj} BlockButDoNotIncrease a ERROR Semaphore" );
