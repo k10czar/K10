@@ -10,6 +10,7 @@ public interface IStateRequesterInfo
 	IEventRegister OnInteraction { get; }
 
 	int GetRequestCount(object key);
+	bool HasRequest(object key);
 }
 
 public interface IStateRequesterInteraction
@@ -66,6 +67,8 @@ public class StateRequester : IStateRequester
 	public void RemoveRequest( object obj ) => _semaphore.Release( obj );
 
 	public int GetRequestCount(object key) => _semaphore.GetBlockCount(key);
+
+	public bool HasRequest(object key) => _semaphore.HasBlocker(key); 
 
 	public override string ToString() => $"( {( Requested ? "Requested" : "False" )} State => {{ !!{_semaphore}!! }} )";
 }

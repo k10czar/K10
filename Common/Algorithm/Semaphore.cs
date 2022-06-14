@@ -7,6 +7,8 @@ public interface ISemaphoreInfo : IBoolStateObserver
 	bool Free { get; }
 
 	int GetBlockCount(object key);
+
+	bool HasBlocker(object key);
 	IEventRegister OnBlock { get; }
 	IEventRegister OnRelease { get; }
 	IEventRegister<bool> OnStateChange { get; }
@@ -245,6 +247,8 @@ public class Semaphore : ISemaphore
 		
 		return 0;
     }
+
+	public bool HasBlocker(object key) => _semaphores.ContainsKey(key);
 
 	int _toStringCount;
 	public override string ToString()
