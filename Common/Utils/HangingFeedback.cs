@@ -10,6 +10,8 @@ public abstract class HangingFeedback : MonoBehaviour
 	private static StateRequester _hasSomeActive = new StateRequester();
 	public static IBoolStateObserver HasSomeActive => _hasSomeActive;
 
+	public static List<Message> MessagesToDebug => _messages;
+
 	private readonly CachedReference<Message> _message = new CachedReference<Message>();
 	private readonly IntState _activesCount = new IntState();
 	private readonly BoolState _isActive = new BoolState();
