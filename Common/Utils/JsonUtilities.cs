@@ -7,7 +7,7 @@ public static class JsonUtilities
 {
 	public static string DEBUG_FOLDER => ( UnityEngine.Application.persistentDataPath + "/JsonDebug/" );
 
-	public static void LogToJsonFile( this string rawJson, string prefix = "", string suffix = "" )
+	public static string LogToJsonFile( this string rawJson, string prefix = "", string suffix = "" )
 	{
 		var formattedJson = rawJson.FormatAsJson();
 		var fileName = DateTime.Now.ToFileTimeUtc().ToString();
@@ -17,6 +17,7 @@ public static class JsonUtilities
 		#if UNITY_EDITOR
 		Debug.Log( fileName + ": " + rawJson.FormatAsJson( "    " ) );
 		#endif //UNITY_EDITOR
+		return fileName;
 	}
 
 	private static readonly StringBuilder sb = new StringBuilder();
