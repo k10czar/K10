@@ -16,39 +16,39 @@ public class OnlyOnPlaymodeObject : MonoBehaviour
 }
 #endif
 
-public abstract class Singleton<T> where T : UnityEngine.Object
+public abstract class Singleton<T> where T : UnityEngine.Component
 {
-	private static T _instance;
+	private readonly static AutoClearedReference<T> _instance = new AutoClearedReference<T>();
 
 	public static T Instance
 	{
 		get
 		{
-			if( _instance == null )
+			if( !_instance.IsValid )
 			{
-				_instance = (T)MonoBehaviour.FindObjectOfType( typeof( T ) );
+				_instance.RegisterNewReference( (T)MonoBehaviour.FindObjectOfType( typeof( T ) ) );
 
-				if( _instance == null )
-				{
-					//                    Debug.LogError( "An instance of " + typeof(T) + " is needed in the scene, but there is none." );
-				}
+				// if( !_instance.IsValid )
+				// {
+				// 	//                    Debug.LogError( "An instance of " + typeof(T) + " is needed in the scene, but there is none." );
+				// }
 			}
 
-			return _instance;
+			return _instance.Reference;
 		}
 	}
 
 	public static T GetInstance()
 	{
-		if (_instance == null)
+		if (!_instance.IsValid)
 		{
-			_instance = FindObjectOfTypeAll();
+			_instance.RegisterNewReference( FindObjectOfTypeAll() );
 		}
 
-		return _instance;
+		return _instance.Reference;
 	}
 
-	public static void SayHello( T instance ) { if( _instance == null ) _instance = instance; }
+	public static void SayHello( T candidate ) { if( !_instance.IsValid ) _instance.RegisterNewReference( candidate ); }
 
 	/// <summary>
 	/// Finds the first object (active or inactive)
@@ -89,9 +89,10 @@ public abstract class ClassSingleton<T> where T : new()
 
 public class NamedSingletonComponent<T> where T : UnityEngine.Component
 {
-	private T _instance;
+	private readonly AutoClearedReference<T> _instance = new AutoClearedReference<T>();
 	private GameObject _cachedObject;
 	private string _name;
+	private IEventRegister _currentReferenceDestroyEvent;
 
 	public NamedSingletonComponent( string objectAttachedName )
 	{
@@ -102,17 +103,28 @@ public class NamedSingletonComponent<T> where T : UnityEngine.Component
 	{
 		get
 		{
-			if( _instance == null )
+			if( !_instance.IsValid )
 			{
 				if( _cachedObject == null )
 					_cachedObject = GameObject.Find( _name );
 
 				if( _cachedObject != null )
-					_instance = _cachedObject.GetComponent<T>();
+				{
+					_instance.RegisterNewReference( _cachedObject.GetComponent<T>() );
+					_currentReferenceDestroyEvent = _cachedObject.EventRelay().OnDestroy;
+					_currentReferenceDestroyEvent.Register( OnDestroy );
+				}
 			}
 
-			return _instance;
+			return _instance.Reference;
 		}
+	}
+
+	void OnDestroy()
+	{
+		_cachedObject = null;
+		_currentReferenceDestroyEvent.Unregister( OnDestroy );
+		_currentReferenceDestroyEvent = null;
 	}
 }
 
@@ -120,24 +132,26 @@ public abstract class Eternal<T> : Guaranteed<T> where T : UnityEngine.Component
 {
 	public new static T Instance { get { return GetInstance( true ); } }
 	public new static void Request() { GetInstance( true ); }
+
+	//TODO: Need to implements the DontDestroy on Load?
 }
 
 public abstract class Guaranteed<T> where T : UnityEngine.Component
 {
-	private static T _instance;
+	private readonly static AutoClearedReference<T> _instance = new AutoClearedReference<T>();
 	private static bool _markedEternal = false;
 
 	protected static T GetInstance( bool eternal )
 	{
-		if( _instance == null )
+		if( !_instance.IsValid )
 		{
 			_markedEternal = false;
-			_instance = (T)MonoBehaviour.FindObjectOfType( typeof( T ) );
+			_instance.RegisterNewReference( (T)MonoBehaviour.FindObjectOfType( typeof( T ) ) );
 
-			if( _instance == null )
+			if( !_instance.IsValid )
 			{
 				GameObject obj = new GameObject( string.Format( "_GS_{0}", ( typeof( T ) ).ToString() ) );
-				_instance = obj.AddComponent<T>();
+				_instance.RegisterNewReference( obj.AddComponent<T>() );
 				#if UNITY_EDITOR
 				obj.AddComponent<OnlyOnPlaymodeObject>();
 				#endif
@@ -146,18 +160,19 @@ public abstract class Guaranteed<T> where T : UnityEngine.Component
 
 		if( eternal && !_markedEternal )
 		{
-			GameObject.DontDestroyOnLoad( _instance.transform );
+			var reference = _instance.Reference;
+			GameObject.DontDestroyOnLoad( reference.transform );
 			_markedEternal = true;
-			_instance.name = string.Format( "_ES_{0}", ( typeof( T ) ).ToString() );
+			reference.name = string.Format( "_ES_{0}", ( typeof( T ) ).ToString() );
 
-			_instance.gameObject.hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild;// | HideFlags.HideInHierarchy | HideFlags.HideInInspector;
+			reference.gameObject.hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild;// | HideFlags.HideInHierarchy | HideFlags.HideInInspector;
 		}
 
-		return _instance;
+		return _instance.Reference;
 	}
 
 	public static T Instance { get { return GetInstance( false ); } }
 	public static void Request() { GetInstance( false ); }
 
-	public static void SayHello( T instance ) { if( _instance == null ) _instance = instance; }
+	public static void SayHello( T candidate ) { if( !_instance.IsValid ) _instance.RegisterNewReference( candidate ); }
 }
