@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,10 +16,63 @@ public static partial class ScriptableObjectUtils
         return t;
 	}
 
-	public static ScriptableObject Create( string newPath, System.Type type, bool focus = false )
+
+	static void CreationObjectAndFile( object type, string newPath, bool focus, System.Action<ScriptableObject> OnObjectCreated = null )
 	{
-		ScriptableObject asset = ScriptableObject.CreateInstance( type );
-		return SetSO( ref newPath, focus, asset );
+		var rt = (System.Type)type;
+		ScriptableObject asset = ScriptableObject.CreateInstance(rt);
+
+		if( FileAdapter.Exists( newPath + ".asset") )
+		{
+			int id = 2;
+			while( FileAdapter.Exists( newPath + id + ".asset" ) ) id++;
+			newPath = newPath + id;
+		}
+
+		var assetRef = SetSO( ref newPath, focus, asset );
+		if (OnObjectCreated != null) OnObjectCreated(assetRef);
+	}
+
+	public static void CreateMenu( string newPath, System.Type type, bool focus = false, System.Action<ScriptableObject> OnObjectCreated = null )
+	{
+		System.Type selectedType = null;
+
+		var types = System.AppDomain.CurrentDomain.GetAssemblies()
+					.SelectMany(s => s.GetTypes())
+					.Where(p => type.IsAssignableFrom(p) && !p.IsAbstract);
+
+					
+
+		var count = types.Count();
+		if (count <= 1)
+		{
+			selectedType = type;
+			foreach (var t in types) selectedType = t;
+			Debug.LogError( selectedType.ToStringOrNull() + " is the only non Abstract type that implements " + type + ". So dont need to show menu" );
+		}
+		else
+		{
+			GenericMenu menu = new GenericMenu();
+
+			foreach (var t in types)
+			{
+				GenericMenu.MenuFunction2 onTypedElementCreated = (tp) => CreationObjectAndFile( tp, newPath + "_" + tp.ToStringOrNull(), focus, OnObjectCreated );
+				menu.AddItem( new GUIContent( t.ToStringOrNull() ), false, onTypedElementCreated, t );
+			}
+
+			menu.ShowAsContext();
+
+			Debug.LogError(type.ToStringOrNull() + " is a abstract ScriptableObject click again the button holding some of the following keys to choose some of the inherited type:\n" + string.Join("\n", types ) + "\n\n");
+			return;
+		}
+
+		CreationObjectAndFile( selectedType, newPath, focus, OnObjectCreated );
+	}
+
+	public static ScriptableObject Create(string newPath, System.Type type, bool focus = false)
+	{
+		ScriptableObject asset = ScriptableObject.CreateInstance(type);
+		return SetSO(ref newPath, focus, asset);
 	}
 
 	public static T Create<T>( string newPath, bool focus = false ) where T : ScriptableObject
@@ -33,7 +87,7 @@ public static partial class ScriptableObjectUtils
 		AssetDatabaseUtils.RequestPath( newPath );
 		string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath( newPath + ".asset" );
 
-		Debug.Log( "Try create asset at " + assetPathAndName );
+		Debug.Log( "Try create(" + asset.ToStringOrNull() + ") asset at " + assetPathAndName );
 
 		AssetDatabase.CreateAsset( asset, assetPathAndName );
 
