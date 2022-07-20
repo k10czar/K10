@@ -97,12 +97,6 @@ public static class EventValidatorExtentions
 		foreach( var val in validators ) vals[i++] = val.CurrentValidationCheck;
 		return vals;
 	}
-		
-	static Func<bool> CombinedCondition( IEventValidator validator, IValidatedObject obj )
-	{
-		var boxedValidation = validator.CurrentValidationCheck;
-		return () => { return obj.IsValid && boxedValidation(); };
-	}
 
 	static Func<bool> CombinedCondition( IEventValidator validator, System.Func<bool> AdditionalCheck )
 	{
@@ -116,25 +110,25 @@ public static class EventValidatorExtentions
 		return () => { return transform != null && boxedValidation(); };
 	}
 
-	public static IEventTrigger<T, K, J> Validated<T, K, J>( this IEventValidator validator, Action<T, K, J> act ) => new ConditionalEventListener<T, K, J>( act, validator.CurrentValidationCheck );
-	public static IEventTrigger<T, K, J> Validated<T, K, J>( this IEventValidator validator, IEventTrigger<T, K, J> act ) => new ConditionalEventListener<T, K, J>( act, CombinedCondition( validator, act ) );
+	public static IEventTrigger<T, K, J> Validated<T, K, J>( this IEventValidator validator, Action<T, K, J> act ) => new ValidatedEventListener<T, K, J>( act, validator );
+	public static IEventTrigger<T, K, J> Validated<T, K, J>( this IEventValidator validator, IEventTrigger<T, K, J> act ) => new ValidatedEventListener<T, K, J>( act, validator );
 
-	public static IEventTrigger<T, K> Validated<T, K>( this IEventValidator validator, Action<T, K> act ) => new ConditionalEventListener<T, K>( act, validator.CurrentValidationCheck );
-	public static IEventTrigger<T, K> Validated<T, K>( this IEventValidator validator, IEventTrigger<T, K> act ) => new ConditionalEventListener<T, K>( act, CombinedCondition( validator, act ) );
+	public static IEventTrigger<T, K> Validated<T, K>( this IEventValidator validator, Action<T, K> act ) => new ValidatedEventListener<T, K>( act, validator );
+	public static IEventTrigger<T, K> Validated<T, K>( this IEventValidator validator, IEventTrigger<T, K> act ) => new ValidatedEventListener<T, K>( act, validator );
 
-	public static IEventTrigger<T> Validated<T>( this IEventValidator validator, Action<T> act ) => new ConditionalEventListener<T>( act, validator.CurrentValidationCheck );
-	public static IEventTrigger<T> Validated<T>( this IEventValidator validator, IEventTrigger<T> act ) => new ConditionalEventListener<T>( act, CombinedCondition( validator, act ) );
+	public static IEventTrigger<T> Validated<T>( this IEventValidator validator, Action<T> act ) => new ValidatedEventListener<T>( act, validator );
+	public static IEventTrigger<T> Validated<T>( this IEventValidator validator, IEventTrigger<T> act ) => new ValidatedEventListener<T>( act, validator );
 
-	public static IEventTrigger Validated( this IEventValidator validator, Action act ) => new ConditionalEventListener( act, validator.CurrentValidationCheck );
-	public static IEventTrigger Validated( this IEventValidator validator, IEventTrigger act ) => new ConditionalEventListener( act, CombinedCondition( validator, act ) );
+	public static IEventTrigger Validated( this IEventValidator validator, Action act ) => new ValidatedEventListener( act, validator );
+	public static IEventTrigger Validated( this IEventValidator validator, IEventTrigger act ) => new ValidatedEventListener( act, validator );
 
-	public static IEventTrigger ValidatedVoid( this IVoidableEventValidator validator ) => validator.Validated( validator.Void );
+	// public static IEventTrigger ValidatedVoid( this IVoidableEventValidator validator ) => validator.Validated( validator.Void );
 
-	public static IEventTrigger<T,K> Validated<T,K>( this IEventValidator validator, Action<T, K> act, UnityEngine.Transform transform ) => new ConditionalEventListener<T, K>( act, CombinedCondition( validator, transform ) );
-	public static IEventTrigger<T> Validated<T>( this IEventValidator validator, Action<T> act, UnityEngine.Transform transform ) => new ConditionalEventListener<T>( act, CombinedCondition( validator, transform ) );
-	public static IEventTrigger Validated( this IEventValidator validator, Action act, UnityEngine.Transform transform ) => new ConditionalEventListener( act, CombinedCondition( validator, transform ) );
+	// public static IEventTrigger<T,K> Validated<T,K>( this IEventValidator validator, Action<T, K> act, UnityEngine.Transform transform ) => new ValidatedEventListener<T, K>( act, CombinedCondition( validator, transform ) );
+	// public static IEventTrigger<T> Validated<T>( this IEventValidator validator, Action<T> act, UnityEngine.Transform transform ) => new ValidatedEventListener<T>( act, CombinedCondition( validator, transform ) );
+	// public static IEventTrigger Validated( this IEventValidator validator, Action act, UnityEngine.Transform transform ) => new ValidatedEventListener( act, CombinedCondition( validator, transform ) );
 
-	public static IEventTrigger<T,K> Validated<T, K>( this IEventValidator validator, Action<T, K> act, System.Func<bool> AdditionalCheck ) => new ConditionalEventListener<T, K>( act, CombinedCondition( validator, AdditionalCheck ) );
-	public static IEventTrigger<T> Validated<T>( this IEventValidator validator, Action<T> act, System.Func<bool> AdditionalCheck ) => new ConditionalEventListener<T>( act, CombinedCondition( validator, AdditionalCheck ) );
-	public static IEventTrigger Validated( this IEventValidator validator, Action act, System.Func<bool> AdditionalCheck ) => new ConditionalEventListener( act, CombinedCondition( validator, AdditionalCheck ) );
+	// public static IEventTrigger<T,K> Validated<T, K>( this IEventValidator validator, Action<T, K> act, System.Func<bool> AdditionalCheck ) => new ValidatedEventListener<T, K>( act, CombinedCondition( validator, AdditionalCheck ) );
+	// public static IEventTrigger<T> Validated<T>( this IEventValidator validator, Action<T> act, System.Func<bool> AdditionalCheck ) => new ValidatedEventListener<T>( act, CombinedCondition( validator, AdditionalCheck ) );
+	// public static IEventTrigger Validated( this IEventValidator validator, Action act, System.Func<bool> AdditionalCheck ) => new ValidatedEventListener( act, CombinedCondition( validator, AdditionalCheck ) );
 }
