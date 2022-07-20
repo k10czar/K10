@@ -96,4 +96,36 @@ public static class JsonUtilities
 		sb.Append( '\n' );
 		for( int j = 0; j < identLevel; j++ ) sb.Append( tabulation );
 	}
+
+	public static string RemoveStringInsideBrackets(string mainString, string startingBracketSubString)
+	{
+		int startIndex = mainString.LastIndexOf(startingBracketSubString) + startingBracketSubString.Length-1;
+		if (startIndex < 0)
+		{
+			return mainString;
+		}
+		
+		int bracketCount = 0;
+		int finalIndex = -1;
+		for(int i = startIndex; i < mainString.Length; i++){
+			if(mainString[i] == '['){
+				bracketCount++;
+			}
+			else if(mainString[i] == ']'){
+				bracketCount--;
+				if(bracketCount <= 0){
+					finalIndex = i;
+					break;
+				}
+			}
+		}
+
+		if (finalIndex == -1)
+		{
+			return mainString;
+		}
+
+		string resultString = mainString.Remove(startIndex+1, finalIndex - startIndex-1);
+		return resultString;
+	}
 }

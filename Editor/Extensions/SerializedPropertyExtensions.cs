@@ -18,6 +18,9 @@ public static class SerializedPropertyExtensions
 	public static string ToFileName( this SerializedProperty prop )
 	{
 		var path = prop.propertyPath;
+		path = path.Replace("[", "");
+		path = path.Replace("]", "");
+		path = path.Replace("._", "_");
 		path = path.Replace( "._", "_" );
 		path = path.Replace( ".", "_" );
 		if( path.StartsWith( "_" ) ) path = path.Substring( 1, path.Length - 1 );

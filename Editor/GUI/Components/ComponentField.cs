@@ -124,17 +124,30 @@ namespace K10.EditorGUIExtention
 
 			if( obj == null )
 			{
-				var iconSize = 16;
-				var create = GUI.Button( new Rect( r.x, r.y + ( r.height - iconSize ) / 2, iconSize, iconSize ), IconCache.Get( "match" ).Texture, new GUIStyle() );
+				var iconSize = 18;
+				var create = IconButton.Draw( new Rect( r.x, r.y + ( r.height - iconSize ) / 2, iconSize, iconSize ), "match", 'C' );
 				if( create )
 				{
-					var target = prop.serializedObject.targetObject;
-					if( prop.serializedObject.targetObject is MonoBehaviour ) target = MonoScript.FromMonoBehaviour( (MonoBehaviour)prop.serializedObject.targetObject );
-					var selectedAssetPath = System.IO.Path.GetDirectoryName( AssetDatabase.GetAssetPath( target ) );
+					var selectedAssetPath = path;
 
-					var go = ScriptableObjectUtils.CreateSequential( selectedAssetPath + "\\" + prop.ToFileName(), type );
-					prop.objectReferenceValue = go;
-					prop.serializedObject.ApplyModifiedProperties();
+					if( selectedAssetPath == null )
+					{
+						var target = prop.serializedObject.targetObject;
+						if( prop.serializedObject.targetObject is MonoBehaviour ) target = MonoScript.FromMonoBehaviour( (MonoBehaviour)prop.serializedObject.targetObject );
+						selectedAssetPath = System.IO.Path.GetDirectoryName( AssetDatabase.GetAssetPath( target ) ) + "\\" + target.name;
+					}
+
+					System.Action<ScriptableObject> setRef = (newRef) =>
+					{
+						// prop.serializedObject.SetIsDifferentCacheDirty();
+						// prop.serializedObject.Update();
+						prop.objectReferenceValue = newRef;
+						prop.serializedObject.ApplyModifiedProperties();
+						// EditorUtility.SetDirty( prop.serializedObject.targetObject );
+					};
+
+					ScriptableObjectUtils.CreateMenu( selectedAssetPath + "\\" + prop.ToFileName(), type, false, setRef );
+					
 					createdNewSO = true;
 				}
 				r = r.CutLeft( iconSize + 2 );
