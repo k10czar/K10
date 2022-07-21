@@ -64,6 +64,12 @@ public interface IValidatedObject
 	bool IsValid { get; }
 }
 
+public static class ValidatedObjectExtensions
+{
+	public static bool IsValidAndNotNull( this IValidatedObject obj ) => obj != null && obj.IsValid;
+}
+
+
 public interface IEventTrigger : IValidatedObject
 {
 	void Trigger();
