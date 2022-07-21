@@ -4,7 +4,7 @@ using UnityEngine;
 public class UIntState : INumericValueState<uint>, ISerializationCallbackReceiver
 {
 	[SerializeField] uint _value;
-	[System.NonSerialized] EventSlot<uint> _onChange = new EventSlot<uint>();
+	[System.NonSerialized] EventSlot<uint> _onChange;
 
 	public uint Value { get { return _value; } set { Setter( value ); } }
 	public uint Get() { return _value; }
@@ -13,7 +13,7 @@ public class UIntState : INumericValueState<uint>, ISerializationCallbackReceive
 	{
 		if( _value == value ) return;
 		_value = value;
-		_onChange.Trigger( value );
+		_onChange?.Trigger( value );
 	}
 
 	public void Increment( uint value = 1 )
@@ -22,7 +22,13 @@ public class UIntState : INumericValueState<uint>, ISerializationCallbackReceive
 		Setter( _value + value );
 	}
 
-	public IEventRegister<uint> OnChange { get { return _onChange; } }
+	public void Clear()
+	{
+		_onChange?.Clear();
+		_onChange = null;
+	}
+
+	public IEventRegister<uint> OnChange => _onChange ?? ( _onChange = new EventSlot<uint>() );
 
 	public UIntState( uint initialValue = default( uint ) ) { _value = initialValue; Init(); }
 	void Init()
@@ -34,5 +40,5 @@ public class UIntState : INumericValueState<uint>, ISerializationCallbackReceive
 	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); }
 
 
-	public override string ToString() { return string.Format( "IS({1})", typeof( uint ).ToString(), _value ); }
+	public override string ToString() { return $"US({_value})"; }
 }

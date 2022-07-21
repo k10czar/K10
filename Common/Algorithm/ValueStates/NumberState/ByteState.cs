@@ -13,7 +13,7 @@ public class ByteState : INumericValueState<byte>, ISerializationCallbackReceive
 	{
 		if( _value == value ) return;
 		_value = value;
-		_onChange.Trigger( value );
+		_onChange?.Trigger( value );
 	}
 
 	public void Increment( byte value = 1 )
@@ -22,7 +22,13 @@ public class ByteState : INumericValueState<byte>, ISerializationCallbackReceive
 		Setter( (byte)( _value + value ) );
 	}
 
-	public IEventRegister<byte> OnChange { get { return _onChange; } }
+	public void Clear()
+	{
+		_onChange?.Clear();
+		_onChange = null;
+	}
+
+	public IEventRegister<byte> OnChange => _onChange ?? ( _onChange = new EventSlot<byte>() );
 
 	public ByteState( byte initialValue = default( byte ) ) { _value = initialValue; Init(); }
 	void Init()
@@ -33,5 +39,5 @@ public class ByteState : INumericValueState<byte>, ISerializationCallbackReceive
 	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
 	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); }
 
-	public override string ToString() { return string.Format( "BS({1})", typeof( byte ).ToString(), _value ); }
+	public override string ToString() { return $"ByS({_value})"; }
 }

@@ -17,9 +17,9 @@ public class BoolState : IBoolState, ISerializationCallbackReceiver
 	public const string ON_CHANGE_PROP_NAME = nameof( OnChange );
 	[SerializeField] bool _value;
 
-	[System.NonSerialized] private EventSlot<bool> _onChange = new EventSlot<bool>();
-	[System.NonSerialized] private EventSlot _onTrue = new EventSlot();
-	[System.NonSerialized] private EventSlot _onFalse = new EventSlot();
+	[System.NonSerialized] private EventSlot<bool> _onChange;
+	[System.NonSerialized] private EventSlot _onTrue;
+	[System.NonSerialized] private EventSlot _onFalse;
 
 	public static implicit operator bool( BoolState v ) => v._value;
 
@@ -31,14 +31,23 @@ public class BoolState : IBoolState, ISerializationCallbackReceiver
 		if( _value == value ) return;
 		_value = value;
 
-		_onChange.Trigger( value );
-		if( value ) _onTrue.Trigger();
-		else _onFalse.Trigger();
+		_onChange?.Trigger( value );
+		if( value ) _onTrue?.Trigger();
+		else _onFalse?.Trigger();
 	}
 
-	public IEventRegister<bool> OnChange => _onChange;
-	public IEventRegister OnTrueState => _onTrue;
-	public IEventRegister OnFalseState => _onFalse;
+	public void Clear()
+	{
+		_onChange?.Clear();
+		_onTrue?.Clear();
+		_onFalse?.Clear();
+		_onChange = null;
+		_onTrue = null;
+		_onFalse = null;
+	}
+	public IEventRegister<bool> OnChange => _onChange ?? ( _onChange = new EventSlot<bool>() );
+	public IEventRegister OnTrueState => _onTrue ?? ( _onTrue = new EventSlot() );
+	public IEventRegister OnFalseState => _onFalse ?? ( _onFalse = new EventSlot() );
 
 	public BoolState( bool initialValue = false ) { _value = initialValue; Init(); }
 

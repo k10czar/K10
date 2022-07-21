@@ -5,7 +5,7 @@ using UnityEngine;
 public class DoubleState : INumericValueState<double>, ISerializationCallbackReceiver
 {
 	[SerializeField] double _value;
-	[System.NonSerialized] private EventSlot<double> _onChange = new EventSlot<double>();
+	[System.NonSerialized] private EventSlot<double> _onChange;
 
 	public double Value { get { return _value; } set { Setter( value ); } }
 	public double Get() { return _value; }
@@ -16,7 +16,7 @@ public class DoubleState : INumericValueState<double>, ISerializationCallbackRec
 	{
 		if( Math.Abs( _value - value ) < double.Epsilon ) return;
 		_value = value;
-		_onChange.Trigger( value );
+		_onChange?.Trigger( value );
 	}
 
 	public void Increment( double increment )
@@ -25,7 +25,13 @@ public class DoubleState : INumericValueState<double>, ISerializationCallbackRec
 		Setter( _value + increment );
 	}
 
-	public IEventRegister<double> OnChange { get { return _onChange; } }
+	public void Clear()
+	{
+		_onChange?.Clear();
+		_onChange = null;
+	}
+
+	public IEventRegister<double> OnChange => _onChange ?? ( _onChange = new EventSlot<double>() );
 
 	public DoubleState( double initialValue = default( double ) ) { _value = initialValue; Init(); }
 	void Init()

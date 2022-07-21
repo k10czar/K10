@@ -6,143 +6,367 @@ using System;
 
 public class EventSlot : IEvent
 {
-	private readonly List<IEventTrigger> _listeners = new List<IEventTrigger>();
-	private readonly List<IEventTrigger> _listenersToTrigger = new List<IEventTrigger>();
+	// private List<IEventTrigger> _listeners;
+	private List<IEventTrigger> _listeners = new List<IEventTrigger>();
 
 	public bool IsValid { get { return true; } }
-	public int EventsCount => _listeners.Count;
+	public int EventsCount => _listeners?.Count ?? 0;
 
 	public void Trigger()
 	{
-		_listenersToTrigger.Clear();
-		_listenersToTrigger.AddRange( _listeners );
+		if( _listeners == null || _listeners.Count == 0 ) return;
 
-		for( int i = 0; i < _listenersToTrigger.Count; i++ )
+		var listenersToTrigger = ObjectPool<List<IEventTrigger>>.Request();
+		listenersToTrigger.AddRange( _listeners );
+
+		for( int i = 0; i < listenersToTrigger.Count; i++ )
 		{
-			var listener = _listenersToTrigger[i];
+			var listener = listenersToTrigger[i];
 			if( listener.IsValid ) listener.Trigger();
 			//NOT else Trigger can invalidate listener
-			if( !listener.IsValid ) _listeners.Remove( listener );
+			if( !listener.IsValid )
+			{
+				_listeners.Remove( listener );
+				TryClearFullSignatureList();
+			}
 		}
 
-		_listenersToTrigger.Clear();
+		ObjectPool<List<IEventTrigger>>.Return( listenersToTrigger );
 	}
 
-	public void Register( IEventTrigger listener ) { if( listener != null ) _listeners.Add( listener ); }
-	public bool Unregister( IEventTrigger listener ) { return _listeners.Remove( listener ); }
+	public void Clear() { _listeners?.Clear(); }
+	private void TryClearFullSignatureList() 
+	{
+		// if( _listeners.Count == 0 ) _listeners = null;
+	}
 
-	public override string ToString() { return $"[EventSlot:{_listeners.Count}]"; }
+	public void Register( IEventTrigger listener ) 
+	{
+		if( listener == null ) return;
+		if( _listeners == null ) _listeners = new List<IEventTrigger>();
+		_listeners.Add( listener );
+	}
+
+	public bool Unregister( IEventTrigger listener )
+	{
+		if( _listeners == null ) return false;
+		bool removed = _listeners.Remove( listener );
+		if( removed ) TryClearFullSignatureList();
+		return removed;
+	}
+
+	public override string ToString() { return $"[EventSlot:{EventsCount}]"; }
 }
 
 public class EventSlot<T> : IEvent<T>
 {
-	private readonly EventSlot _generic = new EventSlot();
-	private readonly List<IEventTrigger<T>> _listeners = new List<IEventTrigger<T>>();
-	private readonly List<IEventTrigger<T>> _listenersToTrigger = new List<IEventTrigger<T>>();
+	// private EventSlot _generic;
+	// private List<IEventTrigger<T>> _listeners;
+	private EventSlot _generic = new EventSlot();
+	private List<IEventTrigger<T>> _listeners = new List<IEventTrigger<T>>();
 
 	public bool IsValid { get { return true; } }
-	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
+	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
 
 	public void Trigger( T t )
 	{
-		_listenersToTrigger.Clear();
-		_listenersToTrigger.AddRange( _listeners );
-
-		for( int i = 0; i < _listenersToTrigger.Count; i++ )
+		if( _listeners != null && _listeners.Count > 0 )
 		{
-			var listener = _listenersToTrigger[i];
-			if( listener.IsValid ) listener.Trigger( t );
-			//NOT else Trigger can invalidate listener
-			if( !listener.IsValid ) _listeners.Remove( listener );
-		}
-		_generic.Trigger();
+			var listenersToTrigger = ObjectPool<List<IEventTrigger<T>>>.Request();
+			listenersToTrigger.AddRange( _listeners );
 
-		_listenersToTrigger.Clear();
+			for( int i = 0; i < listenersToTrigger.Count; i++ )
+			{
+				var listener = listenersToTrigger[i];
+				if( listener.IsValid ) listener.Trigger( t );
+				//NOT else Trigger can invalidate listener
+				if( !listener.IsValid )
+				{
+					_listeners.Remove( listener );
+					TryClearFullSignatureList();
+				}
+			}
+			ObjectPool<List<IEventTrigger<T>>>.Return( listenersToTrigger );
+		}
+
+		if( _generic != null )
+		{
+			_generic.Trigger();
+			TryClearGeneric();
+		}
 	}
 
-	public void Register( IEventTrigger<T> listener ) { _listeners.Add( listener ); }
-	public void Register( IEventTrigger listener ) { _generic.Register( listener ); }
+	public void Clear()
+	{
+		_listeners?.Clear();
+		_generic?.Clear();
+		_listeners = null;
+		_generic = null;
+	}
 
-	public bool Unregister( IEventTrigger<T> listener ) { return _listeners.Remove( listener ); }
-	public bool Unregister( IEventTrigger listener ) { return _generic.Unregister( listener ); }
+	private void TryClearGeneric() 
+	{
+		// if( _generic.EventsCount == 0 ) _generic = null;
+	}
+	private void TryClearFullSignatureList()
+	{
+		// if( _listeners.Count == 0 ) _listeners = null;
+	}
 
-	public override string ToString() { return $"[EventSlot<{typeof(T)}>:{_listeners.Count}, Generic:{_generic}]"; }
+	public void Register( IEventTrigger<T> listener ) 
+	{
+		if( listener == null ) return;
+		if( _listeners == null ) _listeners = new List<IEventTrigger<T>>();
+		_listeners.Add( listener );
+	}
+
+	public void Register( IEventTrigger listener )
+	{ 
+		if( listener == null ) return;
+		if( _generic == null ) _generic = new EventSlot();
+		_generic.Register( listener );
+	}
+
+	public bool Unregister( IEventTrigger<T> listener )
+	{
+		if( _listeners == null ) return false;
+		bool removed = _listeners.Remove( listener );
+		if( removed ) TryClearFullSignatureList();
+		return removed;
+	}
+
+	public bool Unregister( IEventTrigger listener )
+	{
+		if( _generic == null ) return false;
+		bool removed = _generic.Unregister( listener );
+		if( removed ) TryClearGeneric();
+		return removed;
+	}
+
+
+	public override string ToString() { return $"[EventSlot<{typeof(T)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
 }
 
 public class EventSlot<T, K> : IEvent<T, K>
 {
-	private readonly EventSlot<T> _generic = new EventSlot<T>();
-	private readonly List<IEventTrigger<T, K>> _listeners = new List<IEventTrigger<T, K>>();
-	private readonly List<IEventTrigger<T,K>> _listenersToTrigger = new List<IEventTrigger<T,K>>();
+	// private EventSlot<T> _generic;
+	// private List<IEventTrigger<T, K>> _listeners;
+	private EventSlot<T> _generic = new EventSlot<T>();
+	private List<IEventTrigger<T, K>> _listeners = new List<IEventTrigger<T, K>>();
 
 	public bool IsValid { get { return true; } }
-	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
+	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
 
 	public void Trigger( T t, K k )
 	{
-		_listenersToTrigger.Clear();
-		_listenersToTrigger.AddRange( _listeners );
-
-		for( int i = 0; i < _listenersToTrigger.Count; i++ )
+		if( _listeners != null && _listeners.Count > 0 )
 		{
-			var listener = _listenersToTrigger[i];
-			if( listener.IsValid ) listener.Trigger( t, k );
-			//NOT else Trigger can invalidate listener
-			if( !listener.IsValid ) _listeners.Remove( listener );
-		}
-		_generic.Trigger( t );
+			var listenersToTrigger = ObjectPool<List<IEventTrigger<T,K>>>.Request();
+			listenersToTrigger.AddRange( _listeners );
 
-		_listenersToTrigger.Clear();
+			for( int i = 0; i < listenersToTrigger.Count; i++ )
+			{
+				var listener = listenersToTrigger[i];
+				if( listener.IsValid ) listener.Trigger( t, k );
+				//NOT else Trigger can invalidate listener
+				if( !listener.IsValid )
+				{
+					_listeners.Remove( listener );
+					TryClearFullSignatureList();
+				}
+			}
+			ObjectPool<List<IEventTrigger<T,K>>>.Return( listenersToTrigger );
+		}
+
+		if( _generic != null )
+		{
+			_generic.Trigger( t );
+			TryClearGeneric();
+		}
 	}
 
-	public void Register( IEventTrigger<T, K> listener ) { _listeners.Add( listener ); }
-	public void Register( IEventTrigger<T> listener ) { _generic.Register( listener ); }
-	public void Register( IEventTrigger listener ) { _generic.Register( listener ); }
+	private void TryClearGeneric() 
+	{
+		// if( _generic.EventsCount == 0 ) _generic = null;
+	}
+	private void TryClearFullSignatureList()
+	{
+		// if( _listeners.Count == 0 ) _listeners = null;
+	}
 
-	public bool Unregister( IEventTrigger<T, K> listener ) { return _listeners.Remove( listener ); }
-	public bool Unregister( IEventTrigger<T> listener ) { return _generic.Unregister( listener ); }
-	public bool Unregister( IEventTrigger listener ) { return _generic.Unregister( listener ); }
+	public void Clear()
+	{
+		_listeners?.Clear();
+		_generic?.Clear();
+		_listeners = null;
+		_generic = null;
+	}
 
-	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)}>:{_listeners.Count}, Generic:{_generic}]"; }
+	public void Register( IEventTrigger<T, K> listener )
+	{
+		if( listener == null ) return;
+		if( _listeners == null ) _listeners = new List<IEventTrigger<T, K>>();
+		_listeners.Add( listener );
+	}
+
+	public void Register( IEventTrigger<T> listener )
+	{
+		if( listener == null ) return;
+		if( _generic == null ) _generic = new EventSlot<T>();
+		_generic.Register( listener );
+	}
+
+	public void Register( IEventTrigger listener )
+	{
+		if( listener == null ) return;
+		if( _generic == null ) _generic = new EventSlot<T>();
+		_generic.Register( listener );
+	}
+
+	public bool Unregister( IEventTrigger<T, K> listener )
+	{
+		if( _listeners == null ) return false;
+		bool removed = _listeners.Remove( listener );
+		if( removed ) TryClearFullSignatureList();
+		return removed;
+	}
+
+	public bool Unregister( IEventTrigger<T> listener )
+	{
+		if( _generic == null ) return false;
+		bool removed = _generic.Unregister( listener );
+		if( removed ) TryClearGeneric();
+		return removed;
+	}
+
+	public bool Unregister( IEventTrigger listener )
+	{
+		if( _generic == null ) return false;
+		bool removed = _generic.Unregister( listener );
+		if( removed ) TryClearGeneric();
+		return removed;
+	}
+
+	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
 }
 
 public class EventSlot<T, K, L> : IEvent<T, K, L>
 {
-	private readonly EventSlot<T, K> _generic = new EventSlot<T, K>();
-	private readonly List<IEventTrigger<T, K, L>> _listeners = new List<IEventTrigger<T, K, L>>();
-	private readonly List<IEventTrigger<T, K, L>> _listenersToTrigger = new List<IEventTrigger<T, K, L>>();
+	// private EventSlot<T, K> _generic;
+	// private List<IEventTrigger<T, K, L>> _listeners;
+	private EventSlot<T, K> _generic = new EventSlot<T, K>();
+	private List<IEventTrigger<T, K, L>> _listeners = new List<IEventTrigger<T, K, L>>();
 
 	public bool IsValid { get { return true; } }
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
 
 	public void Trigger( T t, K k, L l )
 	{
-		_listenersToTrigger.Clear();
-		_listenersToTrigger.AddRange( _listeners );
-
-		for( int i = 0; i < _listenersToTrigger.Count; i++ )
+		if( _listeners != null && _listeners.Count > 0 )
 		{
-			var listener = _listenersToTrigger[i];
-			if( listener.IsValid ) listener.Trigger( t, k, l );
-			//NOT else Trigger can invalidate listener
-			if( !listener.IsValid ) _listeners.Remove( listener );
-		}
-		_generic.Trigger( t, k );
+			var listenersToTrigger = ObjectPool<List<IEventTrigger<T, K, L>>>.Request();
+			listenersToTrigger.AddRange( _listeners );
 
-		_listenersToTrigger.Clear();
+			for( int i = 0; i < listenersToTrigger.Count; i++ )
+			{
+				var listener = listenersToTrigger[i];
+				if( listener.IsValid ) listener.Trigger( t, k, l );
+				//NOT else Trigger can invalidate listener
+				if( !listener.IsValid )
+				{
+					_listeners.Remove( listener );
+					TryClearFullSignatureList();
+				}
+			}
+			ObjectPool<List<IEventTrigger<T, K, L>>>.Return( listenersToTrigger );
+		}
+
+		if( _generic != null )
+		{
+			_generic.Trigger( t, k );
+			TryClearGeneric();
+		}
 	}
 
-	public void Register( IEventTrigger<T, K, L> listener ) { _listeners.Add( listener ); }
-	public void Register( IEventTrigger<T, K> listener ) { _generic.Register( listener ); }
-	public void Register( IEventTrigger<T> listener ) { _generic.Register( listener ); }
-	public void Register( IEventTrigger listener ) { _generic.Register( listener ); }
+	private void TryClearGeneric() 
+	{
+		// if( _generic.EventsCount == 0 ) _generic = null;
+	}
+	
+	private void TryClearFullSignatureList()
+	{
+		// if( _listeners.Count == 0 ) _listeners = null;
+	}
 
-	public bool Unregister( IEventTrigger<T, K, L> listener ) { return _listeners.Remove( listener ); }
-	public bool Unregister( IEventTrigger<T, K> listener ) { return _generic.Unregister( listener ); }
-	public bool Unregister( IEventTrigger<T> listener ) { return _generic.Unregister( listener ); }
-	public bool Unregister( IEventTrigger listener ) { return _generic.Unregister( listener ); }
+	public void Clear()
+	{
+		_listeners?.Clear();
+		_generic?.Clear();
+		_listeners = null;
+		_generic = null;
+	}
 
-	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)},{typeof(L)}>:{_listeners.Count}, Generic:{_generic}]"; }
+	public void Register( IEventTrigger<T, K, L> listener )
+	{
+		if( listener == null ) return;
+		if( _listeners == null ) _listeners = new List<IEventTrigger<T, K, L>>();
+		_listeners.Add( listener );
+	}
+
+	public void Register( IEventTrigger<T, K> listener )
+	{
+		if( listener == null ) return;
+		if( _generic == null ) _generic = new EventSlot<T, K>();
+		_generic.Register( listener );
+	}
+
+	public void Register( IEventTrigger<T> listener )
+	{
+		if( listener == null ) return;
+		if( _generic == null ) _generic = new EventSlot<T, K>();
+		_generic.Register( listener );
+	}
+
+	public void Register( IEventTrigger listener )
+	{
+		if( listener == null ) return;
+		if( _generic == null ) _generic = new EventSlot<T,K>();
+		_generic.Register( listener );
+	}
+
+	public bool Unregister( IEventTrigger<T, K, L> listener )
+	{
+		if( _listeners == null ) return false;
+		bool removed = _listeners.Remove( listener );
+		if( removed ) TryClearFullSignatureList();
+		return removed;
+	}
+
+	public bool Unregister( IEventTrigger<T, K> listener ) 
+	{
+		if( _generic == null ) return false;
+		bool removed = _generic.Unregister( listener );
+		if( removed ) TryClearGeneric();
+		return removed;
+	}
+
+	public bool Unregister( IEventTrigger<T> listener ) 
+	{
+		if( _generic == null ) return false;
+		bool removed = _generic.Unregister( listener );
+		if( removed ) TryClearGeneric();
+		return removed;
+	}
+
+	public bool Unregister( IEventTrigger listener )
+	{
+		if( _generic == null ) return false;
+		bool removed = _generic.Unregister( listener );
+		if( removed ) TryClearGeneric();
+		return removed;
+	}
+
+	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)},{typeof(L)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
 }
 
 public class VoidableEventTrigger : IEventTrigger
