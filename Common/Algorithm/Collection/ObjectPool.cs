@@ -17,7 +17,11 @@ public static class ObjectPool<T> where T : new()
 		return obj;
 	}
 
-	public static void Return( T t ) { _pool.Add( t ); }
+	public static void Return( T t ) 
+	{
+		if( t is System.Collections.IList list ) list.Clear();
+		_pool.Add( t ); 
+	}
 
 	public static void Cache( int size )
 	{
