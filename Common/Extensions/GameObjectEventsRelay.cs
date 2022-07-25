@@ -14,7 +14,7 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 	private EventSlot _onDestroy;
 	private BoolState _isActive;
 	private BoolState _isAlive;
-	private ConditionalEventsCollection _lifetimeValidator;
+	private Validator _lifetimeValidator;
 
 	IEventRegister IUnityEventsRelay.OnDestroy => OnDestroyEvent;
 	public IEventRegister OnDestroyEvent => _onDestroy ?? ( _onDestroy = new EventSlot() );
@@ -26,7 +26,7 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 	{
 		if( _destroyed ) return NullValidator.Instance;
 		// Debug.Log( $"GameObjectEventsRelay.NewLifetime( {DebugName} ) => {GetStateDebug()}" );
-		_lifetimeValidator = new ConditionalEventsCollection();
+		_lifetimeValidator = new Validator( this );
 		return _lifetimeValidator;
 	}
 
@@ -59,7 +59,7 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 		_destroyed = true;
 		_onDestroy?.Trigger();
 		_isAlive?.SetFalse();
-		_lifetimeValidator?.Void();
+		_lifetimeValidator?.OnDestroy();
 
 		_onDestroy?.Clear();
 		_isActive?.Clear();
@@ -86,4 +86,45 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 	}
 
 	// string GetStateDebug() => $"{( ( _onDestroy != null ) ? "oD" : "" )}{( ( _isActive != null ) ? "aC" : "" )}{( ( _isAlive != null ) ? "aL" : "" )}{( ( _lifetimeValidator != null ) ? "lT" : "" )}";
+
+	private class Validator : IEventValidator
+	{
+		GameObjectEventsRelay _objRelay;
+
+		bool _destroyed = false;
+		System.Func<bool> _currentValidationCheck;
+		EventSlot _onVoid;
+
+		bool _lastValidation = true;
+
+		public IEventRegister OnVoid => _onVoid ?? ( _onVoid = new EventSlot() );
+
+		public Validator( GameObjectEventsRelay objRelay )
+		{
+			_objRelay = objRelay;
+		}
+
+		private bool ValidationCheck()
+		{
+			if( !_lastValidation ) return false;
+			_lastValidation = _objRelay != null && _objRelay.transform != null && !_destroyed;
+			if( !_lastValidation ) OnDestroy();
+			return _lastValidation;
+		}
+
+		public System.Func<bool> CurrentValidationCheck => _currentValidationCheck ?? ( _currentValidationCheck = ValidationCheck );
+
+		public void Clear()
+		{
+			_onVoid?.Clear();
+			_onVoid = null;
+		}
+
+		public void OnDestroy()
+		{
+			_destroyed = true;
+			_lastValidation = false;
+			_onVoid?.Trigger();
+		}
+	}
 }

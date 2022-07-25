@@ -33,13 +33,15 @@ public class ConditionalEventsCollection : IVoidableEventValidator
 	{
 		get
 		{
-			if( _currentValidationCheck == null )
-			{
-				var currID = _validatorParity;
-				_currentValidationCheck = () => currID == _validatorParity;
-			}
+			if( _currentValidationCheck == null ) _currentValidationCheck = BuildNewValidationCheck();
 			return _currentValidationCheck;
 		}
+	}
+
+	private Func<bool> BuildNewValidationCheck()
+	{
+		var currID = _validatorParity;
+		return () => currID == _validatorParity;
 	}
 
 	public void Clear()
@@ -48,7 +50,12 @@ public class ConditionalEventsCollection : IVoidableEventValidator
 		_onVoid = null;
 	}
 
-	public void Void() { _currentValidationCheck = null; _validatorParity = ( _validatorParity + 1 ) % int.MaxValue; _onVoid?.Trigger(); }
+	public void Void() 
+	{
+		_currentValidationCheck = null;
+		_validatorParity = ( _validatorParity + 1 ) % int.MaxValue;
+		_onVoid?.Trigger();
+	}
 }
 
 public class ConditionalEventsCollectionBS : IVoidableEventValidator
