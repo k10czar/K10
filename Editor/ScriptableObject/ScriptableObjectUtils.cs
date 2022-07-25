@@ -67,17 +67,27 @@ public static partial class ScriptableObjectUtils
 			foreach (var t in types)
 			{
 				var tParsed = t.ToStringOrNull().Replace( ".", "/" );
-				GenericMenu.MenuFunction2 onTypedElementCreatedInside = ( tp ) => CreationObjectInsideAssetFile( (System.Type)tp, rootAssetPath, prop.PropPathParsed() + "_" + tp.ToStringOrNull(), focus, OnObjectCreated );
-				menu.AddItem( new GUIContent( tParsed + "/Nested inside this SO" ), false, onTypedElementCreatedInside, t );
 				
 				GenericMenu.MenuFunction2 onTypedElementCreatedOutside = ( tp ) =>
+				{
+					var rootFolder = System.IO.Path.GetDirectoryName( rootAssetPath );
+					var newFolderName = System.IO.Path.GetFileNameWithoutExtension( rootAssetPath );
+					CreationObjectAndFile( (System.Type)tp, rootFolder + "\\" + prop.ToFileName() + "_" + tp.ToStringOrNull(), focus, OnObjectCreated );
+				};
+
+				menu.AddItem( new GUIContent( tParsed + "/Separated File" ), false, onTypedElementCreatedOutside, t );
+
+				GenericMenu.MenuFunction2 onTypedElementCreatedOutsideInFolder = ( tp ) =>
 				{
 					var rootFolder = System.IO.Path.GetDirectoryName( rootAssetPath );
 					var newFolderName = System.IO.Path.GetFileNameWithoutExtension( rootAssetPath );
 					CreationObjectAndFile( (System.Type)tp, rootFolder + "\\" + newFolderName + "\\" + prop.ToFileName() + "_" + tp.ToStringOrNull(), focus, OnObjectCreated );
 				};
 
-				menu.AddItem( new GUIContent( tParsed + "/Separated File" ), false, onTypedElementCreatedOutside, t );
+				menu.AddItem( new GUIContent( tParsed + "/Separated File in Folder" ), false, onTypedElementCreatedOutsideInFolder, t );
+
+				GenericMenu.MenuFunction2 onTypedElementCreatedInside = ( tp ) => CreationObjectInsideAssetFile( (System.Type)tp, rootAssetPath, prop.PropPathParsed() + "_" + tp.ToStringOrNull(), focus, OnObjectCreated );
+				menu.AddItem( new GUIContent( tParsed + "/Nested inside this SO" ), false, onTypedElementCreatedInside, t );
 			}
 
 			menu.ShowAsContext();

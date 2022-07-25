@@ -14,9 +14,17 @@ namespace K10.Automation
 		{
 			for( int l = 0; l < _repetitions; l++ )
 			{
+				Debug.Log( $"Loop[{l}] in " + this.ToStringOrNull() );
 				for( int i = 0; i < _actions.Count; i++ )
 				{
-					yield return _actions[i].ExecutionCoroutine();
+					var act = _actions[i];
+					if( act == null ) 
+					{
+						Debug.LogError( "Cannot play null Operation" );
+						continue;
+					}
+					Debug.Log( "Start operation " + act.ToStringOrNull() );
+					yield return act.ExecutionCoroutine();
 				}
 			}
 		}
