@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class FloatState : INumericValueState<float>, ISerializationCallbackReceiver
+public class FloatState : INumericValueState<float>, ISerializationCallbackReceiver, ICustomDisposableKill
 {
 	[SerializeField] float _value;
 	[System.NonSerialized] private EventSlot<float> _onChange;
@@ -24,9 +24,9 @@ public class FloatState : INumericValueState<float>, ISerializationCallbackRecei
 		Setter( _value + increment );
 	}
 
-	public void Clear()
+	public void Kill()
 	{
-		_onChange?.Clear();
+		_onChange?.Kill();
 		_onChange = null;
 	}
 

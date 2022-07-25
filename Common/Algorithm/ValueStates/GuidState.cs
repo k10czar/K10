@@ -13,7 +13,7 @@ public interface IGuidState : IGuidStateObserver, IValueState<Guid>
 }
 
 [System.Serializable]
-public class GuidState : IGuidState
+public class GuidState : IGuidState, ICustomDisposableKill
 {
 	[SerializeField] SerializableGUID _value = new SerializableGUID( Guid.Empty );
 	[System.NonSerialized] private BoolState _isEmpty;
@@ -43,11 +43,13 @@ public class GuidState : IGuidState
 		_isEmpty?.Setter( value == Guid.Empty );
 		_onChange?.Trigger( value );
 	}
+
+	public void Clear() { Setter( Guid.Empty ); }
 	
-	public void Clear()
+	public void Kill()
 	{
-		_isEmpty?.Clear();
-		_onChange?.Clear();
+		_isEmpty?.Kill();
+		_onChange?.Kill();
 		_isEmpty = null;
 		_onChange = null;
 	}

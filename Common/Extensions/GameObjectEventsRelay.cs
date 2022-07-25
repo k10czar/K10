@@ -61,10 +61,10 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 		_isAlive?.SetFalse();
 		_lifetimeValidator?.OnDestroy();
 
-		_onDestroy?.Clear();
-		_isActive?.Clear();
-		_isAlive?.Clear();
-		_lifetimeValidator?.Clear();
+		_onDestroy?.Kill();
+		_isActive?.Kill();
+		_isAlive?.Kill();
+		_lifetimeValidator?.Kill();
 
 		_onDestroy = null;
 		_isAlive = null;
@@ -87,7 +87,7 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 
 	// string GetStateDebug() => $"{( ( _onDestroy != null ) ? "oD" : "" )}{( ( _isActive != null ) ? "aC" : "" )}{( ( _isAlive != null ) ? "aL" : "" )}{( ( _lifetimeValidator != null ) ? "lT" : "" )}";
 
-	private class Validator : IEventValidator
+	private class Validator : IEventValidator, ICustomDisposableKill
 	{
 		GameObjectEventsRelay _objRelay;
 
@@ -114,9 +114,9 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 
 		public System.Func<bool> CurrentValidationCheck => _currentValidationCheck ?? ( _currentValidationCheck = ValidationCheck );
 
-		public void Clear()
+		public void Kill()
 		{
-			_onVoid?.Clear();
+			_onVoid?.Kill();
 			_onVoid = null;
 		}
 

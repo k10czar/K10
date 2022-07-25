@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class ByteState : INumericValueState<byte>, ISerializationCallbackReceiver
+public class ByteState : INumericValueState<byte>, ISerializationCallbackReceiver, ICustomDisposableKill
 {
 	[SerializeField] byte _value;
 	[System.NonSerialized] EventSlot<byte> _onChange = new EventSlot<byte>();
@@ -22,9 +22,9 @@ public class ByteState : INumericValueState<byte>, ISerializationCallbackReceive
 		Setter( (byte)( _value + value ) );
 	}
 
-	public void Clear()
+	public void Kill()
 	{
-		_onChange?.Clear();
+		_onChange?.Kill();
 		_onChange = null;
 	}
 

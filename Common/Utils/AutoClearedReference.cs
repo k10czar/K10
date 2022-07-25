@@ -1,28 +1,36 @@
+using UnityEngine;
+
 public class AutoClearedReference<T> where T : UnityEngine.Component
 {
 	private T _reference;
 	public T Reference => _reference;
 
-	private IEventRegister _currentReferenceDestroyEvent;
+	string debugName = "NOT_INITIALIZED";
+
+	private IVoidable _currentRefClear;
 
 	public bool IsValid => _reference != null;
 
 	public void RegisterNewReference( T newRef )
 	{
-		if( _reference != newRef ) OnReferenceDestroy();
+		_currentRefClear?.Void();
+		_currentRefClear = null;
 
 		_reference = newRef;
+		debugName = $"{newRef.NameOrNull()}({typeof( T )})";
+		Debug.Log( $"--->AutoClearedReference.RegisterNewReference( {debugName} )" );
 
 		if( _reference == null ) return;
 
-		_currentReferenceDestroyEvent = _reference.gameObject.EventRelay().OnDestroy;
-		_currentReferenceDestroyEvent.Register( OnReferenceDestroy );
+		var voidEvent = new CallOnce( OnReferenceDestroy );
+		_reference.gameObject.EventRelay().OnDestroy.Register( voidEvent );
+		_currentRefClear = voidEvent;
 	}
 
 	private void OnReferenceDestroy()
 	{
+		Debug.Log( $"--->AutoClearedReference.OnReferenceDestroy( {debugName} )" );
+		_currentRefClear = null;
 		_reference = null;
-		_currentReferenceDestroyEvent?.Unregister( OnReferenceDestroy );
-		_currentReferenceDestroyEvent = null;
 	}
 }

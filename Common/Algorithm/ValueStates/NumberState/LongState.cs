@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class LongState : INumericValueState<long>, ISerializationCallbackReceiver
+public class LongState : INumericValueState<long>, ISerializationCallbackReceiver, ICustomDisposableKill
 {
     [SerializeField] long _value;
     [System.NonSerialized] EventSlot<long> _onChange;
@@ -23,9 +23,9 @@ public class LongState : INumericValueState<long>, ISerializationCallbackReceive
 		Setter( _value + value );
 	}
 
-	public void Clear()
+	public void Kill()
 	{
-		_onChange?.Clear();
+		_onChange?.Kill();
 		_onChange = null;
 	}
 

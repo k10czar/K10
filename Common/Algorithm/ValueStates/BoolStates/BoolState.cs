@@ -11,7 +11,7 @@ public interface IBoolStateObserver : IValueStateObserver<bool>
 }
 
 [System.Serializable]
-public class BoolState : IBoolState, ISerializationCallbackReceiver
+public class BoolState : IBoolState, ISerializationCallbackReceiver, ICustomDisposableKill
 {
 	public const string SET_METHOD_NAME = nameof( Setter );
 	public const string ON_CHANGE_PROP_NAME = nameof( OnChange );
@@ -36,11 +36,11 @@ public class BoolState : IBoolState, ISerializationCallbackReceiver
 		else _onFalse?.Trigger();
 	}
 
-	public void Clear()
+	public void Kill()
 	{
-		_onChange?.Clear();
-		_onTrue?.Clear();
-		_onFalse?.Clear();
+		_onChange?.Kill();
+		_onTrue?.Kill();
+		_onFalse?.Kill();
 		_onChange = null;
 		_onTrue = null;
 		_onFalse = null;

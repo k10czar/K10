@@ -21,9 +21,8 @@ public sealed class ValidatedEventListener : BaseConditionalEventListener, IEven
 
 	public override bool Equals( object obj )
 	{
-		if( obj is ConditionalEventListener && _evnt != null && _condition != null )
+		if( _evnt != null && _condition != null && obj is ValidatedEventListener del )
 		{
-			var del = (ValidatedEventListener)obj;
 			return _evnt.Equals( del._evnt ) && _condition.Equals( del._condition );
 		}
 		return base.Equals( obj );

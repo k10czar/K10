@@ -1,12 +1,14 @@
 using UnityEngine;
 
 [System.Serializable]
-public class IntState : INumericValueState<int>, ISerializationCallbackReceiver
+public class IntState : INumericValueState<int>, ISerializationCallbackReceiver, ICustomDisposableKill
 {
     [SerializeField] int _value;
     [System.NonSerialized] EventSlot<int> _onChange;
 
+	public IEventRegister<int> OnChange => _onChange ?? ( _onChange = new EventSlot<int>() );
     public int Value { get { return _value; } set { Setter( value ); } }
+
     public int Get() { return _value; }
 
     public void Setter( int value )
@@ -25,13 +27,11 @@ public class IntState : INumericValueState<int>, ISerializationCallbackReceiver
 	public void PlusOne() => Setter( _value + 1 );
 	public void MinusOne() => Setter( _value - 1 );
 
-	public void Clear()
+	public void Kill()
 	{
-		_onChange?.Clear();
+		_onChange?.Kill();
 		_onChange = null;
 	}
-
-    public IEventRegister<int> OnChange => _onChange ?? (_onChange = new EventSlot<int>() );
 
     public IntState( int initialValue = default( int ) ) { _value = initialValue; Init(); }
 	void Init()

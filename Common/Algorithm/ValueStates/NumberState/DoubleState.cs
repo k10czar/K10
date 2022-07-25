@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [System.Serializable]
-public class DoubleState : INumericValueState<double>, ISerializationCallbackReceiver
+public class DoubleState : INumericValueState<double>, ISerializationCallbackReceiver, ICustomDisposableKill
 {
 	[SerializeField] double _value;
 	[System.NonSerialized] private EventSlot<double> _onChange;
@@ -25,9 +25,9 @@ public class DoubleState : INumericValueState<double>, ISerializationCallbackRec
 		Setter( _value + increment );
 	}
 
-	public void Clear()
+	public void Kill()
 	{
-		_onChange?.Clear();
+		_onChange?.Kill();
 		_onChange = null;
 	}
 

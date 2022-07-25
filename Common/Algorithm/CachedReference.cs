@@ -77,33 +77,43 @@ public static class ReferenceHolderExtentions
 	}
 }
 
-public class CachedReference<T> : ICachedReference<T>
+public class CachedReference<T> : ICachedReference<T>, ICustomDisposableKill
 {
 	T _current;
 	public T CurrentReference { get { return _current; } set { ChangeReference( value ); } }
 
-	private readonly EventSlot<T, IEventValidator> _onReferenceSet = new EventSlot<T, IEventValidator>();
-	private readonly EventSlot<T> _onReferenceRemove = new EventSlot<T>();
+	private EventSlot<T, IEventValidator> _onReferenceSet;
+	private EventSlot<T> _onReferenceRemove = new EventSlot<T>();
 
-	public IEventRegister<T, IEventValidator> OnReferenceSet => _onReferenceSet;
-	public IEventRegister<T> OnReferenceRemove => _onReferenceRemove;
+	public IEventRegister<T, IEventValidator> OnReferenceSet => _onReferenceSet ?? ( _onReferenceSet = new EventSlot<T, IEventValidator>() );
+	public IEventRegister<T> OnReferenceRemove => _onReferenceRemove ?? ( _onReferenceRemove = new EventSlot<T>() );
 
 	public bool IsNull => _current == null;
 
-	private readonly ConditionalEventsCollection _validator = new ConditionalEventsCollection();
-	public IEventValidator Validator => _validator;
+	private ConditionalEventsCollection _validator;
+	public IEventValidator Validator => _validator ?? ( _validator = new ConditionalEventsCollection() );
 
 	public void Clear() { ChangeReference( default(T) ); }
+
+	public void Kill()
+	{
+		_onReferenceSet?.Kill();
+		_onReferenceRemove?.Kill();
+		_validator?.Void();
+		_onReferenceSet = null;
+		_onReferenceRemove = null;
+		_validator = null;
+	}
 
 	public void ChangeReference( T newReference )
 	{
 		var old = _current;
 		if( Algorithm.SafeEquals( old, newReference ) ) return;
 
-		_onReferenceRemove.Trigger( old );
-		_validator.Void();
+		_onReferenceRemove?.Trigger( old );
+		_validator?.Void();
 		_current = newReference;
-		_onReferenceSet.Trigger( newReference, _validator );
+		if( _onReferenceSet != null ) _onReferenceSet.Trigger( newReference, Validator );
 	}
 
 	public CachedReference( T startData = default(T) )

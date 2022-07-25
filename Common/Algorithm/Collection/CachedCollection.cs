@@ -26,19 +26,19 @@ public interface ICachedCollectionInteration<T>
 }
 
 [System.Serializable]
-public class CachedCollection<T> : ICachedCollection<T>
+public class CachedCollection<T> : ICachedCollection<T>, ICustomDisposableKill
 {
     [SerializeField] protected List<T> _list = new List<T>();
 
-	private readonly EventSlot _onChange = new EventSlot();
-    private readonly EventSlot<T> _onElementAdded = new EventSlot<T>();
-    private readonly EventSlot<T> _onElementRemoved = new EventSlot<T>();
-    private readonly EventSlot<T> _onNotNullElementRemoved = new EventSlot<T>();
+	private EventSlot _onChange;
+    private EventSlot<T> _onElementAdded;
+    private EventSlot<T> _onElementRemoved;
+    private EventSlot<T> _onNotNullElementRemoved;
 
-	public IEventRegister OnChange { get { return _onChange; } }
-    public IEventRegister<T> OnElementAdded { get { return _onElementAdded; } }
-    public IEventRegister<T> OnElementRemoved { get { return _onElementRemoved; } }
-    public IEventRegister<T> OnNotNullElementRemoved { get { return _onNotNullElementRemoved; } }
+	public IEventRegister OnChange => _onChange ?? ( _onChange = new EventSlot() );
+    public IEventRegister<T> OnElementAdded => _onElementAdded ?? ( _onElementAdded = new EventSlot<T>() );
+    public IEventRegister<T> OnElementRemoved => _onElementRemoved ?? ( _onElementRemoved = new EventSlot<T>() );
+    public IEventRegister<T> OnNotNullElementRemoved => _onNotNullElementRemoved ?? ( _onNotNullElementRemoved = new EventSlot<T>() );
 
 	public T this[int id]
     {
@@ -48,7 +48,7 @@ public class CachedCollection<T> : ICachedCollection<T>
         {
             TriggerRemoveEvents(_list[id]);
             _list[id] = value;
-            _onElementAdded.Trigger(value);
+            _onElementAdded?.Trigger(value);
         }
     }
 
@@ -57,8 +57,8 @@ public class CachedCollection<T> : ICachedCollection<T>
     public void Add( T t )
     {
         _list.Add( t );
-        _onElementAdded.Trigger( t );
-		_onChange.Trigger();
+        _onElementAdded?.Trigger( t );
+		_onChange?.Trigger();
 	}
 
 	public void AddRange( IEnumerable<T> range )
@@ -83,8 +83,8 @@ public class CachedCollection<T> : ICachedCollection<T>
     public void Insert(int i, T t)
     {
         _list.Insert( i, t );
-        _onElementAdded.Trigger( t );
-        _onChange.Trigger();
+        _onElementAdded?.Trigger( t );
+        _onChange?.Trigger();
     }
 
     public bool Contains( T t ){
@@ -97,14 +97,29 @@ public class CachedCollection<T> : ICachedCollection<T>
 
     public void Clear(){
         _list.Clear();
-		_onChange.Trigger();
+		_onChange?.Trigger();
 	}
 
-    void TriggerRemoveEvents( T t )
+	public void Kill()
+	{
+		_list.Clear();
+		// _list = null;
+		_onChange?.Kill();
+		_onElementAdded?.Kill();
+		_onElementRemoved?.Kill();
+		_onNotNullElementRemoved?.Kill();
+		_onChange = null;
+		_onElementAdded = null;
+		_onElementRemoved = null;
+		_onNotNullElementRemoved = null;
+	}
+
+
+	void TriggerRemoveEvents( T t )
     {
-        _onElementRemoved.Trigger( t );
-        if( t != null ) _onNotNullElementRemoved.Trigger( t );
-		_onChange.Trigger();
+        _onElementRemoved?.Trigger( t );
+        if( t != null ) _onNotNullElementRemoved?.Trigger( t );
+		_onChange?.Trigger();
     }
 
     public override string ToString() { return string.Format( "[CachedCollection<{0}>[{1}]]", typeof(T), string.Join( ", ", _list.ConvertAll( ( t ) => t.ToString() ).ToArray() ) ); }

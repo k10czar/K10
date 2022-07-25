@@ -22,11 +22,11 @@ public interface IValueStateObserver<T> where T : struct
 }
 
 [System.Serializable]
-public class ValueState<T> : IValueState<T>, ISerializationCallbackReceiver where T : struct
+public class ValueState<T> : IValueState<T>, ICustomDisposableKill where T : struct
 {
 	[SerializeField] T _value;
 
-	[System.NonSerialized] EventSlot<T> _onChange = new EventSlot<T>();
+	[System.NonSerialized] EventSlot<T> _onChange;
 
 	public T Value { get { return _value; } set { Setter( value ); } }
 	public T Get() { return _value; }
@@ -35,21 +35,20 @@ public class ValueState<T> : IValueState<T>, ISerializationCallbackReceiver wher
 	{
 		if( _value.Equals( value ) ) return;
 		_value = value;
-		_onChange.Trigger( value );
+		_onChange?.Trigger( value );
 	}
 
-	public IEventRegister<T> OnChange { get { return _onChange; } }
+	public IEventRegister<T> OnChange => _onChange ?? ( _onChange = new EventSlot<T>() );
 
 	public ValueState( T initialValue = default( T ) ) { _value = initialValue; }
 
 	public override string ToString() { return string.Format( $"VS<{typeof( T )}>({_value})" ); }
-	void Init()
-	{
-		if( _onChange == null ) _onChange = new EventSlot<T>();
-	}
 
-	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
-	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); }
+	public void Kill()
+	{
+		_onChange?.Kill();
+		_onChange = null;
+	}
 }
 
 public static class ValueStateExtention

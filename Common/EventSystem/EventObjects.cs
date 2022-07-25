@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System;
 
 
-public class EventSlot : IEvent
+public class EventSlot : IEvent, ICustomDisposableKill
 {
 	// private List<IEventTrigger> _listeners;
 	private List<IEventTrigger> _listeners = new List<IEventTrigger>();
@@ -26,7 +26,7 @@ public class EventSlot : IEvent
 			//NOT else Trigger can invalidate listener
 			if( !listener.IsValid )
 			{
-				_listeners.Remove( listener );
+				_listeners?.Remove( listener );
 				TryClearFullSignatureList();
 			}
 		}
@@ -34,9 +34,10 @@ public class EventSlot : IEvent
 		ObjectPool<List<IEventTrigger>>.Return( listenersToTrigger );
 	}
 
-	public void Clear() { _listeners?.Clear(); }
-	private void TryClearFullSignatureList() 
+	public void Kill() { _listeners?.Clear(); }
+	private void TryClearFullSignatureList()
 	{
+		if( _listeners == null ) return;
 		// if( _listeners.Count == 0 ) _listeners = null;
 	}
 
@@ -58,7 +59,7 @@ public class EventSlot : IEvent
 	public override string ToString() { return $"[EventSlot:{EventsCount}]"; }
 }
 
-public class EventSlot<T> : IEvent<T>
+public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 {
 	// private EventSlot _generic;
 	// private List<IEventTrigger<T>> _listeners;
@@ -82,7 +83,7 @@ public class EventSlot<T> : IEvent<T>
 				//NOT else Trigger can invalidate listener
 				if( !listener.IsValid )
 				{
-					_listeners.Remove( listener );
+					_listeners?.Remove( listener );
 					TryClearFullSignatureList();
 				}
 			}
@@ -96,20 +97,22 @@ public class EventSlot<T> : IEvent<T>
 		}
 	}
 
-	public void Clear()
+	public void Kill()
 	{
 		_listeners?.Clear();
-		_generic?.Clear();
+		_generic?.Kill();
 		_listeners = null;
 		_generic = null;
 	}
 
 	private void TryClearGeneric() 
 	{
+		if( _generic == null ) return;
 		// if( _generic.EventsCount == 0 ) _generic = null;
 	}
 	private void TryClearFullSignatureList()
 	{
+		if( _listeners == null ) return;
 		// if( _listeners.Count == 0 ) _listeners = null;
 	}
 
@@ -147,7 +150,7 @@ public class EventSlot<T> : IEvent<T>
 	public override string ToString() { return $"[EventSlot<{typeof(T)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
 }
 
-public class EventSlot<T, K> : IEvent<T, K>
+public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 {
 	// private EventSlot<T> _generic;
 	// private List<IEventTrigger<T, K>> _listeners;
@@ -171,7 +174,7 @@ public class EventSlot<T, K> : IEvent<T, K>
 				//NOT else Trigger can invalidate listener
 				if( !listener.IsValid )
 				{
-					_listeners.Remove( listener );
+					_listeners?.Remove( listener );
 					TryClearFullSignatureList();
 				}
 			}
@@ -185,19 +188,21 @@ public class EventSlot<T, K> : IEvent<T, K>
 		}
 	}
 
-	private void TryClearGeneric() 
+	private void TryClearGeneric()
 	{
+		if( _generic == null ) return;
 		// if( _generic.EventsCount == 0 ) _generic = null;
 	}
 	private void TryClearFullSignatureList()
 	{
+		if( _listeners == null ) return;
 		// if( _listeners.Count == 0 ) _listeners = null;
 	}
 
-	public void Clear()
+	public void Kill()
 	{
 		_listeners?.Clear();
-		_generic?.Clear();
+		_generic?.Kill();
 		_listeners = null;
 		_generic = null;
 	}
@@ -250,7 +255,7 @@ public class EventSlot<T, K> : IEvent<T, K>
 	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
 }
 
-public class EventSlot<T, K, L> : IEvent<T, K, L>
+public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 {
 	// private EventSlot<T, K> _generic;
 	// private List<IEventTrigger<T, K, L>> _listeners;
@@ -274,7 +279,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>
 				//NOT else Trigger can invalidate listener
 				if( !listener.IsValid )
 				{
-					_listeners.Remove( listener );
+					_listeners?.Remove( listener );
 					TryClearFullSignatureList();
 				}
 			}
@@ -288,20 +293,22 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>
 		}
 	}
 
-	private void TryClearGeneric() 
+	private void TryClearGeneric()
 	{
+		if( _generic == null ) return;
 		// if( _generic.EventsCount == 0 ) _generic = null;
 	}
 	
 	private void TryClearFullSignatureList()
 	{
+		if( _listeners == null ) return;
 		// if( _listeners.Count == 0 ) _listeners = null;
 	}
 
-	public void Clear()
+	public void Kill()
 	{
 		_listeners?.Clear();
-		_generic?.Clear();
+		_generic?.Kill();
 		_listeners = null;
 		_generic = null;
 	}
@@ -369,38 +376,38 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>
 	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)},{typeof(L)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
 }
 
-public class VoidableEventTrigger : IEventTrigger
+public class VoidableEventTrigger : IEventTrigger, ICustomDisposableKill
 {
 	IEventTrigger _trigger;
-	bool _voided;
 
 	public VoidableEventTrigger( IEventTrigger trigger ) { _trigger = trigger; }
 	public VoidableEventTrigger( Action act ) : this( new ActionEventCapsule( act ) ) { }
-	public bool IsValid { get { return !_voided && _trigger.IsValid; } }
-	public void Trigger() { if( _trigger.IsValid ) _trigger.Trigger(); }
-	public void Void() { _voided = true; }
+	public bool IsValid => _trigger?.IsValid ?? false;
+	public void Trigger() { if( IsValid ) _trigger.Trigger(); }
+	public void Void() { _trigger = null; }
+	public void Kill() { _trigger = null; }
 }
 
-public class VoidableEventTrigger<T> : IEventTrigger<T>
+public class VoidableEventTrigger<T> : IEventTrigger<T>, ICustomDisposableKill
 {
 	IEventTrigger<T> _trigger;
-	bool _voided;
 
 	public VoidableEventTrigger( IEventTrigger<T> trigger ) { _trigger = trigger; }
 	public VoidableEventTrigger( Action<T> act ) : this( new ActionEventCapsule<T>( act ) ) { }
-	public bool IsValid { get { return !_voided && _trigger.IsValid; } }
-	public void Trigger( T t ) { if( _trigger.IsValid ) _trigger.Trigger( t ); }
-	public void Void() { _voided = true; }
+	public bool IsValid => _trigger?.IsValid ?? false;
+	public void Trigger( T t ) { if( IsValid ) _trigger.Trigger( t ); }
+	public void Void() { _trigger = null; }
+	public void Kill() { _trigger = null; }
 }
 
-public class VoidableEventTrigger<T, K> : IEventTrigger<T, K>
+public class VoidableEventTrigger<T, K> : IEventTrigger<T, K>, ICustomDisposableKill
 {
 	IEventTrigger<T, K> _trigger;
-	bool _voided;
 
 	public VoidableEventTrigger( IEventTrigger<T, K> trigger ) { _trigger = trigger; }
 	public VoidableEventTrigger( Action<T, K> act ) : this( new ActionEventCapsule<T, K>( act ) ) { }
-	public bool IsValid { get { return !_voided && _trigger.IsValid; } }
-	public void Trigger( T t, K k ) { if( _trigger.IsValid ) _trigger.Trigger( t, k ); }
-	public void Void() { _voided = true; }
+	public bool IsValid => _trigger?.IsValid ?? false;
+	public void Trigger( T t, K k ) { if( IsValid ) _trigger.Trigger( t, k ); }
+	public void Void() { _trigger = null; }
+	public void Kill() { _trigger = null; }
 }

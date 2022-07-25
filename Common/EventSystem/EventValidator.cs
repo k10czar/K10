@@ -21,7 +21,7 @@ public class NullValidator : IEventValidator
 	public IEventRegister OnVoid => FakeEventCallOnRegister.Instance;
 }
 
-public class ConditionalEventsCollection : IVoidableEventValidator
+public class ConditionalEventsCollection : IVoidableEventValidator, ICustomDisposableKill
 {
 	int _validatorParity = 0;
 	Func<bool> _currentValidationCheck;
@@ -33,6 +33,7 @@ public class ConditionalEventsCollection : IVoidableEventValidator
 	{
 		get
 		{
+			if( _validatorParity < 0 ) return FuncBool.EverFalse;
 			if( _currentValidationCheck == null ) _currentValidationCheck = BuildNewValidationCheck();
 			return _currentValidationCheck;
 		}
@@ -44,14 +45,17 @@ public class ConditionalEventsCollection : IVoidableEventValidator
 		return () => currID == _validatorParity;
 	}
 
-	public void Clear()
+	public void Kill()
 	{
-		_onVoid?.Clear();
+		_onVoid?.Kill();
 		_onVoid = null;
+		_validatorParity = int.MinValue;
+		_currentValidationCheck = null;
 	}
 
 	public void Void() 
 	{
+		if( _validatorParity < 0 ) return;
 		_currentValidationCheck = null;
 		_validatorParity = ( _validatorParity + 1 ) % int.MaxValue;
 		_onVoid?.Trigger();
