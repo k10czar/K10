@@ -134,7 +134,7 @@ namespace K10.EditorGUIExtention
 					{
 						var target = prop.serializedObject.targetObject;
 						if( prop.serializedObject.targetObject is MonoBehaviour ) target = MonoScript.FromMonoBehaviour( (MonoBehaviour)prop.serializedObject.targetObject );
-						selectedAssetPath = System.IO.Path.GetDirectoryName( AssetDatabase.GetAssetPath( target ) ) + "\\" + target.name;
+						selectedAssetPath = AssetDatabase.GetAssetPath( target );
 					}
 
 					System.Action<ScriptableObject> setRef = (newRef) =>
@@ -143,10 +143,19 @@ namespace K10.EditorGUIExtention
 						// prop.serializedObject.Update();
 						prop.objectReferenceValue = newRef;
 						prop.serializedObject.ApplyModifiedProperties();
-						// EditorUtility.SetDirty( prop.serializedObject.targetObject );
+						EditorUtility.SetDirty( prop.serializedObject.targetObject );
 					};
 
-					ScriptableObjectUtils.CreateMenu( selectedAssetPath + "\\" + prop.ToFileName(), type, false, setRef );
+					var t = prop.serializedObject.targetObject;
+
+					var aPath = AssetDatabase.GetAssetPath( t );
+					Debug.Log( $"Debug paths: \n" +
+								$"AssetDatabase.GetAssetPath( t ) = {aPath}\n" +
+								$"GetDirectoryName( aPath ) = {System.IO.Path.GetDirectoryName( aPath )}\n" +
+								$"GetFullPath( aPath ) = {System.IO.Path.GetFullPath( aPath )}\n" +
+								$" = {0}" );
+
+					ScriptableObjectUtils.CreateMenu( selectedAssetPath, prop, type, false, setRef );
 					
 					createdNewSO = true;
 				}

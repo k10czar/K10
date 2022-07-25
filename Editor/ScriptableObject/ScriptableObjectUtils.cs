@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -17,10 +18,19 @@ public static partial class ScriptableObjectUtils
 	}
 
 
-	static void CreationObjectAndFile( object type, string newPath, bool focus, System.Action<ScriptableObject> OnObjectCreated = null )
+	static void CreationObjectInsideAssetFile( System.Type type, string rootFilePath, string newInsideFileName, bool focus, System.Action<ScriptableObject> OnObjectCreated = null )
 	{
-		var rt = (System.Type)type;
-		ScriptableObject asset = ScriptableObject.CreateInstance(rt);
+		ScriptableObject asset = ScriptableObject.CreateInstance( type );
+		asset.name = newInsideFileName;
+
+		var assetRef = SetInsideSO( rootFilePath, newInsideFileName, focus, asset );
+		if( OnObjectCreated != null ) OnObjectCreated( assetRef );
+	}
+
+
+	static void CreationObjectAndFile( System.Type type, string newPath, bool focus, System.Action<ScriptableObject> OnObjectCreated = null )
+	{
+		ScriptableObject asset = ScriptableObject.CreateInstance( type );
 
 		if( FileAdapter.Exists( newPath + ".asset") )
 		{
@@ -33,7 +43,7 @@ public static partial class ScriptableObjectUtils
 		if (OnObjectCreated != null) OnObjectCreated(assetRef);
 	}
 
-	public static void CreateMenu( string newPath, System.Type type, bool focus = false, System.Action<ScriptableObject> OnObjectCreated = null )
+	public static void CreateMenu( string rootAssetPath, SerializedProperty prop, System.Type type, bool focus = false, System.Action<ScriptableObject> OnObjectCreated = null )
 	{
 		System.Type selectedType = null;
 
@@ -56,8 +66,18 @@ public static partial class ScriptableObjectUtils
 
 			foreach (var t in types)
 			{
-				GenericMenu.MenuFunction2 onTypedElementCreated = (tp) => CreationObjectAndFile( tp, newPath + "_" + tp.ToStringOrNull(), focus, OnObjectCreated );
-				menu.AddItem( new GUIContent( t.ToStringOrNull() ), false, onTypedElementCreated, t );
+				var tParsed = t.ToStringOrNull().Replace( ".", "/" );
+				GenericMenu.MenuFunction2 onTypedElementCreatedInside = ( tp ) => CreationObjectInsideAssetFile( (System.Type)tp, rootAssetPath, prop.PropPathParsed() + "_" + tp.ToStringOrNull(), focus, OnObjectCreated );
+				menu.AddItem( new GUIContent( tParsed + "/Nested inside this SO" ), false, onTypedElementCreatedInside, t );
+				
+				GenericMenu.MenuFunction2 onTypedElementCreatedOutside = ( tp ) =>
+				{
+					var rootFolder = System.IO.Path.GetDirectoryName( rootAssetPath );
+					var newFolderName = System.IO.Path.GetFileNameWithoutExtension( rootAssetPath );
+					CreationObjectAndFile( (System.Type)tp, rootFolder + "\\" + newFolderName + "\\" + prop.ToFileName() + "_" + tp.ToStringOrNull(), focus, OnObjectCreated );
+				};
+
+				menu.AddItem( new GUIContent( tParsed + "/Separated File" ), false, onTypedElementCreatedOutside, t );
 			}
 
 			menu.ShowAsContext();
@@ -66,7 +86,7 @@ public static partial class ScriptableObjectUtils
 			return;
 		}
 
-		CreationObjectAndFile( selectedType, newPath, focus, OnObjectCreated );
+		CreationObjectAndFile( selectedType, rootAssetPath, focus, OnObjectCreated );
 	}
 
 	public static ScriptableObject Create(string newPath, System.Type type, bool focus = false)
@@ -81,13 +101,39 @@ public static partial class ScriptableObjectUtils
 		return SetSO( ref newPath, focus, asset );
 	}
 
+
+	private static T SetInsideSO<T>( string rootFilePath, string insideFile, bool focus, T asset ) where T : ScriptableObject
+	{
+		if( !rootFilePath.StartsWith( "Assets/" ) && !rootFilePath.StartsWith( "Assets\\" ) ) rootFilePath = "Assets/" + rootFilePath;
+
+		var rootFile = AssetDatabase.LoadAssetAtPath( rootFilePath, typeof(ScriptableObject) );
+		if( rootFile == null )
+		{
+			Debug.LogError( "Cannot load root file:" + rootFilePath + " = " + rootFile.NameOrNull() + ".asset" );
+			return null;
+		}
+
+		AssetDatabase.AddObjectToAsset( asset, rootFile );
+
+		AssetDatabase.SaveAssets();
+		AssetDatabase.Refresh();
+
+		if( focus )
+		{
+			EditorUtility.FocusProjectWindow();
+			Selection.activeObject = asset;
+		}
+
+		return asset;
+	}
+
 	private static T SetSO<T>( ref string newPath, bool focus, T asset ) where T : ScriptableObject
 	{
 		if( !newPath.StartsWith( "Assets/" ) && !newPath.StartsWith( "Assets\\" ) ) newPath = "Assets/" + newPath;
 		AssetDatabaseUtils.RequestPath( newPath );
 		string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath( newPath + ".asset" );
 
-		Debug.Log( "Try create(" + asset.ToStringOrNull() + ") asset at " + assetPathAndName );
+		Debug.Log( "Try create(" + asset.ToStringOrNull() + ") asset at " + assetPathAndName + " from " + newPath + ".asset" );
 
 		AssetDatabase.CreateAsset( asset, assetPathAndName );
 
