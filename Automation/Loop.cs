@@ -1,11 +1,11 @@
 using System.Collections;
 using UnityEngine;
 
-using K10.Automation;
-// namespace K10.Automation
-// {
+// using K10.Automation;
+namespace K10.Automation
+{
 [CreateAssetMenu( fileName = "AutomationLoop", menuName = "Automation/Loop", order = 1 )]
-	public class AutomationLoop : Operation
+	public class Loop : Operation
 	{
 		[SerializeField] int _repetitions = 1;
 		[SerializeField, InlineProperties] System.Collections.Generic.List<Operation> _actions;
@@ -21,4 +21,4 @@ using K10.Automation;
 			}
 		}
 	}
-// }
+}
