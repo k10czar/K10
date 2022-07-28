@@ -50,9 +50,8 @@ public sealed class ValidatedEventListener<T> : BaseConditionalEventListener, IE
 
 	public override bool Equals( object obj )
 	{
-		if( obj is ConditionalEventListener<T> && _evnt != null && _condition != null )
+		if( _evnt != null && _condition != null && obj is ValidatedEventListener<T> del)
 		{
-			var del = (ValidatedEventListener<T>)obj;
 			return _evnt.Equals( del._evnt ) && _condition.Equals( del._condition );
 		}
 		return base.Equals( obj );
@@ -80,9 +79,8 @@ public sealed class ValidatedEventListener<T, K> : BaseConditionalEventListener,
 
 	public override bool Equals( object obj )
 	{
-		if( obj is ConditionalEventListener<T, K> && _evnt != null && _condition != null )
+		if( _evnt != null && _condition != null && obj is ValidatedEventListener<T,K> del)
 		{
-			var del = (ValidatedEventListener<T, K>)obj;
 			return _evnt.Equals( del._evnt ) && _condition.Equals( del._condition );
 		}
 		return base.Equals( obj );
@@ -110,9 +108,8 @@ public sealed class ValidatedEventListener<T,K,J> : BaseConditionalEventListener
 
 	public override bool Equals( object obj )
 	{
-		if( obj is ConditionalEventListener<T,K,J> && _evnt != null && _condition != null )
+		if( _evnt != null && _condition != null && obj is ValidatedEventListener<T,K,J> del)
 		{
-			var del = (ValidatedEventListener<T,K,J>)obj;
 			return _evnt.Equals( del._evnt ) && _condition.Equals( del._condition );
 		}
 		return base.Equals( obj );
