@@ -40,12 +40,17 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 
 	public static T GetInstance()
 	{
+		return GetAutoClearedReference().Reference;
+	}
+
+	public static AutoClearedReference<T> GetAutoClearedReference()
+	{
 		if (!_instance.IsValid)
 		{
 			_instance.RegisterNewReference( FindObjectOfTypeAll() );
 		}
 
-		return _instance.Reference;
+		return _instance;
 	}
 
 	public static void SayHello( T candidate ) { if( !_instance.IsValid ) _instance.RegisterNewReference( candidate ); }
