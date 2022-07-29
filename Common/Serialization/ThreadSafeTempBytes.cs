@@ -6,13 +6,13 @@ public static class ThreadSafeTempBytes
 
 	private static byte[] Get( int bytes )
 	{
-		var collection = new Dictionary<int, byte[]>();
+		Dictionary<int, byte[]> collection = null;
 		var thread = System.Threading.Thread.CurrentThread;
 		if( !_arrays.TryGetValue( thread, out collection ) )
 		{
 			collection = new Dictionary<int, byte[]>();
-			_arrays.Add( thread, collection );
 		}
+			_arrays.Add( thread, collection );
 		byte[] array;
 		if( !collection.TryGetValue( bytes, out array ) )
 		{
