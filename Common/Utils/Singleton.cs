@@ -14,7 +14,9 @@ public class OnlyOnPlaymodeObject : MonoBehaviour
 		}
 	}
 }
+
 #endif
+
 
 public abstract class Singleton<T> where T : UnityEngine.Component
 {
@@ -151,16 +153,20 @@ public abstract class Guaranteed<T> where T : UnityEngine.Component
 		if( !_instance.IsValid )
 		{
 			_markedEternal = false;
-			_instance.RegisterNewReference( (T)MonoBehaviour.FindObjectOfType( typeof( T ) ) );
+			var instance = (T)MonoBehaviour.FindObjectOfType( typeof( T ) );
 
-			if( !_instance.IsValid )
+			if( instance == null )
 			{
 				GameObject obj = new GameObject( string.Format( "_GS_{0}", ( typeof( T ) ).ToString() ) );
-				_instance.RegisterNewReference( obj.AddComponent<T>() );
-				#if UNITY_EDITOR
+				instance = obj.AddComponent<T>();
+#if UNITY_EDITOR
 				obj.AddComponent<OnlyOnPlaymodeObject>();
-				#endif
+#endif
+				// Debug.Log( $"GuaranteedSingleton created for {typeof(T)}" );
 			}
+
+			_instance.RegisterNewReference( instance );
+			Singleton<T>.SayHello( instance );
 		}
 
 		if( eternal && !_markedEternal )

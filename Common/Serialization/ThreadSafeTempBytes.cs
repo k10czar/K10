@@ -11,8 +11,8 @@ public static class ThreadSafeTempBytes
 		if( !_arrays.TryGetValue( thread, out collection ) )
 		{
 			collection = new Dictionary<int, byte[]>();
-		}
 			_arrays.Add( thread, collection );
+		}
 		byte[] array;
 		if( !collection.TryGetValue( bytes, out array ) )
 		{

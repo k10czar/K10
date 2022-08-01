@@ -22,6 +22,7 @@ public class LoopEditor : UnityEditor.Editor
 		SeparationLine.Horizontal();
 		EditorGUILayout.BeginHorizontal();
 		UnityEditor.EditorGUILayout.LabelField( target.name, K10GuiStyles.bigBoldCenterStyle, GUILayout.Height( 28 ) );
+		if( IconButton.Layout( "playButton", 24, 'E', "Play loop", Color.blue ) ) ( target as K10.Automation.Loop )?.Execute();
 		EditorGUILayout.EndHorizontal();
 		SeparationLine.Horizontal();
 
