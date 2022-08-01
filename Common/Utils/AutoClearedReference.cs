@@ -13,6 +13,8 @@ public class AutoClearedReference<T> where T : UnityEngine.Component
 
 	public void RegisterNewReference( T newRef )
 	{
+		if( _reference == newRef ) return;
+		
 		_currentRefClear?.Void();
 		_currentRefClear = null;
 
