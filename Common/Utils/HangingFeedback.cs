@@ -30,6 +30,14 @@ public abstract class HangingFeedback : MonoBehaviour
 		_message.Synchronize( OnMessageChange );
 	}
 
+	public void VoidAll()
+	{ 
+		for(int i = _messages.Count - 1; i >= 0; i--) 
+		{
+			_messages[i].Void();
+		}
+	}
+
 	void OnEnable()
 	{
 		ReallyUpdateData();
