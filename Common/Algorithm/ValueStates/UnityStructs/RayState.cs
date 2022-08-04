@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class RayState : IValueState<Ray>
+public class RayState : IValueState<Ray>, ICustomDisposableKill
 {
     [SerializeField] Ray _value;
     [System.NonSerialized] EventSlot<Ray> _onChange = new EventSlot<Ray>();
@@ -28,4 +28,9 @@ public class RayState : IValueState<Ray>
     public RayState( Ray initialValue = default( Ray ) ) { _value = initialValue; }
 
     public override string ToString() { return string.Format( "V2S({1})", typeof( Ray ).ToString(), _value ); }
+
+	public void Kill()
+	{
+		_onChange?.Kill();
+	}
 }

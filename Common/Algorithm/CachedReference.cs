@@ -99,7 +99,7 @@ public class CachedReference<T> : ICachedReference<T>, ICustomDisposableKill
 	{
 		_onReferenceSet?.Kill();
 		_onReferenceRemove?.Kill();
-		_validator?.Void();
+		_validator?.Kill();
 		Clear();
 		_onReferenceSet = null;
 		_onReferenceRemove = null;

@@ -1,4 +1,4 @@
-public class BoolStateRelay : IBoolStateObserver
+public class BoolStateRelay : IBoolStateObserver, ICustomDisposableKill
 {
 	IBoolStateObserver _currentSource;
 	readonly ConditionalEventsCollection _events = new ConditionalEventsCollection();
@@ -35,6 +35,14 @@ public class BoolStateRelay : IBoolStateObserver
 			_currentSource.OnTrueState.Register( _events.Validated( _onTrueState ) );
 			_currentSource.OnFalseState.Register( _events.Validated( _onFalseState ) );
 		}
+	}
+
+	public void Kill()
+	{
+		_events.Kill();
+		_onChange.Kill();
+		_onTrueState.Kill();
+		_onFalseState.Kill();
 	}
 
 	public override string ToString() { return string.Format( "BSR({0})", _currentSource.ToStringOrNull() ); }

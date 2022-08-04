@@ -47,6 +47,7 @@ public class ConditionalEventsCollection : IVoidableEventValidator, ICustomDispo
 
 	public void Kill()
 	{
+		_onVoid?.Trigger();
 		_onVoid?.Kill();
 		_onVoid = null;
 		_validatorParity = int.MinValue;
@@ -62,7 +63,7 @@ public class ConditionalEventsCollection : IVoidableEventValidator, ICustomDispo
 	}
 }
 
-public class ConditionalEventsCollectionBS : IVoidableEventValidator
+public class ConditionalEventsCollectionBS : IVoidableEventValidator, ICustomDisposableKill
 {
 	BoolState _currentValidation = new BoolState( true );
 	public Func<bool> CurrentValidationCheck { get { return _currentValidation.Get; } }
@@ -76,6 +77,14 @@ public class ConditionalEventsCollectionBS : IVoidableEventValidator
 		_currentValidation.SetFalse();
 		_currentValidation = new BoolState( true );
 		_onVoid.Trigger();
+	}
+
+	public void Kill()
+	{
+		_currentValidation?.SetFalse();
+		_onVoid?.Trigger();
+		_currentValidation?.Kill();
+		_onVoid?.Kill();
 	}
 }
 

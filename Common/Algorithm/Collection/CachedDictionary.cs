@@ -10,7 +10,7 @@ public interface ICachedDictionaryObserver<K, T> : ICachedCollectionObserverEnum
 	IBoolStateObserver GetEventDrivenContains( K key );
 }
 
-public class CachedDictionary<K,T> : ICachedDictionaryObserver<K,T>
+public class CachedDictionary<K,T> : ICachedDictionaryObserver<K,T>, ICustomDisposableKill
 {
     private readonly Dictionary<K, List<T>> _dictionary = new Dictionary<K, List<T>>();
 	private readonly Dictionary<K, BoolState> _eventDrivenContains = new Dictionary<K, BoolState>();
@@ -28,6 +28,18 @@ public class CachedDictionary<K,T> : ICachedDictionaryObserver<K,T>
     public bool ContainsKey( K key ) => _dictionary.ContainsKey( key );
 
     public int KeyCount => _dictionary.Count;
+
+
+	public void Kill()
+	{
+		// Clear();
+		_dictionary?.Clear();
+		_eventDrivenContains?.Clear();
+		_eventDrivenCount?.Clear();
+		_onChange?.Kill();
+		_onElementAdded?.Kill();
+		_onElementRemoved?.Kill();
+	}
 
 
 	public IEnumerator<T> GetEnumerator()
