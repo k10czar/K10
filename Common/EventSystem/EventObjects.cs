@@ -6,10 +6,12 @@ using System;
 
 public class EventSlot : IEvent, ICustomDisposableKill
 {
+	bool _killed = false;
+	// TODO: LazyOptimization
 	// private List<IEventTrigger> _listeners;
 	private List<IEventTrigger> _listeners = new List<IEventTrigger>();
 
-	public bool IsValid { get { return true; } }
+	public bool IsValid => !_killed;
 	public int EventsCount => _listeners?.Count ?? 0;
 
 	public void Trigger()
@@ -34,7 +36,13 @@ public class EventSlot : IEvent, ICustomDisposableKill
 		ObjectPool<List<IEventTrigger>>.Return( listenersToTrigger );
 	}
 
-	public void Kill() { _listeners?.Clear(); }
+	public void Kill()
+	{
+		_killed = true;
+		_listeners?.Clear();
+		_killed = true;
+	}
+
 	private void TryClearFullSignatureList()
 	{
 		if( _listeners == null ) return;
@@ -61,12 +69,14 @@ public class EventSlot : IEvent, ICustomDisposableKill
 
 public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 {
+	bool _killed = false;
+	// TODO: LazyOptimization
 	// private EventSlot _generic;
 	// private List<IEventTrigger<T>> _listeners;
 	private EventSlot _generic = new EventSlot();
 	private List<IEventTrigger<T>> _listeners = new List<IEventTrigger<T>>();
 
-	public bool IsValid { get { return true; } }
+	public bool IsValid => !_killed;
 	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
 
 	public void Trigger( T t )
@@ -99,6 +109,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 
 	public void Kill()
 	{
+		_killed = true;
 		_listeners?.Clear();
 		_generic?.Kill();
 		_listeners = null;
@@ -152,12 +163,14 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 
 public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 {
+	bool _killed = false;
+	// TODO: LazyOptimization
 	// private EventSlot<T> _generic;
 	// private List<IEventTrigger<T, K>> _listeners;
 	private EventSlot<T> _generic = new EventSlot<T>();
 	private List<IEventTrigger<T, K>> _listeners = new List<IEventTrigger<T, K>>();
 
-	public bool IsValid { get { return true; } }
+	public bool IsValid => !_killed;
 	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
 
 	public void Trigger( T t, K k )
@@ -201,6 +214,7 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 
 	public void Kill()
 	{
+		_killed = true;
 		_listeners?.Clear();
 		_generic?.Kill();
 		_listeners = null;
@@ -257,12 +271,14 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 
 public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 {
+	bool _killed = false;
+	// TODO: LazyOptimization
 	// private EventSlot<T, K> _generic;
 	// private List<IEventTrigger<T, K, L>> _listeners;
 	private EventSlot<T, K> _generic = new EventSlot<T, K>();
 	private List<IEventTrigger<T, K, L>> _listeners = new List<IEventTrigger<T, K, L>>();
 
-	public bool IsValid { get { return true; } }
+	public bool IsValid => !_killed;
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
 
 	public void Trigger( T t, K k, L l )
@@ -307,6 +323,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 
 	public void Kill()
 	{
+		_killed = true;
 		_listeners?.Clear();
 		_generic?.Kill();
 		_listeners = null;

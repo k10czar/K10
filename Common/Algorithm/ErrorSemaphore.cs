@@ -17,6 +17,8 @@ public class ErrorSemaphore : ISemaphore
 	public bool Value => Free;
 
 	public IEventRegister<bool> OnChange => ErrorEvent<bool>.Ref;
+	
+	public IEventValidator Validator => NullValidator.Instance;
 
 	public void Interact( object obj, bool block ) => Debug.LogError( $"{obj} Interact a ERROR Semaphore" );
 	public void Release( object obj ) => Debug.LogError( $"{obj} Release a ERROR Semaphore" );

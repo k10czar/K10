@@ -49,7 +49,8 @@ public class BoolState : IBoolState, ISerializationCallbackReceiver, ICustomDisp
 	public IEventRegister OnTrueState => _onTrue ?? ( _onTrue = new EventSlot() );
 	public IEventRegister OnFalseState => _onFalse ?? ( _onFalse = new EventSlot() );
 
-	public BoolState( bool initialValue = false ) { _value = initialValue; Init(); }
+	public BoolState() : this( false ) { }
+	public BoolState( bool initialValue ) { _value = initialValue; Init(); }
 
 	void Init()
 	{

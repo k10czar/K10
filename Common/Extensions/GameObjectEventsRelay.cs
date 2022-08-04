@@ -3,6 +3,7 @@ using UnityEngine;
 public interface IUnityEventsRelay
 {
 	IEventRegister OnDestroy { get; }
+	// IEventRegister OnLateDestroy { get; }
 	IBoolStateObserver IsActive { get; }
 	IBoolStateObserver IsAlive { get; }
 	IEventValidator LifetimeValidator { get; }
@@ -12,14 +13,16 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 {
 	bool _destroyed = false;
 	private EventSlot _onDestroy;
+	// private EventSlot _onLateDestroy;
 	private BoolState _isActive;
 	private BoolState _isAlive;
 	private Validator _lifetimeValidator;
 
 	IEventRegister IUnityEventsRelay.OnDestroy => OnDestroyEvent;
-	public IEventRegister OnDestroyEvent => _onDestroy ?? ( _onDestroy = new EventSlot() );
-	public IBoolStateObserver IsActive => _isActive ?? ( _isActive = new BoolState( enabled ) );
-	public IBoolStateObserver IsAlive => _isAlive ?? ( _isAlive = new BoolState( !_destroyed ) );
+	// public IEventRegister OnLateDestroy => Lazy.Request( ref _onLateDestroy );
+	public IEventRegister OnDestroyEvent => Lazy.Request( ref _onDestroy );
+	public IBoolStateObserver IsActive => Lazy.Request( ref _isActive );
+	public IBoolStateObserver IsAlive => Lazy.Request( ref _isAlive );
 	public IEventValidator LifetimeValidator => _lifetimeValidator ?? NewLifetimeValidator();
 
 	IEventValidator NewLifetimeValidator()
@@ -61,15 +64,13 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 		_isAlive?.SetFalse();
 		_lifetimeValidator?.OnDestroy();
 
-		_onDestroy?.Kill();
-		_isActive?.Kill();
-		_isAlive?.Kill();
-		_lifetimeValidator?.Kill();
+		GcClear.AfterKill( ref _onDestroy );
+		GcClear.AfterKill( ref _isAlive );
+		GcClear.AfterKill( ref _isActive );
+		GcClear.AfterKill( ref _lifetimeValidator );
 
-		_onDestroy = null;
-		_isAlive = null;
-		_isActive = null;
-		_lifetimeValidator = null;
+		// _onLateDestroy?.Trigger();
+		// GcClear.AfterKill( ref _onLateDestroy );
 	}
 
 	void OnEnable() => _isActive?.SetTrue();
@@ -97,7 +98,7 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 
 		bool _lastValidation = true;
 
-		public IEventRegister OnVoid => _onVoid ?? ( _onVoid = new EventSlot() );
+		public IEventRegister OnVoid => Lazy.Request( ref _onVoid );
 
 		public Validator( GameObjectEventsRelay objRelay )
 		{
