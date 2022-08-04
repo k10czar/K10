@@ -183,6 +183,17 @@ public static class K10UnityExtensions
 	[MethodImpl( AggrInline )] public static bool IsAlive( this Component c ) { return ( c != null ); }
 
 
+	[MethodImpl( AggrInline )] public static IEventTrigger<T, K, J> UntilValidator<T, K, J>( this Component c, IEventTrigger<T, K, J> t ) { return c.gameObject.EventRelay().LifetimeValidator.Validated<T, K, J>( t ); }
+	[MethodImpl( AggrInline )] public static IEventTrigger<T, K> UntilValidator<T, K>( this Component c, IEventTrigger<T, K> t ) { return c.gameObject.EventRelay().LifetimeValidator.Validated<T, K>( t ); }
+	[MethodImpl( AggrInline )] public static IEventTrigger<T> UntilValidator<T>( this Component c, IEventTrigger<T> t ) { return c.gameObject.EventRelay().LifetimeValidator.Validated<T>( t ); }
+	[MethodImpl( AggrInline )] public static IEventTrigger UntilValidator( this Component c, IEventTrigger t ) { return c.gameObject.EventRelay().LifetimeValidator.Validated( t ); }
+
+	[MethodImpl( AggrInline )] public static IEventTrigger<T, K, J> UntilValidator<T, K, J>( this Component c, System.Action<T, K, J> act ) { return c.gameObject.EventRelay().LifetimeValidator.Validated<T, K, J>( act ); }
+	[MethodImpl( AggrInline )] public static IEventTrigger<T, K> UntilValidator<T, K>( this Component c, System.Action<T, K> act ) { return c.gameObject.EventRelay().LifetimeValidator.Validated<T, K>( act ); }
+	[MethodImpl( AggrInline )] public static IEventTrigger<T> UntilValidator<T>( this Component c, System.Action<T> act ) { return c.gameObject.EventRelay().LifetimeValidator.Validated<T>( act ); }
+	[MethodImpl( AggrInline )] public static IEventTrigger UntilValidator( this Component c, System.Action act ) { return c.gameObject.EventRelay().LifetimeValidator.Validated( act ); }
+
+
 	[MethodImpl( AggrInline )] public static void LockSemaphore( this MonoBehaviour mb, ISemaphore semaphore, float seconds, object code )
 	{
 		mb.StartCoroutine( LockSemaphore( semaphore, seconds, code ) );
