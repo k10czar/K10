@@ -5,7 +5,7 @@ public class AutoClearedReference<T> where T : UnityEngine.Component
 	private T _reference;
 	public T Reference => _reference;
 
-	string debugName = "NOT_INITIALIZED";
+	// string debugName = "NOT_INITIALIZED";
 
 	private IVoidable _currentRefClear;
 
@@ -19,8 +19,8 @@ public class AutoClearedReference<T> where T : UnityEngine.Component
 		_currentRefClear = null;
 
 		_reference = newRef;
-		debugName = $"{newRef.NameOrNull()}({typeof( T )})";
-		Debug.Log( $"--->AutoClearedReference.RegisterNewReference( {debugName} )" );
+		// debugName = $"{newRef.NameOrNull()}({typeof( T )})";
+		// Debug.Log( $"--->AutoClearedReference.RegisterNewReference( {debugName} )" );
 
 		if( _reference == null ) return;
 
@@ -31,7 +31,7 @@ public class AutoClearedReference<T> where T : UnityEngine.Component
 
 	private void OnReferenceDestroy()
 	{
-		Debug.Log( $"--->AutoClearedReference.OnReferenceDestroy( {debugName} )" );
+		// Debug.Log( $"--->AutoClearedReference.OnReferenceDestroy( {debugName} )" );
 		_currentRefClear = null;
 		_reference = null;
 	}

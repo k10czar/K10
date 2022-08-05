@@ -12,6 +12,7 @@ public class OneTimeValidator : IVoidableEventValidator, ICustomDisposableKill
 	public void Kill()
 	{
 		_killed = true;
+		_onVoid?.Trigger();
 		Clear.AfterKill( ref _onVoid );
 	}
 

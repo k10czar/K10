@@ -1,12 +1,18 @@
 using System.Collections.Generic;
 using System.Linq;
 
-public class CatalogedUniqueStock<Key,Value> where Value : IObjectLifeState
+public class CatalogedUniqueStock<Key,Value> : ICustomDisposableKill where Value : IObjectLifeState
 {
     protected readonly Dictionary< Key, Value > _dict = new Dictionary< Key, Value >();
 
     EventSlot _onEntriesChanged = new EventSlot();
     public IEventRegister OnEntriesChanged => _onEntriesChanged;
+
+	public void Kill()
+	{
+		_dict?.Clear();
+		_onEntriesChanged?.Kill();
+	}
 
     public void AddEntry( Key key, Value t )
     {

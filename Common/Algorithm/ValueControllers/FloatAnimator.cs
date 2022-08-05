@@ -13,9 +13,11 @@ public class FloatAnimator01 : FloatAnimator
 }
 
 [System.Serializable]
-public class FloatAnimator : IValueState<float>, IUpdatableOnDemand
+public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisposableKill
 {
-    [SerializeField] float _min = float.MinValue;
+	bool _killed = false;
+
+	[SerializeField] float _min = float.MinValue;
     [SerializeField] float _max = float.MaxValue;
     [SerializeField] float _acceleration = 60;
     [SerializeField] float _deacceleration = 60;
@@ -61,6 +63,17 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand
 	public IEventRegister<float> OnChange { get { return _onValueUpdate; } }
 
     void IValueStateSetter<float>.Setter( float t ) { SetDesire( t ); }
+
+	public void Kill()
+	{
+		_killed = true;
+		_isOnDesired?.Kill();
+		_notOnMinimumValue?.Kill();
+		_isOnMinimumValue?.Kill();
+		_isOnMaximumValue?.Kill();
+		_onValueUpdate?.Kill();
+		_updater = null;
+	}
     
 
 	public float Value { get { return _current; } }
@@ -135,6 +148,8 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand
 
     public bool Update( float deltaTime )
 	{
+		if( _killed ) return false;
+
 		if( Mathf.Approximately( deltaTime, 0 ) ) return !_isOnDesired.Value;
 
         float diff = _desired - _current;

@@ -185,5 +185,12 @@ public abstract class Guaranteed<T> where T : UnityEngine.Component
 	public static T Instance { get { return GetInstance( false ); } }
 	public static void Request() { GetInstance( false ); }
 
-	public static void SayHello( T candidate ) { if( !_instance.IsValid ) _instance.RegisterNewReference( candidate ); }
+	public static void SayHello( T candidate ) 
+	{
+		if( !_instance.IsValid )
+		{
+			_instance.RegisterNewReference( candidate );
+			Singleton<T>.SayHello( candidate );
+		}
+	}
 }

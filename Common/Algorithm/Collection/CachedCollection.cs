@@ -170,4 +170,14 @@ public static class CachedCollectionExtentions
 	{
 		Synchronize( collection, new ActionEventCapsule<T>( evnt ), evenDefault );
 	}
+
+	public static void Synchronize<T>( this ICachedCollectionObserverEnumerable<T> collection, IEventTrigger<T> evnt, IEventValidator validator, bool evenDefault = true )
+	{
+		collection.Synchronize( validator.Validated<T>( evnt ), evenDefault );
+	}
+
+	public static void Synchronize<T>( this ICachedCollectionObserverEnumerable<T> collection, System.Action<T> evnt, IEventValidator validator, bool evenDefault = true )
+	{
+		collection.Synchronize( validator.Validated<T>( evnt ), evenDefault );
+	}
 }

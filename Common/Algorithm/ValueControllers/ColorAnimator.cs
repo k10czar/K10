@@ -5,6 +5,8 @@ using System.Runtime.CompilerServices;
 [System.Serializable]
 public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 {
+	bool _killed = false;
+
 	const float DEFAULT_ACCELERATION = 1;
 	const float DEFAULT_DEACCELERATION = 1;
 	const float DEFAULT_MAX_SPEED = 1;
@@ -105,6 +107,8 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 
 	public bool Update( float delta )
 	{
+		if( _killed ) return false;
+
 		bool updated = false;
 		bool updateMore = false;
 
@@ -177,5 +181,17 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 		_g.GoToEnd();
 		_b.GoToEnd();
 		_a.GoToEnd();
+	}
+
+	public void Kill()
+	{
+		_killed = true;
+		_r?.Kill();
+		_g?.Kill();
+		_b?.Kill();
+		_a?.Kill();
+		_desiredReach?.Kill();
+		_colorUpdate?.Kill();
+		_updater = null;
 	}
 }

@@ -13,6 +13,13 @@ public static class Clear
 	}
 
 	[MethodImpl( MethodImplOptions.AggressiveInlining )]
+	public static void AfterListClear<T>( ref T data ) where T : System.Collections.IList
+	{
+		data?.Clear();
+		Clear.Now( ref data );
+	}
+
+	[MethodImpl( MethodImplOptions.AggressiveInlining )]
 	public static void Now<T>( ref T data )
 	{
 		data = default( T );

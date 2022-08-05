@@ -1,5 +1,7 @@
 
 
+using System;
+
 public interface ICachedReference<T> : IReferenceHolder<T>, IReferenceSetter<T> { } //where T : class
 
 public interface IReferenceHolder<T>
@@ -81,26 +83,34 @@ public class CachedReference<T> : ICachedReference<T>, ICustomDisposableKill
 {
 	T _current;
 	public T CurrentReference { get { return _current; } set { ChangeReference( value ); } }
-
-	private EventSlot<T, IEventValidator> _onReferenceSet;
-	private EventSlot<T> _onReferenceRemove = new EventSlot<T>();
-
-	public IEventRegister<T, IEventValidator> OnReferenceSet => _onReferenceSet ?? ( _onReferenceSet = new EventSlot<T, IEventValidator>() );
-	public IEventRegister<T> OnReferenceRemove => _onReferenceRemove ?? ( _onReferenceRemove = new EventSlot<T>() );
-
 	public bool IsNull => _current == null;
 
-	private ConditionalEventsCollection _validator;
-	public IEventValidator Validator => _validator ?? ( _validator = new ConditionalEventsCollection() );
+	// TODO: LazyOptimization
+	// private EventSlot<T> _onReferenceRemove;
+	// private EventSlot<T, IEventValidator> _onReferenceSet;
+	// private ConditionalEventsCollection _validator;
+	private EventSlot<T> _onReferenceRemove = new EventSlot<T>();
+	private EventSlot<T, IEventValidator> _onReferenceSet = new EventSlot<T,IEventValidator>();
+	private ConditionalEventsCollection _validator = new ConditionalEventsCollection();
+
+	public IEventRegister<T> OnReferenceRemove => Lazy.Request( ref _onReferenceRemove );
+	public IEventRegister<T, IEventValidator> OnReferenceSet => Lazy.Request( ref _onReferenceSet );
+	public IEventValidator Validator => Lazy.Request( ref _validator );
+
+	public CachedReference( T startData = default( T ) )
+	{
+		_current = startData;
+	}
 
 	public void Clear() { ChangeReference( default(T) ); }
 
-	public void Kill()
+	public virtual void Kill()
 	{
 		_onReferenceSet?.Kill();
 		_onReferenceRemove?.Kill();
 		_validator?.Kill();
 		Clear();
+		_current = default(T);
 		_onReferenceSet = null;
 		_onReferenceRemove = null;
 		_validator = null;
@@ -115,10 +125,5 @@ public class CachedReference<T> : ICachedReference<T>, ICustomDisposableKill
 		_validator?.Void();
 		_current = newReference;
 		if( _onReferenceSet != null ) _onReferenceSet.Trigger( newReference, Validator );
-	}
-
-	public CachedReference( T startData = default(T) )
-	{
-		_current = startData;
 	}
 }
