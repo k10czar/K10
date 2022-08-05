@@ -17,6 +17,12 @@ public class UpdaterOnDemandBehaviour : MonoBehaviour, IUpdaterOnDemand
 {
 	HashSet<IUpdatableOnDemand> _updating = new HashSet<IUpdatableOnDemand>();
 
+	public void OnDestroy()
+	{
+		_updating?.Clear();
+		StopAllCoroutines();
+	}
+
 	public bool RequestUpdate( IUpdatableOnDemand updateRequester )
 	{
 		var contains = _updating.Contains( updateRequester );
@@ -73,6 +79,13 @@ public class ManualUpdaterOnDemand : IUpdaterOnDemand
 	public ManualUpdaterOnDemand( MonoBehaviour behaviour )
 	{
 		_behaviour = behaviour;
+	}
+
+	public void Kill()
+	{
+		_behaviour = null;
+		_updatingHash?.Clear();
+		_updating?.Clear();
 	}
 
 	public bool RequestUpdate( IUpdatableOnDemand updateRequester )
