@@ -1,5 +1,5 @@
 ## Unity ##
-*.cs diff=csharp text autocrlf=true eol=lf
+#*.cs diff=csharp text autocrlf=true eol=lf
 *.cginc text
 *.shader text
 *.mat merge=unityyamlmerge eol=lf
