@@ -67,7 +67,7 @@ public class ConditionalEventsCollectionBS : IVoidableEventValidator, ICustomDis
 {
 	BoolState _currentValidation = new BoolState( true );
 	public Func<bool> CurrentValidationCheck { get { return _currentValidation.Get; } }
-	public IBoolStateObserver CurrentEventsValidation { get { return _currentValidation; } }
+	public IBoolStateObserver CurrentEventsValidationState { get { return _currentValidation; } }
 
 	EventSlot _onVoid = new EventSlot();
 	public IEventRegister OnVoid => _onVoid;

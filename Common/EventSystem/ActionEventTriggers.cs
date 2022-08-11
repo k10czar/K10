@@ -1,9 +1,14 @@
 using System;
 
 
-public class ActionEventCapsule : IEventTrigger
+public class ActionEventCapsule : IEventTrigger, ICustomDisposableKill
 {
-	private readonly System.Action _callback;
+	private System.Action _callback;
+
+	public void Kill()
+	{
+		_callback = null;
+	}
 
 	public ActionEventCapsule( System.Action callback ) { _callback = callback; }
 	public void Trigger() { _callback(); }
@@ -21,9 +26,14 @@ public class ActionEventCapsule : IEventTrigger
 	public override int GetHashCode() { return _callback.GetHashCode(); }
 }
 
-public class ActionEventCapsule<T> : IEventTrigger<T>
+public class ActionEventCapsule<T> : IEventTrigger<T>, ICustomDisposableKill
 {
-	private readonly System.Action<T> _callback;
+	private System.Action<T> _callback;
+
+	public void Kill()
+	{
+		_callback = null;
+	}
 
 	public ActionEventCapsule( System.Action<T> callback ) { _callback = callback; }
 	public void Trigger( T t ) { _callback( t ); }
@@ -41,9 +51,14 @@ public class ActionEventCapsule<T> : IEventTrigger<T>
 	public override int GetHashCode() { return _callback.GetHashCode(); }
 }
 
-public class ActionEventCapsule<T, K> : IEventTrigger<T, K>
+public class ActionEventCapsule<T, K> : IEventTrigger<T, K>, ICustomDisposableKill
 {
-	private readonly System.Action<T, K> _callback;
+	private System.Action<T, K> _callback;
+
+	public void Kill()
+	{
+		_callback = null;
+	}
 
 	public ActionEventCapsule( System.Action<T, K> callback ) { _callback = callback; }
 	public void Trigger( T t, K k ) { _callback( t, k ); }
@@ -62,9 +77,14 @@ public class ActionEventCapsule<T, K> : IEventTrigger<T, K>
 }
 
 
-public class ActionEventCapsule<T, K, L> : IEventTrigger<T, K, L>
+public class ActionEventCapsule<T, K, L> : IEventTrigger<T, K, L>, ICustomDisposableKill
 {
-	private readonly System.Action<T, K, L> _callback;
+	private System.Action<T, K, L> _callback;
+
+	public void Kill()
+	{
+		_callback = null;
+	}
 
 	public ActionEventCapsule( System.Action<T, K, L> callback ) { _callback = callback; }
 	public void Trigger( T t, K k, L l ) { _callback( t, k, l ); }

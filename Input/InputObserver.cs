@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public sealed class UnityKeyInputObserver : InputObserver
@@ -35,10 +36,18 @@ public abstract class InputObserver : IBoolStateObserver, IUpdatableOnDemand
 		_group = group;
 		_ignoreFirstEventIfAlreadyTrue = ignoreFirstEventIfAlreadyTrue;
 
-		_readedState.OnTrueState.Register( TriggerOnTrueReadedState );
-		_readedState.OnFalseState.Register( TriggerOnFalseReadedState );
+		_readedState.OnTrueState.Register( group.Validator.Validated( TriggerOnTrueReadedState ) );
+		_readedState.OnFalseState.Register( group.Validator.Validated( TriggerOnFalseReadedState ) );
 
-		if( _cancelOnDisable ) _group.CanUpdate.OnFalseState.Register( _readedState.SetFalse );
+		group.Validator.OnVoid.Register( new CallOnce( Kill ) );
+
+		if( _cancelOnDisable ) _group.CanUpdate.OnFalseState.Register( group.Validator.Validated( _readedState.SetFalse ) );
+	}
+
+	protected virtual void Kill()
+	{
+		_readedState?.Kill();
+		_state?.Kill();
 	}
 
 	void TriggerOnTrueReadedState() { if( !_ignoreNextEvent ) _state.SetTrue(); }

@@ -16,6 +16,12 @@ public class EventSlot : IEvent, ICustomDisposableKill
 
 	public void Trigger()
 	{
+		if( _killed )
+		{
+			Debug.LogError( $"Error: Cannot Trigger dead EventSlot" );
+			return;
+		}
+
 		if( _listeners == null || _listeners.Count == 0 ) return;
 
 		var listenersToTrigger = ObjectPool<List<IEventTrigger>>.Request();
@@ -45,12 +51,13 @@ public class EventSlot : IEvent, ICustomDisposableKill
 
 	private void TryClearFullSignatureList()
 	{
-		if( _listeners == null ) return;
+		// if( _listeners == null ) return;
 		// if( _listeners.Count == 0 ) _listeners = null;
 	}
 
 	public void Register( IEventTrigger listener ) 
 	{
+		if( _killed ) return;
 		if( listener == null ) return;
 		if( _listeners == null ) _listeners = new List<IEventTrigger>();
 		_listeners.Add( listener );
@@ -58,6 +65,7 @@ public class EventSlot : IEvent, ICustomDisposableKill
 
 	public bool Unregister( IEventTrigger listener )
 	{
+		if( _killed ) return false;
 		if( _listeners == null ) return false;
 		bool removed = _listeners.Remove( listener );
 		if( removed ) TryClearFullSignatureList();
@@ -81,6 +89,12 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 
 	public void Trigger( T t )
 	{
+		if( _killed )
+		{
+			Debug.LogError( $"Error: Cannot Trigger dead EventSlot<{typeof( T )}>" );
+			return;
+		}
+
 		if( _listeners != null && _listeners.Count > 0 )
 		{
 			var listenersToTrigger = ObjectPool<List<IEventTrigger<T>>>.Request();
@@ -127,15 +141,17 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 		// if( _listeners.Count == 0 ) _listeners = null;
 	}
 
-	public void Register( IEventTrigger<T> listener ) 
+	public void Register( IEventTrigger<T> listener )
 	{
+		if( _killed ) return;
 		if( listener == null ) return;
 		if( _listeners == null ) _listeners = new List<IEventTrigger<T>>();
 		_listeners.Add( listener );
 	}
 
 	public void Register( IEventTrigger listener )
-	{ 
+	{
+		if( _killed ) return;
 		if( listener == null ) return;
 		if( _generic == null ) _generic = new EventSlot();
 		_generic.Register( listener );
@@ -143,6 +159,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 
 	public bool Unregister( IEventTrigger<T> listener )
 	{
+		if( _killed ) return false;
 		if( _listeners == null ) return false;
 		bool removed = _listeners.Remove( listener );
 		if( removed ) TryClearFullSignatureList();
@@ -151,6 +168,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 
 	public bool Unregister( IEventTrigger listener )
 	{
+		if( _killed ) return false;
 		if( _generic == null ) return false;
 		bool removed = _generic.Unregister( listener );
 		if( removed ) TryClearGeneric();
@@ -175,6 +193,12 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 
 	public void Trigger( T t, K k )
 	{
+		if( _killed )
+		{
+			Debug.LogError( $"Error: Cannot Trigger dead EventSlot<{typeof( T )},{typeof( K )}>" );
+			return;
+		}
+
 		if( _listeners != null && _listeners.Count > 0 )
 		{
 			var listenersToTrigger = ObjectPool<List<IEventTrigger<T,K>>>.Request();
@@ -223,6 +247,7 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 
 	public void Register( IEventTrigger<T, K> listener )
 	{
+		if( _killed ) return;
 		if( listener == null ) return;
 		if( _listeners == null ) _listeners = new List<IEventTrigger<T, K>>();
 		_listeners.Add( listener );
@@ -230,6 +255,7 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 
 	public void Register( IEventTrigger<T> listener )
 	{
+		if( _killed ) return;
 		if( listener == null ) return;
 		if( _generic == null ) _generic = new EventSlot<T>();
 		_generic.Register( listener );
@@ -237,6 +263,7 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 
 	public void Register( IEventTrigger listener )
 	{
+		if( _killed ) return;
 		if( listener == null ) return;
 		if( _generic == null ) _generic = new EventSlot<T>();
 		_generic.Register( listener );
@@ -244,6 +271,7 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 
 	public bool Unregister( IEventTrigger<T, K> listener )
 	{
+		if( _killed ) return false;
 		if( _listeners == null ) return false;
 		bool removed = _listeners.Remove( listener );
 		if( removed ) TryClearFullSignatureList();
@@ -252,6 +280,7 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 
 	public bool Unregister( IEventTrigger<T> listener )
 	{
+		if( _killed ) return false;
 		if( _generic == null ) return false;
 		bool removed = _generic.Unregister( listener );
 		if( removed ) TryClearGeneric();
@@ -260,6 +289,7 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 
 	public bool Unregister( IEventTrigger listener )
 	{
+		if( _killed ) return false;
 		if( _generic == null ) return false;
 		bool removed = _generic.Unregister( listener );
 		if( removed ) TryClearGeneric();
@@ -283,6 +313,12 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 
 	public void Trigger( T t, K k, L l )
 	{
+		if( _killed )
+		{
+			Debug.LogError( $"Error: Cannot Trigger dead EventSlot<{typeof( T )},{typeof( K )},{typeof( L )}>" );
+			return;
+		}
+
 		if( _listeners != null && _listeners.Count > 0 )
 		{
 			var listenersToTrigger = ObjectPool<List<IEventTrigger<T, K, L>>>.Request();
@@ -311,13 +347,13 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 
 	private void TryClearGeneric()
 	{
-		if( _generic == null ) return;
+		// if( _generic == null ) return;
 		// if( _generic.EventsCount == 0 ) _generic = null;
 	}
 	
 	private void TryClearFullSignatureList()
 	{
-		if( _listeners == null ) return;
+		// if( _listeners == null ) return;
 		// if( _listeners.Count == 0 ) _listeners = null;
 	}
 
@@ -332,6 +368,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 
 	public void Register( IEventTrigger<T, K, L> listener )
 	{
+		if( _killed ) return;
 		if( listener == null ) return;
 		if( _listeners == null ) _listeners = new List<IEventTrigger<T, K, L>>();
 		_listeners.Add( listener );
@@ -339,6 +376,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 
 	public void Register( IEventTrigger<T, K> listener )
 	{
+		if( _killed ) return;
 		if( listener == null ) return;
 		if( _generic == null ) _generic = new EventSlot<T, K>();
 		_generic.Register( listener );
@@ -346,6 +384,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 
 	public void Register( IEventTrigger<T> listener )
 	{
+		if( _killed ) return;
 		if( listener == null ) return;
 		if( _generic == null ) _generic = new EventSlot<T, K>();
 		_generic.Register( listener );
@@ -353,6 +392,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 
 	public void Register( IEventTrigger listener )
 	{
+		if( _killed ) return;
 		if( listener == null ) return;
 		if( _generic == null ) _generic = new EventSlot<T,K>();
 		_generic.Register( listener );
@@ -360,14 +400,16 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 
 	public bool Unregister( IEventTrigger<T, K, L> listener )
 	{
+		if( _killed ) return false;
 		if( _listeners == null ) return false;
 		bool removed = _listeners.Remove( listener );
 		if( removed ) TryClearFullSignatureList();
 		return removed;
 	}
 
-	public bool Unregister( IEventTrigger<T, K> listener ) 
+	public bool Unregister( IEventTrigger<T, K> listener )
 	{
+		if( _killed ) return false;
 		if( _generic == null ) return false;
 		bool removed = _generic.Unregister( listener );
 		if( removed ) TryClearGeneric();
@@ -376,6 +418,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 
 	public bool Unregister( IEventTrigger<T> listener ) 
 	{
+		if( _killed ) return false;
 		if( _generic == null ) return false;
 		bool removed = _generic.Unregister( listener );
 		if( removed ) TryClearGeneric();
@@ -384,6 +427,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 
 	public bool Unregister( IEventTrigger listener )
 	{
+		if( _killed ) return false;
 		if( _generic == null ) return false;
 		bool removed = _generic.Unregister( listener );
 		if( removed ) TryClearGeneric();
@@ -425,6 +469,18 @@ public class VoidableEventTrigger<T, K> : IEventTrigger<T, K>, ICustomDisposable
 	public VoidableEventTrigger( Action<T, K> act ) : this( new ActionEventCapsule<T, K>( act ) ) { }
 	public bool IsValid => _trigger?.IsValid ?? false;
 	public void Trigger( T t, K k ) { if( IsValid ) _trigger.Trigger( t, k ); }
+	public void Void() { _trigger = null; }
+	public void Kill() { _trigger = null; }
+}
+
+public class VoidableEventTrigger<T, K, J> : IEventTrigger<T, K, J>, ICustomDisposableKill
+{
+	IEventTrigger<T, K, J> _trigger;
+
+	public VoidableEventTrigger( IEventTrigger<T, K, J> trigger ) { _trigger = trigger; }
+	public VoidableEventTrigger( Action<T, K, J> act ) : this( new ActionEventCapsule<T, K, J>( act ) ) { }
+	public bool IsValid => _trigger?.IsValid ?? false;
+	public void Trigger( T t, K k, J j ) { if( IsValid ) _trigger.Trigger( t, k, j ); }
 	public void Void() { _trigger = null; }
 	public void Kill() { _trigger = null; }
 }

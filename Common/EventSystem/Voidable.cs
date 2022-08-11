@@ -1,5 +1,7 @@
 
 
+using System;
+
 public interface IVoidable
 {
 	bool IsValid { get; }
@@ -41,17 +43,21 @@ public class ValidatedCallOnce : Voidable
 
 public class CallOnce : Voidable
 {
+	bool _preVoided = false;
+	public override bool IsValid => !_preVoided && base.IsValid;
     public CallOnce( IEventTrigger callback ) : base( callback ) { }
 	public CallOnce( System.Action act ) : base( act ) { }
-    public override void Trigger() { if( !IsValid ) return; Void(); _callback.Trigger(); }
+    public override void Trigger() { if( !IsValid ) return; _preVoided = true; _callback.Trigger(); Void(); }
 }
 
 
 public class CallOnce<T> : Voidable<T>
 {
+	bool _preVoided = false;
+	public override bool IsValid => !_preVoided && base.IsValid;
     public CallOnce( IEventTrigger<T> callback ) : base( callback ) { }
 	public CallOnce( System.Action<T> act ) : base( act ) { }
-    public override void Trigger( T t ) { if( !IsValid ) return; Void(); _callback.Trigger( t ); }
+    public override void Trigger( T t ) { if( !IsValid ) return; _preVoided = true; _callback.Trigger( t ); Void(); }
 }
 
 public class Voidable : IEventTrigger, IVoidable
@@ -65,8 +71,8 @@ public class Voidable : IEventTrigger, IVoidable
 	public Voidable( IEventTrigger callback ) { _callback = callback; }
 	public Voidable( System.Action act ) { _callback = new ActionEventCapsule( act ); }
     public virtual void Trigger() { if( !IsValid ) return; _callback.Trigger(); }
-    public virtual bool IsValid { get { return !_void && _callback.IsValid; } }
-    public void Void() { if( _void ) return; _void = true; _onVoid?.Trigger(); }
+    public virtual bool IsValid => _callback?.IsValid ?? false;
+    public void Void() { if( _callback == null ) return; _onVoid?.Trigger(); _callback = null; _onVoid?.Kill(); }
 }
 
 public class Voidable<T> : IEventTrigger<T>, IVoidable
@@ -80,6 +86,6 @@ public class Voidable<T> : IEventTrigger<T>, IVoidable
     public Voidable( IEventTrigger<T> callback ) { _callback = callback; }
 	public Voidable( System.Action<T> act ) { _callback = new ActionEventCapsule<T>( act ); }
     public virtual void Trigger( T t ) { if( !IsValid ) return; _callback.Trigger( t ); }
-    public bool IsValid { get { return !_void && _callback.IsValid; } }
-	public void Void() { if( _void ) return; _void = true; _onVoid?.Trigger(); }
+    public virtual bool IsValid { get { return !_void && ( _callback?.IsValid ?? false ); } }
+	public void Void() { if( _void ) return; _void = true; _onVoid?.Trigger(); _callback = null; _onVoid?.Kill(); }
 }

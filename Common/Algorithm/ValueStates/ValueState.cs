@@ -55,29 +55,17 @@ public static class ValueStateExtention
 {
 	public static void Synchronize<T>( this IValueStateObserver<T> state, System.Action evnt ) where T : struct { Synchronize( state, new ActionEventCapsule( evnt ) ); }
 	public static void Synchronize<T>( this IValueStateObserver<T> state, System.Action evnt, IEventValidator validation ) where T : struct { Synchronize( state, validation.Validated( evnt ) ); }
-	public static void Synchronize<T>( this IValueStateObserver<T> state, System.Action evnt, System.Func<bool> validation ) where T : struct { Synchronize( state, new ConditionalEventListener( evnt, validation ) ); }
-	public static void Synchronize<T>( this IValueStateObserver<T> state, System.Action evnt, params IEventValidator[] validators ) where T : struct { Synchronize( state, new ActionEventCapsule( evnt ), validators ); }
+	// public static void Synchronize<T>( this IValueStateObserver<T> state, System.Action evnt, System.Func<bool> validation ) where T : struct { Synchronize( state, new ConditionalEventListener( evnt, validation ) ); }
 	public static void Synchronize<T>( this IValueStateObserver<T> state, IEventTrigger evnt ) where T : struct { state.OnChange.Register( evnt ); if( evnt.IsValid ) evnt.Trigger(); }
 	public static void Synchronize<T>( this IValueStateObserver<T> state, IEventTrigger evnt, IEventValidator validation ) where T : struct { Synchronize( state, validation.Validated( evnt ) ); }
-	public static void Synchronize<T>( this IValueStateObserver<T> state, IEventTrigger evnt, System.Func<bool> validation ) where T : struct { Synchronize( state, new ConditionalEventListener( evnt, validation ) ); }
-	public static void Synchronize<T>( this IValueStateObserver<T> state, IEventTrigger evnt, params IEventValidator[] validators ) where T : struct
-	{
-		var vals = validators.GetCurrentValidators();
-		Synchronize( state, new ConditionalEventListener( evnt, () => vals.And() && evnt.IsValid ) );
-	}
+	// public static void Synchronize<T>( this IValueStateObserver<T> state, IEventTrigger evnt, System.Func<bool> validation ) where T : struct { Synchronize( state, new ConditionalEventListener( evnt, validation ) ); }
 
 	public static void Synchronize<T>( this IValueStateObserver<T> state, System.Action<T> evnt ) where T : struct { Synchronize<T>( state, new ActionEventCapsule<T>( evnt ) ); }
 	public static void Synchronize<T>( this IValueStateObserver<T> state, System.Action<T> evnt, IEventValidator validation ) where T : struct { Synchronize<T>( state, validation.Validated<T>( evnt ) ); }
-	public static void Synchronize<T>( this IValueStateObserver<T> state, System.Action<T> evnt, System.Func<bool> validation ) where T : struct { Synchronize<T>( state, new ConditionalEventListener<T>( evnt, validation ) ); }
-	public static void Synchronize<T>( this IValueStateObserver<T> state, System.Action<T> evnt, params IEventValidator[] validators ) where T : struct { Synchronize( state, new ActionEventCapsule<T>( evnt ), validators ); }
+	// public static void Synchronize<T>( this IValueStateObserver<T> state, System.Action<T> evnt, System.Func<bool> validation ) where T : struct { Synchronize<T>( state, new ConditionalEventListener<T>( evnt, validation ) ); }
 	public static void Synchronize<T>( this IValueStateObserver<T> state, IEventTrigger<T> evnt ) where T : struct { state.OnChange.Register( evnt ); if( evnt.IsValid ) evnt.Trigger( state.Value ); }
 	public static void Synchronize<T>( this IValueStateObserver<T> source, IValueStateSetter<T> valueState ) where T : struct { Synchronize<T>( source, valueState.Setter ); }
 	public static void Synchronize<T>( this IValueStateObserver<T> state, IEventTrigger<T> evnt, IEventValidator validation ) where T : struct { Synchronize<T>( state, validation.Validated<T>( evnt ) ); }
 	public static void Synchronize<T>( this IValueStateObserver<T> source, IValueStateSetter<T> valueState, IEventValidator validation ) where T : struct { Synchronize<T>( source, valueState.Setter, validation ); }
-	public static void Synchronize<T>( this IValueStateObserver<T> state, IEventTrigger<T> evnt, System.Func<bool> validation ) where T : struct { Synchronize<T>( state, new ConditionalEventListener<T>( evnt, () => validation() && evnt.IsValid ) ); }
-	public static void Synchronize<T>( this IValueStateObserver<T> state, IEventTrigger<T> evnt, params IEventValidator[] validators ) where T : struct
-	{
-		var vals = validators.GetCurrentValidators();
-		Synchronize( state, new ConditionalEventListener<T>( evnt, () => vals.And() && evnt.IsValid ) );
-	}
+	// public static void Synchronize<T>( this IValueStateObserver<T> state, IEventTrigger<T> evnt, System.Func<bool> validation ) where T : struct { Synchronize<T>( state, new ConditionalEventListener<T>( evnt, () => validation() && evnt.IsValid ) ); }
 }

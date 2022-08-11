@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
+using System;
 
 public interface IUpdatableOnDemand
 {
@@ -46,16 +46,28 @@ public class UpdaterOnDemand : IUpdaterOnDemand
 {
 	MonoBehaviour _behaviour;
 	HashSet<IUpdatableOnDemand> _updating = new HashSet<IUpdatableOnDemand>();
+	private Coroutine _courotine;
 
-	public UpdaterOnDemand( MonoBehaviour behaviour )
+	public UpdaterOnDemand( MonoBehaviour behaviour, IEventValidator validator = null )
 	{
 		_behaviour = behaviour;
+		if( validator != null ) validator.OnVoid.Register( new CallOnce( Kill ) );
+	}
+
+	protected virtual void Kill()
+	{
+		if( _courotine != null ) _behaviour?.StopCoroutine( _courotine );
+		_behaviour = null;
+		_updating = null;
 	}
 
 	public bool RequestUpdate( IUpdatableOnDemand updateRequester )
 	{
 		var contains = _updating.Contains( updateRequester );
-		if( _behaviour != null && _behaviour.gameObject != null && _behaviour.gameObject.activeSelf ) _behaviour.StartCoroutine( UpdateCoroutine( updateRequester ) );
+		if( _behaviour != null && _behaviour.gameObject != null && _behaviour.gameObject.activeSelf )
+		{
+			_courotine = _behaviour.StartCoroutine( UpdateCoroutine( updateRequester ) );
+		}
 		return !contains;
 	}
 
