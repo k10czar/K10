@@ -125,14 +125,14 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 	public bool Free { get { return _semaphores.Count == 0; } }
 
 	// TODO: LazyOptimization
-	// private EventSlot _blockEvent;
-	// private EventSlot _releaseEvent;
-	// private EventSlot<bool> _changeStateEvent;
-	// private EventSlot _onInteraction;
-	private EventSlot _blockEvent = new EventSlot();
-	private EventSlot _releaseEvent = new EventSlot();
-	private EventSlot<bool> _changeStateEvent = new EventSlot<bool>();
-	private EventSlot _onInteraction = new EventSlot();
+	private EventSlot _blockEvent;
+	private EventSlot _releaseEvent;
+	private EventSlot<bool> _changeStateEvent;
+	private EventSlot _onInteraction;
+	// private EventSlot _blockEvent = new EventSlot();
+	// private EventSlot _releaseEvent = new EventSlot();
+	// private EventSlot<bool> _changeStateEvent = new EventSlot<bool>();
+	// private EventSlot _onInteraction = new EventSlot();
 
 	public IEventRegister OnBlock => Lazy.Request( ref _blockEvent );
 	public IEventRegister OnRelease => Lazy.Request( ref _releaseEvent );
