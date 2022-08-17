@@ -9,8 +9,8 @@ public interface IStateRequesterInfo
 	IEventRegister OnRequest { get; }
 	IEventRegister OnInteraction { get; }
 
-	int GetRequestCount( object key );
-	bool HasRequest( object key );
+	int GetRequestCount(object key);
+	bool HasRequest(object key);
 }
 
 public interface IStateRequesterInteraction
