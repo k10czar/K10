@@ -9,8 +9,8 @@ public interface IStateRequesterInfo
 	IEventRegister OnRequest { get; }
 	IEventRegister OnInteraction { get; }
 
-	int GetRequestCount(object key);
-	bool HasRequest(object key);
+	int GetRequestCount( object key );
+	bool HasRequest( object key );
 }
 
 public interface IStateRequesterInteraction
@@ -31,54 +31,75 @@ public interface IStateRequester : IStateRequesterInfo, IStateRequesterInteracti
 
 public class StateRequester : IStateRequester, ICustomDisposableKill
 {
-	private readonly Semaphore _semaphore = new Semaphore();
+	private bool _killed = false;
+
 
 	// TODO: LazyOptimization
-	EventSlot<bool> _onStateChange;
-	// EventSlot<bool> _onStateChange = new EventSlot<bool>();
-	public IEventRegister<bool> OnStateChange => _semaphore.OnStateChange;
-	public IEventRegister<bool> OnChange => _semaphore.OnChange;
+	private Semaphore _semaphore;
+	private EventSlot<bool> _invertedSemaphoreStateChange;
+	// EventSlot<bool> _invertedSemaphoreStateChange = new EventSlot<bool>();
 
-	public bool Requested { get { return !_semaphore.Free; } }
+	private Semaphore SemaphoreToInvert
+	{
+		get
+		{
+			if( _killed ) return _semaphore;
+			return Lazy.Request( ref _semaphore );
+		}
+	}
 
-	public IEventRegister OnIgnore { get { return _semaphore.OnRelease; } }
-	public IEventRegister OnRequest { get { return _semaphore.OnBlock; } }
+	public bool Requested { get { return ( !_semaphore?.Free ) ?? false; } }
+
+	public IEventRegister<bool> OnStateChange => OnChange;
+	public IEventRegister OnIgnore { get { return SemaphoreToInvert.OnRelease; } }
+	public IEventRegister OnRequest { get { return SemaphoreToInvert.OnBlock; } }
 
 	public bool Value { get { return Requested; } }
 	public bool Get() { return Requested; }
-	public IEventRegister OnTrueState { get { return _semaphore.OnBlock; } }
-	public IEventRegister OnFalseState { get { return _semaphore.OnRelease; } }
-	public IEventRegister OnInteraction => _semaphore.OnInteraction;
+	public IEventRegister<bool> OnChange 
+	{
+		get
+		{
+			if( !_killed && _invertedSemaphoreStateChange == null )
+			{
+				_invertedSemaphoreStateChange = new EventSlot<bool>();
+				SemaphoreToInvert.OnStateChange.Register( InvertedStateChangeRelay );
+			}
+			return _invertedSemaphoreStateChange;
+		}
+	} 
+	public IEventRegister OnTrueState { get { return SemaphoreToInvert.OnBlock; } }
+	public IEventRegister OnFalseState { get { return SemaphoreToInvert.OnRelease; } }
+	public IEventRegister OnInteraction => SemaphoreToInvert.OnInteraction;
 
-	public StateRequester() { _semaphore.OnStateChange.Register( InvertedStateChange ); }
+	public void RequestOn( IBoolStateObserver source ) { SemaphoreToInvert.BlockOn( source ); }
+	public void IgnoreOn( IBoolStateObserver source ) { SemaphoreToInvert.ReleaseOn( source ); }
 
-	public void RequestOn( IBoolStateObserver source ) { _semaphore.BlockOn( source ); }
-	public void IgnoreOn( IBoolStateObserver source ) { _semaphore.ReleaseOn( source ); }
+	public void RequestOn( GameObject gameObject, IBoolStateObserver additionalCondition = null ) { SemaphoreToInvert.BlockOn( gameObject, additionalCondition ); }
+	public void IgnoreOn( GameObject gameObject, IBoolStateObserver additionalCondition = null ) { SemaphoreToInvert.ReleaseOn( gameObject, additionalCondition ); }
 
-	public void RequestOn( GameObject gameObject, IBoolStateObserver additionalCondition = null ) { _semaphore.BlockOn( gameObject, additionalCondition ); }
-	public void IgnoreOn( GameObject gameObject, IBoolStateObserver additionalCondition = null ) { _semaphore.ReleaseOn( gameObject, additionalCondition ); }
+	public void RequestOn( IBoolStateObserver source, IEventValidator validator ) { SemaphoreToInvert.BlockOn( source, validator ); }
+	public void IgnoreOn( IBoolStateObserver source, IEventValidator validator ) { SemaphoreToInvert.ReleaseOn( source, validator ); }
 
-	public void RequestOn( IBoolStateObserver source, IEventValidator validator ) { _semaphore.BlockOn( source, validator ); }
-	public void IgnoreOn( IBoolStateObserver source, IEventValidator validator ) { _semaphore.ReleaseOn( source, validator ); }
-
-	void InvertedStateChange( bool free ) { _onStateChange?.Trigger( !free ); }
+	void InvertedStateChangeRelay( bool free ) { _invertedSemaphoreStateChange?.Trigger( !free ); }
 
 	public void Clear() { _semaphore?.Clear(); }
 
-	public void Toggle( object obj ) { _semaphore.Toggle( obj ); }
-	public bool Request( object obj, bool increaseRequest = true ) => _semaphore.Block( obj, increaseRequest );
+	public void Toggle( object obj ) { SemaphoreToInvert.Toggle( obj ); }
+	public bool Request( object obj, bool increaseRequest = true ) => SemaphoreToInvert.Block( obj, increaseRequest );
 	public bool RequestButDoNotIncrease( object obj ) => Request( obj, false );
-	public void RemoveRequest( object obj ) => _semaphore.Release( obj );
+	public void RemoveRequest( object obj ) => _semaphore?.Release( obj );
 
-	public int GetRequestCount(object key) => _semaphore.GetBlockCount(key);
+	public int GetRequestCount( object key ) => _semaphore?.GetBlockCount( key ) ?? 0;
 
-	public bool HasRequest(object key) => _semaphore.HasBlocker(key); 
+	public bool HasRequest( object key ) => _semaphore?.HasBlocker( key ) ?? false;
 
-	public override string ToString() => $"( {( Requested ? "Requested" : "False" )} State => {{ !!{_semaphore}!! }} )";
+	public override string ToString() => $"( {( Requested ? "Requested" : "False" )} State => {{ !!{_semaphore.ToStringOrNull()}!! }} )";
 
 	public void Kill()
 	{
-		_semaphore.Kill();
-		GcClear.AfterKill( ref _onStateChange );
+		_killed = true;
+		_semaphore?.Kill();
+		_invertedSemaphoreStateChange?.Kill();
 	}
 }
