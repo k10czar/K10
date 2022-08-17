@@ -6,8 +6,9 @@ public class Vector3State : IValueState<Vector3>, ICustomDisposableKill
     [SerializeField] Vector3 _value;
 
 	// TODO: LazyOptimization
-	// [System.NonSerialized] EventSlot<Vector3> _onChange;
-	[System.NonSerialized] EventSlot<Vector3> _onChange = new EventSlot<Vector3>();
+	[System.NonSerialized] EventSlot<Vector3> _onChange;
+	// [System.NonSerialized] EventSlot<Vector3> _onChange = new EventSlot<Vector3>();
+	public IEventRegister<Vector3> OnChange => Lazy.Request( ref _onChange );
 
     public Vector3 Value { get { return _value; } set { Setter( value ); } }
     public Vector3 Get() { return _value; }
@@ -23,8 +24,6 @@ public class Vector3State : IValueState<Vector3>, ICustomDisposableKill
 	{
 		_onChange?.Kill();
 	}
-
-    public IEventRegister<Vector3> OnChange => Lazy.Request( ref _onChange );
 
     public Vector3State( Vector3 initialValue = default( Vector3 ) ) { _value = initialValue; }
 

@@ -9,6 +9,7 @@ public sealed class ValidatedEventListener : BaseConditionalEventListener, IEven
 	public ValidatedEventListener( System.Action action, IEventValidator validator, IEventValidator additionalValidator = null ) : this( new ActionEventCapsule( action ), validator, additionalValidator ) { }
 	public ValidatedEventListener( IEventTrigger evnt, IEventValidator validator, IEventValidator additionalValidator = null ) : base( validator.TryCombineValidationCheck( additionalValidator ) )
 	{
+		if( _condition == null || !_condition() ) return;
 		_evnt = evnt;
 		var clearOnce = new CallOnce( Clear );
 		validator.OnVoid.Register( clearOnce );
@@ -40,8 +41,11 @@ public sealed class ValidatedEventListener<T> : BaseConditionalEventListener, IE
 	public ValidatedEventListener( System.Action<T> action, IEventValidator validator, IEventValidator additionalValidator = null ) : this( new ActionEventCapsule<T>( action ), validator, additionalValidator ) { }
 	public ValidatedEventListener( IEventTrigger<T> evnt, IEventValidator validator, IEventValidator additionalValidator = null ) : base( validator.TryCombineValidationCheck( additionalValidator ) )
 	{
+		if( _condition == null || !_condition() ) return;
 		_evnt = evnt;
-		validator.OnVoid.Register( new CallOnce( Clear ) );
+		var clearOnce = new CallOnce( Clear );
+		validator.OnVoid.Register( clearOnce );
+		if( additionalValidator != null ) additionalValidator.OnVoid.Register( clearOnce );
 		if( _evnt != null || _condition != null ) _hashCode = _evnt.GetHashCode() + _condition.GetHashCode();
 	}
 
@@ -69,8 +73,11 @@ public sealed class ValidatedEventListener<T, K> : BaseConditionalEventListener,
 	public ValidatedEventListener( System.Action<T, K> action, IEventValidator validator, IEventValidator additionalValidator = null ) : this( new ActionEventCapsule<T, K>( action ), validator, additionalValidator ) { }
 	public ValidatedEventListener( IEventTrigger<T, K> evnt, IEventValidator validator, IEventValidator additionalValidator = null ) : base( validator.TryCombineValidationCheck( additionalValidator ) )
 	{
+		if( _condition == null || !_condition() ) return;
 		_evnt = evnt;
-		validator.OnVoid.Register( new CallOnce( Clear ) );
+		var clearOnce = new CallOnce( Clear );
+		validator.OnVoid.Register( clearOnce );
+		if( additionalValidator != null ) additionalValidator.OnVoid.Register( clearOnce );
 		if( _evnt != null || _condition != null ) _hashCode = _evnt.GetHashCode() + _condition.GetHashCode();
 	}
 
@@ -98,8 +105,11 @@ public sealed class ValidatedEventListener<T,K,J> : BaseConditionalEventListener
 	public ValidatedEventListener( System.Action<T,K,J> action, IEventValidator validator, IEventValidator additionalValidator = null ) : this( new ActionEventCapsule<T,K,J>( action ), validator, additionalValidator ) { }
 	public ValidatedEventListener( IEventTrigger<T,K,J> evnt, IEventValidator validator, IEventValidator additionalValidator = null ) : base( validator.TryCombineValidationCheck( additionalValidator ) )
 	{
+		if( _condition == null || !_condition() ) return;
 		_evnt = evnt;
-		validator.OnVoid.Register( new CallOnce( Clear ) );
+		var clearOnce = new CallOnce( Clear );
+		validator.OnVoid.Register( clearOnce );
+		if( additionalValidator != null ) additionalValidator.OnVoid.Register( clearOnce );
 		if( _evnt != null || _condition != null ) _hashCode = _evnt.GetHashCode() + _condition.GetHashCode();
 	}
 

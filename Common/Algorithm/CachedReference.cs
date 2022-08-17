@@ -72,12 +72,12 @@ public class CachedReference<T> : ICachedReference<T>, ICustomDisposableKill
 	public bool IsNull => _current == null;
 
 	// TODO: LazyOptimization
-	// private EventSlot<T> _onReferenceRemove;
-	// private EventSlot<T, IEventValidator> _onReferenceSet;
-	// private ConditionalEventsCollection _validator;
-	private EventSlot<T> _onReferenceRemove = new EventSlot<T>();
-	private EventSlot<T, IEventValidator> _onReferenceSet = new EventSlot<T,IEventValidator>();
-	private ConditionalEventsCollection _validator = new ConditionalEventsCollection();
+	private EventSlot<T> _onReferenceRemove;
+	private EventSlot<T, IEventValidator> _onReferenceSet;
+	private ConditionalEventsCollection _validator;
+	// private EventSlot<T> _onReferenceRemove = new EventSlot<T>();
+	// private EventSlot<T, IEventValidator> _onReferenceSet = new EventSlot<T,IEventValidator>();
+	// private ConditionalEventsCollection _validator = new ConditionalEventsCollection();
 
 	public IEventRegister<T> OnReferenceRemove => Lazy.Request( ref _onReferenceRemove );
 	public IEventRegister<T, IEventValidator> OnReferenceSet => Lazy.Request( ref _onReferenceSet );

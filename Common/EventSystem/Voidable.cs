@@ -33,8 +33,8 @@ public class ValidatedCallOnce : Voidable
 {
 	private readonly System.Func<bool> _validation;
 	public override bool IsValid { get { return base.IsValid && _validation(); } }
-	public ValidatedCallOnce( System.Func<bool> validation, IEventTrigger callback ) : base( callback ) { _validation = validation; }
-	public ValidatedCallOnce( System.Func<bool> validation, System.Action act ) : base( act ) { _validation = validation; }
+	public ValidatedCallOnce( System.Func<bool> validation, IEventTrigger callback ) : base( validation() ? callback : null ) { _validation = validation; }
+	public ValidatedCallOnce( System.Func<bool> validation, System.Action act ) : base( validation() ? act : null ) { _validation = validation; }
 	public ValidatedCallOnce( IEventValidator validator, IEventTrigger callback ) : this( validator.CurrentValidationCheck, callback ) { }
 	public ValidatedCallOnce( IEventValidator validator, System.Action act ) : this( validator.CurrentValidationCheck, act ) { }
 	public override void Trigger() { if( !IsValid ) return; Void(); _callback.Trigger(); }

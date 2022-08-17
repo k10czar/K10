@@ -34,18 +34,18 @@ public class StateRequester : IStateRequester, ICustomDisposableKill
 	private readonly Semaphore _semaphore = new Semaphore();
 
 	// TODO: LazyOptimization
-	// EventSlot<bool> _onStateChange;
-	EventSlot<bool> _onStateChange = new EventSlot<bool>();
+	EventSlot<bool> _onStateChange;
+	// EventSlot<bool> _onStateChange = new EventSlot<bool>();
+	public IEventRegister<bool> OnStateChange => _semaphore.OnStateChange;
+	public IEventRegister<bool> OnChange => _semaphore.OnChange;
 
 	public bool Requested { get { return !_semaphore.Free; } }
 
-	public IEventRegister<bool> OnStateChange => Lazy.Request( ref _onStateChange );
 	public IEventRegister OnIgnore { get { return _semaphore.OnRelease; } }
 	public IEventRegister OnRequest { get { return _semaphore.OnBlock; } }
 
 	public bool Value { get { return Requested; } }
 	public bool Get() { return Requested; }
-	public IEventRegister<bool> OnChange => Lazy.Request( ref _onStateChange );
 	public IEventRegister OnTrueState { get { return _semaphore.OnBlock; } }
 	public IEventRegister OnFalseState { get { return _semaphore.OnRelease; } }
 	public IEventRegister OnInteraction => _semaphore.OnInteraction;
