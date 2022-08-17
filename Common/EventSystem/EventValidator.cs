@@ -12,6 +12,15 @@ public interface IVoidableEventValidator : IEventValidator
 	void Void();
 }
 
+public class EverValidValidator : IEventValidator
+{
+	private static readonly EverValidValidator _instance = new EverValidValidator();
+	public static IEventValidator Instance => _instance;
+
+	public Func<bool> CurrentValidationCheck => FuncBool.EverTrue;
+	public IEventRegister OnVoid => FakeEventCallOnRegister.Instance;
+}
+
 public class NullValidator : IEventValidator
 {
 	private static readonly NullValidator _instance = new NullValidator();
