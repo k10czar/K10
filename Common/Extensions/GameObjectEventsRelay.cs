@@ -21,8 +21,28 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 	IEventRegister IUnityEventsRelay.OnDestroy => OnDestroyEvent;
 	// public IEventRegister OnLateDestroy => Lazy.Request( ref _onLateDestroy );
 	public IEventRegister OnDestroyEvent => Lazy.Request( ref _onDestroy );
-	public IBoolStateObserver IsActive => Lazy.Request( ref _isActive );
-	public IBoolStateObserver IsAlive => Lazy.Request( ref _isAlive );
+	public IBoolStateObserver IsActive
+	{
+		get
+		{
+			if( _isActive == null ) _isActive = new BoolState( enabled && gameObject.activeInHierarchy );
+			return _isActive;
+		}
+	}
+
+	public IBoolStateObserver IsAlive
+	{
+		get
+		{
+			if( _isAlive == null ) 
+			{
+				if( _destroyed ) return FalseState.Instance;
+				_isAlive = new BoolState( true );
+			}
+			return _isAlive;
+		}
+	}
+
 	public IEventValidator LifetimeValidator => _lifetimeValidator ?? NewLifetimeValidator();
 
 	IEventValidator NewLifetimeValidator()
