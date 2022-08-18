@@ -3,7 +3,6 @@ using System.Collections.Generic;
 public static class ObjectPool<T> where T : new()
 {
 	private static readonly Dictionary<System.Threading.Thread,List<T>> _pools = new Dictionary<System.Threading.Thread,List<T>>();
-	// private static readonly List<T> _pool = new List<T>();
 
 	public static T Request()
 	{
