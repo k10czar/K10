@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [System.Serializable]
-public class DoubleState : INumericValueState<double>, ISerializationCallbackReceiver, ICustomDisposableKill
+public class DoubleState : INumericValueState<double>, ICustomDisposableKill
 {
 	[SerializeField] double _value;
 	[System.NonSerialized] private EventSlot<double> _onChange;
