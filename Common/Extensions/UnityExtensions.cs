@@ -171,15 +171,25 @@ public static class K10UnityExtensions
 		return name;
 	}
 
-	[MethodImpl( AggrInline )] public static IEventTrigger<T, K, J> UntilLifeTime<T, K, J>( this Component c, IEventTrigger<T, K, J> t ) { return new ConditionalEventListener<T, K, J>( t, () => ( c != null ) && t.IsValid ); }
-	[MethodImpl( AggrInline )] public static IEventTrigger<T, K> UntilLifeTime<T, K>( this Component c, IEventTrigger<T, K> t ) { return new ConditionalEventListener<T, K>( t, () => ( c != null ) && t.IsValid ); }
-	[MethodImpl( AggrInline )] public static IEventTrigger<T> UntilLifeTime<T>( this Component c, IEventTrigger<T> t ) { return new ConditionalEventListener<T>( t, () => ( c != null ) && t.IsValid ); }
-	[MethodImpl( AggrInline )] public static IEventTrigger UntilLifeTime( this Component c, IEventTrigger t ) { return new ConditionalEventListener( t, () => ( c != null ) && t.IsValid ); }
+	[MethodImpl( AggrInline )] public static IEventTrigger<T, K, J> UntilLifeTime<T, K, J>( this Component c, IEventTrigger<T, K, J> t ) { return UntilValidator<T, K, J>( c, t ); }
+	[MethodImpl( AggrInline )] public static IEventTrigger<T, K> UntilLifeTime<T, K>( this Component c, IEventTrigger<T, K> t ) { return UntilValidator<T, K>( c, t ); }
+	[MethodImpl( AggrInline )] public static IEventTrigger<T> UntilLifeTime<T>( this Component c, IEventTrigger<T> t ) { return UntilValidator<T>( c, t ); }
+	[MethodImpl( AggrInline )] public static IEventTrigger UntilLifeTime( this Component c, IEventTrigger t ) { return UntilValidator( c, t ); }
 
-	[MethodImpl( AggrInline )] public static IEventTrigger<T, K, J> UntilLifeTime<T, K, J>( this Component c, System.Action<T, K, J> act ) { return new ConditionalEventListener<T, K, J>( act, c.IsAlive ); }
-	[MethodImpl( AggrInline )] public static IEventTrigger<T, K> UntilLifeTime<T, K>( this Component c, System.Action<T, K> act ) { return new ConditionalEventListener<T, K>( act, c.IsAlive ); }
-	[MethodImpl( AggrInline )] public static IEventTrigger<T> UntilLifeTime<T>( this Component c, System.Action<T> act ) { return new ConditionalEventListener<T>( act, c.IsAlive ); }
-	[MethodImpl( AggrInline )] public static IEventTrigger UntilLifeTime( this Component c, System.Action act ) { return new ConditionalEventListener( act, c.IsAlive ); }
+	[MethodImpl( AggrInline )] public static IEventTrigger<T, K, J> UntilLifeTime<T, K, J>( this Component c, System.Action<T, K, J> act ) { return UntilValidator<T, K, J>( c, act ); }
+	[MethodImpl( AggrInline )] public static IEventTrigger<T, K> UntilLifeTime<T, K>( this Component c, System.Action<T, K> act ) { return UntilValidator<T, K>( c, act ); }
+	[MethodImpl( AggrInline )] public static IEventTrigger<T> UntilLifeTime<T>( this Component c, System.Action<T> act ) { return UntilValidator<T>( c, act ); }
+	[MethodImpl( AggrInline )] public static IEventTrigger UntilLifeTime( this Component c, System.Action act ) { return UntilValidator( c, act ); }
+
+	// [MethodImpl( AggrInline )] public static IEventTrigger<T, K, J> UntilLifeTime<T, K, J>( this Component c, IEventTrigger<T, K, J> t ) { return new ConditionalEventListener<T, K, J>( t, () => ( c != null ) && t.IsValid ); }
+	// [MethodImpl( AggrInline )] public static IEventTrigger<T, K> UntilLifeTime<T, K>( this Component c, IEventTrigger<T, K> t ) { return new ConditionalEventListener<T, K>( t, () => ( c != null ) && t.IsValid ); }
+	// [MethodImpl( AggrInline )] public static IEventTrigger<T> UntilLifeTime<T>( this Component c, IEventTrigger<T> t ) { return new ConditionalEventListener<T>( t, () => ( c != null ) && t.IsValid ); }
+	// [MethodImpl( AggrInline )] public static IEventTrigger UntilLifeTime( this Component c, IEventTrigger t ) { return new ConditionalEventListener( t, () => ( c != null ) && t.IsValid ); }
+
+	// [MethodImpl( AggrInline )] public static IEventTrigger<T, K, J> UntilLifeTime<T, K, J>( this Component c, System.Action<T, K, J> act ) { return new ConditionalEventListener<T, K, J>( act, c.IsAlive ); }
+	// [MethodImpl( AggrInline )] public static IEventTrigger<T, K> UntilLifeTime<T, K>( this Component c, System.Action<T, K> act ) { return new ConditionalEventListener<T, K>( act, c.IsAlive ); }
+	// [MethodImpl( AggrInline )] public static IEventTrigger<T> UntilLifeTime<T>( this Component c, System.Action<T> act ) { return new ConditionalEventListener<T>( act, c.IsAlive ); }
+	// [MethodImpl( AggrInline )] public static IEventTrigger UntilLifeTime( this Component c, System.Action act ) { return new ConditionalEventListener( act, c.IsAlive ); }
 	[MethodImpl( AggrInline )] public static bool IsAlive( this Component c ) { return ( c != null ); }
 
 
