@@ -30,7 +30,7 @@ public class GuidState : IGuidState, ICustomDisposableKill
 			return _isEmpty;
 		}
 	}
-	public IEventRegister<Guid> OnChange => _onChange ?? ( _onChange = new EventSlot<Guid>() );
+	public IEventRegister<Guid> OnChange => Lazy.Request( ref _onChange );
 
 	public static implicit operator Guid( GuidState v ) => v._value.Value;
 	public static implicit operator Guid?( GuidState v ) => v._value.Value;

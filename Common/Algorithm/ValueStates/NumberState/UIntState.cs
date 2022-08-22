@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class UIntState : INumericValueState<uint>, ISerializationCallbackReceiver, ICustomDisposableKill
+public class UIntState : INumericValueState<uint>, ICustomDisposableKill
 {
 	[SerializeField] uint _value;
 	[System.NonSerialized] EventSlot<uint> _onChange;
@@ -28,16 +28,9 @@ public class UIntState : INumericValueState<uint>, ISerializationCallbackReceive
 		_onChange = null;
 	}
 
-	public IEventRegister<uint> OnChange => _onChange ?? ( _onChange = new EventSlot<uint>() );
+	public IEventRegister<uint> OnChange => Lazy.Request( ref _onChange );
 
-	public UIntState( uint initialValue = default( uint ) ) { _value = initialValue; Init(); }
-	void Init()
-	{
-		if( _onChange == null ) _onChange = new EventSlot<uint>();
-	}
-
-	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
-	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); }
+	public UIntState( uint initialValue = default( uint ) ) { _value = initialValue; }
 
 
 	public override string ToString() { return $"US({_value})"; }

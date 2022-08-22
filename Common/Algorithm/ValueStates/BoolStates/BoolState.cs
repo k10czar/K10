@@ -11,7 +11,7 @@ public interface IBoolStateObserver : IValueStateObserver<bool>
 }
 
 [System.Serializable]
-public class BoolState : IBoolState, ISerializationCallbackReceiver, ICustomDisposableKill
+public class BoolState : IBoolState, ICustomDisposableKill
 {
 	public const string SET_METHOD_NAME = nameof( Setter );
 	public const string ON_CHANGE_PROP_NAME = nameof( OnChange );
@@ -45,22 +45,13 @@ public class BoolState : IBoolState, ISerializationCallbackReceiver, ICustomDisp
 		_onTrue = null;
 		_onFalse = null;
 	}
-	public IEventRegister<bool> OnChange => _onChange ?? ( _onChange = new EventSlot<bool>() );
-	public IEventRegister OnTrueState => _onTrue ?? ( _onTrue = new EventSlot() );
-	public IEventRegister OnFalseState => _onFalse ?? ( _onFalse = new EventSlot() );
+	
+	public IEventRegister<bool> OnChange => Lazy.Request( ref _onChange );
+	public IEventRegister OnTrueState => Lazy.Request( ref _onTrue );
+	public IEventRegister OnFalseState => Lazy.Request( ref _onFalse );
 
 	public BoolState() : this( false ) { }
-	public BoolState( bool initialValue ) { _value = initialValue; Init(); }
-
-	void Init()
-	{
-		if( _onChange == null ) _onChange = new EventSlot<bool>();
-		if( _onTrue == null ) _onTrue = new EventSlot();
-		if( _onFalse == null ) _onFalse = new EventSlot();
-	}
-
-	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
-	void ISerializationCallbackReceiver.OnAfterDeserialize(){ Init(); }
+	public BoolState( bool initialValue ) { _value = initialValue; }
 
 	public override string ToString() { return string.Format( "BS({0})", _value ); }
 }

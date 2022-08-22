@@ -31,16 +31,9 @@ public class DoubleState : INumericValueState<double>, ISerializationCallbackRec
 		_onChange = null;
 	}
 
-	public IEventRegister<double> OnChange => _onChange ?? ( _onChange = new EventSlot<double>() );
+	public IEventRegister<double> OnChange => Lazy.Request( ref _onChange );
 
-	public DoubleState( double initialValue = default( double ) ) { _value = initialValue; Init(); }
-	void Init()
-	{
-		if( _onChange == null ) _onChange = new EventSlot<double>();
-	}
-
-	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
-	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); }
+	public DoubleState( double initialValue = default( double ) ) { _value = initialValue; }
 
 
 	public override string ToString() { return $"DS({_value})"; }

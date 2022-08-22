@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class FloatState : INumericValueState<float>, ISerializationCallbackReceiver, ICustomDisposableKill
+public class FloatState : INumericValueState<float>, ICustomDisposableKill
 {
 	[SerializeField] float _value;
 	[System.NonSerialized] private EventSlot<float> _onChange;
@@ -30,16 +30,9 @@ public class FloatState : INumericValueState<float>, ISerializationCallbackRecei
 		_onChange = null;
 	}
 
-	public IEventRegister<float> OnChange => _onChange ?? ( _onChange = new EventSlot<float>() );
+	public IEventRegister<float> OnChange => Lazy.Request( ref _onChange );
 
-	public FloatState( float initialValue = default( float ) ) { _value = initialValue; Init(); }
-	void Init()
-	{
-		if( _onChange == null ) _onChange = new EventSlot<float>();
-	}
-
-	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
-	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); }
+	public FloatState( float initialValue = default( float ) ) { _value = initialValue; }
 
 
 	public override string ToString() { return $"FS({_value})"; }

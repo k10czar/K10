@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class ByteState : INumericValueState<byte>, ISerializationCallbackReceiver, ICustomDisposableKill
+public class ByteState : INumericValueState<byte>, ICustomDisposableKill
 {
 	[SerializeField] byte _value;
 	[System.NonSerialized] EventSlot<byte> _onChange = new EventSlot<byte>();
@@ -28,16 +28,9 @@ public class ByteState : INumericValueState<byte>, ISerializationCallbackReceive
 		_onChange = null;
 	}
 
-	public IEventRegister<byte> OnChange => _onChange ?? ( _onChange = new EventSlot<byte>() );
+	public IEventRegister<byte> OnChange => Lazy.Request( ref _onChange );
 
-	public ByteState( byte initialValue = default( byte ) ) { _value = initialValue; Init(); }
-	void Init()
-	{
-		if( _onChange == null ) _onChange = new EventSlot<byte>();
-	}
-
-	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
-	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); }
+	public ByteState( byte initialValue = default( byte ) ) { _value = initialValue; }
 
 	public override string ToString() { return $"ByS({_value})"; }
 }

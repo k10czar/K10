@@ -1,12 +1,12 @@
 using UnityEngine;
 
 [System.Serializable]
-public class IntState : INumericValueState<int>, ISerializationCallbackReceiver, ICustomDisposableKill
+public class IntState : INumericValueState<int>, ICustomDisposableKill
 {
     [SerializeField] int _value;
     [System.NonSerialized] EventSlot<int> _onChange;
 
-	public IEventRegister<int> OnChange => _onChange ?? ( _onChange = new EventSlot<int>() );
+	public IEventRegister<int> OnChange => Lazy.Request( ref _onChange );
     public int Value { get { return _value; } set { Setter( value ); } }
 
     public int Get() { return _value; }
@@ -33,14 +33,7 @@ public class IntState : INumericValueState<int>, ISerializationCallbackReceiver,
 		_onChange = null;
 	}
 
-    public IntState( int initialValue = default( int ) ) { _value = initialValue; Init(); }
-	void Init()
-	{
-		if( _onChange == null ) _onChange = new EventSlot<int>();
-	}
-
-	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
-	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); }
+    public IntState( int initialValue = default( int ) ) { _value = initialValue; }
 	
 
 	public override string ToString() { return $"IS({_value})"; }
