@@ -23,7 +23,7 @@ public class ActionEventCapsule : IEventTrigger, ICustomDisposableKill
 		}
 		return base.Equals( obj );
 	}
-	public override int GetHashCode() { return _callback.GetHashCode(); }
+	public override int GetHashCode() { return _callback?.GetHashCode() ?? 0; }
 }
 
 public class ActionEventCapsule<T> : IEventTrigger<T>, ICustomDisposableKill
@@ -48,7 +48,7 @@ public class ActionEventCapsule<T> : IEventTrigger<T>, ICustomDisposableKill
 		}
 		return base.Equals( obj );
 	}
-	public override int GetHashCode() { return _callback.GetHashCode(); }
+	public override int GetHashCode() { return _callback?.GetHashCode() ?? 0; }
 }
 
 public class ActionEventCapsule<T, K> : IEventTrigger<T, K>, ICustomDisposableKill
@@ -73,7 +73,7 @@ public class ActionEventCapsule<T, K> : IEventTrigger<T, K>, ICustomDisposableKi
 		}
 		return base.Equals( obj );
 	}
-	public override int GetHashCode() { return _callback.GetHashCode(); }
+	public override int GetHashCode() { return _callback?.GetHashCode() ?? 0; }
 }
 
 
@@ -100,5 +100,5 @@ public class ActionEventCapsule<T, K, L> : IEventTrigger<T, K, L>, ICustomDispos
 		return base.Equals( obj );
 	}
 
-	public override int GetHashCode() { return _callback.GetHashCode(); }
+	public override int GetHashCode() { return _callback?.GetHashCode() ?? 0; }
 }

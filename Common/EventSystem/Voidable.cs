@@ -29,58 +29,69 @@ public static class VoidableExtensions
 }
 
 
-public class ValidatedCallOnce : CallOnce
+public struct CallOnce : IEventTrigger, IVoidable
 {
-	public ValidatedCallOnce( IEventValidator validator, IEventTrigger callback ) : base( validator.Validated( callback ) ) { }
-	public ValidatedCallOnce( IEventValidator validator, System.Action act ) : base( validator.Validated( act ) ) { }
+	Voidable _voidable;
+
+	bool _preVoided;
+	public bool IsValid => !_preVoided && _voidable.IsValid;
+
+	public CallOnce( IEventTrigger callback ) { _voidable = new Voidable( callback ); _preVoided = false; }
+	public CallOnce( System.Action act ) { _voidable = new Voidable( act ); _preVoided = false; }
+	public CallOnce( IEventValidator validator, IEventTrigger callback ) { _voidable = new Voidable( validator.Validated( callback ) ); _preVoided = false; }
+	public CallOnce( IEventValidator validator, System.Action act ) { _voidable = new Voidable( validator.Validated( act ) ); _preVoided = false; }
+
+    public void Trigger() { if( !IsValid ) return; _preVoided = true; _voidable.Trigger(); _voidable.Void(); }
+
+	public IEventRegister OnVoid => _voidable.OnVoid;
+	public void Void() { _voidable.Void(); }
 }
 
 
-public class CallOnce : Voidable
+public struct CallOnce<T> : IEventTrigger<T>, IVoidable
 {
-	bool _preVoided = false;
-	public override bool IsValid => !_preVoided && base.IsValid;
-    public CallOnce( IEventTrigger callback ) : base( callback ) { }
-	public CallOnce( System.Action act ) : base( act ) { }
-    public override void Trigger() { if( !IsValid ) return; _preVoided = true; _callback.Trigger(); Void(); }
+	Voidable<T> _voidable;
+
+	bool _preVoided;
+	public bool IsValid => !_preVoided && _voidable.IsValid;
+
+    public CallOnce( IEventTrigger<T> callback ) { _voidable = new Voidable<T>( callback ); _preVoided = false; }
+	public CallOnce( System.Action<T> act ) { _voidable = new Voidable<T>( act ); _preVoided = false; }
+	public CallOnce( IEventValidator validator, IEventTrigger<T> callback ) { _voidable = new Voidable<T>( validator.Validated( callback ) ); _preVoided = false; }
+	public CallOnce( IEventValidator validator, System.Action<T> act ) { _voidable = new Voidable<T>( validator.Validated( act ) ); _preVoided = false; }
+
+    public void Trigger( T t ) { if( !IsValid ) return; _preVoided = true; _voidable.Trigger( t ); _voidable.Void(); }
+
+	public IEventRegister OnVoid => _voidable.OnVoid;
+	public void Void() { _voidable.Void(); }
 }
 
-
-public class CallOnce<T> : Voidable<T>
+public struct Voidable : IEventTrigger, IVoidable
 {
-	bool _preVoided = false;
-	public override bool IsValid => !_preVoided && base.IsValid;
-    public CallOnce( IEventTrigger<T> callback ) : base( callback ) { }
-	public CallOnce( System.Action<T> act ) : base( act ) { }
-    public override void Trigger( T t ) { if( !IsValid ) return; _preVoided = true; _callback.Trigger( t ); Void(); }
-}
+    private IEventTrigger _callback;
 
-public class Voidable : IEventTrigger, IVoidable
-{
-    protected IEventTrigger _callback;
-    bool _void;
-
-	EventSlot _onVoid;
+	private EventSlot _onVoid;
 	public IEventRegister OnVoid => _onVoid ??= new EventSlot();
 
-	public Voidable( IEventTrigger callback ) { _callback = callback; }
-	public Voidable( System.Action act ) { _callback = new ActionEventCapsule( act ); }
-    public virtual void Trigger() { if( !IsValid ) return; _callback.Trigger(); }
-    public virtual bool IsValid => _callback?.IsValid ?? false;
+	public Voidable( IEventTrigger callback ) { _callback = callback; _onVoid = null; }
+	public Voidable( System.Action act ) { _callback = new ActionEventCapsule( act ); _onVoid = null; }
+
+    public void Trigger() { if( !IsValid ) return; _callback.Trigger(); }
+    public bool IsValid => _callback?.IsValid ?? false;
     public void Void() { if( _callback == null ) return; _onVoid?.Trigger(); _callback = null; _onVoid?.Kill(); }
 }
 
-public class Voidable<T> : IEventTrigger<T>, IVoidable
+public struct Voidable<T> : IEventTrigger<T>, IVoidable
 {
-	protected IEventTrigger<T> _callback;
-	bool _void;
+	private IEventTrigger<T> _callback;
 
-	EventSlot _onVoid;
+	private EventSlot _onVoid;
 	public IEventRegister OnVoid => _onVoid ??= new EventSlot();
 
-    public Voidable( IEventTrigger<T> callback ) { _callback = callback; }
-	public Voidable( System.Action<T> act ) { _callback = new ActionEventCapsule<T>( act ); }
-    public virtual void Trigger( T t ) { if( !IsValid ) return; _callback.Trigger( t ); }
-    public virtual bool IsValid { get { return !_void && ( _callback?.IsValid ?? false ); } }
-	public void Void() { if( _void ) return; _void = true; _onVoid?.Trigger(); _callback = null; _onVoid?.Kill(); }
+    public Voidable( IEventTrigger<T> callback ) { _callback = callback; _onVoid = null; }
+	public Voidable( System.Action<T> act ) { _callback = new ActionEventCapsule<T>( act ); _onVoid = null; }
+
+    public void Trigger( T t ) { if( !IsValid ) return; _callback.Trigger( t ); }
+    public bool IsValid => _callback?.IsValid ?? false;
+	public void Void() { if( _callback == null ) return; _onVoid?.Trigger(); _callback = null; _onVoid?.Kill(); }
 }

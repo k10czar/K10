@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class AutoClearedReference<T> where T : UnityEngine.Component
+public struct AutoClearedReference<T> where T : UnityEngine.Component
 {
 	private T _reference;
 	public T Reference => _reference;
