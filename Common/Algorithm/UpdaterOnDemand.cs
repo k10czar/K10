@@ -64,7 +64,7 @@ public class UpdaterOnDemand : IUpdaterOnDemand
 	public bool RequestUpdate( IUpdatableOnDemand updateRequester )
 	{
 		var contains = _updating.Contains( updateRequester );
-		if( _behaviour != null && _behaviour.gameObject != null && _behaviour.gameObject.activeSelf )
+		if( _behaviour != null && _behaviour.gameObject != null && _behaviour.gameObject.activeInHierarchy && _behaviour.enabled )
 		{
 			_courotine = _behaviour.StartCoroutine( UpdateCoroutine( updateRequester ) );
 		}
