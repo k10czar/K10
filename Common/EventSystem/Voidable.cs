@@ -29,7 +29,7 @@ public static class VoidableExtensions
 }
 
 
-public struct CallOnce : IEventTrigger, IVoidable
+public class CallOnce : IEventTrigger, IVoidable
 {
 	Voidable _voidable;
 
@@ -48,7 +48,7 @@ public struct CallOnce : IEventTrigger, IVoidable
 }
 
 
-public struct CallOnce<T> : IEventTrigger<T>, IVoidable
+public class CallOnce<T> : IEventTrigger<T>, IVoidable
 {
 	Voidable<T> _voidable;
 
@@ -66,7 +66,7 @@ public struct CallOnce<T> : IEventTrigger<T>, IVoidable
 	public void Void() { _voidable.Void(); }
 }
 
-public struct Voidable : IEventTrigger, IVoidable
+public class Voidable : IEventTrigger, IVoidable
 {
     private IEventTrigger _callback;
 
@@ -81,7 +81,7 @@ public struct Voidable : IEventTrigger, IVoidable
     public void Void() { if( _callback == null ) return; _onVoid?.Trigger(); _callback = null; _onVoid?.Kill(); }
 }
 
-public struct Voidable<T> : IEventTrigger<T>, IVoidable
+public class Voidable<T> : IEventTrigger<T>, IVoidable
 {
 	private IEventTrigger<T> _callback;
 
