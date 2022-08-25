@@ -166,18 +166,21 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 
 	public void BlockOn( IBoolStateObserver source )
 	{
+		if( source == null ) return;
 		source.RegisterOnTrue( _validator.Validated( () => Block( source ) ) );
 		source.RegisterOnFalse( _validator.Validated( () => Release( source ) ) );
 	}
 
 	public void BlockOn( IBoolStateObserver source, Func<bool> eventValidation )
 	{
+		if( source == null ) return;
 		source.RegisterOnTrue( _validator.LeakedValidated( () => Block( source ), eventValidation ) );
 		source.RegisterOnFalse( _validator.LeakedValidated( () => Release( source ), eventValidation ) );
 	}
 
 	public void ReleaseOn( IBoolStateObserver source )
 	{
+		if( source == null ) return;
 		source.RegisterOnTrue( _validator.Validated( () => Release( source ) ) );
 		source.RegisterOnFalse( _validator.Validated( () => Block( source ) ) );
 	}
