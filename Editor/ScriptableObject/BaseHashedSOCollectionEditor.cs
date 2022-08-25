@@ -34,15 +34,6 @@ public class BaseHashedSOCollectionEditor : Editor
 		SeparationLine.Horizontal();
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField( $"{_title} ({count})", K10GuiStyles.bigBoldCenterStyle, GUILayout.Height( 28 ) );
-		if( IconButton.Layout( "log", 32, 'L', "Show modification log", K10GuiStyles.CYAN_TINT_COLOR ) )
-		{
-			var asset = collection.Editor_Log;
-			// if( asset != null )
-			// {
-			// 	EditorUtility.FocusProjectWindow();
-			// 	Selection.activeObject = asset;
-			// }
-		}
 		EditorGUILayout.EndHorizontal();
 		SeparationLine.Horizontal();
 
