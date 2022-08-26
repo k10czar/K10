@@ -10,4 +10,13 @@ public static class Lazy
 		// if( field == null ) field = new T();
 		// return field;
 	}
+
+	[MethodImpl( MethodImplOptions.AggressiveInlining )]
+	public static T Request<T>( ref T field, bool alreadyKilled ) where T : class, new()
+	{
+		if( alreadyKilled ) return field;
+		return Request<T>( ref field );
+		// if( field == null ) field = new T();
+		// return field;
+	}
 }

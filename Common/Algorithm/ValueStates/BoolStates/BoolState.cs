@@ -15,6 +15,7 @@ public class BoolState : IBoolState, ICustomDisposableKill
 {
 	public const string SET_METHOD_NAME = nameof( Setter );
 	public const string ON_CHANGE_PROP_NAME = nameof( OnChange );
+	bool _killed;
 	[SerializeField] bool _value;
 
 	[System.NonSerialized] private EventSlot<bool> _onChange;
@@ -38,6 +39,7 @@ public class BoolState : IBoolState, ICustomDisposableKill
 
 	public void Kill()
 	{
+		_killed = true;
 		_onChange?.Kill();
 		_onTrue?.Kill();
 		_onFalse?.Kill();
@@ -46,9 +48,9 @@ public class BoolState : IBoolState, ICustomDisposableKill
 		_onFalse = null;
 	}
 	
-	public IEventRegister<bool> OnChange => Lazy.Request( ref _onChange );
-	public IEventRegister OnTrueState => Lazy.Request( ref _onTrue );
-	public IEventRegister OnFalseState => Lazy.Request( ref _onFalse );
+	public IEventRegister<bool> OnChange => Lazy.Request( ref _onChange, _killed );
+	public IEventRegister OnTrueState => Lazy.Request( ref _onTrue, _killed );
+	public IEventRegister OnFalseState => Lazy.Request( ref _onFalse, _killed );
 
 	public BoolState() : this( false ) { }
 	public BoolState( bool initialValue ) { _value = initialValue; }
