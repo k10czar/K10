@@ -32,7 +32,8 @@ public class FloatState : INumericValueState<float>, ICustomDisposableKill
 
 	public IEventRegister<float> OnChange => Lazy.Request( ref _onChange );
 
-	public FloatState( float initialValue = default( float ) ) { _value = initialValue; }
+	public FloatState() : this( default( float ) ) { }
+	public FloatState( float initialValue ) { _value = initialValue; }
 
 
 	public override string ToString() { return $"FS({_value})"; }
