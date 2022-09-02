@@ -18,6 +18,7 @@ public abstract class InputObserver : IBoolStateObserver, IUpdatableOnDemand
 {
 	protected readonly BoolState _readedState = new BoolState();
 	protected readonly BoolState _state = new BoolState();
+	[System.NonSerialized] private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
 	private readonly InputGroup _group;
 
 	bool _cancelOnDisable = true;
@@ -30,6 +31,7 @@ public abstract class InputObserver : IBoolStateObserver, IUpdatableOnDemand
 	public IEventRegister<bool> OnChange => _state.OnChange;
 	public IEventRegister OnTrueState => _state.OnTrueState;
 	public IEventRegister OnFalseState => _state.OnFalseState;
+	public IBoolStateObserver Not => _not.Request( this );
 
 	public InputObserver( InputGroup group, bool ignoreFirstEventIfAlreadyTrue )
 	{

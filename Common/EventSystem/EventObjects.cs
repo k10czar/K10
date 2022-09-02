@@ -46,7 +46,7 @@ public class EventSlot : IEvent, ICustomDisposableKill
 	{
 		_killed = true;
 		_listeners?.Clear();
-		_killed = true;
+		_listeners = null;
 	}
 
 	private void TryClearFullSignatureList()

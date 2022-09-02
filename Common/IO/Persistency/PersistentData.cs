@@ -152,16 +152,20 @@ public class PersistentBoolState : IBoolState, ISettingsValue
 	bool _undoValue;
 	PersistentValueState<bool> _persistentValueState;
 
-	EventSlot _onTrueState = new EventSlot();
-	EventSlot _onFalseState = new EventSlot();
+	EventSlot _onTrueState;
+	EventSlot _onFalseState;
+
+	private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
 
 	static Dictionary<string, PersistentBoolState> _dict = new Dictionary<string, PersistentBoolState>();
 
-	public IEventRegister OnTrueState => _onTrueState;
-	public IEventRegister OnFalseState => _onFalseState;
+	public IEventRegister OnTrueState => Lazy.Request( ref _onTrueState );
+	public IEventRegister OnFalseState => Lazy.Request( ref _onFalseState );
 
 	public bool Value => _persistentValueState.Value;
 	public IEventRegister<bool> OnChange => _persistentValueState.OnChange;
+
+	public IBoolStateObserver Not => _not.Request( this );
 
 	private PersistentBoolState( string path, bool initialValue )
 	{
@@ -172,8 +176,8 @@ public class PersistentBoolState : IBoolState, ISettingsValue
 
 	private void OnValueChange( bool value )
 	{
-		if( value ) _onTrueState.Trigger();
-		else _onFalseState.Trigger();
+		if( value ) _onTrueState?.Trigger();
+		else _onFalseState?.Trigger();
 	}
 
 	public static PersistentBoolState At( string path, bool startValue = default( bool ) )

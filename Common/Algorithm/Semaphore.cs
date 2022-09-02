@@ -94,22 +94,24 @@ public static class ISemaphoreInterectionExtentions
 		if( additionalCondition != null ) condition = new BoolStateOperations.And( condition, additionalCondition );
 		var goLifetime = goEvents.LifetimeValidator;
 		Action releaseLambda = () => semaphore.Release( condition );
-		condition.RegisterOnTrue( semaphore.Validator.Validated( () => semaphore.Block( condition ), goLifetime ) );
-		condition.RegisterOnFalse( semaphore.Validator.Validated( releaseLambda, goLifetime ) );
-		goEvents.OnDestroy.Register( semaphore.Validator.Validated( releaseLambda ) );
+		var validator = semaphore.Validator;
+		condition.RegisterOnTrue( validator.Validated( () => semaphore.Block( condition ), goLifetime ) );
+		condition.RegisterOnFalse( validator.Validated( releaseLambda, goLifetime ) );
+		goEvents.OnDestroy.Register( validator.Validated( releaseLambda ) );
 	}
 
 	public static void ReleaseOn( this ISemaphoreInterection semaphore, UnityEngine.GameObject go, IBoolStateObserver additionalCondition = null )
 	{
 		var goEvents = go.EventRelay();
 		var name = go.HierarchyNameOrNull();
-		IBoolStateObserver condition = new BoolStateOperations.Not( goEvents.IsActive );
+		var validator = semaphore.Validator;
+		IBoolStateObserver condition = goEvents.IsActive.Not;
 		if( additionalCondition != null ) condition = new BoolStateOperations.And( condition, additionalCondition );
 		var goLifetime = goEvents.LifetimeValidator;
 		Action releaseLambda = () => semaphore.Release( condition );
-		condition.RegisterOnTrue( semaphore.Validator.Validated( releaseLambda, goLifetime ) );
-		condition.RegisterOnFalse( semaphore.Validator.Validated( () => semaphore.Block( condition ), goLifetime ) );
-		goEvents.OnDestroy.Register( semaphore.Validator.Validated( new CallOnce( releaseLambda ) ) );
+		condition.RegisterOnTrue( validator.Validated( releaseLambda, goLifetime ) );
+		condition.RegisterOnFalse( validator.Validated( () => semaphore.Block( condition ), goLifetime ) );
+		goEvents.OnDestroy.Register( validator.Validated( new CallOnce( releaseLambda ) ) );
 	}
 }
 
@@ -133,7 +135,9 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 	// private EventSlot _releaseEvent = new EventSlot();
 	// private EventSlot<bool> _changeStateEvent = new EventSlot<bool>();
 	// private EventSlot _onInteraction = new EventSlot();
+	private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
 
+	public IBoolStateObserver Not => _not.Request( this );
 	public IEventRegister OnBlock => Lazy.Request( ref _blockEvent );
 	public IEventRegister OnRelease => Lazy.Request( ref _releaseEvent );
 	public IEventRegister<bool> OnStateChange => Lazy.Request( ref _changeStateEvent );
@@ -171,12 +175,12 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 		source.RegisterOnFalse( _validator.Validated( () => Release( source ) ) );
 	}
 
-	public void BlockOn( IBoolStateObserver source, Func<bool> eventValidation )
-	{
-		if( source == null ) return;
-		source.RegisterOnTrue( _validator.LeakedValidated( () => Block( source ), eventValidation ) );
-		source.RegisterOnFalse( _validator.LeakedValidated( () => Release( source ), eventValidation ) );
-	}
+	// public void BlockOn( IBoolStateObserver source, Func<bool> eventValidation )
+	// {
+	// 	if( source == null ) return;
+	// 	source.RegisterOnTrue( _validator.LeakedValidated( () => Block( source ), eventValidation ) );
+	// 	source.RegisterOnFalse( _validator.LeakedValidated( () => Release( source ), eventValidation ) );
+	// }
 
 	public void ReleaseOn( IBoolStateObserver source )
 	{

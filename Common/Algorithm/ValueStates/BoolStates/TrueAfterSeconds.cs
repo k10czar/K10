@@ -3,13 +3,19 @@ using UnityEngine;
 
 public class TrueAfterSeconds : IBoolStateObserver
 {
-    private readonly BoolState _isValid = new BoolState( false );
+	bool _value = false;
 
-    public IEventRegister OnTrueState => _isValid.OnTrueState;
-    public IEventRegister OnFalseState => _isValid.OnFalseState;
-    public bool Value => _isValid.Value;
-    public IEventRegister<bool> OnChange => _isValid.OnChange;
-    public bool Get() { return _isValid.Get(); }
+	private EventSlot _onTrueState;
+	private EventSlot<bool> _onChange;
+	private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
+
+	public IBoolStateObserver Not => _not.Request( this );
+	public IEventRegister OnTrueState => _value ? FakeEvent.Instance : Lazy.Request( ref _onTrueState );
+    public IEventRegister OnFalseState => FakeEvent.Instance;
+    public IEventRegister<bool> OnChange => _value ? FakeEvent<bool>.Instance : Lazy.Request( ref _onChange );
+
+    public bool Value => _value;
+    public bool Get() { return _value; }
 
     public TrueAfterSeconds( float defaultBubbleTime )
     {
@@ -19,6 +25,10 @@ public class TrueAfterSeconds : IBoolStateObserver
     private IEnumerator DelayedExpiration( float defaultBubbleTime )
     {
         yield return new WaitForSeconds( defaultBubbleTime );
-        _isValid.SetTrue();
-    }
+		_value = true;
+		_onTrueState?.Trigger();
+		_onChange?.Trigger( true );
+		_onTrueState = null;
+		_onChange = null;
+	}
 }

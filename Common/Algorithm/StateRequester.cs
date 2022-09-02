@@ -38,6 +38,7 @@ public class StateRequester : IStateRequester, ICustomDisposableKill
 	private Semaphore _semaphore;
 	private EventSlot<bool> _invertedSemaphoreStateChange;
 	// EventSlot<bool> _invertedSemaphoreStateChange = new EventSlot<bool>();
+	private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
 
 	private Semaphore SemaphoreToInvert
 	{
@@ -53,6 +54,8 @@ public class StateRequester : IStateRequester, ICustomDisposableKill
 	public IEventRegister<bool> OnStateChange => OnChange;
 	public IEventRegister OnIgnore { get { return SemaphoreToInvert.OnRelease; } }
 	public IEventRegister OnRequest { get { return SemaphoreToInvert.OnBlock; } }
+
+	public IBoolStateObserver Not => _not.Request( this );
 
 	public bool Value { get { return Requested; } }
 	public bool Get() { return Requested; }
