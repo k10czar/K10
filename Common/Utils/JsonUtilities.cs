@@ -7,12 +7,13 @@ public static class JsonUtilities
 {
 	public static string DEBUG_FOLDER => ( UnityEngine.Application.persistentDataPath + "/JsonDebug/" );
 
-	public static string LogToJsonFile( this string rawJson, string prefix = "", string suffix = "" )
+	public static string LogToJsonFile( this string rawJson, string prefix = "", string suffix = "" , string environment = "")
 	{
 		var formattedJson = rawJson.FormatAsJson();
 		var fileName = DateTime.Now.ToFileTimeUtc().ToString();
 		if( !string.IsNullOrEmpty( prefix ) ) fileName = prefix + "_" + fileName;
 		if( !string.IsNullOrEmpty( suffix ) ) fileName = fileName + "_" + suffix;
+		if (!string.IsNullOrEmpty(environment)) fileName = environment + "_" + fileName;
 		FileAdapter.SaveHasUTF8( DEBUG_FOLDER + fileName + ".json", formattedJson );
 		#if UNITY_EDITOR
 		Debug.Log( fileName + ": " + rawJson.FormatAsJson( "    " ) );
