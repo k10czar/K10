@@ -117,6 +117,8 @@ namespace K10.EditorGUIExtention
 
 	public static class ScriptableObjectField
 	{
+		const string FALLBACK_CREATION_FOLDER = "Assets/Database/SO/";
+
 		public static bool Draw( Rect r, SerializedProperty prop, System.Type type, string path = null, bool ignoreIdentation = true )
 		{
 			var createdNewSO = false;
@@ -133,8 +135,12 @@ namespace K10.EditorGUIExtention
 					if( selectedAssetPath == null )
 					{
 						var target = prop.serializedObject.targetObject;
-						if( prop.serializedObject.targetObject is MonoBehaviour ) target = MonoScript.FromMonoBehaviour( (MonoBehaviour)prop.serializedObject.targetObject );
-						selectedAssetPath = AssetDatabase.GetAssetPath( target );
+						if( prop.serializedObject.targetObject is MonoBehaviour )
+						{
+							target = MonoScript.FromMonoBehaviour( (MonoBehaviour)prop.serializedObject.targetObject );
+							selectedAssetPath = FALLBACK_CREATION_FOLDER + type.ToString();
+						}
+						else selectedAssetPath = AssetDatabase.GetAssetPath( target );
 					}
 
 					System.Action<ScriptableObject> setRef = (newRef) =>
@@ -146,14 +152,11 @@ namespace K10.EditorGUIExtention
 						EditorUtility.SetDirty( prop.serializedObject.targetObject );
 					};
 
-					var t = prop.serializedObject.targetObject;
-
-					var aPath = AssetDatabase.GetAssetPath( t );
-					Debug.Log( $"Debug paths: \n" +
-								$"AssetDatabase.GetAssetPath( t ) = {aPath}\n" +
-								$"GetDirectoryName( aPath ) = {System.IO.Path.GetDirectoryName( aPath )}\n" +
-								$"GetFullPath( aPath ) = {System.IO.Path.GetFullPath( aPath )}\n" +
-								$" = {0}" );
+					// Debug.Log( $"Debug paths: \n" +
+					// 			$"AssetDatabase.GetAssetPath( t ) = {selectedAssetPath}\n" +
+					// 			$"GetDirectoryName( aPath ) = {System.IO.Path.GetDirectoryName( selectedAssetPath )}\n" +
+					// 			$"GetFullPath( aPath ) = {System.IO.Path.GetFullPath( selectedAssetPath )}\n" +
+					// 			$" = {0}" );
 
 					ScriptableObjectUtils.CreateMenu( selectedAssetPath, prop, type, false, setRef );
 					
