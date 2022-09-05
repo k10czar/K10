@@ -8,14 +8,14 @@ namespace BoolStateOperations
 		bool _killed;
 		protected IBoolStateObserver[] _variables;
 
-		[SerializeField] bool _value;
+		bool _value;
 
 		[System.NonSerialized] private EventSlot<bool> _onChange;
 		[System.NonSerialized] private EventSlot _onTrue;
 		[System.NonSerialized] private EventSlot _onFalse;
 		[System.NonSerialized] private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
 
-		public BoolStateOperation( IEventValidator validator, params IBoolStateObserver[] variables ) : base()
+		public BoolStateOperation( IEventValidator validator, params IBoolStateObserver[] variables )
 		{
 			_variables = variables;
 			_value = CalculateValue();
@@ -75,17 +75,23 @@ namespace BoolStateOperations
 
 	public abstract class SelectiveBoolStateOperation : BoolStateOperation
 	{
-		protected readonly ConditionalEventsCollection _selectiveEvents = new ConditionalEventsCollection();
-		public SelectiveBoolStateOperation( params IBoolStateObserver[] variables ) : base( null, variables ) { }
+		// protected readonly ConditionalEventsCollection _selectiveEvents = new ConditionalEventsCollection();
+		ConditionalEventsCollection _validator;
 
-		~SelectiveBoolStateOperation() { _selectiveEvents.Void(); }
-
-		protected override void InitEvents( IEventValidator validator ) { }
-		protected override void OnValueChange( bool value )
+		public SelectiveBoolStateOperation( params IBoolStateObserver[] variables ) : this( new ConditionalEventsCollection(), variables ) { }
+		public SelectiveBoolStateOperation( ConditionalEventsCollection validator, params IBoolStateObserver[] variables ) : base( validator, variables )
 		{
-			_selectiveEvents.Void();
-			for( int i = 0; i < _variables.Length; i++ ) _variables[i].RegisterOn( !value, _selectiveEvents.Validated( Update ), false );
+			_validator = validator;
 		}
+
+		~SelectiveBoolStateOperation() { _validator.Void(); }
+
+		// protected override void InitEvents( IEventValidator validator ) { }
+		// protected override void OnValueChange( bool value )
+		// {
+		// 	_selectiveEvents.Void();
+		// 	for( int i = 0; i < _variables.Length; i++ ) _variables[i].RegisterOn( !value, _selectiveEvents.Validated( Update ), false );
+		// }
 	}
 
 	public class And : SelectiveBoolStateOperation
