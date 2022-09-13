@@ -76,15 +76,20 @@ namespace BoolStateOperations
 	public abstract class SelectiveBoolStateOperation : BoolStateOperation
 	{
 		// protected readonly ConditionalEventsCollection _selectiveEvents = new ConditionalEventsCollection();
-		ConditionalEventsCollection _validator;
+		IVoidableEventValidator _validator;
+		bool _ownValidator;
 
-		public SelectiveBoolStateOperation( params IBoolStateObserver[] variables ) : this( new ConditionalEventsCollection(), variables ) { }
-		public SelectiveBoolStateOperation( ConditionalEventsCollection validator, params IBoolStateObserver[] variables ) : base( validator, variables )
+		public SelectiveBoolStateOperation( params IBoolStateObserver[] variables ) : this( new ConditionalEventsCollection(), variables ) { _ownValidator = true; }
+		public SelectiveBoolStateOperation( IVoidableEventValidator validator, params IBoolStateObserver[] variables ) : base( validator, variables )
 		{
 			_validator = validator;
 		}
 
-		~SelectiveBoolStateOperation() { _validator.Void(); }
+		~SelectiveBoolStateOperation()
+		{
+			if( _ownValidator ) _validator?.Kill();
+			_validator = null;
+		}
 
 		// protected override void InitEvents( IEventValidator validator ) { }
 		// protected override void OnValueChange( bool value )
@@ -97,6 +102,7 @@ namespace BoolStateOperations
 	public class And : SelectiveBoolStateOperation
 	{
 		public And( params IBoolStateObserver[] variables ) : base( variables ) { }
+		public And( IVoidableEventValidator validator, params IBoolStateObserver[] variables ) : base( validator, variables ) { }
 		protected override bool CalculateValue() { for( int i = 0; i < _variables.Length; i++ ) if( !_variables[i].Value ) return false; return true; }
 		protected override string SIGN => "&&";
 	}
@@ -104,6 +110,7 @@ namespace BoolStateOperations
 	public class Or : SelectiveBoolStateOperation
 	{
 		public Or( params IBoolStateObserver[] variables ) : base( variables ) { }
+		public Or( IVoidableEventValidator validator, params IBoolStateObserver[] variables ) : base( validator, variables ) { }
 		protected override bool CalculateValue() { for( int i = 0; i < _variables.Length; i++ ) if( _variables[i].Value ) return true; return false; }
 		protected override string SIGN => "||";
 	}

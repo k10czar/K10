@@ -7,7 +7,7 @@ public interface IEventValidator
 	IEventRegister OnVoid { get; }
 }
 
-public interface IVoidableEventValidator : IEventValidator
+public interface IVoidableEventValidator : IEventValidator, ICustomDisposableKill
 {
 	void Void();
 }
@@ -30,7 +30,7 @@ public class NullValidator : IEventValidator
 	public IEventRegister OnVoid => FakeEventCallOnRegister.Instance;
 }
 
-public class ConditionalEventsCollection : IVoidableEventValidator, ICustomDisposableKill
+public class ConditionalEventsCollection : IVoidableEventValidator
 {
 	int _validatorParity = 0;
 	Func<bool> _currentValidationCheck;
