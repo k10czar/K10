@@ -22,4 +22,24 @@ public static class MaskExtensions
 		else mask &= ~( 1 << id );
 		return mask;
 	}
+
+	public static void WriteBitsAsRef( this ref int data, int initialBit, int bitCount, int value ) 
+	{
+		data = WriteBits( data, initialBit, bitCount, value );
+	}
+
+
+	public static int WriteBits(this int data, int initialBit, int bitCount, int value)
+	{
+		var mask = ((1 << bitCount) - 1) << initialBit;
+		data = data & (~mask);
+
+		return data | ((value << initialBit) & mask);
+	}
+
+	public static int ReadBits(this int data, int initialBit, int bitCount)
+	{
+		var mask = ((1 << bitCount) - 1) << initialBit;
+		return (data & mask) >> initialBit;
+	}
 }
