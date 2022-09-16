@@ -47,6 +47,35 @@ public abstract class HashedScriptableObject : ScriptableObject, IHashedSO, IExp
 	}
 #endif
 
+	public override bool Equals( object obj )
+	{
+		return !object.ReferenceEquals( obj, null ) && ( obj is HashedScriptableObject hso ) && ( GetType() == obj.GetType() && _hashId == hso._hashId );
+		// if( obj == null ) return false;
+		// if( !( obj is HashedScriptableObject hso ) ) return false;
+		// if( GetType() != obj.GetType() ) return false;
+		// return _hashId == hso._hashId;
+	}
+
+    public static bool operator ==( HashedScriptableObject a, HashedScriptableObject b )
+	{
+		var aNull = object.ReferenceEquals( a, null );
+		var bNull = object.ReferenceEquals( b, null );
+
+		return !( aNull ^ bNull ) && ( aNull || ( a._hashId == b._hashId && a.GetType() == b.GetType() ) );
+
+		// if( aNull && bNull ) return true;
+		// if( aNull ^ bNull ) return false;
+		// if( a.GetType() != b.GetType() ) return false;
+		// return a._hashId == b._hashId;
+	}
+
+	public static bool operator !=( HashedScriptableObject a, HashedScriptableObject b ) => !( a == b );
+
+	public override int GetHashCode()
+	{
+		return ( GetType().GetHashCode() << 10 ) + _hashId;
+	}
+
 	public override string ToString() => $"{name}[{HashID}]";
 	public bool Ignore => _ignoreFromExport;
 }
