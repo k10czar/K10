@@ -18,15 +18,30 @@ public static partial class ScriptableObjectUtils
 	}
 
 
-	static void CreationObjectInsideAssetFile( System.Type type, string rootFilePath, string newInsideFileName, bool focus, System.Action<ScriptableObject> OnObjectCreated = null )
+	public static ScriptableObject CreationObjectInsideAssetFile( System.Type type, string rootFilePath, string newInsideFileName, bool focus, System.Action<ScriptableObject> OnObjectCreated = null )
 	{
 		ScriptableObject asset = ScriptableObject.CreateInstance( type );
 		asset.name = newInsideFileName;
 
 		var assetRef = SetInsideSO( rootFilePath, newInsideFileName, focus, asset );
 		if( OnObjectCreated != null ) OnObjectCreated( assetRef );
+		return assetRef;
 	}
 
+
+	public static T CreationObjectInsideAssetFile<T>( string rootFilePath, string newInsideFileName, bool focus ) where T : ScriptableObject
+	{
+		var asset = ScriptableObject.CreateInstance<T>();
+		asset.name = newInsideFileName;
+
+		var assetRef = SetInsideSO<T>( rootFilePath, newInsideFileName, focus, asset );
+		return assetRef;
+	}
+
+	public static void CreationObjectInsideAssetFile( string selectedAssetPath, string v )
+	{
+		throw new NotImplementedException();
+	}
 
 	static void CreationObjectAndFile( System.Type type, string newPath, bool focus, System.Action<ScriptableObject> OnObjectCreated = null )
 	{
