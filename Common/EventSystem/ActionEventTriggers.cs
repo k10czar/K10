@@ -1,9 +1,14 @@
 using System;
 
 
-public class ActionEventCapsule : IEventTrigger
+public struct ActionEventCapsule : IEventTrigger//, ICustomDisposableKill
 {
-	private readonly System.Action _callback;
+	private System.Action _callback;
+
+	// public void Kill()
+	// {
+	// 	_callback = null;
+	// }
 
 	public ActionEventCapsule( System.Action callback ) { _callback = callback; }
 	public void Trigger() { _callback(); }
@@ -11,19 +16,26 @@ public class ActionEventCapsule : IEventTrigger
 
 	public override bool Equals( object obj )
 	{
-		if( obj is ActionEventCapsule && _callback != null )
+		if( obj == null ) return false;
+		if( GetHashCode() != obj.GetHashCode() ) return false;
+		if( obj is ActionEventCapsule cap )
 		{
-			var del = (ActionEventCapsule)obj;
-			return _callback.Equals( del._callback );
+			if( _callback != null ) return _callback.Equals( cap._callback );
+			else cap._callback.Equals( null );
 		}
 		return base.Equals( obj );
 	}
-	public override int GetHashCode() { return _callback.GetHashCode(); }
+	public override int GetHashCode() { return _callback?.GetHashCode() ?? 0; }
 }
 
-public class ActionEventCapsule<T> : IEventTrigger<T>
+public struct ActionEventCapsule<T> : IEventTrigger<T>//, ICustomDisposableKill
 {
-	private readonly System.Action<T> _callback;
+	private System.Action<T> _callback;
+
+	// public void Kill()
+	// {
+	// 	_callback = null;
+	// }
 
 	public ActionEventCapsule( System.Action<T> callback ) { _callback = callback; }
 	public void Trigger( T t ) { _callback( t ); }
@@ -31,19 +43,26 @@ public class ActionEventCapsule<T> : IEventTrigger<T>
 
 	public override bool Equals( object obj )
 	{
-		if( obj is ActionEventCapsule<T> && _callback != null )
+		if( obj == null ) return false;
+		if( GetHashCode() != obj.GetHashCode() ) return false;
+		if( obj is ActionEventCapsule<T> cap )
 		{
-			var del = (ActionEventCapsule<T>)obj;
-			return _callback.Equals( del._callback );
+			if( _callback != null ) return _callback.Equals( cap._callback );
+			else cap._callback.Equals( null );
 		}
 		return base.Equals( obj );
 	}
-	public override int GetHashCode() { return _callback.GetHashCode(); }
+	public override int GetHashCode() { return _callback?.GetHashCode() ?? 0; }
 }
 
-public class ActionEventCapsule<T, K> : IEventTrigger<T, K>
+public struct ActionEventCapsule<T, K> : IEventTrigger<T, K>//, ICustomDisposableKill
 {
-	private readonly System.Action<T, K> _callback;
+	private System.Action<T, K> _callback;
+
+	// public void Kill()
+	// {
+	// 	_callback = null;
+	// }
 
 	public ActionEventCapsule( System.Action<T, K> callback ) { _callback = callback; }
 	public void Trigger( T t, K k ) { _callback( t, k ); }
@@ -51,20 +70,27 @@ public class ActionEventCapsule<T, K> : IEventTrigger<T, K>
 
 	public override bool Equals( object obj )
 	{
-		if( obj is ActionEventCapsule<T, K> && _callback != null )
+		if( obj == null ) return false;
+		if( GetHashCode() != obj.GetHashCode() ) return false;
+		if( obj is ActionEventCapsule<T,K> cap )
 		{
-			var del = (ActionEventCapsule<T, K>)obj;
-			return _callback.Equals( del._callback );
+			if( _callback != null ) return _callback.Equals( cap._callback );
+			else cap._callback.Equals( null );
 		}
 		return base.Equals( obj );
 	}
-	public override int GetHashCode() { return _callback.GetHashCode(); }
+	public override int GetHashCode() { return _callback?.GetHashCode() ?? 0; }
 }
 
 
-public class ActionEventCapsule<T, K, L> : IEventTrigger<T, K, L>
+public struct ActionEventCapsule<T, K, L> : IEventTrigger<T, K, L>//, ICustomDisposableKill
 {
-	private readonly System.Action<T, K, L> _callback;
+	private System.Action<T, K, L> _callback;
+
+	// public void Kill()
+	// {
+	// 	_callback = null;
+	// }
 
 	public ActionEventCapsule( System.Action<T, K, L> callback ) { _callback = callback; }
 	public void Trigger( T t, K k, L l ) { _callback( t, k, l ); }
@@ -72,13 +98,15 @@ public class ActionEventCapsule<T, K, L> : IEventTrigger<T, K, L>
 
 	public override bool Equals( object obj )
 	{
-		if( obj is ActionEventCapsule<T, K, L> && _callback != null )
+		if( obj == null ) return false;
+		if( GetHashCode() != obj.GetHashCode() ) return false;
+		if( obj is ActionEventCapsule<T,K,L> cap )
 		{
-			var del = (ActionEventCapsule<T, K, L>)obj;
-			return _callback.Equals( del._callback );
+			if( _callback != null ) return _callback.Equals( cap._callback );
+			else cap._callback.Equals( null );
 		}
 		return base.Equals( obj );
 	}
 
-	public override int GetHashCode() { return _callback.GetHashCode(); }
+	public override int GetHashCode() { return _callback?.GetHashCode() ?? 0; }
 }

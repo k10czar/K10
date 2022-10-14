@@ -2,10 +2,10 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 
-public class PoliModifiedValue
+public class PoliModifiedValue : ICustomDisposableKill
 {
 	private readonly INumericValueState<float> _modifiedValue;
-	private readonly IInterpolationFunction _interpolation;
+	private IInterpolationFunction _interpolation;
 
 	private readonly List<InterpolatedOverTimeModifier> _overTimeModifiers = new List<InterpolatedOverTimeModifier>();
 
@@ -13,10 +13,17 @@ public class PoliModifiedValue
 
 	float _lastTime = 0;
 
-	public PoliModifiedValue( INumericValueState<float> value, IInterpolationFunction interpolation = null )
+	public PoliModifiedValue( INumericValueState<float> value = null, IInterpolationFunction interpolation = null )
 	{
-		_modifiedValue = value;
+		_modifiedValue = value ?? new FloatState();
 		_interpolation = interpolation ?? LinearInterpolation.Instance;
+	}
+
+	public void Kill()
+	{
+		(_modifiedValue as ICustomDisposableKill)?.Kill();
+		_interpolation = null;
+		_overTimeModifiers?.Clear();
 	}
 
 	public void Tick( float deltaTime )

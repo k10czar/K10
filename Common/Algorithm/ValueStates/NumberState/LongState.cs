@@ -1,10 +1,10 @@
 using UnityEngine;
 
 [System.Serializable]
-public class LongState : INumericValueState<long>, ISerializationCallbackReceiver
+public class LongState : INumericValueState<long>, ICustomDisposableKill
 {
     [SerializeField] long _value;
-    [System.NonSerialized] EventSlot<long> _onChange = new EventSlot<long>();
+    [System.NonSerialized] EventSlot<long> _onChange;
 
     public long Value { get { return _value; } set { Setter( value ); } }
     public long Get() { return _value; }
@@ -14,27 +14,24 @@ public class LongState : INumericValueState<long>, ISerializationCallbackReceive
         if( _value == value ) return;
         _value = value;
 
-        if (_onChange == null) _onChange = new EventSlot<long>();
-
-        _onChange.Trigger( value );
+        _onChange?.Trigger( value );
     }
 
     public void Increment( long value = 1 )
     {
 		if( value == 0 ) return;
 		Setter( _value + value );
-    }
-
-    public IEventRegister<long> OnChange { get { if(_onChange == null) _onChange = new EventSlot<long>(); return _onChange; } }
-
-    public LongState( long initialValue = default( long) ) { _value = initialValue; Init(); }
-	void Init()
-	{
-		if( _onChange == null ) _onChange = new EventSlot<long>();
 	}
 
-	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
-	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); }
+	public void Kill()
+	{
+		_onChange?.Kill();
+		_onChange = null;
+	}
 
-	public override string ToString() { return string.Format( "LS({1})", typeof( long ).ToString(), _value ); }
+    public IEventRegister<long> OnChange => Lazy.Request( ref _onChange );
+
+    public LongState( long initialValue = default( long) ) { _value = initialValue; }
+
+	public override string ToString() { return $"LS({_value})"; }
 }

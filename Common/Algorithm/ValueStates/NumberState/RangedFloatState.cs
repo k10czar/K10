@@ -14,7 +14,7 @@ public interface IRangedFloatStateObserver : IValueStateObserver<float>
 }
 
 [System.Serializable]
-public class RangedFloatState : IRangedFloatState, IRangedFloatStateObserver, ISerializationCallbackReceiver
+public class RangedFloatState : IRangedFloatState, IRangedFloatStateObserver, ISerializationCallbackReceiver, ICustomDisposableKill
 {
 	[SerializeField] protected FloatState _value;
 	[SerializeField] protected FloatState _min;
@@ -55,6 +55,13 @@ public class RangedFloatState : IRangedFloatState, IRangedFloatStateObserver, IS
 		_value = new FloatState( Clamp( initialValue, _min.Value, _max.Value ) );
 
 		Init();
+	}
+
+	public void Kill()
+	{
+		_value?.Kill();
+		_min?.Kill();
+		_max?.Kill();
 	}
 
 	protected void Init()

@@ -6,7 +6,7 @@ public static class ThreadSafeTempBytes
 
 	private static byte[] Get( int bytes )
 	{
-		var collection = new Dictionary<int, byte[]>();
+		Dictionary<int, byte[]> collection = null;
 		var thread = System.Threading.Thread.CurrentThread;
 		if( !_arrays.TryGetValue( thread, out collection ) )
 		{

@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class ByteState : INumericValueState<byte>, ISerializationCallbackReceiver
+public class ByteState : INumericValueState<byte>, ICustomDisposableKill
 {
 	[SerializeField] byte _value;
 	[System.NonSerialized] EventSlot<byte> _onChange = new EventSlot<byte>();
@@ -13,7 +13,7 @@ public class ByteState : INumericValueState<byte>, ISerializationCallbackReceive
 	{
 		if( _value == value ) return;
 		_value = value;
-		_onChange.Trigger( value );
+		_onChange?.Trigger( value );
 	}
 
 	public void Increment( byte value = 1 )
@@ -22,16 +22,15 @@ public class ByteState : INumericValueState<byte>, ISerializationCallbackReceive
 		Setter( (byte)( _value + value ) );
 	}
 
-	public IEventRegister<byte> OnChange { get { return _onChange; } }
-
-	public ByteState( byte initialValue = default( byte ) ) { _value = initialValue; Init(); }
-	void Init()
+	public void Kill()
 	{
-		if( _onChange == null ) _onChange = new EventSlot<byte>();
+		_onChange?.Kill();
+		_onChange = null;
 	}
 
-	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
-	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); }
+	public IEventRegister<byte> OnChange => Lazy.Request( ref _onChange );
 
-	public override string ToString() { return string.Format( "BS({1})", typeof( byte ).ToString(), _value ); }
+	public ByteState( byte initialValue = default( byte ) ) { _value = initialValue; }
+
+	public override string ToString() { return $"ByS({_value})"; }
 }

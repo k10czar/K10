@@ -32,29 +32,11 @@ public interface IHashedSOCollection
 
 public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollection, System.Collections.IEnumerable
 {
-#if UNITY_EDITOR
-	[SerializeField] EditorLog _log;
-#endif
 
 	public abstract int Count { get; }
 	public abstract IHashedSO GetElementBase( int index );
 	public abstract bool Contains( IHashedSO element );
 	public abstract bool ContainsHashID( int hashID );
-
-#if UNITY_EDITOR
-	public EditorLog Editor_Log 
-	{
-		get
-		{
-			if( _log == null )
-			{
-				_log = EditorLog.CreateNewOne( name, true );
-				UnityEditor.EditorUtility.SetDirty( this );
-			}
-			return _log;
-		}
-	}
-#endif
 
 	IEnumerator IEnumerable.GetEnumerator()
 	{
@@ -118,14 +100,14 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 			_elementsToRemove.Add( i );
 		}
 
-		if( _elementsToRemove.Count > 0 )
-		{
-			var strs = _elementsToRemove.ConvertAll<string>( ( id ) => {
-				var element = GetElementBase( id );
-				return $"[{id}] => {element.ToStringOrNull()}";
-			} );
-			Editor_Log.Add( $"Remove Wrong Elements:\n{string.Join( ",\n", strs )}" );
-		}
+		// if( _elementsToRemove.Count > 0 )
+		// {
+		// 	var strs = _elementsToRemove.ConvertAll<string>( ( id ) => {
+		// 		var element = GetElementBase( id );
+		// 		return $"[{id}] => {element.ToStringOrNull()}";
+		// 	} );
+		// 	Editor_Log.Add( $"Remove Wrong Elements:\n{string.Join( ",\n", strs )}" );
+		// }
 
 		for( int i = 0; i < _elementsToRemove.Count; i++ ) Editor_HACK_Remove( _elementsToRemove[i] );
 
@@ -159,7 +141,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		if( element == null && hashID >= 0 )
 		{
 			SetRealPosition( t );
-			Editor_Log.Add( $"Request Member:\nOn [{hashID}] set {t.ToStringOrNull()}, was NULL before" );
+			// Editor_Log.Add( $"Request Member:\nOn [{hashID}] set {t.ToStringOrNull()}, was NULL before" );
 			return false;
 		}
 
@@ -167,7 +149,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		{
 			if( ( t != element && hashID != element.HashID ) || forceCorrectPosition )
 			{
-				Editor_Log.Add( $"Request Member:\nOn [{hashID}] removed {element.ToStringOrNull()} and replace with {t.ToStringOrNull()}" );
+				// Editor_Log.Add( $"Request Member:\nOn [{hashID}] removed {element.ToStringOrNull()} and replace with {t.ToStringOrNull()}" );
 				SetRealPosition( t );
 			}
 			return false;
@@ -188,7 +170,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		}
 
 		var newID = Count;
-		Editor_Log.Add( $"Request Member:\nOn [{newID}] setted {t.ToStringOrNull()} with new hashID{(fromDialog ? " with dialog permission" : "")}" );
+		// Editor_Log.Add( $"Request Member:\nOn [{newID}] setted {t.ToStringOrNull()} with new hashID{(fromDialog ? " with dialog permission" : "")}" );
 		AddElement( t );
 		( (IHashedSOEditor)t ).SetHashID( newID );
 
@@ -230,7 +212,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		for( int i = count; i < before.Count; i++ ) logs.Add( $"[{i}]\t\t=>\t\t{before[i]}\t\t=>\t\t-" );
 		for( int i = count; i < after.Count; i++ ) logs.Add( $"[{i}]\t\t=>\t\t-\t\t=>\t\t{after[i]}" );
 
-		Editor_Log.Add( $"Collection Optimized:\n{string.Join( ",\n", logs )}" );
+		// Editor_Log.Add( $"Collection Optimized:\n{string.Join( ",\n", logs )}" );
 	}
 
 	public abstract bool EditorCanChangeIDsToOptimizeSpace { get; }

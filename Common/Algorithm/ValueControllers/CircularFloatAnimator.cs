@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class DegreeAnimator : CircularFloatAnimator
@@ -16,7 +17,7 @@ public class RadianAnimator : CircularFloatAnimator
     public RadianAnimator( IUpdaterOnDemand updater, float accel, float deaccel, float maxVelocity ) : base( updater, -Mathf.PI, Mathf.PI, accel, deaccel, maxVelocity ) { }
 }
 
-public class CircularFloatAnimator : IValueState<float>
+public class CircularFloatAnimator : IValueState<float>, ICustomDisposableKill
 {
     FloatAnimator _animator;
 
@@ -34,6 +35,12 @@ public class CircularFloatAnimator : IValueState<float>
     EventSlot<float> _onValueUpdate = new EventSlot<float>();
     public IEventRegister<float> OnChange { get { return _onValueUpdate; } }
     void IValueStateSetter<float>.Setter( float t ) { SetDesire( t ); }
+
+	public void Kill()
+	{
+		_animator?.Kill();
+		_onValueUpdate?.Kill();
+	}
 
     static float RealMax( float min, float max ) { return min + 2 * ( max - min ); }
     float Convert( float value ) { var min = Min; return min + ( ( value - min ) % ( ( _animator.Max - min ) * .5f ) ); }

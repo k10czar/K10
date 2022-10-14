@@ -1,17 +1,34 @@
-using BoolStateOperations;
+using System.Collections;
+using UnityEngine;
 
 public class FalseAfterSeconds : IBoolStateObserver
 {
-	private readonly IBoolStateObserver _isValid;
+	bool _value = true;
 
-	public IEventRegister OnTrueState => _isValid.OnTrueState;
-	public IEventRegister OnFalseState => _isValid.OnFalseState;
-	public bool Value => _isValid.Value;
-	public IEventRegister<bool> OnChange => _isValid.OnChange;
-	public bool Get() { return _isValid.Get(); }
+	private EventSlot _onFalseState;
+	private EventSlot<bool> _onChange;
+	private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
+
+	public IBoolStateObserver Not => _not.Request( this );
+	public IEventRegister OnTrueState => FakeEvent.Instance;
+	public IEventRegister OnFalseState => _value ? Lazy.Request( ref _onFalseState ) : FakeEvent.Instance;
+	public IEventRegister<bool> OnChange => _value ? Lazy.Request( ref _onChange ) : FakeEvent<bool>.Instance;
+
+	public bool Value => _value;
+	public bool Get() { return _value; }
 
 	public FalseAfterSeconds( float defaultBubbleTime )
 	{
-		_isValid = new Not( new TrueAfterSeconds( defaultBubbleTime ) );
+		ExternalCoroutine.StartCoroutine( DelayedExpiration( defaultBubbleTime ) );
+	}
+
+	private IEnumerator DelayedExpiration( float defaultBubbleTime )
+	{
+		yield return new WaitForSeconds( defaultBubbleTime );
+		_value = false;
+		_onFalseState?.Trigger();
+		_onChange?.Trigger( true );
+		_onFalseState = null;
+		_onChange = null;
 	}
 }

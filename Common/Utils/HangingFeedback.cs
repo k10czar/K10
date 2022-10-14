@@ -95,22 +95,24 @@ public abstract class HangingFeedback : MonoBehaviour
 	{
 		public readonly string message;
 		private bool _isValid = true;
-		private readonly EventSlot _onFalseState = new EventSlot();
-		private readonly EventSlot<bool> _onChange = new EventSlot<bool>();
-		
-		EventSlot _onVoid;
-		public IEventRegister OnVoid => _onVoid ??= new EventSlot();
 
-		public IEventRegister OnTrueState => FakeEvent.Instance;
-		public IEventRegister OnFalseState => _onFalseState;
+		EventSlot _onVoid;
+		private EventSlot _onFalseState;
+		private EventSlot<bool> _onChange;
+		private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
 
 		public bool Value => _isValid;
 		public bool IsValid => _isValid;
 
-		public IEventRegister<bool> OnChange => _onChange;
+		public IEventRegister OnVoid => Lazy.Request( ref _onVoid );
+
+		public IEventRegister OnTrueState => FakeEvent.Instance;
+		public IEventRegister OnFalseState => Lazy.Request( ref _onFalseState );
+		public IEventRegister<bool> OnChange => Lazy.Request( ref _onChange );
 
 		private readonly BoolState _isFullActive = new BoolState();
 		public IBoolStateObserver IsFullActive => _isFullActive;
+		public IBoolStateObserver Not => _not.Request( this );
 
 		private CanvasGroup _alphaCanvas;
 
@@ -128,8 +130,8 @@ public abstract class HangingFeedback : MonoBehaviour
 		{
 			if( !_isValid ) return;
 			_isValid = false;
-			_onFalseState.Trigger();
-			_onChange.Trigger( false );
+			_onFalseState?.Trigger();
+			_onChange?.Trigger( false );
 			_onVoid?.Trigger();
 		}
 

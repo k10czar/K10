@@ -1,10 +1,10 @@
 using UnityEngine;
 
 [System.Serializable]
-public class UIntState : INumericValueState<uint>, ISerializationCallbackReceiver
+public class UIntState : INumericValueState<uint>, ICustomDisposableKill
 {
 	[SerializeField] uint _value;
-	[System.NonSerialized] EventSlot<uint> _onChange = new EventSlot<uint>();
+	[System.NonSerialized] EventSlot<uint> _onChange;
 
 	public uint Value { get { return _value; } set { Setter( value ); } }
 	public uint Get() { return _value; }
@@ -13,7 +13,7 @@ public class UIntState : INumericValueState<uint>, ISerializationCallbackReceive
 	{
 		if( _value == value ) return;
 		_value = value;
-		_onChange.Trigger( value );
+		_onChange?.Trigger( value );
 	}
 
 	public void Increment( uint value = 1 )
@@ -22,17 +22,16 @@ public class UIntState : INumericValueState<uint>, ISerializationCallbackReceive
 		Setter( _value + value );
 	}
 
-	public IEventRegister<uint> OnChange { get { return _onChange; } }
-
-	public UIntState( uint initialValue = default( uint ) ) { _value = initialValue; Init(); }
-	void Init()
+	public void Kill()
 	{
-		if( _onChange == null ) _onChange = new EventSlot<uint>();
+		_onChange?.Kill();
+		_onChange = null;
 	}
 
-	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
-	void ISerializationCallbackReceiver.OnAfterDeserialize() { Init(); }
+	public IEventRegister<uint> OnChange => Lazy.Request( ref _onChange );
+
+	public UIntState( uint initialValue = default( uint ) ) { _value = initialValue; }
 
 
-	public override string ToString() { return string.Format( "IS({1})", typeof( uint ).ToString(), _value ); }
+	public override string ToString() { return $"US({_value})"; }
 }

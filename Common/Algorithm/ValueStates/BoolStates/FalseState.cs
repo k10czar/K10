@@ -9,6 +9,7 @@ public class FalseState : IBoolStateObserver
 	public IEventRegister OnTrueState => FakeEvent.Instance;
 	public IEventRegister OnFalseState => FakeEvent.Instance;
 	public IEventRegister<bool> OnChange => FakeEvent<bool>.Instance;
+	public IBoolStateObserver Not => TrueState.Instance;
 
 	public bool Get() => false;
 

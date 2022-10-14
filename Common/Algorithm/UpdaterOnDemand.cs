@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
+using System;
 
 public interface IUpdatableOnDemand
 {
@@ -16,6 +16,12 @@ public interface IUpdaterOnDemand
 public class UpdaterOnDemandBehaviour : MonoBehaviour, IUpdaterOnDemand
 {
 	HashSet<IUpdatableOnDemand> _updating = new HashSet<IUpdatableOnDemand>();
+
+	public void OnDestroy()
+	{
+		_updating?.Clear();
+		StopAllCoroutines();
+	}
 
 	public bool RequestUpdate( IUpdatableOnDemand updateRequester )
 	{
@@ -40,16 +46,28 @@ public class UpdaterOnDemand : IUpdaterOnDemand
 {
 	MonoBehaviour _behaviour;
 	HashSet<IUpdatableOnDemand> _updating = new HashSet<IUpdatableOnDemand>();
+	private Coroutine _courotine;
 
-	public UpdaterOnDemand( MonoBehaviour behaviour )
+	public UpdaterOnDemand( MonoBehaviour behaviour, IEventValidator validator = null )
 	{
 		_behaviour = behaviour;
+		if( validator != null ) validator.OnVoid.Register( new CallOnce( Kill ) );
+	}
+
+	protected virtual void Kill()
+	{
+		if( _courotine != null ) _behaviour?.StopCoroutine( _courotine );
+		_behaviour = null;
+		_updating = null;
 	}
 
 	public bool RequestUpdate( IUpdatableOnDemand updateRequester )
 	{
 		var contains = _updating.Contains( updateRequester );
-		if( _behaviour != null && _behaviour.gameObject != null && _behaviour.gameObject.activeSelf ) _behaviour.StartCoroutine( UpdateCoroutine( updateRequester ) );
+		if( _behaviour != null && _behaviour.gameObject != null && _behaviour.gameObject.activeInHierarchy && _behaviour.enabled )
+		{
+			_courotine = _behaviour.StartCoroutine( UpdateCoroutine( updateRequester ) );
+		}
 		return !contains;
 	}
 
@@ -73,6 +91,13 @@ public class ManualUpdaterOnDemand : IUpdaterOnDemand
 	public ManualUpdaterOnDemand( MonoBehaviour behaviour )
 	{
 		_behaviour = behaviour;
+	}
+
+	public void Kill()
+	{
+		_behaviour = null;
+		_updatingHash?.Clear();
+		_updating?.Clear();
 	}
 
 	public bool RequestUpdate( IUpdatableOnDemand updateRequester )

@@ -117,6 +117,8 @@ namespace K10.EditorGUIExtention
 
 	public static class ScriptableObjectField
 	{
+		const string FALLBACK_CREATION_FOLDER = "Assets/Database/SO/";
+
 		public static bool Draw( Rect r, SerializedProperty prop, System.Type type, string path = null, bool ignoreIdentation = true )
 		{
 			var createdNewSO = false;
@@ -133,8 +135,12 @@ namespace K10.EditorGUIExtention
 					if( selectedAssetPath == null )
 					{
 						var target = prop.serializedObject.targetObject;
-						if( prop.serializedObject.targetObject is MonoBehaviour ) target = MonoScript.FromMonoBehaviour( (MonoBehaviour)prop.serializedObject.targetObject );
-						selectedAssetPath = System.IO.Path.GetDirectoryName( AssetDatabase.GetAssetPath( target ) ) + "\\" + target.name;
+						if( prop.serializedObject.targetObject is MonoBehaviour )
+						{
+							target = MonoScript.FromMonoBehaviour( (MonoBehaviour)prop.serializedObject.targetObject );
+							selectedAssetPath = FALLBACK_CREATION_FOLDER + type.ToString();
+						}
+						else selectedAssetPath = AssetDatabase.GetAssetPath( target );
 					}
 
 					System.Action<ScriptableObject> setRef = (newRef) =>
@@ -143,10 +149,16 @@ namespace K10.EditorGUIExtention
 						// prop.serializedObject.Update();
 						prop.objectReferenceValue = newRef;
 						prop.serializedObject.ApplyModifiedProperties();
-						// EditorUtility.SetDirty( prop.serializedObject.targetObject );
+						EditorUtility.SetDirty( prop.serializedObject.targetObject );
 					};
 
-					ScriptableObjectUtils.CreateMenu( selectedAssetPath + "\\" + prop.ToFileName(), type, false, setRef );
+					// Debug.Log( $"Debug paths: \n" +
+					// 			$"AssetDatabase.GetAssetPath( t ) = {selectedAssetPath}\n" +
+					// 			$"GetDirectoryName( aPath ) = {System.IO.Path.GetDirectoryName( selectedAssetPath )}\n" +
+					// 			$"GetFullPath( aPath ) = {System.IO.Path.GetFullPath( selectedAssetPath )}\n" +
+					// 			$" = {0}" );
+
+					ScriptableObjectUtils.CreateMenu( selectedAssetPath, prop, type, false, setRef );
 					
 					createdNewSO = true;
 				}

@@ -47,6 +47,16 @@ public static class EventExtensions
 	public static void Register<T,K,J>( this IEventRegister<T,K,J> register, Action<T,K,J> act ) => register.Register( new ActionEventCapsule<T,K,J>( act ) );
 	public static void Unregister<T,K,J>( this IEventRegister<T,K,J> register, Action<T,K,J> act ) => register.Unregister( new ActionEventCapsule<T,K,J>( act ) );
 
+	public static void RegisterValidated( this IEventRegister register, IEventValidator validator, Action act ) => register.Register( validator.Validated( act ) );
+	public static void RegisterValidated<T>( this IEventRegister<T> register, IEventValidator validator, Action<T> act ) => register.Register( validator.Validated( act ) );
+	public static void RegisterValidated<T, K>( this IEventRegister<T, K> register, IEventValidator validator, Action<T, K> act ) => register.Register( validator.Validated( act ) );
+	public static void RegisterValidated<T, K, J>( this IEventRegister<T, K, J> register, IEventValidator validator, Action<T, K, J> act ) => register.Register( validator.Validated( act ) );
+
+	public static void RegisterValidated( this IEventRegister register, IEventValidator validator, IEventTrigger act ) => register.Register( validator.Validated( act ) );
+	public static void RegisterValidated<T>( this IEventRegister<T> register, IEventValidator validator, IEventTrigger<T> act ) => register.Register( validator.Validated( act ) );
+	public static void RegisterValidated<T, K>( this IEventRegister<T, K> register, IEventValidator validator, IEventTrigger<T, K> act ) => register.Register( validator.Validated( act ) );
+	public static void RegisterValidated<T, K, J>( this IEventRegister<T, K, J> register, IEventValidator validator, IEventTrigger<T, K, J> act ) => register.Register( validator.Validated( act ) );
+
 
 	#region Enumerables
 	public static void Register( this IEnumerable<IEventRegister> registers, Action act ) => registers.Register( new ActionEventCapsule( act ) );
@@ -63,6 +73,12 @@ public interface IValidatedObject
 {
 	bool IsValid { get; }
 }
+
+public static class ValidatedObjectExtensions
+{
+	public static bool IsValidAndNotNull( this IValidatedObject obj ) => obj != null && obj.IsValid;
+}
+
 
 public interface IEventTrigger : IValidatedObject
 {

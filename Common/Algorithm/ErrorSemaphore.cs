@@ -3,6 +3,7 @@ using UnityEngine;
 public class ErrorSemaphore : ISemaphore
 {
 	public bool Free => true;
+	private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
 
 	public IEventRegister OnBlock => ErrorEvent.Ref;
 
@@ -14,9 +15,13 @@ public class ErrorSemaphore : ISemaphore
 
 	public IEventRegister OnFalseState => ErrorEvent.Ref;
 
+	public IBoolStateObserver Not => _not.Request( this );
+
 	public bool Value => Free;
 
 	public IEventRegister<bool> OnChange => ErrorEvent<bool>.Ref;
+	
+	public IEventValidator Validator => NullValidator.Instance;
 
 	public void Interact( object obj, bool block ) => Debug.LogError( $"{obj} Interact a ERROR Semaphore" );
 	public void Release( object obj ) => Debug.LogError( $"{obj} Release a ERROR Semaphore" );

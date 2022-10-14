@@ -8,18 +8,22 @@ public interface IBoolStateObserver : IValueStateObserver<bool>
 {
 	IEventRegister OnTrueState { get; }
 	IEventRegister OnFalseState { get; }
+	IBoolStateObserver Not { get; }
 }
 
 [System.Serializable]
-public class BoolState : IBoolState, ISerializationCallbackReceiver
+public class BoolState : IBoolState, ICustomDisposableKill
 {
 	public const string SET_METHOD_NAME = nameof( Setter );
 	public const string ON_CHANGE_PROP_NAME = nameof( OnChange );
+	bool _killed;
 	[SerializeField] bool _value;
 
-	[System.NonSerialized] private EventSlot<bool> _onChange = new EventSlot<bool>();
-	[System.NonSerialized] private EventSlot _onTrue = new EventSlot();
-	[System.NonSerialized] private EventSlot _onFalse = new EventSlot();
+	[System.NonSerialized] private EventSlot<bool> _onChange;
+	[System.NonSerialized] private EventSlot _onTrue;
+	[System.NonSerialized] private EventSlot _onFalse;
+	[System.NonSerialized] private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
+	public IBoolStateObserver Not => _not.Request( this );
 
 	public static implicit operator bool( BoolState v ) => v._value;
 
@@ -31,26 +35,29 @@ public class BoolState : IBoolState, ISerializationCallbackReceiver
 		if( _value == value ) return;
 		_value = value;
 
-		_onChange.Trigger( value );
-		if( value ) _onTrue.Trigger();
-		else _onFalse.Trigger();
+		_onChange?.Trigger( value );
+		if( value ) _onTrue?.Trigger();
+		else _onFalse?.Trigger();
 	}
 
-	public IEventRegister<bool> OnChange => _onChange;
-	public IEventRegister OnTrueState => _onTrue;
-	public IEventRegister OnFalseState => _onFalse;
-
-	public BoolState( bool initialValue = false ) { _value = initialValue; Init(); }
-
-	void Init()
+	public void Kill()
 	{
-		if( _onChange == null ) _onChange = new EventSlot<bool>();
-		if( _onTrue == null ) _onTrue = new EventSlot();
-		if( _onFalse == null ) _onFalse = new EventSlot();
+		_killed = true;
+		_onChange?.Kill();
+		_onTrue?.Kill();
+		_onFalse?.Kill();
+		_not.Kill();
+		_onChange = null;
+		_onTrue = null;
+		_onFalse = null;
 	}
+	
+	public IEventRegister<bool> OnChange => Lazy.Request( ref _onChange, _killed );
+	public IEventRegister OnTrueState => Lazy.Request( ref _onTrue, _killed );
+	public IEventRegister OnFalseState => Lazy.Request( ref _onFalse, _killed );
 
-	void ISerializationCallbackReceiver.OnBeforeSerialize() { }
-	void ISerializationCallbackReceiver.OnAfterDeserialize(){ Init(); }
+	public BoolState() : this( false ) { }
+	public BoolState( bool initialValue ) { _value = initialValue; }
 
 	public override string ToString() { return string.Format( "BS({0})", _value ); }
 }

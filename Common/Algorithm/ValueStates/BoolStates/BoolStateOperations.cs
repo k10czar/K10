@@ -3,53 +3,66 @@ using System.Linq;
 
 namespace BoolStateOperations
 {
-	public class Not : IBoolStateObserver
+	public abstract class BoolStateOperation : IBoolStateObserver
 	{
-		IBoolStateObserver _variable;
-		readonly ConditionalEventsCollection _events = new ConditionalEventsCollection();
-
-		EventSlot<bool> _onChange = new EventSlot<bool>();
-
-		public bool Value => !_variable.Value;
-		public bool Get() => !_variable.Value;
-		public IEventRegister<bool> OnChange => _onChange;
-		public IEventRegister OnTrueState => _variable.OnFalseState;
-		public IEventRegister OnFalseState => _variable.OnTrueState;
-
-		~Not() { _events.Void(); }
-		public Not( IBoolStateObserver variable )
-		{
-			_variable = variable;
-			_variable.OnChange.Register( _events.Validated<bool>( EventReverter ) );
-		}
-
-		void EventReverter( bool value ) { _onChange.Trigger( !value ); }
-
-		public override string ToString() { return $"( {Value} => !{_variable} )"; }
-	}
-
-	public abstract class BoolStateOperation : BoolState
-	{
+		bool _killed;
 		protected IBoolStateObserver[] _variables;
-		readonly ConditionalEventsCollection _events = new ConditionalEventsCollection();
 
-		~BoolStateOperation() { _events.Void(); }
-		public BoolStateOperation( params IBoolStateObserver[] variables ) : base()
+		bool _value;
+
+		[System.NonSerialized] private EventSlot<bool> _onChange;
+		[System.NonSerialized] private EventSlot _onTrue;
+		[System.NonSerialized] private EventSlot _onFalse;
+		[System.NonSerialized] private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
+
+		public BoolStateOperation( IEventValidator validator, params IBoolStateObserver[] variables )
 		{
 			_variables = variables;
-			Value = CalculateValue();
-			this.Synchronize( OnValueChange );
+			_value = CalculateValue();
+			InitEvents( validator );
+		}
+
+		protected virtual void InitEvents( IEventValidator validator )
+		{
+			for( int i = 0; i < _variables.Length; i++ ) _variables[i].OnChange.Register( validator.Validated( Update ) );
 		}
 
 		protected abstract bool CalculateValue();
 		protected abstract string SIGN { get; }
 
-		void Update() { Value = CalculateValue(); }
-
-		void OnValueChange( bool value )
+		public void Kill()
 		{
-			_events.Void();
-			for( int i = 0; i < _variables.Length; i++ ) _variables[i].RegisterOn( !value, _events.Validated( Update ), false );
+			_killed = true;
+			_onChange?.Kill();
+			_onTrue?.Kill();
+			_onFalse?.Kill();
+			_not.Kill();
+			_onChange = null;
+			_onTrue = null;
+			_onFalse = null;
+		}
+
+		public IBoolStateObserver Not => _not.Request( this );
+		public IEventRegister<bool> OnChange => Lazy.Request( ref _onChange, _killed );
+		public IEventRegister OnTrueState => Lazy.Request( ref _onTrue, _killed );
+		public IEventRegister OnFalseState => Lazy.Request( ref _onFalse, _killed );
+
+		public bool Value => _value;
+		public bool Get() => _value;
+
+		protected void Update() { Setter( CalculateValue() ); }
+
+		protected virtual void OnValueChange( bool value ) {  }
+
+		public void Setter( bool value )
+		{
+			if( _value == value ) return;
+			_value = value;
+
+			_onChange?.Trigger( value );
+			if( value ) _onTrue?.Trigger();
+			else _onFalse?.Trigger();
+			OnValueChange( value );
 		}
 
 		public override string ToString()
@@ -60,73 +73,61 @@ namespace BoolStateOperations
 		}
 	}
 
-	public class And : BoolStateOperation
+	public abstract class SelectiveBoolStateOperation : BoolStateOperation
+	{
+		// protected readonly ConditionalEventsCollection _selectiveEvents = new ConditionalEventsCollection();
+		IVoidableEventValidator _validator;
+		bool _ownValidator;
+
+		public SelectiveBoolStateOperation( params IBoolStateObserver[] variables ) : this( new ConditionalEventsCollection(), variables ) { _ownValidator = true; }
+		public SelectiveBoolStateOperation( IVoidableEventValidator validator, params IBoolStateObserver[] variables ) : base( validator, variables )
+		{
+			_validator = validator;
+		}
+
+		~SelectiveBoolStateOperation()
+		{
+			if( _ownValidator ) _validator?.Kill();
+			_validator = null;
+		}
+
+		// protected override void InitEvents( IEventValidator validator ) { }
+		// protected override void OnValueChange( bool value )
+		// {
+		// 	_selectiveEvents.Void();
+		// 	for( int i = 0; i < _variables.Length; i++ ) _variables[i].RegisterOn( !value, _selectiveEvents.Validated( Update ), false );
+		// }
+	}
+
+	public class And : SelectiveBoolStateOperation
 	{
 		public And( params IBoolStateObserver[] variables ) : base( variables ) { }
-
+		public And( IVoidableEventValidator validator, params IBoolStateObserver[] variables ) : base( validator, variables ) { }
 		protected override bool CalculateValue() { for( int i = 0; i < _variables.Length; i++ ) if( !_variables[i].Value ) return false; return true; }
 		protected override string SIGN => "&&";
 	}
 
-	public class Or : BoolStateOperation
+	public class Or : SelectiveBoolStateOperation
 	{
 		public Or( params IBoolStateObserver[] variables ) : base( variables ) { }
-
+		public Or( IVoidableEventValidator validator, params IBoolStateObserver[] variables ) : base( validator, variables ) { }
 		protected override bool CalculateValue() { for( int i = 0; i < _variables.Length; i++ ) if( _variables[i].Value ) return true; return false; }
 		protected override string SIGN => "||";
 	}
 
-	public class Xor : BoolState
+	public class Xor : BoolStateOperation
 	{
-		protected IBoolStateObserver[] _variables;
-		readonly ConditionalEventsCollection _events = new ConditionalEventsCollection();
+		public Xor( IEventValidator validator, params IBoolStateObserver[] variables ) : base( validator, variables ) { }
 
-		~Xor() { _events.Void(); }
-		public Xor( params IBoolStateObserver[] variables ) : base()
-		{
-			_variables = variables;
-			Value = CalculateValue();
-			for( int i = 0; i < _variables.Length; i++ ) _variables[i].OnChange.Register( _events.Validated( Update ) );
-		}
-
-		void Update() { Value = CalculateValue(); }
-
-		protected bool CalculateValue() { var count = 0; for( int i = 0; i < _variables.Length; i++ ) if( _variables[i].Value ) count++; return ( count % 2 ) == 1; }
-		protected string SIGN => "^";
-
-
-		public override string ToString()
-		{
-			var elements = _variables.ToList().ConvertAll( ( e ) => e.ToString() );
-			var expression = string.Join( $" {SIGN} ", elements );
-			return $"( {Value} => ( {expression} ) )";
-		}
+		protected override bool CalculateValue() { var count = 0; for( int i = 0; i < _variables.Length; i++ ) if( _variables[i].Value ) count++; return ( count % 2 ) == 1; }
+		protected override string SIGN => "^";
 	}
 
-	public class OneHot : BoolState
+	public class OneHot : BoolStateOperation
 	{
-		protected IBoolStateObserver[] _variables;
-		readonly ConditionalEventsCollection _events = new ConditionalEventsCollection();
+		public OneHot( IEventValidator validator, params IBoolStateObserver[] variables ) : base( validator, variables ) { }
 
-		~OneHot() { _events.Void(); }
-		public OneHot( params IBoolStateObserver[] variables ) : base()
-		{
-			_variables = variables;
-			Value = CalculateValue();
-			for( int i = 0; i < _variables.Length; i++ ) _variables[i].OnChange.Register( _events.Validated( Update ) );
-		}
-
-		void Update() { Value = CalculateValue(); }
-
-		protected bool CalculateValue() { var count = 0; for( int i = 0; i < _variables.Length; i++ ) if( _variables[i].Value ) count++; return count == 1; }
-		protected string SIGN => "ô";
-
-
-		public override string ToString()
-		{
-			var elements = _variables.ToList().ConvertAll( ( e ) => e.ToString() );
-			var expression = string.Join( $" {SIGN} ", elements );
-			return $"( {Value} => ( {expression} ) )";
-		}
+		protected override bool CalculateValue() { var count = 0; for( int i = 0; i < _variables.Length; i++ ) if( _variables[i].Value ) count++; return count == 1; }
+		protected override string SIGN => "ô";
 	}
 }

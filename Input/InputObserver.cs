@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public sealed class UnityKeyInputObserver : InputObserver
@@ -17,6 +18,7 @@ public abstract class InputObserver : IBoolStateObserver, IUpdatableOnDemand
 {
 	protected readonly BoolState _readedState = new BoolState();
 	protected readonly BoolState _state = new BoolState();
+	[System.NonSerialized] private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
 	private readonly InputGroup _group;
 
 	bool _cancelOnDisable = true;
@@ -29,16 +31,25 @@ public abstract class InputObserver : IBoolStateObserver, IUpdatableOnDemand
 	public IEventRegister<bool> OnChange => _state.OnChange;
 	public IEventRegister OnTrueState => _state.OnTrueState;
 	public IEventRegister OnFalseState => _state.OnFalseState;
+	public IBoolStateObserver Not => _not.Request( this );
 
 	public InputObserver( InputGroup group, bool ignoreFirstEventIfAlreadyTrue )
 	{
 		_group = group;
 		_ignoreFirstEventIfAlreadyTrue = ignoreFirstEventIfAlreadyTrue;
 
-		_readedState.OnTrueState.Register( TriggerOnTrueReadedState );
-		_readedState.OnFalseState.Register( TriggerOnFalseReadedState );
+		_readedState.OnTrueState.Register( group.Validator.Validated( TriggerOnTrueReadedState ) );
+		_readedState.OnFalseState.Register( group.Validator.Validated( TriggerOnFalseReadedState ) );
 
-		if( _cancelOnDisable ) _group.CanUpdate.OnFalseState.Register( _readedState.SetFalse );
+		group.Validator.OnVoid.Register( new CallOnce( Kill ) );
+
+		if( _cancelOnDisable ) _group.CanUpdate.OnFalseState.Register( group.Validator.Validated( _readedState.SetFalse ) );
+	}
+
+	protected virtual void Kill()
+	{
+		_readedState?.Kill();
+		_state?.Kill();
 	}
 
 	void TriggerOnTrueReadedState() { if( !_ignoreNextEvent ) _state.SetTrue(); }
