@@ -145,9 +145,11 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 			return false;
 		}
 
-		if( Contains( t ) )
+		var sameRef = object.ReferenceEquals( t, element );
+
+		if( !sameRef && element.HashID != t.HashID )
 		{
-			if( ( t != element && hashID != element.HashID ) || forceCorrectPosition )
+			if( forceCorrectPosition )
 			{
 				// Editor_Log.Add( $"Request Member:\nOn [{hashID}] removed {element.ToStringOrNull()} and replace with {t.ToStringOrNull()}" );
 				SetRealPosition( t );
@@ -156,7 +158,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		}
 
 		bool fromDialog = false;
-		if( hashID < 0 || hashID >= Count || element != t )
+		if( hashID < 0 || hashID >= Count || !sameRef )
 		{
 			var assetPath = AssetDatabase.GetAssetPath( (Object)t );
 			var assetGuid = UnityEditor.AssetDatabase.AssetPathToGUID( assetPath );

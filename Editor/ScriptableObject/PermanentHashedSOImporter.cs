@@ -6,6 +6,9 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 {
 	static void OnPostprocessAllAssets( string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths )
 	{
+		var sw = new System.Diagnostics.Stopwatch();
+		sw.Start();
+
 		var collections = new List<IHashedSOCollection>();
 		var elements = new List<IHashedSO>();
 
@@ -45,5 +48,12 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 			collection.EditorCheckConsistency();
 			Debug.Log( $"OnPostprocessAllAssets After EditorCheckConsistency( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
 		}
+
+		sw.Stop();
+		Debug.Log( $"PermanentHashedSOImporter.OnPostprocessAllAssets took {sw.ElapsedMilliseconds}ms"
+				+ $"\nimportedAssets({importedAssets.Length}):\n\t-{importedAssets.Length>0}{string.Join( ",\n\t-", importedAssets )}"
+				+ $"\ndeletedAssets({deletedAssets.Length}):\n\t-{string.Join( ",\n\t-", deletedAssets )}"
+				+ $"\nmovedAssets({movedAssets.Length}):\n\t-{string.Join( ",\n\t-", movedAssets )}"
+				+ $"\nmovedFromAssetPaths({movedFromAssetPaths.Length}):\n\t-{string.Join( ",\n\t-", movedFromAssetPaths )}" );
 	}
 }
