@@ -141,19 +141,30 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		if( element == null && hashID >= 0 )
 		{
 			SetRealPosition( t );
+			EditorRemoveDuplication( t );
 			// Editor_Log.Add( $"Request Member:\nOn [{hashID}] set {t.ToStringOrNull()}, was NULL before" );
 			return false;
 		}
 
-		var sameRef = object.ReferenceEquals( t, element );
+		var sameRef = ScriptableObject.ReferenceEquals( t, element );
 
-		if( !sameRef && element.HashID != t.HashID )
+
+		if( sameRef )
 		{
-			if( forceCorrectPosition )
+			if( element.HashID != t.HashID || forceCorrectPosition )
 			{
 				// Editor_Log.Add( $"Request Member:\nOn [{hashID}] removed {element.ToStringOrNull()} and replace with {t.ToStringOrNull()}" );
 				SetRealPosition( t );
 			}
+			EditorRemoveDuplication( t );
+			return false;
+		}
+
+		var where = EditorWhereIs( t );
+		if( where != -1 )
+		{
+			t.SetHashID( where );
+			EditorRemoveDuplication( t );
 			return false;
 		}
 
@@ -180,6 +191,32 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		UnityEditor.EditorUtility.SetDirty( this );
 
 		return true;
+	}
+
+	int EditorWhereIs( IHashedSO t )
+	{
+		var count = Count;
+		for( int i = 0; i < count; i++ )
+		{
+			var e = GetElementBase( i );
+			if( e == null ) continue;
+			if( ScriptableObject.ReferenceEquals( t, e ) ) return i;
+		}
+		return -1;
+	}
+
+	void EditorRemoveDuplication( IHashedSO t )
+	{
+		if( t == null ) return;
+		var count = Count;
+		for( int i = 0; i < Count; i++ )
+		{
+			var e = GetElementBase( i );
+			if( e == null ) continue;
+			if( i == t.HashID ) continue;
+			if( !ScriptableObject.ReferenceEquals( t, e ) ) continue;
+			Editor_HACK_Remove( i );
+		}
 	}
 
 	void IHashedSOCollectionEditor.EditorTryOptimize()
