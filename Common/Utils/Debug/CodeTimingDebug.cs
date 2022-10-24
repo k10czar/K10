@@ -7,7 +7,14 @@ public static class CodeTimingDebug
 {
 	static bool enabled = false;
 
-	public static void Enable() { enabled = true; }
+	public static void Enable() 
+	{ 
+		#if UNITY_EDITOR || CHEATS_ENABLED
+		enabled = true; 
+		#else
+		enabled = false;
+		#endif
+	}
 	public static void Disable() { enabled = false; _logStopwatch.Stop(); }
 
 	private static readonly Dictionary<string,Stopwatch> _watches = new Dictionary<string, Stopwatch>();
