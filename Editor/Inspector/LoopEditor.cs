@@ -82,12 +82,11 @@ public class LoopEditor : UnityEditor.Editor
 		return UnityEditor.EditorGUI.GetPropertyHeight( property, label, true );
 	}
 
-	public void OnGUI( Rect rect, UnityEditor.SerializedProperty property, GUIContent label )
+	public void OnGUI()
 	{
-		GuiLabelWidthManager.New( 70 );
-		EditorGUI.PropertyField( rect, property.FindPropertyRelative( "_repetitions" ) );
-		GuiLabelWidthManager.Revert();
-		// EditorGUI.PropertyField( rect, property, label, true );
-		GUI.Box( rect, "Test" );
-	}
+        GuiLabelWidthManager.New( 70 );
+        EditorGUILayout.PropertyField( _repetitions );
+        GuiLabelWidthManager.Revert();
+        GUILayout.Box( "Test" );
+    }
 }
