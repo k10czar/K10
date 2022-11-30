@@ -28,7 +28,16 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 		{
 			if( !_instance.IsValid )
 			{
-				_instance.RegisterNewReference( (T)MonoBehaviour.FindObjectOfType( typeof( T ) ) );
+				var candidate = (T)MonoBehaviour.FindObjectOfType( typeof( T ) );
+				_instance.RegisterNewReference( candidate );
+				if( candidate == null )
+				{
+					//TODO: Here we can detect a possible performance leak, since we cannot find the instance the requester could keep asking this every frame triggering heavy FindObjectOfType every time
+				}
+				else
+				{
+					Debug.Log( $"Singleton<<color=lime>{(typeof(T))}</color>> found with {candidate.HierarchyNameOrNull()}" );
+				}
 
 				// if( !_instance.IsValid )
 				// {
@@ -55,7 +64,12 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 		return _instance;
 	}
 
-	public static void SayHello( T candidate ) { if( !_instance.IsValid ) _instance.RegisterNewReference( candidate ); }
+	public static void SayHello( T candidate ) 
+	{
+		if( _instance.IsValid ) return;
+		Debug.Log( $"Singleton<<color=lime>{(typeof(T))}</color>> Hello with {candidate.HierarchyNameOrNull()}" );
+		_instance.RegisterNewReference( candidate );
+	}
 
 	/// <summary>
 	/// Finds the first object (active or inactive)
