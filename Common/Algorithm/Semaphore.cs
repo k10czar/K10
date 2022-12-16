@@ -195,7 +195,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 	// 	source.RegisterOnFalse( _validator.LeakedValidated( () => Block( source ), eventValidation ) );
 	// }
 
-	internal void Toggle( object obj )
+	public void Toggle( object obj )
 	{
 		if( _semaphores.ContainsKey( obj ) ) Release( obj );
 		else Block( obj );
