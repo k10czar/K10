@@ -8,6 +8,8 @@ public class TimeLogging<T>
 	Log _currentLog;
 	Log _defaultLog = new Log( UnityEngine.Time.unscaledTime, "Default" );
 	List<Log> _loadingLogs = new List<Log>();
+	Stopwatch _logMs = new Stopwatch();
+	double _totalLog = 0;
 
     protected EventSlot<string> _onLogEnd = new EventSlot<string>();
     protected EventSlot<string> _onLogSectionEnd = new EventSlot<string>();
@@ -20,24 +22,32 @@ public class TimeLogging<T>
 
 	public void StartLog( string name )
 	{
+		_logMs.Reset();
 		if( _currentLog != null && _onLogEnd.HasListeners ) _onLogEnd.Trigger( $"{StartColorTag("red")}StartLog beyond old{EndColorTag()} {_currentLog}" );
 		_currentLog = new Log( UnityEngine.Time.unscaledTime, name );
+		_logMs.Stop();
 	}
 
 	public void EndLog()
 	{
         if( _currentLog == null ) return;
 
+		_logMs.Start();
 		_currentLog.End();
 		_loadingLogs.Add( _currentLog );
 
 		if( _onLogEnd.HasListeners ) 
 		{
+
 			_onLogEnd.Trigger( GetEndLog() );
 			_onLogEnd.Trigger( GetExportLog() );
 		}
 
 		_currentLog = null;
+
+		_logMs.Stop();
+		UnityEngine.Debug.Log( $"Log end with {_logMs.ElapsedMilliseconds}ms of overhead" );
+		_logMs.Reset();
 	}
 
     public static string EndColorTag() => ( _colored ? "</color>" : "" );
@@ -50,22 +60,32 @@ public class TimeLogging<T>
 	{
         if( _currentLog == null ) return;
 
+		_logMs.Start();
+		
 		_currentLog.End();
         if( _onLogEnd.HasListeners ) _onLogEnd.Trigger( $"{StartColorTag("red")}Canceled log:{EndColorTag()} {_currentLog.ToString()}" );
 		_currentLog = null;
+
+		_logMs.Stop();
+		UnityEngine.Debug.Log( $"Log end with {StartColorTag("cyan")}{_logMs.ElapsedMilliseconds}ms{EndColorTag()} of {StartColorTag("red")}overhead{EndColorTag()}" );
+		_logMs.Reset();
 	}
 
 	public void StartSection( T cat, object key = null )
 	{
+		_logMs.Start();
 		var log = ( _currentLog ?? _defaultLog );
 		log.StartSection( cat, key );
+		_logMs.Stop();
 	}
 
 	public void EndSection( T cat, object key = null )
 	{
+		_logMs.Start();
 		var log = ( _currentLog ?? _defaultLog );
 		log.EndSection( cat, key );
 		if( _onLogSectionEnd.HasListeners ) _onLogSectionEnd.Trigger( $"{StartColorTag("orange")}End loading log section:{EndColorTag()} {cat}{( ( key != null ) ? $" {key}" : "" )}\n{log.GetData( cat )}" );
+		_logMs.Stop();
 	}
 
 	public class Log
