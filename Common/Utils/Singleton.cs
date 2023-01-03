@@ -36,7 +36,7 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 				}
 				else
 				{
-					Debug.Log( $"Singleton<<color=lime>{(typeof(T))}</color>> found with {candidate.HierarchyNameOrNull()}" );
+					//Debug.Log( $"Singleton<<color=lime>{(typeof(T))}</color>> found with {candidate.HierarchyNameOrNull()}" );
 				}
 
 				// if( !_instance.IsValid )
@@ -54,6 +54,8 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 		return GetAutoClearedReference().Reference;
 	}
 
+	public static bool IsValid => _instance.IsValid;
+
 	public static AutoClearedReference<T> GetAutoClearedReference()
 	{
 		if (!_instance.IsValid)
@@ -67,7 +69,7 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 	public static void SayHello( T candidate ) 
 	{
 		if( _instance.IsValid ) return;
-		Debug.Log( $"Singleton<<color=lime>{(typeof(T))}</color>> Hello with {candidate.HierarchyNameOrNull()}" );
+		//Debug.Log( $"Singleton<<color=lime>{(typeof(T))}</color>> Hello with {candidate.HierarchyNameOrNull()}" );
 		_instance.RegisterNewReference( candidate );
 	}
 
