@@ -45,6 +45,7 @@ public static class MathAdapter
 	[MethodImpl( AggrInline )] public static float acos( float a ) => math.acos( a );
 	[MethodImpl( AggrInline )] public static float tan( float a ) => math.tan( a );
 	[MethodImpl( AggrInline )] public static float atan2( float y, float x ) => math.atan2( y, x );
+	[MethodImpl( AggrInline )] public static float smoothStep(float a, float b, float x) => math.smoothStep( a, b, x );
 	[MethodImpl( AggrInline )] public static int CeilToInt( float a ) => Mathf.CeilToInt( a ); // TODO: Change to New Mathematics
 	[MethodImpl( AggrInline )] public static int RoundToInt( float a ) => Mathf.RoundToInt( a ); // TODO: Change to New Mathematics
 	[MethodImpl( AggrInline )] public static bool Approximately(float a, float b) => math.abs( a - b ) < EP2;
@@ -58,6 +59,7 @@ public static class MathAdapter
 	[MethodImpl( AggrInline )] public static float acos( float a ) => Mathf.Acos( a );
 	[MethodImpl( AggrInline )] public static float tan( float a ) => Mathf.Tan( a );
 	[MethodImpl( AggrInline )] public static float atan2( float y, float x ) => Mathf.Atan2( y, x );
+	[MethodImpl( AggrInline )] public static float smoothStep(float a, float b, float x) => Mathf.SmoothStep( a, b, x );
 	[MethodImpl( AggrInline )] public static int CeilToInt( float a ) => Mathf.CeilToInt( a );
 	[MethodImpl( AggrInline )] public static int RoundToInt( float a ) => Mathf.RoundToInt( a );
 	[MethodImpl(AggrInline)] public static bool Approximately(float a, float b) => Mathf.Abs(a - b) < EP2;

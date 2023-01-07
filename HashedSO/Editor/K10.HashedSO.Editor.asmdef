@@ -1,0 +1,20 @@
+{
+    "name": "K10.HashedSO.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:6ac568dd7a2af634895b6119885b2204",
+        "GUID:d12d6801382f9ad4392c8257d47edbb6",
+        "GUID:8c473cf01bfb2ab49b17f9bcaac46b27"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

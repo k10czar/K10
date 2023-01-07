@@ -38,7 +38,6 @@ public class TimeLogging<T>
 
 		if( _onLogEnd.HasListeners ) 
 		{
-
 			_onLogEnd.Trigger( GetEndLog() );
 			_onLogEnd.Trigger( GetExportLog() );
 		}

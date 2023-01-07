@@ -5,7 +5,7 @@ public interface IInterpolationFunction
 	float Evaluate( float normilizedTime );
 }
 
-public enum ENormalizedValueInterpolation { Linear, Quadratic, SquareRoot, SCurve2, Cubic, CubeRoot, SCurve4 }
+public enum ENormalizedValueInterpolation { Linear, Quadratic, SquareRoot, Cubic, CubeRoot, SmoothStep, Sine }
 
 public static class InterpolationExtensions
 {
@@ -14,12 +14,12 @@ public static class InterpolationExtensions
 		switch( type )
 		{
 			case ENormalizedValueInterpolation.Linear: return LinearInterpolation.Instance;
-			case ENormalizedValueInterpolation.Quadratic: return LinearInterpolation.Instance;
-			case ENormalizedValueInterpolation.SquareRoot: return LinearInterpolation.Instance;
-			case ENormalizedValueInterpolation.SCurve2: return LinearInterpolation.Instance;
-			case ENormalizedValueInterpolation.Cubic: return LinearInterpolation.Instance;
-			case ENormalizedValueInterpolation.CubeRoot: return LinearInterpolation.Instance;
-			case ENormalizedValueInterpolation.SCurve4: return LinearInterpolation.Instance;
+			case ENormalizedValueInterpolation.Quadratic: return PowerInterpolation.Pow2;
+			case ENormalizedValueInterpolation.SquareRoot: return PowerInterpolation.Sqrt;
+			case ENormalizedValueInterpolation.Cubic: return PowerInterpolation.Pow3;
+			case ENormalizedValueInterpolation.CubeRoot: return PowerInterpolation.CubeRoot;
+			case ENormalizedValueInterpolation.SmoothStep: return SmoothStepInterpolation.Instance;
+			case ENormalizedValueInterpolation.Sine: return SineInterpolation.Instance;
 		}
 		return LinearInterpolation.Instance;
 	}
@@ -32,13 +32,27 @@ public class LinearInterpolation : IInterpolationFunction
 	public float Evaluate( float normilizedDuration ) => normilizedDuration;
 }
 
+public class SmoothStepInterpolation : IInterpolationFunction
+{
+	public static readonly IInterpolationFunction Instance = new SmoothStepInterpolation();
+	private SmoothStepInterpolation() { }
+	public float Evaluate( float normilizedDuration ) => MathAdapter.smoothStep( 0, 1, normilizedDuration );
+}
+
+public class SineInterpolation : IInterpolationFunction
+{
+	public static readonly IInterpolationFunction Instance = new SineInterpolation();
+	private SineInterpolation() { }
+	public float Evaluate( float normilizedDuration ) => ( MathAdapter.sin( ( normilizedDuration - .5f ) * MathAdapter.PI ) + 1 ) / 2;
+}
+
 public class PowerInterpolation : IInterpolationFunction
 {
 	//TODO: Optimize Iterpolation with fast operation
 	public static readonly IInterpolationFunction Pow2 = Power2Interpolation.Instance;
 	public static readonly IInterpolationFunction Sqrt = new PowerInterpolation( .5f );
 	public static readonly IInterpolationFunction Pow3 = new PowerInterpolation( 3 );
-	public static readonly IInterpolationFunction Cubic = new PowerInterpolation( .3333333f );
+	public static readonly IInterpolationFunction CubeRoot = new PowerInterpolation( .3333333f );
 	private readonly float _power;
 	public PowerInterpolation( float power ) { _power = power; }
 	public float Evaluate( float normilizedDuration ) => Mathf.Pow( normilizedDuration, _power );
@@ -53,18 +67,41 @@ public class PowerInterpolation : IInterpolationFunction
 
 public class SCurveInterpolation : IInterpolationFunction
 {
-	public static readonly IInterpolationFunction SCurve2 = SCurve2Interpolation.Instance;
-	public static readonly IInterpolationFunction SCurve4 = new SCurveInterpolation( 4 );
+	public static readonly IInterpolationFunction SCurveP2 = SCurveP2Interpolation.Instance;
+	public static readonly IInterpolationFunction SCurveP3 = SCurveP3Interpolation.Instance;
+	public static readonly IInterpolationFunction SCurveR2 = new SCurveInterpolation( .5f );
+	public static readonly IInterpolationFunction SCurveR3 = new SCurveInterpolation( 1f/3f );
 	private readonly float _power;
 	public SCurveInterpolation( float power ) { _power = power; }
-	public float Evaluate( float normilizedDuration ) => ( Mathf.Pow( normilizedDuration * 2 - 1, _power ) + 1 ) / 2;
-
-
-	private class SCurve2Interpolation : IInterpolationFunction
+	public float Evaluate( float normilizedDuration ) 
 	{
-		public static readonly IInterpolationFunction Instance = new SCurve2Interpolation();
-		public SCurve2Interpolation() { }
-		public float Evaluate( float normilizedDuration ) => ( ( normilizedDuration * normilizedDuration * 2 - 1 ) + 1 ) / 2;
+		var val = normilizedDuration * 2 - 1;
+		var sign = Mathf.Sign( val );
+		var aVal = sign * val;
+		return ( Mathf.Pow( aVal, _power ) * sign + 1 ) / 2;
+	}
+
+
+	private class SCurveP2Interpolation : IInterpolationFunction
+	{
+		public static readonly IInterpolationFunction Instance = new SCurveP2Interpolation();
+		public SCurveP2Interpolation() { }
+		public float Evaluate( float normilizedDuration )
+		{
+			var val = normilizedDuration * 2 - 1;
+			return ( val * val + 1 ) / 2;
+		}
+	}
+
+	private class SCurveP3Interpolation : IInterpolationFunction
+	{
+		public static readonly IInterpolationFunction Instance = new SCurveP3Interpolation();
+		public SCurveP3Interpolation() { }
+		public float Evaluate( float normilizedDuration )
+		{
+			var val = normilizedDuration * 2 - 1;
+			return ( val * val * val + 1 ) / 2;
+		} 
 	}
 }
 
