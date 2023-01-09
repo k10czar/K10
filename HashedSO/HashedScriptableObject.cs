@@ -9,11 +9,6 @@ public interface IHashedSOEditor
 }
 #endif
 
-public interface IExportIgnorable
-{
-	bool Ignore { get; }
-}
-
 public interface IHashedSO
 #if UNITY_EDITOR
 : IHashedSOEditor

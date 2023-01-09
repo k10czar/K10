@@ -16,7 +16,7 @@ public static class AsyncOperationObserverExtension
     }
 }
 
-public class AsyncOperationHandle : IAsyncOperationObserver
+public class AsyncOperationStateHandle : IAsyncOperationObserver
 {
     BoolState _isStarted = new BoolState();
     BoolState _isDone = new BoolState();
@@ -24,26 +24,26 @@ public class AsyncOperationHandle : IAsyncOperationObserver
     public IBoolStateObserver IsStarted => _isStarted;
     public IBoolStateObserver IsDone => _isDone;
 
-    public AsyncOperationHandle Start()
+    public AsyncOperationStateHandle Start()
     {
         _isStarted.SetTrue();
         return this;
     }
 
-    public AsyncOperationHandle Finish()
+    public AsyncOperationStateHandle Finish()
     {
         _isDone.SetFalse();
         return this;
     }
 }
 
-public class AlreadyDoneOperationHandle : IAsyncOperationObserver
+public class AlreadyDoneOperationStateHandle : IAsyncOperationObserver
 {
     public IBoolStateObserver IsStarted => TrueState.Instance;
     public IBoolStateObserver IsDone => TrueState.Instance;
 
-    private AlreadyDoneOperationHandle() {}
+    private AlreadyDoneOperationStateHandle() {}
 
-    public static AlreadyDoneOperationHandle _instance;
-    public static AlreadyDoneOperationHandle Instance => _instance ?? ( _instance = new AlreadyDoneOperationHandle() );
+    public static AlreadyDoneOperationStateHandle _instance;
+    public static AlreadyDoneOperationStateHandle Instance => _instance ?? ( _instance = new AlreadyDoneOperationStateHandle() );
 }
