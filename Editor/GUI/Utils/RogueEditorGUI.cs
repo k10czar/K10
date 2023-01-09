@@ -13,10 +13,10 @@ public static class RogueEditorGUI
         return names;
     }
 
-	static class CachedEnumNames<T> where T : struct, System.IConvertible
+	public static class CachedEnumNames<T> where T : struct, System.IConvertible
 	{
 		static string[] _names, _breakedUnderline;
-		
+
 		public static string[] Names
 		{
 			get
@@ -25,7 +25,7 @@ public static class RogueEditorGUI
 				return _names;
 			}
 		}
-		
+
 		public static string[] BreakedUnderline
 		{
 			get

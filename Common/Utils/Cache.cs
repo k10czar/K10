@@ -11,7 +11,11 @@ public static class Cache
 		get
 		{
 #if UNITY_EDITOR
-			if( _parent == null ) _parent = new GameObject( "Cache" ).transform;
+			if (_parent == null)
+			{
+				_parent = new GameObject( "Cache" ).transform;
+				GameObject.DontDestroyOnLoad(_parent);
+			}
 #endif
 			return _parent;
 		}
@@ -39,16 +43,30 @@ public static class Cache
 		return cacheList;
 	}
 
-	public static void Add( GameObject reference, int copies )
+	public static List<GameObject> Add( GameObject reference, int copies , bool dontDestroyOnLoad = false)
 	{
 		var cacheList = RequestCacheList( reference );
-
+		
 		var parent = CacheParent;
+		
 		var template = GameObject.Instantiate( reference, Vector3.zero, Quaternion.identity, parent );
 		template.SetActive( false );
+		
+		if(dontDestroyOnLoad)
+			GameObject.DontDestroyOnLoad(template);
+		
 		cacheList.Add( template );
 
-		for( int i = 1; i < copies; i++ ) cacheList.Add( GameObject.Instantiate( template, Vector3.zero, Quaternion.identity, parent ) );
+		for (int i = 0; i < copies; i++)
+		{
+			GameObject newObj = GameObject.Instantiate(template, Vector3.zero, Quaternion.identity, parent);
+			cacheList.Add( newObj );
+			
+			if(dontDestroyOnLoad)
+				GameObject.DontDestroyOnLoad(newObj);
+		}
+
+		return cacheList;
 	}
 
 	public static GameObject RequestObject( GameObject reference, Transform transform = null, bool logErrorOnCacheMiss = true )
