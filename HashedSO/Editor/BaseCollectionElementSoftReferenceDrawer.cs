@@ -8,7 +8,7 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
     const int EXECUTION_LINES = 1;
 
     static Color RED_COLOR = Color.Lerp( Color.red, Color.white, .5f );
-    static Color GREEN_COLOR = Color.Lerp( Color.green, Color.white, .8f );
+    static Color GREEN_COLOR = Color.Lerp( Color.green, Color.white, .9f );
 
     public override void OnGUI( Rect area, SerializedProperty property, GUIContent label )
     {
@@ -19,7 +19,7 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
         var refState = property.FindPropertyRelative( "_referenceState" );
         var id = property.FindPropertyRelative( "_id" );
         
-        var color = GREEN_COLOR;
+        var color = Color.white;
         if( hardRef.objectReferenceValue == null ) color = RED_COLOR;
         GuiColorManager.New( color );
 
@@ -59,7 +59,9 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
             var nextLines = area.CutTop( slh );
             var line = nextLines;
             
-            EditorGUI.TextField( line, GUIContent.none, $"{hardRef.objectReferenceValue.GetType().ToString()}[{id.intValue}] => {hardRef.objectReferenceValue.NameOrNull()}" );
+            var hRef = hardRef.objectReferenceValue;
+            if( hRef != null ) EditorGUI.TextField( line, GUIContent.none, $"{hardRef.objectReferenceValue.GetType().ToString()}[{id.intValue}] => {hardRef.objectReferenceValue.NameOrNull()}" );
+            else EditorGUI.TextField( line, GUIContent.none, $"NULL[{id.intValue}] => NULL" );
         }
         
         GuiColorManager.Revert();
