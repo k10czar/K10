@@ -163,6 +163,8 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
             EditorUtility.DisplayDialog( "ERROR", msg, "I will Never do that again!" );
             ResetData( refType, hardRef, directRef, guid, resourcesPath );
         }
+        
+        GuiColorManager.Revert();
 
         // base.OnGUI( area, property, label );
     }
