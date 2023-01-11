@@ -38,8 +38,8 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
 
         var path = AssetDatabase.GetAssetPath( hardRef.objectReferenceValue );
         guid.stringValue = AssetDatabase.AssetPathToGUID( path );
-        
         var resourcesIndex = path.IndexOf( RESOURCES_PATH, System.StringComparison.OrdinalIgnoreCase );
+        
         if( resourcesIndex != -1 )
         {
             var lastDot = path.Length - 1;
@@ -48,10 +48,7 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
             var resourcePath = path.Substring( startId, lastDot - startId );
             resourcesPath.stringValue = resourcePath;
             
-            if( refType.enumValueIndex != (int)EAssetReferenceType.Resources )
-            {
-                refType.enumValueIndex = (int)EAssetReferenceType.Resources;
-            }
+            refType.enumValueIndex = (int)EAssetReferenceType.Resources;
             
             assetDirectRef.objectReferenceValue = null;
         }
@@ -65,10 +62,7 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
 #endif
         else
         {
-            if( refType.enumValueIndex != (int)EAssetReferenceType.DirectReference )
-            {
-                refType.enumValueIndex = (int)EAssetReferenceType.DirectReference;
-            }
+            refType.enumValueIndex = (int)EAssetReferenceType.DirectReference;
             assetDirectRef.objectReferenceValue = hardRef.objectReferenceValue;
             resourcesPath.stringValue = string.Empty;
         }

@@ -7,20 +7,12 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 
 public enum EAssetReferenceType
 {
-    DirectReference,
-    Resources,
+    DirectReference = 0,
+    Resources = 1,
 
 #if USE_ADDRESSABLES
-    Addressables,
+    Addressables = 2,
 #endif
-}
-
-public enum EAssetReferenceState
-{
-    Empty,
-    Requested,
-    Loaded,
-    LoadedNull,
 }
 
 [System.Serializable]
@@ -36,13 +28,13 @@ public class AssetHybridReference<T> : BaseAssetHybridReference where T : UnityE
 {
 #if UNITY_EDITOR
     [SerializeField] T _assetHardReference;
+    [SerializeField] EAssetReferenceState _referenceState = EAssetReferenceState.Empty;
 #endif //UNITY_EDITOR
     [SerializeField] T _serializedDirectReference;
     T _assetRuntimeReference;
     [SerializeField] string _guid;
     [SerializeField] string _resourcesPath;
     [SerializeField] EAssetReferenceType _referenceType;
-    [SerializeField] EAssetReferenceState _referenceState = EAssetReferenceState.Empty;
     
     
     bool _loaded = false;
