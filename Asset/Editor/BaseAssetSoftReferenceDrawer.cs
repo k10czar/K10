@@ -16,7 +16,7 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
     static Color ORANGE_COLOR = Color.Lerp( new Color( 1, .6f, 0 ), Color.white, .5f );
     static Color RED_COLOR = Color.Lerp( Color.red, Color.white, .5f );
     static Color YELLOW_COLOR = Color.Lerp( Color.yellow, Color.white, .5f );
-    static Color GREEN_COLOR = Color.Lerp( Color.green, Color.white, .7f );
+    static Color GREEN_COLOR = Color.Lerp( Color.green, Color.white, .8f );
 
     void ResetData( SerializedProperty refType, SerializedProperty hardRef, SerializedProperty assetDirectRef, SerializedProperty guid, SerializedProperty resourcesPath )
     {
@@ -99,10 +99,10 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
 
         var firstLine = area.RequestTop( slh );
         var labelRect = firstLine.RequestLeft( EditorGUIUtility.labelWidth );
-        //property.isExpanded = EditorGUI.BeginFoldoutHeaderGroup( firstLine.RequestLeft( EditorGUIUtility.labelWidth ), property.isExpanded, label );
-		property.isExpanded = EditorGUI.Foldout( firstLine.RequestLeft( EditorGUIUtility.labelWidth ), property.isExpanded, label );
+        property.isExpanded = EditorGUI.BeginFoldoutHeaderGroup( firstLine.RequestLeft( EditorGUIUtility.labelWidth ), property.isExpanded, label );
+		// property.isExpanded = EditorGUI.Foldout( firstLine.RequestLeft( EditorGUIUtility.labelWidth ), property.isExpanded, label );
 		EditorGUI.ObjectField( firstLine.CutLeft( EditorGUIUtility.labelWidth ), hardRef, GUIContent.none );
-        //EditorGUI.EndFoldoutHeaderGroup();
+        EditorGUI.EndFoldoutHeaderGroup();
 
         if( deep )
         {
