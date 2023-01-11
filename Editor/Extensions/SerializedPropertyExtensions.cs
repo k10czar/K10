@@ -34,6 +34,8 @@ public static class SerializedPropertyExtensions
 		return path;
 	}
 
+	public static object GetInstance( this SerializedProperty property, BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance ) => GetInstance( property, out var t, flags );
+
 	public static object GetInstance( this SerializedProperty property, out System.Type objType, BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance )
 	{
 		var uobj = property.serializedObject.targetObject;
