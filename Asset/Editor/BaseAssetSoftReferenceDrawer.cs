@@ -105,9 +105,10 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
 
         var firstLine = area.RequestTop( slh );
         var labelRect = firstLine.RequestLeft( EditorGUIUtility.labelWidth );
-        property.isExpanded = EditorGUI.BeginFoldoutHeaderGroup( firstLine.RequestLeft( EditorGUIUtility.labelWidth ), property.isExpanded, label );
-        EditorGUI.ObjectField( firstLine.CutLeft( EditorGUIUtility.labelWidth ), hardRef, GUIContent.none );
-        EditorGUI.EndFoldoutHeaderGroup();
+        //property.isExpanded = EditorGUI.BeginFoldoutHeaderGroup( firstLine.RequestLeft( EditorGUIUtility.labelWidth ), property.isExpanded, label );
+		property.isExpanded = EditorGUI.Foldout( firstLine.RequestLeft( EditorGUIUtility.labelWidth ), property.isExpanded, label );
+		EditorGUI.ObjectField( firstLine.CutLeft( EditorGUIUtility.labelWidth ), hardRef, GUIContent.none );
+        //EditorGUI.EndFoldoutHeaderGroup();
 
         if( deep )
         {
@@ -115,11 +116,10 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
             {
                 var executionArea = area.RequestBottom( slh );
 
-                EditorGUI.BeginDisabledGroup( true );
-                EditorGUI.PropertyField( executionArea.VerticalSlice( 0, 5 ), refState, GUIContent.none );
-                EditorGUI.EndDisabledGroup();
-
                 var state = (EAssetReferenceState)refState.enumValueIndex;
+                EditorGUI.BeginDisabledGroup( true );
+                EditorGUI.LabelField( executionArea.VerticalSlice( 0, 5 ), state.ToString() );
+                EditorGUI.EndDisabledGroup();
 
                 EditorGUI.BeginDisabledGroup( state == EAssetReferenceState.Empty );
                 if( GUI.Button( executionArea.VerticalSlice( 1, 5 ), "Dispose" ) ) ((BaseAssetHybridReference)property.GetInstance())?.DisposeAsset();
@@ -149,9 +149,9 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
 
             var line = nextLines;
             
-            EditorGUI.BeginDisabledGroup( true );
-            EditorGUI.PropertyField( line.RequestLeft( 120 ), refType, GUIContent.none );
-            EditorGUI.EndDisabledGroup();
+            
+            EditorGUI.LabelField( line.RequestLeft( 120 ), ((EAssetReferenceType)refType.enumValueIndex).ToString() );
+            
             EditorGUI.TextField( line.CutLeft( 120 ), GUIContent.none, ( refType.enumValueIndex == (int)EAssetReferenceType.Resources ) ? resourcesPath.stringValue : guid.stringValue );
         }
 
