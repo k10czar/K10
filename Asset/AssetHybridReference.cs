@@ -28,7 +28,7 @@ public abstract class BaseAssetHybridReference
 {
     public abstract void PreLoad();
     public abstract void DisposeAsset();
-    public abstract UnityEngine.Object GetReference();
+    public abstract UnityEngine.Object GetBaseReference();
 }
 
 [System.Serializable]
@@ -87,9 +87,9 @@ public class AssetHybridReference<T> : BaseAssetHybridReference where T : UnityE
         _referenceState = EAssetReferenceState.Empty;
     }
 
-    public override UnityEngine.Object GetReference() => Load();
+    public override UnityEngine.Object GetBaseReference() => GetReference();
 
-	public T Load()
+	public T GetReference()
     {
         if( !_loaded && _assetRuntimeReference == null )
         {

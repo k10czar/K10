@@ -130,7 +130,7 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
                 EditorGUI.EndDisabledGroup();
 
                 EditorGUI.BeginDisabledGroup( state == EAssetReferenceState.Loaded || state == EAssetReferenceState.LoadedNull );
-                if( GUI.Button( executionArea.VerticalSlice( 3, 5 ), "Load" ) ) ((BaseAssetHybridReference)property.GetInstance())?.GetReference();
+                if( GUI.Button( executionArea.VerticalSlice( 3, 5 ), "Load" ) ) ((BaseAssetHybridReference)property.GetInstance())?.GetBaseReference();
                 EditorGUI.EndDisabledGroup();
 
                 EditorGUI.BeginDisabledGroup( state == EAssetReferenceState.Loaded );
@@ -138,7 +138,7 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
                 {
                     var inst = ((BaseAssetHybridReference)property.GetInstance());
                     inst?.PreLoad();
-                    inst?.GetReference();
+                    inst?.GetBaseReference();
                 }
                 EditorGUI.EndDisabledGroup();
 
