@@ -1,0 +1,28 @@
+{
+    "name": "K10.AssetManagement.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:e3cd367ca6028634faca142daff25d62",
+        "GUID:6ac568dd7a2af634895b6119885b2204",
+        "GUID:d12d6801382f9ad4392c8257d47edbb6",
+        "GUID:9e24947de15b9834991c9d8411ea37cf",
+        "GUID:69448af7b92c7f342b298e06a37122aa"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.addressables",
+            "expression": "",
+            "define": "USE_ADDRESSABLES"
+        }
+    ],
+    "noEngineReferences": false
+}

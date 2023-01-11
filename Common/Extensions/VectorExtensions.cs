@@ -11,4 +11,17 @@ public static class VectorExtensions
 		var dot = Vector3.Dot( nDir, t );
 		return from + nDir * Mathf.Clamp( dot, 0, mag );
 	}
+
+    public static Vector3 GetHasPolynomialResult( this Vector3[] terms, float x )
+    {
+        var v = Vector3.zero;
+        var exp = 1f;
+        for( int i = 0; i < terms.Length; i++ )
+        {
+            var t = terms[i];
+            v += t * exp;
+            exp *= x;
+        }
+        return v;
+    }
 }
