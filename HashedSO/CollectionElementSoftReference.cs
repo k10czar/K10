@@ -43,10 +43,17 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 
 	public T GetReference()
 	{
-		_assetRuntimeReference = (T)Dummy.GetCollection().GetElementBase( _id );
+		_assetRuntimeReference = (T)Dummy.GetCollection().GetElementBase( Mathf.Max( _id, 0 ) );
 #if UNITY_EDITOR
 		_referenceState = _assetRuntimeReference != null ? EAssetReferenceState.Loaded : EAssetReferenceState.LoadedNull;
 #endif //UNITY_EDITOR
 		return _assetRuntimeReference;
+	}
+
+	public void SetReference( T t )
+	{
+		_assetHardReference = t;
+		GetReference();
+		EDITOR_UpdateDataFromRef();
 	}
 }
