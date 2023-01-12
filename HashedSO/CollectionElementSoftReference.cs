@@ -6,6 +6,9 @@ public abstract class BaseCollectionElementSoftReference
 {
     public abstract void DisposeAsset();
     public abstract IHashedSO GetBaseReference();
+#if UNITY_EDITOR
+    public abstract void EDITOR_UpdateDataFromRef();
+#endif //UNITY_EDITOR
 }
 
 [System.Serializable]
@@ -24,20 +27,26 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 	public override void DisposeAsset()
 	{
 		_assetRuntimeReference = null;
+#if UNITY_EDITOR
 		_referenceState = EAssetReferenceState.Empty;
+#endif //UNITY_EDITOR
 	}
 
-	private void EDITOR_UpdateDataFromRef()
+#if UNITY_EDITOR
+	public override void EDITOR_UpdateDataFromRef()
 	{
 		_id = _assetHardReference?.HashID ?? -1;
 	}
+#endif //UNITY_EDITOR
 
 	public override IHashedSO GetBaseReference() => GetReference();
 
 	public T GetReference()
 	{
 		_assetRuntimeReference = (T)Dummy.GetCollection().GetElementBase( _id );
+#if UNITY_EDITOR
 		_referenceState = _assetRuntimeReference != null ? EAssetReferenceState.Loaded : EAssetReferenceState.LoadedNull;
+#endif //UNITY_EDITOR
 		return _assetRuntimeReference;
 	}
 }

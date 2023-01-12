@@ -159,8 +159,6 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
         }
         
         GuiColorManager.Revert();
-
-        // base.OnGUI( area, property, label );
     }
 
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label)

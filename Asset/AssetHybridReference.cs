@@ -21,6 +21,9 @@ public abstract class BaseAssetHybridReference
     public abstract void PreLoad();
     public abstract void DisposeAsset();
     public abstract UnityEngine.Object GetBaseReference();
+#if UNITY_EDITOR
+    public abstract void EDITOR_UpdateDataFromRef( System.Func<UnityEngine.Object,bool> CheckIsAddressableFunc );
+#endif //UNITY_EDITOR
 }
 
 [System.Serializable]
@@ -40,18 +43,22 @@ public class AssetHybridReference<T> : BaseAssetHybridReference where T : UnityE
     bool _loaded = false;
 #if USE_ADDRESSABLES
 	private AsyncOperationHandle<T> _addressableOp;
-#endif
+#endif //USE_ADDRESSABLES
 	private ResourceRequest _resourcesLoadOp = null;
 
 	public override void PreLoad()
     {
         if( _loaded || _assetRuntimeReference != null ) return;
+#if UNITY_EDITOR
         _referenceState = EAssetReferenceState.Requested;
+#endif //UNITY_EDITOR
         switch( _referenceType )
         {
             case EAssetReferenceType.DirectReference:
                 _assetRuntimeReference = _serializedDirectReference;
+#if UNITY_EDITOR
                 _referenceState = EAssetReferenceState.Loaded;
+#endif //UNITY_EDITOR
                 _loaded = true;
                 break;
 
@@ -63,9 +70,60 @@ public class AssetHybridReference<T> : BaseAssetHybridReference where T : UnityE
             case EAssetReferenceType.Addressables:
                 _addressableOp = Addressables.LoadAssetAsync<T>( _guid );
                 break;
-#endif
+#endif //USE_ADDRESSABLES
         }
     }
+    
+#if UNITY_EDITOR
+    private void ResetData()
+    {
+            _referenceType = EAssetReferenceType.DirectReference;
+            _assetHardReference = null;
+            _serializedDirectReference = null;
+            _guid = string.Empty;
+            _resourcesPath = string.Empty;
+    }
+
+    const string RESOURCES_PATH = "/Resources/";
+    public override void EDITOR_UpdateDataFromRef( System.Func<UnityEngine.Object,bool> CheckIsAddressableFunc )
+    {
+        if( _assetHardReference == null )
+        {
+            ResetData();
+            return;
+        }
+
+        var path = UnityEditor.AssetDatabase.GetAssetPath( _assetHardReference );
+        _guid = UnityEditor.AssetDatabase.AssetPathToGUID( path );
+        var resourcesIndex = path.IndexOf( RESOURCES_PATH, System.StringComparison.OrdinalIgnoreCase );
+        
+        if( resourcesIndex != -1 )
+        {
+            var lastDot = path.Length - 1;
+            for( ; lastDot >= 0 && path[lastDot] != '.'; lastDot-- ) { }
+            var startId = resourcesIndex + RESOURCES_PATH.Length;
+            var resourcePath = path.Substring( startId, lastDot - startId );
+
+            _resourcesPath = resourcePath;
+            _referenceType = EAssetReferenceType.Resources;
+            _serializedDirectReference = null;
+        }
+#if USE_ADDRESSABLES
+        else if( CheckIsAddressableFunc( _assetHardReference ) )
+        {
+            _referenceType = EAssetReferenceType.Addressables;
+            _serializedDirectReference = null;
+            _resourcesPath = string.Empty;
+        }
+#endif
+        else
+        {
+            _referenceType = EAssetReferenceType.DirectReference;
+            _serializedDirectReference = _assetHardReference;
+            _resourcesPath = string.Empty;
+        }
+    }
+#endif //UNITY_EDITOR
 
     public override void DisposeAsset()
     {
@@ -73,10 +131,12 @@ public class AssetHybridReference<T> : BaseAssetHybridReference where T : UnityE
         if( _addressableOp.IsValid() && _addressableOp.IsDone && _assetRuntimeReference == null ) _assetRuntimeReference = _addressableOp.Result;
         _addressableOp = default(AsyncOperationHandle<T>);
         if( _referenceType == EAssetReferenceType.Addressables && _assetRuntimeReference != null ) Addressables.Release<T>( _assetRuntimeReference );
-#endif
+#endif //USE_ADDRESSABLES
         _assetRuntimeReference = null;
         _loaded = false;
+#if UNITY_EDITOR
         _referenceState = EAssetReferenceState.Empty;
+#endif //UNITY_EDITOR
     }
 
     public override UnityEngine.Object GetBaseReference() => GetReference();
@@ -105,9 +165,11 @@ public class AssetHybridReference<T> : BaseAssetHybridReference where T : UnityE
                     _addressableOp.WaitForCompletion();
                     _assetRuntimeReference = _addressableOp.Result;
                     break;
-#endif
+#endif //USE_ADDRESSABLES
             }
+#if UNITY_EDITOR
             _referenceState = ( _assetRuntimeReference != null ) ? EAssetReferenceState.Loaded : EAssetReferenceState.LoadedNull;
+#endif //UNITY_EDITOR
         }
         return _assetRuntimeReference;
     }
