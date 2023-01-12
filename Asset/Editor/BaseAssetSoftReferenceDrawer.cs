@@ -144,9 +144,9 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
             var line = nextLines;
             
             
-            EditorGUI.LabelField( line.RequestLeft( 120 ), ((EAssetReferenceType)refType.enumValueIndex).ToString() );
+            EditorGUI.LabelField( line.RequestLeft( 100 ), ((EAssetReferenceType)refType.enumValueIndex).ToString() );
             
-            EditorGUI.TextField( line.CutLeft( 120 ), GUIContent.none, ( refType.enumValueIndex == (int)EAssetReferenceType.Resources ) ? resourcesPath.stringValue : guid.stringValue );
+            EditorGUI.TextField( line.CutLeft( 100 ), GUIContent.none, ( refType.enumValueIndex == (int)EAssetReferenceType.Resources ) ? resourcesPath.stringValue : guid.stringValue );
         }
 
         var path = AssetDatabase.GetAssetPath( hardRef.objectReferenceValue );
