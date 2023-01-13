@@ -4,6 +4,8 @@ using K10.EditorGUIExtention;
 using UnityEditor;
 using UnityEngine;
 
+using System.Linq;
+
 public static class SerializedPropertyExtensions
 {
 	private static readonly Dictionary<string, IVoidable> _events = new Dictionary<string, IVoidable>();
@@ -41,12 +43,26 @@ public static class SerializedPropertyExtensions
 		var uobj = property.serializedObject.targetObject;
 		object obj = uobj;
 		objType = obj.GetType();
-		var path = property.propertyPath.Split( '.' );
+        var ppath = property.propertyPath.Replace(".Array.data[", ".[");
+		var path = ppath.Split( '.' );
 		for( int i = 0; i < path.Length; i++ )
 		{
-			var field = objType.GetField( path[i], flags );
-			obj = field.GetValue( obj );
-			objType = field.FieldType;
+			var element = path[i];
+			if (element.StartsWith("["))
+			{
+				var index = System.Convert.ToInt32(element.Substring(0).Replace("[", "").Replace("]", ""));
+				var enumerable = obj as System.Collections.IEnumerable;
+            	var enm = enumerable.GetEnumerator();
+				for (int eId = 0; eId <= index; eId++) if( !enm.MoveNext() ) return null;
+				obj =  enm.Current;
+				objType = obj.GetType();
+			}
+			else
+			{
+				var field = objType.GetField( element, flags );
+				obj = field.GetValue( obj );
+				objType = field.FieldType;
+			}
 		}
 
 		return obj;

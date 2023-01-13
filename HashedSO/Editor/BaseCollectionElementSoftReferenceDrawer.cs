@@ -11,27 +11,54 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
     const int STATE_WIDTH = 48;
 
     static Color RED_COLOR = Color.Lerp( Color.red, Color.white, .5f );
+    
+    public void UpdateOldRef( SerializedProperty editorAssetRefGuid, SerializedProperty hardRef )
+    {
+        if( hardRef.objectReferenceValue == null ) return;
+        var path = AssetDatabase.GetAssetPath( hardRef.objectReferenceValue );
+        editorAssetRefGuid.stringValue = AssetDatabase.AssetPathToGUID( path );
+        Debug.Log( $"UpdateOldRef( {hardRef.objectReferenceValue.NameOrNull()}, {path}, {editorAssetRefGuid.stringValue} )" );
+        hardRef.objectReferenceValue = null;
+    }
 
     public override void OnGUI( Rect area, SerializedProperty property, GUIContent label )
     {
-        var hardRef = property.FindPropertyRelative( "_assetHardReference" );
-        var deep = property.isExpanded && hardRef.objectReferenceValue != null;
+        var editorAssetRefGuid = property.FindPropertyRelative( "_editorAssetRefGuid" );
+
+        UpdateOldRef( editorAssetRefGuid, property.FindPropertyRelative( "_assetHardReference" ) );
+
+        var refIsNull = string.IsNullOrEmpty( editorAssetRefGuid.stringValue );
+
+        var deep = property.isExpanded && !refIsNull;
         var slh = EditorGUIUtility.singleLineHeight;
         
         var refState = property.FindPropertyRelative( "_referenceState" );
         var id = property.FindPropertyRelative( "_id" );
+
+        Object realRef = null;
+        var instance = ((BaseCollectionElementSoftReference)property.GetInstance());
+        var assetType = instance.EDITOR_GetAssetType();
+        var path = UnityEditor.AssetDatabase.GUIDToAssetPath( editorAssetRefGuid.stringValue );
+        realRef = UnityEditor.AssetDatabase.LoadAssetAtPath( path, assetType );
         
         var color = Color.white;
-        if( hardRef.objectReferenceValue == null ) color = RED_COLOR;
+        if( refIsNull ) color = RED_COLOR;
         GuiColorManager.New( color );
 
         var firstLine = area.RequestTop( slh );
         var labelRect = firstLine.RequestLeft( EditorGUIUtility.labelWidth );
         property.isExpanded = EditorGUI.BeginFoldoutHeaderGroup( firstLine.RequestLeft( EditorGUIUtility.labelWidth ), property.isExpanded, label );
-        EditorGUI.ObjectField( firstLine.CutLeft( EditorGUIUtility.labelWidth ), hardRef, GUIContent.none );
+        
+		var newRef = EditorGUI.ObjectField( firstLine.CutLeft( EditorGUIUtility.labelWidth ), GUIContent.none, realRef, assetType, true );
+        if( realRef != newRef )
+        {
+            path = AssetDatabase.GetAssetPath( newRef );
+            var newGuidValue = AssetDatabase.AssetPathToGUID( path );
+            editorAssetRefGuid.stringValue = newGuidValue;
+        }
 
-        var realRef = (IHashedSO)hardRef.objectReferenceValue;
-        id.intValue = realRef?.HashID ?? -1;
+        var specifiedRealRef = (IHashedSO)newRef;
+        id.intValue = specifiedRealRef?.HashID ?? -1;
         
         area = area.CutTop( slh );
 
@@ -60,8 +87,7 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
                 EditorGUI.EndDisabledGroup();
             }
             
-            var hRef = hardRef.objectReferenceValue;
-            if( hRef != null ) EditorGUI.TextField( area, GUIContent.none, $"{hardRef.objectReferenceValue.GetType().ToString()}[{id.intValue}] => {hardRef.objectReferenceValue.NameOrNull()}" );
+            if( specifiedRealRef != null ) EditorGUI.TextField( area, GUIContent.none, $"{specifiedRealRef.GetType().ToString()}[{id.intValue}] => {newRef.name}" );
             else EditorGUI.TextField( area, GUIContent.none, $"NULL[{id.intValue}] => NULL" );
         }
         
@@ -70,9 +96,10 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
     
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
     {
+        var editorAssetRefGuid = property.FindPropertyRelative( "_editorAssetRefGuid" );
+        var refIsNull = string.IsNullOrEmpty( editorAssetRefGuid.stringValue );
         var slh = EditorGUIUtility.singleLineHeight;
-        var hardRef = property.FindPropertyRelative( "_assetHardReference" );
-        var deep = property.isExpanded && hardRef.objectReferenceValue != null;
+        var deep = property.isExpanded && !refIsNull;
         var lines = 1 + ( deep ? DEEP_LINES : 0 );
         return slh * lines;
     }

@@ -18,27 +18,25 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
     static Color YELLOW_COLOR = Color.Lerp( Color.yellow, Color.white, .5f );
     static Color GREEN_COLOR = Color.Lerp( Color.green, Color.white, .8f );
 
-    void ResetData( SerializedProperty refType, SerializedProperty hardRef, SerializedProperty assetDirectRef, SerializedProperty guid, SerializedProperty resourcesPath )
+    void ResetData( SerializedProperty editorAssetRefGuid, SerializedProperty refType, SerializedProperty assetDirectRef, SerializedProperty guid, SerializedProperty resourcesPath )
     {
             refType.enumValueIndex = (int)EAssetReferenceType.DirectReference;
-            hardRef.objectReferenceValue = null;
             assetDirectRef.objectReferenceValue = null;
             guid.stringValue = string.Empty;
             resourcesPath.stringValue = string.Empty;
+            editorAssetRefGuid.stringValue = string.Empty;
     }
 
-    void AssertReferenceType( SerializedProperty refType, SerializedProperty hardRef, SerializedProperty assetDirectRef, SerializedProperty guid, SerializedProperty resourcesPath )
+    void AssertReferenceType( Object obj, string path, SerializedProperty editorAssetRefGuid, SerializedProperty refType, SerializedProperty assetDirectRef, SerializedProperty guid, SerializedProperty resourcesPath )
     {
-        var go = hardRef.objectReferenceValue;
-        if( go == null )
+        if( string.IsNullOrEmpty( editorAssetRefGuid.stringValue ) )
         {
-            ResetData( refType, hardRef, assetDirectRef, guid, resourcesPath );
+            ResetData( editorAssetRefGuid, refType, assetDirectRef, guid, resourcesPath );
             return;
         }
 
-        var path = AssetDatabase.GetAssetPath( hardRef.objectReferenceValue );
-        guid.stringValue = AssetDatabase.AssetPathToGUID( path );
         var resourcesIndex = path.IndexOf( RESOURCES_PATH, System.StringComparison.OrdinalIgnoreCase );
+        guid.stringValue = string.Empty;
         
         if( resourcesIndex != -1 )
         {
@@ -53,19 +51,29 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
             assetDirectRef.objectReferenceValue = null;
         }
 #if USE_ADDRESSABLES
-        else if( hardRef.objectReferenceValue.IsAssetAddressable() )
+        else if( obj.IsAssetAddressable() )
         {
             refType.enumValueIndex = (int)EAssetReferenceType.Addressables;
             assetDirectRef.objectReferenceValue = null;
             resourcesPath.stringValue = string.Empty;
+            guid.stringValue = editorAssetRefGuid.stringValue;
         }
 #endif
         else
         {
             refType.enumValueIndex = (int)EAssetReferenceType.DirectReference;
-            assetDirectRef.objectReferenceValue = hardRef.objectReferenceValue;
+            assetDirectRef.objectReferenceValue = obj;
             resourcesPath.stringValue = string.Empty;
         }
+    }
+
+    public void UpdateOldRef( SerializedProperty editorAssetRefGuid, SerializedProperty hardRef )
+    {
+        if( hardRef.objectReferenceValue == null ) return;
+        var path = AssetDatabase.GetAssetPath( hardRef.objectReferenceValue );
+        editorAssetRefGuid.stringValue = AssetDatabase.AssetPathToGUID( path );
+        Debug.Log( $"UpdateOldRef( {hardRef.objectReferenceValue.NameOrNull()}, {path}, {editorAssetRefGuid.stringValue} )" );
+        hardRef.objectReferenceValue = null;
     }
 
     public override void OnGUI( Rect area, SerializedProperty property, GUIContent label )
@@ -73,17 +81,23 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
         var deep = property.isExpanded;
         var slh = EditorGUIUtility.singleLineHeight;
 
+        var editorAssetRefGuid = property.FindPropertyRelative( "_editorAssetRefGuid" );
+        UpdateOldRef( editorAssetRefGuid, property.FindPropertyRelative( "_assetHardReference" ) );
+        
+        var instance = ((BaseAssetHybridReference)property.GetInstance());
+        var assetType = instance.EDITOR_GetAssetType();
+        var path = UnityEditor.AssetDatabase.GUIDToAssetPath( editorAssetRefGuid.stringValue );
+        var realRef = UnityEditor.AssetDatabase.LoadAssetAtPath( path, assetType );
+
         var refType = property.FindPropertyRelative( "_referenceType" );
-        var hardRef = property.FindPropertyRelative( "_assetHardReference" );
         var guid = property.FindPropertyRelative( "_guid" );
         var resourcesPath = property.FindPropertyRelative( "_resourcesPath" );
         var directRef = property.FindPropertyRelative( "_serializedDirectReference" );
         var refState = property.FindPropertyRelative( "_referenceState" );
-
-        AssertReferenceType( refType, hardRef, directRef, guid, resourcesPath );
+        AssertReferenceType( realRef, path, editorAssetRefGuid, refType, directRef, guid, resourcesPath );
 
         Color color = Color.white;
-        if( hardRef.objectReferenceValue == null ) color = RED_COLOR;
+        if( string.IsNullOrEmpty( editorAssetRefGuid.stringValue ) ) color = RED_COLOR;
         else
         {
             switch( refType.enumValueIndex )
@@ -100,8 +114,16 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
         var firstLine = area.RequestTop( slh );
         var labelRect = firstLine.RequestLeft( EditorGUIUtility.labelWidth );
         property.isExpanded = EditorGUI.BeginFoldoutHeaderGroup( firstLine.RequestLeft( EditorGUIUtility.labelWidth ), property.isExpanded, label );
-		// property.isExpanded = EditorGUI.Foldout( firstLine.RequestLeft( EditorGUIUtility.labelWidth ), property.isExpanded, label );
-		EditorGUI.ObjectField( firstLine.CutLeft( EditorGUIUtility.labelWidth ), hardRef, GUIContent.none );
+
+		var newRef = EditorGUI.ObjectField( firstLine.CutLeft( EditorGUIUtility.labelWidth ), GUIContent.none, realRef, assetType, true );
+        if( realRef != newRef )
+        {
+            path = AssetDatabase.GetAssetPath( newRef );
+            var newGuidValue = AssetDatabase.AssetPathToGUID( path );
+            editorAssetRefGuid.stringValue = newGuidValue;
+            guid.stringValue = newGuidValue;
+        }
+
         EditorGUI.EndFoldoutHeaderGroup();
 
         if( deep )
@@ -116,21 +138,21 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
                 EditorGUI.EndDisabledGroup();
 
                 EditorGUI.BeginDisabledGroup( state == EAssetReferenceState.Empty );
-                if( GUI.Button( executionArea.VerticalSlice( 1, 5 ), "Dispose" ) ) ((BaseAssetHybridReference)property.GetInstance())?.DisposeAsset();
+                if( GUI.Button( executionArea.VerticalSlice( 1, 5 ), "Dispose" ) ) instance?.DisposeAsset();
                 EditorGUI.EndDisabledGroup();
                 
                 EditorGUI.BeginDisabledGroup( state != EAssetReferenceState.Empty );
-                if( GUI.Button( executionArea.VerticalSlice( 2, 5 ), "PreLoad" ) ) ((BaseAssetHybridReference)property.GetInstance())?.PreLoad();
+                if( GUI.Button( executionArea.VerticalSlice( 2, 5 ), "PreLoad" ) ) instance?.PreLoad();
                 EditorGUI.EndDisabledGroup();
 
                 EditorGUI.BeginDisabledGroup( state == EAssetReferenceState.Loaded || state == EAssetReferenceState.LoadedNull );
-                if( GUI.Button( executionArea.VerticalSlice( 3, 5 ), "Load" ) ) ((BaseAssetHybridReference)property.GetInstance())?.GetBaseReference();
+                if( GUI.Button( executionArea.VerticalSlice( 3, 5 ), "Load" ) ) instance?.GetBaseReference();
                 EditorGUI.EndDisabledGroup();
 
                 EditorGUI.BeginDisabledGroup( state == EAssetReferenceState.Loaded );
                 if( GUI.Button( executionArea.VerticalSlice( 4, 5 ), "Both" ) ) 
                 {
-                    var inst = ((BaseAssetHybridReference)property.GetInstance());
+                    var inst = instance;
                     inst?.PreLoad();
                     inst?.GetBaseReference();
                 }
@@ -149,13 +171,12 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
             EditorGUI.TextField( line.CutLeft( 100 ), GUIContent.none, ( refType.enumValueIndex == (int)EAssetReferenceType.Resources ) ? resourcesPath.stringValue : guid.stringValue );
         }
 
-        var path = AssetDatabase.GetAssetPath( hardRef.objectReferenceValue );
         if( path.Contains( "editor/", System.StringComparison.OrdinalIgnoreCase ) )
         {
             var msg = $"Cannot point to an asset on *Editor* Folder!\n!detected! editor folder on the following path:\n{path}";
             Debug.LogError( msg );
             EditorUtility.DisplayDialog( "ERROR", msg, "I will Never do that again!" );
-            ResetData( refType, hardRef, directRef, guid, resourcesPath );
+            ResetData( editorAssetRefGuid, refType, directRef, guid, resourcesPath );
         }
         
         GuiColorManager.Revert();
