@@ -21,7 +21,7 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
     [SerializeField] EAssetReferenceState _referenceState = EAssetReferenceState.Empty;
 #endif //UNITY_EDITOR
     T _assetRuntimeReference;
-    [SerializeField] int _id;
+    [SerializeField] int _id = -1;
 
 	private static T _dummyInstance = null;
 	private static T Dummy => _dummyInstance ?? ( _dummyInstance = ScriptableObject.CreateInstance<T>() );
@@ -39,10 +39,15 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 
     public void UpdateOldRef()
     {
-        if( _assetHardReference == null ) return;
+		if (_assetHardReference == null)
+		{
+			_id = -1;
+			return;
+		}
         var path = UnityEditor.AssetDatabase.GetAssetPath( _assetHardReference );
         _editorAssetRefGuid = UnityEditor.AssetDatabase.AssetPathToGUID( path );
-        _assetHardReference = null;
+		EDITOR_UpdateDataFromRef();
+		_assetHardReference = null;
     }
 
 	public override void EDITOR_UpdateDataFromRef()
@@ -55,7 +60,10 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 
 	public T GetReference()
 	{
-		_assetRuntimeReference = (T)Dummy.GetCollection().GetElementBase( Mathf.Max( _id, 0 ) );
+		if(_id >= 0) 
+		{
+			_assetRuntimeReference = (T)Dummy.GetCollection().GetElementBase( Mathf.Max( _id, 0 ) );
+		}
 #if UNITY_EDITOR
 		_referenceState = _assetRuntimeReference != null ? EAssetReferenceState.Loaded : EAssetReferenceState.LoadedNull;
 #endif //UNITY_EDITOR
@@ -68,7 +76,6 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 		_assetHardReference = t;
 		UpdateOldRef();
 		GetReference();
-		EDITOR_UpdateDataFromRef();
 	}
 #endif //UNITY_EDITOR
 }
