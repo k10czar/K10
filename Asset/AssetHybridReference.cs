@@ -40,9 +40,11 @@ public class AssetHybridReference<T> : BaseAssetHybridReference where T : UnityE
     [SerializeField] string _guid;
     [SerializeField] string _resourcesPath;
     [SerializeField] EAssetReferenceType _referenceType;
-    
-    
-    bool _loaded = false;
+    public bool IsRefNull => _referenceType == EAssetReferenceType.Addressables ? string.IsNullOrEmpty( _guid ) : _referenceType == EAssetReferenceType.Resources ? string.IsNullOrEmpty( _resourcesPath ) : _serializedDirectReference == null;
+
+
+
+	bool _loaded = false;
 #if USE_ADDRESSABLES
 	private AsyncOperationHandle<T> _addressableOp;
 #endif //USE_ADDRESSABLES
