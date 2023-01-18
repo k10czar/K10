@@ -70,12 +70,12 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 		return _assetRuntimeReference;
 	}
 
-#if UNITY_EDITOR
 	public void SetReference( T t )
 	{
+#if UNITY_EDITOR
 		_assetHardReference = t;
 		UpdateOldRef();
 		GetReference();
-	}
 #endif //UNITY_EDITOR
+	}
 }
