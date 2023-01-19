@@ -93,7 +93,16 @@ public class AssetHybridReference<T> : BaseAssetHybridReference where T : UnityE
             _editorAssetRefGuid = string.Empty;
     }
 
-    public void UpdateOldRef()
+	public void SetReference( T t )
+	{
+#if UNITY_EDITOR
+		_assetHardReference = t;
+		UpdateOldRef();
+		GetReference();
+#endif //UNITY_EDITOR
+	}
+
+	public void UpdateOldRef()
     {
         if( _assetHardReference == null ) return;
         var path = UnityEditor.AssetDatabase.GetAssetPath( _assetHardReference );
