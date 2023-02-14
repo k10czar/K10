@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using static UnityEditor.Sprites.Packer;
 
 [CustomPropertyDrawer(typeof(BaseCollectionElementSoftReference), true)]
 public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
@@ -37,7 +38,12 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
 
         Object realRef = null;
         var instance = ((BaseCollectionElementSoftReference)property.GetInstance());
-        var assetType = instance.EDITOR_GetAssetType();
+        if(instance == null)
+        {
+            EditorGUI.LabelField( area, "NULL" );
+            return;
+		}
+		var assetType = instance.EDITOR_GetAssetType();
         var path = UnityEditor.AssetDatabase.GUIDToAssetPath( editorAssetRefGuid.stringValue );
         realRef = UnityEditor.AssetDatabase.LoadAssetAtPath( path, assetType );
         
