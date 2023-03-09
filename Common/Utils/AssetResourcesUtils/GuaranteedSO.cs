@@ -26,7 +26,7 @@ public class GuaranteedSO<T> where T : ScriptableObject, new()
 	}
 
 #if UNITY_EDITOR
-	const string RESOURCES_DEFAULT_PATH = "[_FIRST_]/Resources/";
+	const string RESOURCES_DEFAULT_PATH = "_FIRST/Resources/";
 	static T RequestResource( string resourcePath )
 	{
 		var t = Resources.Load<T>( resourcePath );
