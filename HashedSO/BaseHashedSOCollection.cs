@@ -1,6 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -27,16 +30,21 @@ public interface IHashedSOCollection
 	bool ContainsHashID( int hashID );
 	bool Contains( IHashedSO obj );
 	int Count { get; }
+	int PlaceholderCount { get; } //new check consistence - Placeholder
 	IHashedSO GetElementBase( int hashID );
+	IHashedSO PlaceholderGetElementBase( int hashID );//new check consistence - Placeholder
 }
 
 public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollection, System.Collections.IEnumerable
 {
 
 	public abstract int Count { get; }
+	public abstract int PlaceholderCount { get; } //new check consistence - Placeholder
 	public abstract IHashedSO GetElementBase( int index );
+	public abstract IHashedSO PlaceholderGetElementBase( int index );//new check consistence - Placeholder
 	public abstract bool Contains( IHashedSO element );
 	public abstract bool ContainsHashID( int hashID );
+	public abstract bool PlaceHolderContainsHashID( int hashID );//new check consistence - Placeholder
 
 	IEnumerator IEnumerable.GetEnumerator()
 	{
@@ -116,6 +124,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 	void IHashedSOCollectionEditor.EditorCheckConsistency()
 	{
+		Debug.Log($"<><>EditorCheckConsistency");
 		( (IHashedSOCollectionEditor)this ).EditorRemoveWrongElements();
 
 		var guids = AssetDatabase.FindAssets( $"t:{GetElementType().ToString()}" );
@@ -136,6 +145,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		if( t == null ) return false;
 
 		int hashID = t.HashID;
+		
 		IHashedSO element = ( hashID < Count && hashID >= 0 ) ? GetElementBase( hashID ) : null;
 
 		if( element == null && hashID >= 0 )
@@ -183,9 +193,13 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		}
 
 		var newID = Count;
+		
+		Debug.Log($"<><>Count: {Count}, newID: {newID}");
+
 		// Editor_Log.Add( $"Request Member:\nOn [{newID}] setted {t.ToStringOrNull()} with new hashID{(fromDialog ? " with dialog permission" : "")}" );
-		AddElement( t );
 		( (IHashedSOEditor)t ).SetHashID( newID );
+		//AddElement( t );  //new  - Placeholder   -- Will not add to the old list anymore
+		PlaceholderAddElement(t); //new  - Placeholder
 
 		UnityEditor.EditorUtility.SetDirty( (Object)t );
 		UnityEditor.EditorUtility.SetDirty( this );
@@ -239,8 +253,9 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 			var asset = AssetDatabase.LoadAssetAtPath( path, GetElementType() );
 			if( asset is IHashedSO t )
 			{
-				AddElement( t );
 				( (IHashedSOEditor)t ).SetHashID( Count - 1 );
+				//AddElement( t ); //new  - Placeholder   -- Will not add to the old list anymore
+				PlaceholderAddElement(t);//new  - Placeholder
 			}
 		}
 
@@ -256,7 +271,9 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 	public abstract bool EditorCanChangeIDsToOptimizeSpace { get; }
 	protected abstract void Clear();
+	protected abstract void ClearPlaceholderList(); //new  - Placeholder
 	protected abstract bool AddElement( IHashedSO obj );
+	protected abstract bool PlaceholderAddElement( IHashedSO obj ); //new  - Placeholder
 	protected abstract bool ResolveConflictedFile( IHashedSO t, string assetPath );
 	public abstract bool TryResolveConflict( int i );
 	protected abstract bool SetRealPosition( IHashedSO obj );

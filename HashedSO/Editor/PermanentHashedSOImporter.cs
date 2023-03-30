@@ -6,6 +6,7 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 {
 	static void OnPostprocessAllAssets( string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths )
 	{
+		Debug.Log($"<><> OnPostprocessAllAssets 1");
 		var sw = new System.Diagnostics.Stopwatch();
 		sw.Start();
 
@@ -55,5 +56,7 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 				+ $"\ndeletedAssets({deletedAssets.Length}):\n\t-{string.Join( ",\n\t-", deletedAssets )}"
 				+ $"\nmovedAssets({movedAssets.Length}):\n\t-{string.Join( ",\n\t-", movedAssets )}"
 				+ $"\nmovedFromAssetPaths({movedFromAssetPaths.Length}):\n\t-{string.Join( ",\n\t-", movedFromAssetPaths )}" );
+		
+		Debug.Log($"<><> OnPostprocessAllAssets 2");
 	}
 }
