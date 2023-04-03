@@ -124,7 +124,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 	void IHashedSOCollectionEditor.EditorCheckConsistency()
 	{
-		Debug.Log($"<><>EditorCheckConsistency");
+//		Debug.Log($"<><>EditorCheckConsistency");
 		( (IHashedSOCollectionEditor)this ).EditorRemoveWrongElements();
 
 		var guids = AssetDatabase.FindAssets( $"t:{GetElementType().ToString()}" );
@@ -148,8 +148,10 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		
 		IHashedSO element = ( hashID < Count && hashID >= 0 ) ? GetElementBase( hashID ) : null;
 
+			Debug.Log($"<><> element: {element}");
 		if( element == null && hashID >= 0 )
 		{
+			Debug.Log($"<><> Callset 1");
 			SetRealPosition( t );
 			EditorRemoveDuplication( t );
 			// Editor_Log.Add( $"Request Member:\nOn [{hashID}] set {t.ToStringOrNull()}, was NULL before" );
@@ -164,7 +166,8 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 			if( element.HashID != t.HashID || forceCorrectPosition )
 			{
 				// Editor_Log.Add( $"Request Member:\nOn [{hashID}] removed {element.ToStringOrNull()} and replace with {t.ToStringOrNull()}" );
-				SetRealPosition( t );
+			Debug.Log($"<><> Callset 2");
+				//SetRealPosition( t );
 			}
 			EditorRemoveDuplication( t );
 			return false;
@@ -219,7 +222,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		return -1;
 	}
 
-	void EditorRemoveDuplication( IHashedSO t )
+	void EditorRemoveDuplication( IHashedSO t ) //TODO check if need this
 	{
 		if( t == null ) return;
 		var count = Count;
@@ -235,6 +238,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 	void IHashedSOCollectionEditor.EditorTryOptimize()
 	{
+		Debug.Log("<><><><><  EditorTryOptimize: ");
 		var editor = ( (IHashedSOCollectionEditor)this );
 		if( !editor.EditorCanChangeIDsToOptimizeSpace ) return;
 

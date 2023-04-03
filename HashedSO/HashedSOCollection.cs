@@ -93,7 +93,8 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 			newStruct.ObjectInList = t;
 			newStruct.ID = t.HashID;
 			
-			//( (IHashedSOEditor)t ).SetHashID( SetRandomID());
+			int newid = t.HashID +10;
+			( (IHashedSOEditor)t ).SetHashID( newid);
 			//Debug.Log($"<><>COUNT AFTER: {PlaceholderCount}");
 
 		
@@ -119,7 +120,7 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		UnityEditor.EditorUtility.SetDirty( this );
 		return true;
 	}
-	protected override bool SetRealPosition( IHashedSO obj )
+	protected override bool SetRealPosition( IHashedSO obj ) //TODO: why this change id
 	{
 		var t = obj as T;
 		if( t == null ) return false;
