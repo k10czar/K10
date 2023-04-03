@@ -166,8 +166,8 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 			if( element.HashID != t.HashID || forceCorrectPosition )
 			{
 				// Editor_Log.Add( $"Request Member:\nOn [{hashID}] removed {element.ToStringOrNull()} and replace with {t.ToStringOrNull()}" );
-			Debug.Log($"<><> Callset 2");
-				//SetRealPosition( t );
+				Debug.Log($"<><> Callset 2");
+				SetRealPosition( t );
 			}
 			EditorRemoveDuplication( t );
 			return false;
@@ -176,7 +176,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		var where = EditorWhereIs( t );
 		if( where != -1 )
 		{
-			t.SetHashID( where );
+			t.SetHashID( where ); //TODO: check all flow that send to SET HASH-ID
 			EditorRemoveDuplication( t );
 			return false;
 		}
@@ -201,7 +201,8 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 		// Editor_Log.Add( $"Request Member:\nOn [{newID}] setted {t.ToStringOrNull()} with new hashID{(fromDialog ? " with dialog permission" : "")}" );
 		( (IHashedSOEditor)t ).SetHashID( newID );
-		//AddElement( t );  //new  - Placeholder   -- Will not add to the old list anymore
+		
+		AddElement( t );  //new  - Placeholder   -- Will not add to the old list anymore
 		PlaceholderAddElement(t); //new  - Placeholder
 
 		UnityEditor.EditorUtility.SetDirty( (Object)t );
@@ -258,7 +259,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 			if( asset is IHashedSO t )
 			{
 				( (IHashedSOEditor)t ).SetHashID( Count - 1 );
-				//AddElement( t ); //new  - Placeholder   -- Will not add to the old list anymore
+				AddElement( t ); //new  - Placeholder   -- Will not add to the old list anymore
 				PlaceholderAddElement(t);//new  - Placeholder
 			}
 		}
