@@ -50,7 +50,13 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	
 
 	public override System.Type GetElementType() => typeof(T);
-	public override IHashedSO GetElementBase(int hashId) => this[hashId];
+
+	public override IHashedSO GetElementBase(int hashId)
+	{
+		Debug.Log("<><>< hashId: "+hashId);
+		return	objDic.GetValuesList()[hashId]; //   this[hashId];
+	}
+	
 	public override IHashedSO PlaceholderGetElementBase( int hashId ) => _list_placeholder.Find((x) => x.ID == hashId).ObjectInList; //new  - Placeholder
 
 	public override bool ContainsHashID(int hashID) => (hashID < objDic.Count || objDic[hashID] != null);
@@ -77,6 +83,7 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	public IEnumerator<T> GetEnumerator() => objDic.Values.GetEnumerator();  //TODO: VALIDATE FOR REAL
 
 #if UNITY_EDITOR
+
 	protected override void Clear() 
 	{ 
 		objDic.Clear();
@@ -90,8 +97,20 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	public override bool EditorCanChangeIDsToOptimizeSpace => true;
 
 	public override void Editor_HACK_Remove(int id){ objDic[id] = null; }
-	
-	protected override bool AddElement( IHashedSO obj ) { if( obj is T t ) objDic.Add( t.HashID, t ); return ( obj is T ); }
+
+	protected override bool AddElement(IHashedSO obj)
+	{
+		if( obj is T t )
+			objDic.Add( t.HashID, t );
+		
+		foreach(KeyValuePair<int,T> i in objDic)
+		{
+			//Now you can access the key and value both separately from this attachStat as:
+			Debug.Log("<><><><>Key: "+i.Key+ " value: "+i.Value);
+			Debug.Log(i.Value);
+		}
+		return ( obj is T );
+	}
 	
 	protected override bool PlaceholderAddElement(IHashedSO obj) //new  - Placeholder
 	{
@@ -135,7 +154,7 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		if( t == null ) return false;
 		var id = obj.HashID;
 		if( id < 0 ) return false;
-	//	while( id >= objDic.Count ) objDic.Add( null );
+		//while( id >= objDic.Count ) objDic.Add( null );
 		objDic[id] = t;
 		UnityEditor.EditorUtility.SetDirty( this );
 		return true;
@@ -143,16 +162,18 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	
 #endif
 
-	public override string ToString()
+	public override string ToString()// TODO: NEED FIX
 	{
 		string s = "";
 		for( int i = 0; i < objDic.Count; i++ )
 		{
-			var element = objDic[i];
+			Debug.Log($"<><>PlaceholderCount Before : {PlaceholderCount}");
+			var element = objDic[i];  // THIS SHOULD BE ID AND NOT POS
 			if( element == null ) s += $"[{i}] => NULL\n";
 			else s += $"[{i}] => {objDic[i].NameOrNull()}[{objDic[i].HashID}]\n";
 		}
 		return $"{this.GetType()}:\n{s}";
+
 	}
 
 	private int SetRandomID()

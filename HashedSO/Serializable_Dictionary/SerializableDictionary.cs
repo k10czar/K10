@@ -13,6 +13,8 @@ namespace GitHub.Unity
         [SerializeField] private List<TKey> keys = new List<TKey>();
         [SerializeField] private List<TValue> values = new List<TValue>();
 
+        public List<TValue> GetValuesList() => values;
+
         // save the dictionary to lists
         public void OnBeforeSerialize()
         {
