@@ -119,12 +119,12 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		
 		for( int i = 0; i < guids.Length; i++ )
 		{
-			Debug.Log($"!!!!!<><<><>< inicioLoop: " );
+		//	Debug.Log($"!!!!!<><<><>< inicioLoop: " );
 			var path = AssetDatabase.GUIDToAssetPath( guids[i] );
 			var asset = AssetDatabase.LoadAssetAtPath( path, GetElementType() );
 			( (IHashedSOCollectionEditor)this ).EditorRequestMember( asset );
 		}
-			Debug.Log($"!!!!!<><<><>< tchau: " );
+		//	Debug.Log($"!!!!!<><<><>< tchau: " );
 
 		UnityEditor.EditorUtility.SetDirty( this );
 	}
@@ -143,53 +143,81 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		IHashedSO element;
 
 		
-		Debug.Log($"!!!!!<><<><>< hashid: {hashID} Count: {Count} " );
-		if (hashID < Count && hashID >= 0)
+		Debug.Log($"!!!!!<><<><>< hashid: {hashID}  name: {t.ToString()}  Count: {Count} " );
+
+
+
+		if (!DicHasIDKey(hashID))
 		{
-		Debug.Log($"!!!!!<><<><>< PEGOU ELEMENTO " );
-			element = GetElementBase(hashID);
+			Debug.Log($"???<><<><>< NAO TEM ID {hashID}  name: {t.ToString()} ");
+			AddElement(t);
+
+			return true;
 		}
 		
 		else
 		{
-		Debug.Log($"!!!!!<><<><>< SETOU ELEMENTO NULL " );
-			element = null;
+			Debug.Log($"???<><<><>< JÁ TEM ID {hashID}  name: {t.ToString()} ");
+			var randID = hashID;
+
+			while (DicHasIDKey(randID))
+			{
+				randID = Random.Range(Count+1, int.MaxValue);
+			}
+		
+			( (IHashedSOEditor)t ).SetHashID( randID );
+	
+			Debug.Log($"???<><<><>< JÁ TROCOU ID {hashID}  name: {t.ToString()} ");
+			AddElement( t );
+			return false;
+
 		}
 		
-		Debug.Log("!!!!!<><<><><  element: "+element + " -hashID: "+hashID);
-//		Debug.Log("CCCC");
+															//if (hashID < Count && hashID >= 0)
+															//{
+															//Debug.Log($"!!!!!<><<><>< PEGOU ELEMENTO " );
+															//	element = GetElementBase(hashID);
+															//Debug.Log($"!!!!!<><<><>< PEGOU ELEMENTO {element} ID: {element.HashID}" );
+															//}
+															//
+															//else
+															//{
+															//	Debug.Log($"!!!!!<><<><>< SETOU ELEMENTO NULL " );
+															//	element = null;
+															//}
+															//
+															//Debug.Log("!!!!!<><<><><  element: "+element + " -hashID: "+hashID);
 
-		if( element == null && hashID >= 0 )
-		{
-//		Debug.Log($"!!!!!<><<><>< VAI SETAR POS " );
-		//	Debug.Log("DDDD");
-			SetRealPosition( t );
-		Debug.Log($"!!!!!<><<><>< SETOU POS " );
-		//	Debug.Log("DDDD2");
-			EditorRemoveDuplication( t );
-		//	Debug.Log("DDDD3");
-			// Editor_Log.Add( $"Request Member:\nOn [{hashID}] set {t.ToStringOrNull()}, was NULL before" );
-			return false;
-		}
-	//		Debug.Log("DDDD4");
+
+														//if( element == null && hashID >= 0 )
+														//{
+//														//Debug.Log($"!!!!!<><<><>< VAI SETAR POS " );
+														
+														//	SetRealPosition( t );
+														//	Debug.Log($"!!!!!<><<><>< SETOU POS " );
+														
+														//	EditorRemoveDuplication( t );
+														
+														//	// Editor_Log.Add( $"Request Member:\nOn [{hashID}] set {t.ToStringOrNull()}, was NULL before" );
+														//	return false;
+														//}
+
 
 		var sameRef = ScriptableObject.ReferenceEquals( t, element );
-
-
-		//Debug.Log("EEEEEE");
-		if( sameRef )
-		{
-	//	Debug.Log("FFFFF");
-			if( element.HashID != t.HashID || forceCorrectPosition )
-			{
-			//	Debug.Log("GGGGGG");
-				// Editor_Log.Add( $"Request Member:\nOn [{hashID}] removed {element.ToStringOrNull()} and replace with {t.ToStringOrNull()}" );
-			
-				SetRealPosition( t );
-			}
-			EditorRemoveDuplication( t );
-			return false;
-		}
+														///
+														///if( sameRef )
+														///{
+														///Debug.Log("FFFFF");
+														///	if( element.HashID != t.HashID || forceCorrectPosition )
+														///	{
+														///	//	Debug.Log("GGGGGG");
+														///		// Editor_Log.Add( $"Request Member:\nOn [{hashID}] removed {element.ToStringOrNull()} and replace with {t.ToStringOrNull()}" );
+														///	
+														///		SetRealPosition( t );
+														///	}
+														///	EditorRemoveDuplication( t );
+														///	return false;
+														///}
 
 		var where = EditorWhereIs( t );
 		if( where != -1 )
@@ -258,17 +286,17 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		Debug.Log($"!!!!!<><<><><  count {Count}  " );
 		for( int i = 0; i < Count; i++ )
 		{
-			//Debug.Log($"!!!!!<><<><><  BATATA 1" );
+			
 			var e = GetElementBase( i );
-			Debug.Log($"!!!!!<><<><><  BATATA 2 " );
+		
 			if( e == null ) continue;
-			Debug.Log("!!!!!<><<><><BATATA 4");
+		
 			if( i == t.HashID ) continue;  //TODO: this check should not check with i
-			Debug.Log("!!!!!<><<><><BATATA 5");
+
 			if( !ScriptableObject.ReferenceEquals( t, e ) ) continue;
-			//Debug.Log("!!!!!<><<><><BATATA 6");
+		
 			Editor_HACK_Remove( i );
-			//Debug.Log("!!!!!<><<><><BATATA 7");
+		
 		}
 	}
 
@@ -312,6 +340,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 	public abstract bool EditorCanChangeIDsToOptimizeSpace { get; }
 	protected abstract void Clear();
 	protected abstract bool AddElement( IHashedSO obj );
+	protected abstract bool DicHasIDKey( int hasID );
 	protected abstract bool ResolveConflictedFile( IHashedSO t, string assetPath );
 	public abstract bool TryResolveConflict( int i );
 	protected abstract bool SetRealPosition( IHashedSO obj );

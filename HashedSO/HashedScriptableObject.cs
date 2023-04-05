@@ -36,13 +36,6 @@ public abstract class HashedScriptableObject : ScriptableObject, IHashedSO, IExp
 #if UNITY_EDITOR
 	void IHashedSOEditor.SetHashID( int newID )
 	{
-		Debug.Log("!!!!!<><<><><  SETHASH ID");
-//		int maxRandom = 50000;
-		var before = newID;
-		//newID += 5;
-		//newID = UnityEngine.Random.Range(newID+1, maxRandom);
-
-//		Debug.Log("<><><><><  newid+5: "+newID);
 		
 		_hashId = newID;
 		var path = UnityEditor.AssetDatabase.GetAssetPath( this );

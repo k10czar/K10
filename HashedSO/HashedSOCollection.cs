@@ -140,6 +140,11 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 
 	}
 
+	protected override bool DicHasIDKey(int hashID)
+	{
+		return objDic.ContainsKey(hashID);
+	}
+
 //	private int SetRandomID()
 //	{
 //		Debug.Log($"<><>PlaceholderCount Before : {PlaceholderCount}");
