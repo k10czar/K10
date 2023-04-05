@@ -30,21 +30,16 @@ public interface IHashedSOCollection
 	bool ContainsHashID( int hashID );
 	bool Contains( IHashedSO obj );
 	int Count { get; }
-	int PlaceholderCount { get; } //new check consistence - Placeholder
 	IHashedSO GetElementBase( int hashID );
-	IHashedSO PlaceholderGetElementBase( int hashID );//new check consistence - Placeholder
 }
 
 public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollection, System.Collections.IEnumerable
 {
 
 	public abstract int Count { get; }
-	public abstract int PlaceholderCount { get; } //new check consistence - Placeholder
 	public abstract IHashedSO GetElementBase( int index );
-	public abstract IHashedSO PlaceholderGetElementBase( int index );//new check consistence - Placeholder
 	public abstract bool Contains( IHashedSO element );
 	public abstract bool ContainsHashID( int hashID );
-	public abstract bool PlaceHolderContainsHashID( int hashID );//new check consistence - Placeholder
 
 	IEnumerator IEnumerable.GetEnumerator()
 	{
@@ -99,17 +94,17 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 	void IHashedSOCollectionEditor.EditorRemoveWrongElements()//TODO: understand this
 	{
-		//List<int> _elementsToRemove = new List<int>();
-		//for( int i = 0; i < Count; i++ )
-		//{
-		//	var element = GetElementBase( i ); // this should be the key and not position 
-		//	if( element == null ) continue;
-		//	if( element.HashID == i ) continue;
-		//	_elementsToRemove.Add( i );
-		//}
-		//
-		//
-		//for( int i = 0; i < _elementsToRemove.Count; i++ ) Editor_HACK_Remove( _elementsToRemove[i] );
+		List<int> _elementsToRemove = new List<int>();
+		for( int i = 0; i < Count; i++ )
+		{
+			var element = GetElementBase( i ); // this should be the key and not position 
+			if( element == null ) continue;
+			if( element.HashID == i ) continue;
+			_elementsToRemove.Add( i );
+		}
+		
+		
+		for( int i = 0; i < _elementsToRemove.Count; i++ ) Editor_HACK_Remove( _elementsToRemove[i] );
 
 		UnityEditor.EditorUtility.SetDirty( this );
 	}
@@ -121,50 +116,73 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 		var guids = AssetDatabase.FindAssets( $"t:{GetElementType().ToString()}" );
 
+		
 		for( int i = 0; i < guids.Length; i++ )
 		{
+			Debug.Log($"!!!!!<><<><>< inicioLoop: " );
 			var path = AssetDatabase.GUIDToAssetPath( guids[i] );
 			var asset = AssetDatabase.LoadAssetAtPath( path, GetElementType() );
 			( (IHashedSOCollectionEditor)this ).EditorRequestMember( asset );
 		}
+			Debug.Log($"!!!!!<><<><>< tchau: " );
 
 		UnityEditor.EditorUtility.SetDirty( this );
 	}
 
 	bool IHashedSOCollectionEditor.EditorRequestMember( Object obj, bool forceCorrectPosition = false )
 	{
-		Debug.Log("AAAAA");
+		
+			Debug.Log($"!!!!!<><<><>< sera?: " );
 		var t = obj as IHashedSO;
 		if( t == null ) return false;
 
-		Debug.Log("BBBB");
-		int hashID = t.HashID;
+			Debug.Log($"!!!!!<><<><><  foi: " );
 		
-		IHashedSO element = ( hashID < Count && hashID >= 0 ) ? GetElementBase( hashID ) : null;
-		Debug.Log("CCCC");
+		int hashID = t.HashID;
+
+		IHashedSO element;
+
+		
+		Debug.Log($"!!!!!<><<><>< hashid: {hashID} Count: {Count} " );
+		if (hashID < Count && hashID >= 0)
+		{
+		Debug.Log($"!!!!!<><<><>< PEGOU ELEMENTO " );
+			element = GetElementBase(hashID);
+		}
+		
+		else
+		{
+		Debug.Log($"!!!!!<><<><>< SETOU ELEMENTO NULL " );
+			element = null;
+		}
+		
+		Debug.Log("!!!!!<><<><><  element: "+element + " -hashID: "+hashID);
+//		Debug.Log("CCCC");
 
 		if( element == null && hashID >= 0 )
 		{
-			Debug.Log("DDDD");
+//		Debug.Log($"!!!!!<><<><>< VAI SETAR POS " );
+		//	Debug.Log("DDDD");
 			SetRealPosition( t );
-			Debug.Log("DDDD2");
+		Debug.Log($"!!!!!<><<><>< SETOU POS " );
+		//	Debug.Log("DDDD2");
 			EditorRemoveDuplication( t );
-			Debug.Log("DDDD3");
+		//	Debug.Log("DDDD3");
 			// Editor_Log.Add( $"Request Member:\nOn [{hashID}] set {t.ToStringOrNull()}, was NULL before" );
 			return false;
 		}
-			Debug.Log("DDDD4");
+	//		Debug.Log("DDDD4");
 
 		var sameRef = ScriptableObject.ReferenceEquals( t, element );
 
 
-		Debug.Log("EEEEEE");
+		//Debug.Log("EEEEEE");
 		if( sameRef )
 		{
-		Debug.Log("FFFFF");
+	//	Debug.Log("FFFFF");
 			if( element.HashID != t.HashID || forceCorrectPosition )
 			{
-				Debug.Log("GGGGGG");
+			//	Debug.Log("GGGGGG");
 				// Editor_Log.Add( $"Request Member:\nOn [{hashID}] removed {element.ToStringOrNull()} and replace with {t.ToStringOrNull()}" );
 			
 				SetRealPosition( t );
@@ -176,31 +194,30 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		var where = EditorWhereIs( t );
 		if( where != -1 )
 		{
-				Debug.Log("HHHHHHH");
+	//			Debug.Log("HHHHHHH");
 			t.SetHashID( where ); //TODO: check all flow that send to SET HASH-ID
 			EditorRemoveDuplication( t );
 			return false;
 		}
-				Debug.Log("IIIIIII");
+		//		Debug.Log("IIIIIII");
 
 		bool fromDialog = false;
 		if( hashID < 0 || hashID >= Count || !sameRef )
 		{
-				Debug.Log("JJJJJ");
+		//		Debug.Log("JJJJJ");
 			var assetPath = AssetDatabase.GetAssetPath( (Object)t );
 			var assetGuid = UnityEditor.AssetDatabase.AssetPathToGUID( assetPath );
 			bool isDuplicateFromOtherFile = t.GUID != assetGuid;
 
 			if( !isDuplicateFromOtherFile )
 			{
-				Debug.Log("KKKKK");
+			//	Debug.Log("KKKKK");
 				if( !ResolveConflictedFile( t, assetPath ) ) return false;
-				Debug.Log("LLLLLL");
+			//	Debug.Log("LLLLLL");
 				fromDialog = !EditorCanChangeIDsToOptimizeSpace;
 			}
 		}
-				Debug.Log("MMMMMM");
-				Debug.Log("MMMMMM");
+				
 
 		var newID = Count;
 		
@@ -209,8 +226,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		// Editor_Log.Add( $"Request Member:\nOn [{newID}] setted {t.ToStringOrNull()} with new hashID{(fromDialog ? " with dialog permission" : "")}" );
 		( (IHashedSOEditor)t ).SetHashID( newID );
 		Debug.Log("<><><><>Entrou2");
-		AddElement( t );  //new  - Placeholder   -- Will not add to the old list anymore
-		PlaceholderAddElement(t); //new  - Placeholder
+		AddElement( t ); 
 
 		UnityEditor.EditorUtility.SetDirty( (Object)t );
 		UnityEditor.EditorUtility.SetDirty( this );
@@ -233,31 +249,32 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 	void EditorRemoveDuplication( IHashedSO t ) //TODO check if need this
 	{
+		Debug.Log($"!!!!!<><<><>< t {t.ToString()}.HashID {t.HashID} " );
 		
-		Debug.Log("<><><> T.ID: "+t.HashID);
-		Debug.Log("BATATA");
+//		Debug.Log("BATATA");
 		if( t == null ) return;
-		Debug.Log("BATATA 1");
+		Debug.Log($"!!!!!<><<><><  t {t.ToString()} NAO É NULL " );
 		var count = Count;
+		Debug.Log($"!!!!!<><<><><  count {Count}  " );
 		for( int i = 0; i < Count; i++ )
 		{
-			Debug.Log("BATATA 2");
+			//Debug.Log($"!!!!!<><<><><  BATATA 1" );
 			var e = GetElementBase( i );
-			Debug.Log("BATATA 3");
+			Debug.Log($"!!!!!<><<><><  BATATA 2 " );
 			if( e == null ) continue;
-			Debug.Log("BATATA 4");
-			if( i == t.HashID ) continue;
-			Debug.Log("BATATA 5");
+			Debug.Log("!!!!!<><<><><BATATA 4");
+			if( i == t.HashID ) continue;  //TODO: this check should not check with i
+			Debug.Log("!!!!!<><<><><BATATA 5");
 			if( !ScriptableObject.ReferenceEquals( t, e ) ) continue;
-			Debug.Log("BATATA 6");
+			//Debug.Log("!!!!!<><<><><BATATA 6");
 			Editor_HACK_Remove( i );
-			Debug.Log("BATATA 7");
+			//Debug.Log("!!!!!<><<><><BATATA 7");
 		}
 	}
 
 	void IHashedSOCollectionEditor.EditorTryOptimize()
 	{
-		Debug.Log("<><><><><  EditorTryOptimize: ");
+		//Debug.Log("<><><><><  EditorTryOptimize: ");
 		var editor = ( (IHashedSOCollectionEditor)this );
 		if( !editor.EditorCanChangeIDsToOptimizeSpace ) return;
 
@@ -278,8 +295,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 			{
 				( (IHashedSOEditor)t ).SetHashID( Count - 1 );
 				Debug.Log("<><><><>Entrou1");
-				AddElement( t ); //new  - Placeholder   -- Will not add to the old list anymore
-				PlaceholderAddElement(t);//new  - Placeholder
+				AddElement( t ); 
 			}
 		}
 
@@ -295,9 +311,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 	public abstract bool EditorCanChangeIDsToOptimizeSpace { get; }
 	protected abstract void Clear();
-	protected abstract void ClearPlaceholderList(); //new  - Placeholder
 	protected abstract bool AddElement( IHashedSO obj );
-	protected abstract bool PlaceholderAddElement( IHashedSO obj ); //new  - Placeholder
 	protected abstract bool ResolveConflictedFile( IHashedSO t, string assetPath );
 	public abstract bool TryResolveConflict( int i );
 	protected abstract bool SetRealPosition( IHashedSO obj );

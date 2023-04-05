@@ -36,7 +36,7 @@ public abstract class HashedScriptableObject : ScriptableObject, IHashedSO, IExp
 #if UNITY_EDITOR
 	void IHashedSOEditor.SetHashID( int newID )
 	{
-		Debug.Log($"<><> SET HASHID: {newID}");
+		Debug.Log("!!!!!<><<><><  SETHASH ID");
 //		int maxRandom = 50000;
 		var before = newID;
 		//newID += 5;
