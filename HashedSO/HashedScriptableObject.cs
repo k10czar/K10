@@ -36,7 +36,7 @@ public abstract class HashedScriptableObject : ScriptableObject, IHashedSO, IExp
 #if UNITY_EDITOR
 	void IHashedSOEditor.SetHashID( int newID )
 	{
-		
+		Debug.Log($"??? ta mudando id");
 		_hashId = newID;
 		var path = UnityEditor.AssetDatabase.GetAssetPath( this );
 		_guid = UnityEditor.AssetDatabase.AssetPathToGUID( path );

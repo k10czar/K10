@@ -132,15 +132,19 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 	bool IHashedSOCollectionEditor.EditorRequestMember( Object obj, bool forceCorrectPosition = false )
 	{
 		
-			Debug.Log($"!!!!!<><<><>< sera?: " );
+//		Debug.Log($"!!!!!<><<><>< sera?: " );
 		var t = obj as IHashedSO;
-		if( t == null ) return false;
+		if (t == null)
+		{
+			Debug.Log($"??? ta t is null ");
+			return false;
+		}
 
-			Debug.Log($"!!!!!<><<><><  foi: " );
+//			Debug.Log($"!!!!!<><<><><  foi: " );
 		
 		int hashID = t.HashID;
 
-		IHashedSO element;
+		IHashedSO element = null;
 
 		
 		Debug.Log($"!!!!!<><<><>< hashid: {hashID}  name: {t.ToString()}  Count: {Count} " );
@@ -151,13 +155,15 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		{
 			Debug.Log($"???<><<><>< NAO TEM ID {hashID}  name: {t.ToString()} ");
 			AddElement(t);
-
+			UnityEditor.EditorUtility.SetDirty( (Object)t );
+			UnityEditor.EditorUtility.SetDirty( this );
 			return true;
 		}
-		
 		else
 		{
 			Debug.Log($"???<><<><>< JÁ TEM ID {hashID}  name: {t.ToString()} ");
+			element = GetElementBase(hashID);
+			
 			var randID = hashID;
 
 			while (DicHasIDKey(randID))
@@ -169,64 +175,66 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 	
 			Debug.Log($"???<><<><>< JÁ TROCOU ID {hashID}  name: {t.ToString()} ");
 			AddElement( t );
-			return false;
+			UnityEditor.EditorUtility.SetDirty( (Object)t );
+			UnityEditor.EditorUtility.SetDirty( this );
+			return true;
 
 		}
 		
-															//if (hashID < Count && hashID >= 0)
-															//{
-															//Debug.Log($"!!!!!<><<><>< PEGOU ELEMENTO " );
-															//	element = GetElementBase(hashID);
-															//Debug.Log($"!!!!!<><<><>< PEGOU ELEMENTO {element} ID: {element.HashID}" );
-															//}
-															//
-															//else
-															//{
-															//	Debug.Log($"!!!!!<><<><>< SETOU ELEMENTO NULL " );
-															//	element = null;
-															//}
-															//
-															//Debug.Log("!!!!!<><<><><  element: "+element + " -hashID: "+hashID);
-
-
-														//if( element == null && hashID >= 0 )
-														//{
-//														//Debug.Log($"!!!!!<><<><>< VAI SETAR POS " );
-														
-														//	SetRealPosition( t );
-														//	Debug.Log($"!!!!!<><<><>< SETOU POS " );
-														
-														//	EditorRemoveDuplication( t );
-														
-														//	// Editor_Log.Add( $"Request Member:\nOn [{hashID}] set {t.ToStringOrNull()}, was NULL before" );
-														//	return false;
-														//}
+		if (hashID < Count && hashID >= 0)
+		{
+			//Debug.Log($"!!!!!<><<><>< PEGOU ELEMENTO " );
+			//element = GetElementBase(hashID);
+			//Debug.Log($"!!!!!<><<><>< PEGOU ELEMENTO {element} ID: {element.HashID}" );
+		}
+		
+		else
+		{
+		//	Debug.Log($"!!!!!<><<><>< SETOU ELEMENTO NULL " );
+		//	element = null;
+		}
+		
+		Debug.Log("!!!!!<><<><><  element: "+element + " -hashID: "+hashID);
+	
+	
+		if( element == null && hashID >= 0 )
+		{
+///												//Debug.Log($"!!!!!<><<><>< VAI SETAR POS " );
+		
+			//SetRealPosition( t );
+			//Debug.Log($"!!!!!<><<><>< SETOU POS " );
+		    //
+			//EditorRemoveDuplication( t );
+		    //
+			//// Editor_Log.Add( $"Request Member:\nOn [{hashID}] set {t.ToStringOrNull()}, was NULL before" );
+			//return false;
+		}
 
 
 		var sameRef = ScriptableObject.ReferenceEquals( t, element );
-														///
-														///if( sameRef )
-														///{
-														///Debug.Log("FFFFF");
-														///	if( element.HashID != t.HashID || forceCorrectPosition )
-														///	{
-														///	//	Debug.Log("GGGGGG");
-														///		// Editor_Log.Add( $"Request Member:\nOn [{hashID}] removed {element.ToStringOrNull()} and replace with {t.ToStringOrNull()}" );
-														///	
-														///		SetRealPosition( t );
-														///	}
-														///	EditorRemoveDuplication( t );
-														///	return false;
-														///}
-
-		var where = EditorWhereIs( t );
-		if( where != -1 )
+		
+		if( sameRef )
 		{
-	//			Debug.Log("HHHHHHH");
-			t.SetHashID( where ); //TODO: check all flow that send to SET HASH-ID
-			EditorRemoveDuplication( t );
-			return false;
+		
+			//if( element.HashID != t.HashID || forceCorrectPosition )
+			//{
+			////	Debug.Log("GGGGGG");
+			//	// Editor_Log.Add( $"Request Member:\nOn [{hashID}] removed {element.ToStringOrNull()} and replace with {t.ToStringOrNull()}" );
+			//
+			//	SetRealPosition( t );
+			//}
+			//EditorRemoveDuplication( t );
+			//return false;
 		}
+
+	//	var where = EditorWhereIs( t );
+	//	if( where != -1 )
+	//	{
+	//			Debug.Log("HHHHHHH");
+			//t.SetHashID( where ); //TODO: check all flow that send to SET HASH-ID
+			//EditorRemoveDuplication( t );
+			//return false;
+	//	}
 		//		Debug.Log("IIIIIII");
 
 		bool fromDialog = false;
@@ -247,14 +255,14 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		}
 				
 
-		var newID = Count;
-		
-		Debug.Log($"<><>Count: {Count}, newID: {newID}");
-
-		// Editor_Log.Add( $"Request Member:\nOn [{newID}] setted {t.ToStringOrNull()} with new hashID{(fromDialog ? " with dialog permission" : "")}" );
-		( (IHashedSOEditor)t ).SetHashID( newID );
-		Debug.Log("<><><><>Entrou2");
-		AddElement( t ); 
+	//	var newID = Count;
+	//	
+	//	Debug.Log($"<><>Count: {Count}, newID: {newID}");
+	  //
+	//	// Editor_Log.Add( $"Request Member:\nOn [{newID}] setted {t.ToStringOrNull()} with new hashID{(fromDialog ? " with dialog permission" : "")}" );
+	//	( (IHashedSOEditor)t ).SetHashID( newID );
+	//	Debug.Log("<><><><>Entrou2");
+	//	AddElement( t ); 
 
 		UnityEditor.EditorUtility.SetDirty( (Object)t );
 		UnityEditor.EditorUtility.SetDirty( this );

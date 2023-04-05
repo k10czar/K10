@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using GitHub.Unity;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -72,12 +73,6 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		if( obj is T t )
 			objDic.Add( t.HashID, t );
 		
-		foreach(KeyValuePair<int,T> i in objDic)
-		{
-			//Now you can access the key and value both separately from this attachStat as:
-			Debug.Log("<><><><>Key: "+i.Key+ " value: "+i.Value);
-			Debug.Log(i.Value);
-		}
 		return ( obj is T );
 	}
 
@@ -131,8 +126,8 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		string s = "";
 		for( int i = 0; i < objDic.Count; i++ )
 		{
-			Debug.Log($"<><>Dicionario count : {objDic.GetValuesList().Count}");
-			var element = objDic.GetValuesList()[i];  // THIS SHOULD BE ID AND NOT POS
+			Debug.Log($"<><>Dicionario count : {objDic.GetValuesList().Count}  objdic count: {objDic.Count}");
+			var element = GetElementBase(i);// objDic.GetValuesList()[i];  // THIS SHOULD BE ID AND NOT POS
 			if( element == null ) s += $"[{i}] => NULL\n";
 			else s += $"[{i}] => {objDic.GetValuesList()[i].NameOrNull()}[{objDic.GetValuesList()[i].HashID}]\n";
 		}
