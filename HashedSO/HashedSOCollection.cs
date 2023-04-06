@@ -41,8 +41,8 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 
 	public override IHashedSO GetElementBase(int hashId)
 	{
-		Debug.Log("<><>< hashId: "+hashId + " Count: "+objDic.GetValuesList().Count);
-		
+//		Debug.Log("<><>< hashId: "+hashId + " Count: "+objDic.GetValuesList().Count);
+
 		if (hashId >= objDic.GetValuesList().Count) return null;
 		return	objDic.GetValuesList()[hashId]; //   this[hashId];
 	}
@@ -66,13 +66,25 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	
 	public override bool EditorCanChangeIDsToOptimizeSpace => true;
 
-	public override void Editor_HACK_Remove(int id){ objDic[id] = null; }
+	public override void Editor_HACK_Remove(int id)
+	{
+	//	objDic[id] = null;
+		Debug.Log($"<><><><> HACK REMOVE ID: {id}");// {obj.ToString()} id: {obj.HashID}");
+
+		objDic.Remove(id);
+	}
 
 	protected override bool AddElement(IHashedSO obj)
 	{
+
+		Debug.Log($"<><><><> VOU ADICIONAR ELEMENTO");// {obj.ToString()} id: {obj.HashID}");
 		if( obj is T t )
 			objDic.Add( t.HashID, t );
-		
+		else
+		{
+		Debug.Log($"<><><><> NAO VOU VOU ADICIONAR ELEMENTO ");
+			
+		}
 		return ( obj is T );
 	}
 
@@ -80,6 +92,7 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	protected override bool ResolveConflictedFile( IHashedSO t, string assetPath ) => true;
 	public override bool TryResolveConflict( int i )
 	{
+		Debug.Log($"!!!!!ADICIONAR TryResolveConflict " );
 		if( i >= Count ) return false;
 		var element = objDic[i];
 		var realId = element.HashID;
@@ -97,7 +110,7 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		if( t == null ) return false;
 		var id = obj.HashID;
 		if( id < 0 ) return false;
-		Debug.Log($"!!!!!<><<><><obj: {obj.ToString()} id: {id}, objDic.Count: {objDic.Count} " );
+		Debug.Log($"!!!!!ADICIONAR SetRealPosition obj: {obj.ToString()} id: {id}, objDic.Count: {objDic.Count} " );
 		while (id >= objDic.Count)
 		{
 	//	Debug.Log($"!!!!!<>< while id: {id}, >= objDic.Count: {objDic.Count} " );
@@ -123,14 +136,31 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		//}
 		//return $"{this.GetType()}:\n{s}";
 
+		
+		//string s = "";
+		//for( int i = 0; i < objDic.Count; i++ )
+		//{
+		//	Debug.Log($"<><>Dicionario count : {objDic.GetValuesList().Count}  objdic count: {objDic.Count}");
+		//	var element = GetElementBase(i);// objDic.GetValuesList()[i];  // THIS SHOULD BE ID AND NOT POS
+		//	if( element == null ) s += $"[{i}] => NULL\n";
+		//	else s += $"[{i}] => {objDic.GetValuesList()[i].NameOrNull()}[{objDic.GetValuesList()[i].HashID}]\n";
+		//}
+		//return $"{this.GetType()}:\n{s}";
+		
+		
 		string s = "";
-		for( int i = 0; i < objDic.Count; i++ )
+		int currentElementIteration = 0;
+		foreach (KeyValuePair<int,T> entry in objDic)
 		{
-			Debug.Log($"<><>Dicionario count : {objDic.GetValuesList().Count}  objdic count: {objDic.Count}");
-			var element = GetElementBase(i);// objDic.GetValuesList()[i];  // THIS SHOULD BE ID AND NOT POS
-			if( element == null ) s += $"[{i}] => NULL\n";
-			else s += $"[{i}] => {objDic.GetValuesList()[i].NameOrNull()}[{objDic.GetValuesList()[i].HashID}]\n";
+//			Debug.Log($"<><>Quantidade de values count : {objDic.GetValuesList().Count}  objdic count: {objDic.Count}");
+			var element = entry.Value;
+			if( element == null ) s += $"[{currentElementIteration}] => NULL\n";
+			else s += $"[{currentElementIteration}] => {element.NameOrNull()}[{element.HashID}]\n";
+
+			currentElementIteration++;
 		}
+		//string s = "";
+		//s += $"NULL\n";
 		return $"{this.GetType()}:\n{s}";
 
 	}
@@ -140,6 +170,10 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		return objDic.ContainsKey(hashID);
 	}
 
+	protected override IHashedSO GetElementeByKey(int hashID)
+	{
+		return objDic[hashID];
+	}
 //	private int SetRandomID()
 //	{
 //		Debug.Log($"<><>PlaceholderCount Before : {PlaceholderCount}");

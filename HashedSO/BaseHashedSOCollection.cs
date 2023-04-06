@@ -56,7 +56,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 #if UNITY_EDITOR
 	public abstract void Editor_HACK_Remove( int id );
 
-	void IHashedSOCollectionEditor.Editor_HACK_EnforceHashIDs()
+	void IHashedSOCollectionEditor.Editor_HACK_EnforceHashIDs() //TODO CHECK IF IT WILL WORK
 	{
 		HashSet<IHashedSO> _alreadyVisited = new HashSet<IHashedSO>();
 
@@ -77,11 +77,19 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 			if( _alreadyVisited.Contains( element ) )
 			{
 
-				if( element.HashID != j )
+				//if( element.HashID != j )
+				//{
+				//	Editor_HACK_Remove( j );
+				//	j--;
+				//}
+				
+				if(element.HashID != GetElementBase(j).HashID )
 				{
-					Editor_HACK_Remove( j );
+				//	Editor_HACK_Remove( j ); 
+					Editor_HACK_Remove( element.HashID  ); //TODO VERIFY IF THIS MAKE SENSE
 					j--;
 				}
+
 
 				continue;
 			}
@@ -94,18 +102,22 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 	void IHashedSOCollectionEditor.EditorRemoveWrongElements()//TODO: understand this
 	{
-		List<int> _elementsToRemove = new List<int>();
+		Debug.Log("<><>< hashId: START REMOVE ELEMENTS");
+	//	List<int> _elementsToRemove = new List<int>();
+		List<IHashedSO> _elementsToRemove = new List<IHashedSO>();
 		for( int i = 0; i < Count; i++ )
 		{
-			var element = GetElementBase( i ); // this should be the key and not position 
+			var element = GetElementBase( i ); // this should be the key and not position ???
 			if( element == null ) continue;
-			if( element.HashID == i ) continue;
-			_elementsToRemove.Add( i );
+			if( element.HashID == GetElementBase(i).HashID ) continue;
+			_elementsToRemove.Add( element );
 		}
+		Debug.Log("<><>< hashId: finish REMOVE ELEMENTS");
 		
 		
-		for( int i = 0; i < _elementsToRemove.Count; i++ ) Editor_HACK_Remove( _elementsToRemove[i] );
+		for( int i = 0; i < _elementsToRemove.Count; i++ ) Editor_HACK_Remove( _elementsToRemove[i].HashID );
 
+		Debug.Log("<><>< hashId: finish 2 REMOVE ELEMENTS");
 		UnityEditor.EditorUtility.SetDirty( this );
 	}
 
@@ -134,11 +146,8 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		
 //		Debug.Log($"!!!!!<><<><>< sera?: " );
 		var t = obj as IHashedSO;
-		if (t == null)
-		{
-			Debug.Log($"??? ta t is null ");
-			return false;
-		}
+		if (t == null) return false;
+
 
 //			Debug.Log($"!!!!!<><<><><  foi: " );
 		
@@ -146,14 +155,9 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 		IHashedSO element = null;
 
-		
-		Debug.Log($"!!!!!<><<><>< hashid: {hashID}  name: {t.ToString()}  Count: {Count} " );
-
-
-
 		if (!DicHasIDKey(hashID))
 		{
-			Debug.Log($"???<><<><>< NAO TEM ID {hashID}  name: {t.ToString()} ");
+		//	Debug.Log($"???<><<><>< NAO TEM ID {hashID}  name: {t.ToString()} ");
 			AddElement(t);
 			UnityEditor.EditorUtility.SetDirty( (Object)t );
 			UnityEditor.EditorUtility.SetDirty( this );
@@ -161,14 +165,17 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		}
 		else
 		{
-			Debug.Log($"???<><<><>< JÁ TEM ID {hashID}  name: {t.ToString()} ");
-			element = GetElementBase(hashID);
+			//Debug.Log($"???<><<><>< JÁ TEM ID {hashID}  name: {t.ToString()} Count: {Count} " );
+			
+			element = GetElementeByKey(hashID);
+			var isSame = ScriptableObject.ReferenceEquals( t, element );
+			if(isSame)	return false;
 			
 			var randID = hashID;
 
 			while (DicHasIDKey(randID))
 			{
-				randID = Random.Range(Count+1, int.MaxValue);
+				randID = Random.Range(Count+1, int.MaxValue-1);
 			}
 		
 			( (IHashedSOEditor)t ).SetHashID( randID );
@@ -299,11 +306,13 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		
 			if( e == null ) continue;
 		
-			if( i == t.HashID ) continue;  //TODO: this check should not check with i
+			//if( i == t.HashID ) continue;  //TODO: this check should not check with i
+			if( e.HashID == t.HashID ) continue;  
 
 			if( !ScriptableObject.ReferenceEquals( t, e ) ) continue;
 		
-			Editor_HACK_Remove( i );
+			//Editor_HACK_Remove( i );
+			Editor_HACK_Remove( e.HashID );
 		
 		}
 	}
@@ -329,8 +338,8 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 			var asset = AssetDatabase.LoadAssetAtPath( path, GetElementType() );
 			if( asset is IHashedSO t )
 			{
+				Debug.Log("<><><><> VOU ADICIONAR ELEMENTO COM ID BASEADO NO COUNT");
 				( (IHashedSOEditor)t ).SetHashID( Count - 1 );
-				Debug.Log("<><><><>Entrou1");
 				AddElement( t ); 
 			}
 		}
@@ -348,6 +357,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 	public abstract bool EditorCanChangeIDsToOptimizeSpace { get; }
 	protected abstract void Clear();
 	protected abstract bool AddElement( IHashedSO obj );
+	protected abstract IHashedSO GetElementeByKey(int hashID);
 	protected abstract bool DicHasIDKey( int hasID );
 	protected abstract bool ResolveConflictedFile( IHashedSO t, string assetPath );
 	public abstract bool TryResolveConflict( int i );
