@@ -102,7 +102,6 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 	void IHashedSOCollectionEditor.EditorRemoveWrongElements()//TODO: understand this
 	{
-		Debug.Log("<><>< hashId: START REMOVE ELEMENTS");
 	//	List<int> _elementsToRemove = new List<int>();
 		List<IHashedSO> _elementsToRemove = new List<IHashedSO>();
 		for( int i = 0; i < Count; i++ )
@@ -112,12 +111,10 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 			if( element.HashID == GetElementBase(i).HashID ) continue;
 			_elementsToRemove.Add( element );
 		}
-		Debug.Log("<><>< hashId: finish REMOVE ELEMENTS");
-		
+		Debug.Log($"<><>< OBJETOS PARA REMOVER {_elementsToRemove.Count}");
 		
 		for( int i = 0; i < _elementsToRemove.Count; i++ ) Editor_HACK_Remove( _elementsToRemove[i].HashID );
 
-		Debug.Log("<><>< hashId: finish 2 REMOVE ELEMENTS");
 		UnityEditor.EditorUtility.SetDirty( this );
 	}
 
@@ -175,7 +172,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 			while (DicHasIDKey(randID))
 			{
-				randID = Random.Range(Count+1, int.MaxValue-1);
+				randID = Random.Range(Count+1, int.MaxValue-1); //Create unique ID based on in.maxvalue
 			}
 		
 			( (IHashedSOEditor)t ).SetHashID( randID );
@@ -248,7 +245,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		if( hashID < 0 || hashID >= Count || !sameRef )
 		{
 		//		Debug.Log("JJJJJ");
-			var assetPath = AssetDatabase.GetAssetPath( (Object)t );
+			var assetPath = AssetDatabase.GetAssetPath( (Object)t ); //todo ENTENDER O PORQUE DISSO USANDO DIALOG
 			var assetGuid = UnityEditor.AssetDatabase.AssetPathToGUID( assetPath );
 			bool isDuplicateFromOtherFile = t.GUID != assetGuid;
 
@@ -358,6 +355,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 	protected abstract void Clear();
 	protected abstract bool AddElement( IHashedSO obj );
 	protected abstract IHashedSO GetElementeByKey(int hashID);
+	public abstract int GetDicIDbyElement(IHashedSO element);
 	protected abstract bool DicHasIDKey( int hasID );
 	protected abstract bool ResolveConflictedFile( IHashedSO t, string assetPath );
 	public abstract bool TryResolveConflict( int i );

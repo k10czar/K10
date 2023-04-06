@@ -1,6 +1,7 @@
 ﻿using K10.EditorGUIExtention;
 using UnityEditor;
 using UnityEngine;
+using System.Collections.Generic;
 
 [CustomEditor( typeof( BaseHashedSOCollection ), true )]
 public class BaseHashedSOCollectionEditor : Editor
@@ -24,7 +25,7 @@ public class BaseHashedSOCollectionEditor : Editor
 		int size = collection.Count;
 
 		var count = 0;
-		for( int i = 0; i < size; i++ )
+		for( int i = 0; i < size; i++ ) //Count all elements on current collecion (dictionary) that are not null.
 		{
 			var entry = collection.GetElementBase( i );
 			if( entry == null ) continue;
@@ -40,6 +41,15 @@ public class BaseHashedSOCollectionEditor : Editor
 		var edit = (IHashedSOCollectionEditor)collection;
 
 		EditorGUILayout.BeginVertical();
+		
+		
+		//var lastValid = -1;
+		//foreach (KeyValuePair<int,T> entry in collection)
+		//{
+		//
+		//}
+
+
 		var lastValid = -1;
 		for( int i = 0; i < size; i++ )
 		{
@@ -51,10 +61,10 @@ public class BaseHashedSOCollectionEditor : Editor
 			}
 			lastValid = i;
 			EditorGUILayout.BeginHorizontal();
-			var hasConflict = ( entry.HashID < 0 || entry.HashID != i );
+			var hasConflict = ( entry.HashID < 0 || entry.HashID != collection.GetDicIDbyElement(entry)); // se o ID da entry é diferente do ID na collection que contem ele  (em teoria sempre deve ser)
 			if( hasConflict ) GuiColorManager.New( Color.red );
 			if( IconButton.Layout( "objective", 's' ) ) Selection.SetActiveObjectWithContext( entry as Object, entry as Object );
-			EditorGUILayout.LabelField( "[" + i.ToString() + "]", GUILayout.Width( 30f ) );
+			EditorGUILayout.LabelField( "[" + entry.HashID + "]", GUILayout.Width( 90f ) );
 
 			var tryResolve = hasConflict && GUILayout.Button( "!!CONFLICT!!" );
 
@@ -68,6 +78,7 @@ public class BaseHashedSOCollectionEditor : Editor
 
 			if( tryResolve ) edit.TryResolveConflict( i );
 		}
+
 		EditorGUILayout.EndVertical();
 		if( GUILayout.Button( "Check Consistency" ) ) edit.EditorCheckConsistency();
 		if( edit.EditorCanChangeIDsToOptimizeSpace && GUILayout.Button( "Optimize" ) ) edit.EditorTryOptimize();

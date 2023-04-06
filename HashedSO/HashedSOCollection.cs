@@ -41,7 +41,7 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 
 	public override IHashedSO GetElementBase(int hashId)
 	{
-//		Debug.Log("<><>< hashId: "+hashId + " Count: "+objDic.GetValuesList().Count);
+		//Debug.Log("<><>< hashId: "+hashId + " Count: "+objDic.GetValuesList().Count);
 
 		if (hashId >= objDic.GetValuesList().Count) return null;
 		return	objDic.GetValuesList()[hashId]; //   this[hashId];
@@ -80,11 +80,7 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		Debug.Log($"<><><><> VOU ADICIONAR ELEMENTO");// {obj.ToString()} id: {obj.HashID}");
 		if( obj is T t )
 			objDic.Add( t.HashID, t );
-		else
-		{
-		Debug.Log($"<><><><> NAO VOU VOU ADICIONAR ELEMENTO ");
-			
-		}
+
 		return ( obj is T );
 	}
 
@@ -173,6 +169,11 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	protected override IHashedSO GetElementeByKey(int hashID)
 	{
 		return objDic[hashID];
+	}
+
+	public override int GetDicIDbyElement(IHashedSO element)
+	{
+		return objDic.FirstOrDefault(x => x.Value == element).Key;
 	}
 //	private int SetRandomID()
 //	{
