@@ -104,7 +104,6 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 	void IHashedSOCollectionEditor.EditorRemoveWrongElements()//TODO: understand this
 	{
-		CheckNullInDic();
 		List<IHashedSO> elementsToRemove = new List<IHashedSO>();
 		
 		

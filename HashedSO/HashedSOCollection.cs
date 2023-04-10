@@ -185,27 +185,6 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		List<IHashedSO> _elementsToRemove = new List<IHashedSO>();
 		List<int> _keysToRemove = new List<int>();
 
-
-		//	UnityEngine.EditorUtility.RequestScriptReload();
-			//UnityEditor.EditorUtility.RequestScriptReload();
-		//for (int i = 0; i < objDic.Count; i++)
-		//{
-		//	var entry = GetElementBase(i) as IHashedSO;
-		//	if (entry == null)
-		//	{
-		//		Debug.Log($"???<><<><><  ELEMENT CONFLIC in pos {i}");
-		//		continue;
-		//	}
-		//	var hasConflict = (entry.HashID < 0 || entry.HashID != GetDicIDbyElement(entry));
-		//	
-//		//		Debug.Log($"???<><<><><  ENTRY.ID {entry.HashID}   GetDicIDbyElement(entry) {GetDicIDbyElement(entry)}");
-		//	
-		//	if (hasConflict)
-		//	{
-		//		_elementsToRemove.Add(entry);
-		//		Debug.Log($"???<><<><><  CONFLICT in pos {i} entry.HashID: {entry.HashID} different of GetDicIDbyElement(entry) {GetDicIDbyElement(entry)}");
-		//	}
-		//}
 		
 		foreach (KeyValuePair<int, T> pair in objDic)
 		{
