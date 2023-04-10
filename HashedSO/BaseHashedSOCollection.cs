@@ -6,6 +6,8 @@ using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 #if UNITY_EDITOR
 using UnityEditor;
+
+
 #endif
 
 #if UNITY_EDITOR
@@ -102,25 +104,30 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 	void IHashedSOCollectionEditor.EditorRemoveWrongElements()//TODO: understand this
 	{
-	//	List<int> _elementsToRemove = new List<int>();
-		List<IHashedSO> _elementsToRemove = new List<IHashedSO>();
+		CheckNullInDic();
+		List<IHashedSO> elementsToRemove = new List<IHashedSO>();
+		
+		
 		for( int i = 0; i < Count; i++ )
 		{
 			var element = GetElementBase( i ); // this should be the key and not position ???
-			if( element == null ) continue;
+			if (element == null) continue;
+
 			if( element.HashID == GetElementBase(i).HashID ) continue;
-			_elementsToRemove.Add( element );
+			elementsToRemove.Add( element );
 		}
-		Debug.Log($"<><>< OBJETOS PARA REMOVER {_elementsToRemove.Count}");
+		Debug.Log($"<><>< OBJETOS PARA REMOVER {elementsToRemove.Count}");
 		
-		for( int i = 0; i < _elementsToRemove.Count; i++ ) Editor_HACK_Remove( _elementsToRemove[i].HashID );
+		for( int i = 0; i < elementsToRemove.Count; i++ ) Editor_HACK_Remove(GetDicIDbyElement(elementsToRemove[i])  );
+	//	for( int i = 0; i < _elementsToRemove.Count; i++ ) Editor_HACK_Remove( _elementsToRemove[i].HashID );
+		
 
 		UnityEditor.EditorUtility.SetDirty( this );
 	}
 
 	void IHashedSOCollectionEditor.EditorCheckConsistency()
 	{
-//		Debug.Log($"<><>EditorCheckConsistency");
+		
 		( (IHashedSOCollectionEditor)this ).EditorRemoveWrongElements();
 
 		var guids = AssetDatabase.FindAssets( $"t:{GetElementType().ToString()}" );
@@ -140,6 +147,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 	bool IHashedSOCollectionEditor.EditorRequestMember( Object obj, bool forceCorrectPosition = false )
 	{
+		
 		
 //		Debug.Log($"!!!!!<><<><>< sera?: " );
 		var t = obj as IHashedSO;
@@ -356,6 +364,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 	protected abstract bool AddElement( IHashedSO obj );
 	protected abstract IHashedSO GetElementeByKey(int hashID);
 	public abstract int GetDicIDbyElement(IHashedSO element);
+	public abstract List<IHashedSO> CheckNullInDic();
 	protected abstract bool DicHasIDKey( int hasID );
 	protected abstract bool ResolveConflictedFile( IHashedSO t, string assetPath );
 	public abstract bool TryResolveConflict( int i );

@@ -76,8 +76,6 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 
 	protected override bool AddElement(IHashedSO obj)
 	{
-
-		Debug.Log($"<><><><> VOU ADICIONAR ELEMENTO");// {obj.ToString()} id: {obj.HashID}");
 		if( obj is T t )
 			objDic.Add( t.HashID, t );
 
@@ -86,6 +84,7 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 
 
 	protected override bool ResolveConflictedFile( IHashedSO t, string assetPath ) => true;
+	
 	public override bool TryResolveConflict( int i )
 	{
 		Debug.Log($"!!!!!ADICIONAR TryResolveConflict " );
@@ -99,6 +98,7 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		UnityEditor.EditorUtility.SetDirty( this );
 		return true;
 	}
+	
 	protected override bool SetRealPosition( IHashedSO obj ) //TODO: why this change id
 	{
 //		Debug.Log("!!!!!TRYING ADDING NULL" );
@@ -142,15 +142,19 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		//	else s += $"[{i}] => {objDic.GetValuesList()[i].NameOrNull()}[{objDic.GetValuesList()[i].HashID}]\n";
 		//}
 		//return $"{this.GetType()}:\n{s}";
-		
-		
+
 		string s = "";
 		int currentElementIteration = 0;
 		foreach (KeyValuePair<int,T> entry in objDic)
 		{
 //			Debug.Log($"<><>Quantidade de values count : {objDic.GetValuesList().Count}  objdic count: {objDic.Count}");
 			var element = entry.Value;
-			if( element == null ) s += $"[{currentElementIteration}] => NULL\n";
+			if (element == null)
+
+			{
+				Debug.Log("ACHOU NULL.");
+				s += $"[{currentElementIteration}] => NULL\n";
+			}
 			else s += $"[{currentElementIteration}] => {element.NameOrNull()}[{element.HashID}]\n";
 
 			currentElementIteration++;
@@ -174,6 +178,61 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	public override int GetDicIDbyElement(IHashedSO element)
 	{
 		return objDic.FirstOrDefault(x => x.Value == element).Key;
+	}
+
+	public override List<IHashedSO> CheckNullInDic()
+	{
+		List<IHashedSO> _elementsToRemove = new List<IHashedSO>();
+		List<int> _keysToRemove = new List<int>();
+
+
+		//	UnityEngine.EditorUtility.RequestScriptReload();
+			//UnityEditor.EditorUtility.RequestScriptReload();
+		//for (int i = 0; i < objDic.Count; i++)
+		//{
+		//	var entry = GetElementBase(i) as IHashedSO;
+		//	if (entry == null)
+		//	{
+		//		Debug.Log($"???<><<><><  ELEMENT CONFLIC in pos {i}");
+		//		continue;
+		//	}
+		//	var hasConflict = (entry.HashID < 0 || entry.HashID != GetDicIDbyElement(entry));
+		//	
+//		//		Debug.Log($"???<><<><><  ENTRY.ID {entry.HashID}   GetDicIDbyElement(entry) {GetDicIDbyElement(entry)}");
+		//	
+		//	if (hasConflict)
+		//	{
+		//		_elementsToRemove.Add(entry);
+		//		Debug.Log($"???<><<><><  CONFLICT in pos {i} entry.HashID: {entry.HashID} different of GetDicIDbyElement(entry) {GetDicIDbyElement(entry)}");
+		//	}
+		//}
+		
+		foreach (KeyValuePair<int, T> pair in objDic)
+		{
+			T value = pair.Value;
+			try
+			{
+				var name =	pair.Value.ToString();
+			}
+			catch (Exception e)
+			{
+			//	Console.WriteLine(e);
+				_keysToRemove.Add(pair.Key);
+			//	throw;
+			}
+		
+		}
+
+		foreach (var key in _keysToRemove)
+		{
+			Editor_HACK_Remove( key  );
+		}
+
+	
+
+
+		return _elementsToRemove;
+ 
 	}
 //	private int SetRandomID()
 //	{
