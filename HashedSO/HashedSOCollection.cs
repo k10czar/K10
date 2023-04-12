@@ -20,17 +20,18 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	public SerializableDictionary<int, T> objDic;	
 	
 //	public T this[int index] => objDic[index];
-	public T this[int index] => objDic.GetValuesList()[index];  // USING POS IN VALUE  TODO: SEE IF NEED TO CREATE A METHOD TO GET BY ID
+//	public T this[int index] => objDic.GetValuesList()[index];  // USING POS IN VALUE  TODO: SEE IF NEED TO CREATE A METHOD TO GET BY ID
+	public T this[int hashId] => objDic[hashId];   // USING POS IN VALUE  TODO: SEE IF NEED TO CREATE A METHOD TO GET BY ID
 	public override int Count => objDic.Count;
 
-	public T GetElementAtIndex(int hashId) => this[hashId];  //TODO: SEE IF NEED TO CREATE A METHOD TO GET BY ID
+	public T GetElement(int hashId) => this[hashId];  //TODO: SEE IF NEED TO CREATE A METHOD TO GET BY ID
 	
 	protected override bool DicHasIDKey(int hashID)
 	{
 		return objDic.ContainsKey(hashID);
 	}
 
-	public T GetElementByHashId(int hashId) => objDic[hashId];  
+	//public T GetElement(int hashId) => objDic[hashId];  
 	protected override IHashedSO GetIHashSOByKey(int hashID)
 	{
 		return objDic[hashID];
@@ -47,7 +48,7 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 
 	public T GetElementOrDefault(int hashId)
 	{
-		if (hashId >= 0 && hashId < objDic.Count) return this[hashId];  
+		if (hashId >= 0 && hashId < objDic.Count) return this[hashId];  //todo remove count based
 		return default(T);
 	}
 
@@ -64,10 +65,10 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	}
 
 
-	public override bool ContainsHashID(int hashID) => (hashID < objDic.Count || objDic[hashID] != null);
+	//public override bool ContainsHashID(int hashID) => (hashID < objDic.Count || objDic[hashID] != null);
 
-
-
+	public override bool ContainsHashID(int hashID) => (objDic.ContainsKey(hashID) && objDic[hashID] != null);
+	public bool TryGetElement(int hashID, out T element) => objDic.TryGetValue(hashID, out element);
 	public override bool Contains( IHashedSO obj ) => objDic.ContainsKey( (obj as T).HashID );
 
 	public IEnumerator<T> GetEnumerator() => objDic.Values.GetEnumerator();  //TODO: VALIDATE FOR REAL
