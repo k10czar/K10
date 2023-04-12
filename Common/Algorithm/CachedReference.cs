@@ -88,7 +88,10 @@ public class CachedReference<T> : ICachedReference<T>, ICustomDisposableKill
 		_current = startData;
 	}
 
-	public void Clear() { ChangeReference( default(T) ); }
+	public void Clear()
+	{
+		ChangeReference( default(T) );
+	}
 
 	public virtual void Kill()
 	{

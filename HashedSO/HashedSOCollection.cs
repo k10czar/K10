@@ -23,15 +23,31 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	public T this[int index] => objDic.GetValuesList()[index];  // USING POS IN VALUE  TODO: SEE IF NEED TO CREATE A METHOD TO GET BY ID
 	public override int Count => objDic.Count;
 
-	public T GetElement(int hashId) => this[hashId];  //TODO: SEE IF NEED TO CREATE A METHOD TO GET BY ID
+	public T GetElementAtIndex(int hashId) => this[hashId];  //TODO: SEE IF NEED TO CREATE A METHOD TO GET BY ID
 	
-	public T GetElementByIndex(int hashId) => this[hashId];  
+	protected override bool DicHasIDKey(int hashID)
+	{
+		return objDic.ContainsKey(hashID);
+	}
+
 	public T GetElementByHashId(int hashId) => objDic[hashId];  
+	protected override IHashedSO GetIHashSOByKey(int hashID)
+	{
+		return objDic[hashID];
+	}
+
+	public override int GetDicIDbyElement(IHashedSO element)
+	{
+		return objDic.FirstOrDefault(x => x.Value == element).Key;
+	}
+	
+	
+	
 
 
 	public T GetElementOrDefault(int hashId)
 	{
-		if (hashId >= 0 && hashId < objDic.Count) return this[hashId];
+		if (hashId >= 0 && hashId < objDic.Count) return this[hashId];  
 		return default(T);
 	}
 
@@ -165,20 +181,7 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 
 	}
 
-	protected override bool DicHasIDKey(int hashID)
-	{
-		return objDic.ContainsKey(hashID);
-	}
 
-	protected override IHashedSO GetElementeByKey(int hashID)
-	{
-		return objDic[hashID];
-	}
-
-	public override int GetDicIDbyElement(IHashedSO element)
-	{
-		return objDic.FirstOrDefault(x => x.Value == element).Key;
-	}
 
 	public override List<IHashedSO> CheckNullInDic()
 	{

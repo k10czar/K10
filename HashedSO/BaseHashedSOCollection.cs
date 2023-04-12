@@ -171,7 +171,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		{
 			//Debug.Log($"???<><<><>< JÁ TEM ID {hashID}  name: {t.ToString()} Count: {Count} " );
 			
-			element = GetElementeByKey(hashID);
+			element = GetIHashSOByKey(hashID);
 			var isSame = ScriptableObject.ReferenceEquals( t, element );
 			if(isSame)	return false;
 			
@@ -361,7 +361,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 	public abstract bool EditorCanChangeIDsToOptimizeSpace { get; }
 	protected abstract void Clear();
 	protected abstract bool AddElement( IHashedSO obj );
-	protected abstract IHashedSO GetElementeByKey(int hashID);
+	protected abstract IHashedSO GetIHashSOByKey(int hashID);
 	public abstract int GetDicIDbyElement(IHashedSO element);
 	public abstract List<IHashedSO> CheckNullInDic();
 	protected abstract bool DicHasIDKey( int hasID );
