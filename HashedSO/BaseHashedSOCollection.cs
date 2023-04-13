@@ -46,7 +46,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 	IEnumerator IEnumerable.GetEnumerator()
 	{
 		var count = Count;
-		for( int i = 0; i < count; i++ )
+		for( int i = 0; i < count; i++ ) 
 		{
 			var element = GetElementBase( i );
 			if( element != null ) yield return element;
@@ -61,7 +61,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 	void IHashedSOCollectionEditor.Editor_HACK_EnforceHashIDs() //TODO CHECK IF IT WILL WORK
 	{
 		HashSet<IHashedSO> _alreadyVisited = new HashSet<IHashedSO>();
-
+		
 		for( int i = 0; i < Count; i++ )
 		{
 			var element = GetElementBase( i );
@@ -296,13 +296,11 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 
 	void EditorRemoveDuplication( IHashedSO t ) //TODO check if need this
 	{
-		Debug.Log($"!!!!!<><<><>< t {t.ToString()}.HashID {t.HashID} " );
 		
-//		Debug.Log("BATATA");
 		if( t == null ) return;
-		Debug.Log($"!!!!!<><<><><  t {t.ToString()} NAO É NULL " );
+	
 		var count = Count;
-		Debug.Log($"!!!!!<><<><><  count {Count}  " );
+	
 		for( int i = 0; i < Count; i++ )
 		{
 			
@@ -330,25 +328,31 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		var before = new List<string>();
 		var after = new List<string>();
 
-		for( int i = 0; i < Count; i++ ) before.Add( GetElementBase( i ).ToStringOrNull() );
+		for (int i = 0; i < Count; i++)
+		{
+			before.Add( GetElementBase( i ).ToStringOrNull() );
+		}
 
 		Clear();
 
 		var guids = AssetDatabase.FindAssets( $"t:{GetElementType().ToString()}" );
 
-		for( int i = 0; i < guids.Length; i++ )
+		foreach (var guid in guids)
 		{
-			var path = AssetDatabase.GUIDToAssetPath( guids[i] );
+			var path = AssetDatabase.GUIDToAssetPath( guid );
 			var asset = AssetDatabase.LoadAssetAtPath( path, GetElementType() );
 			if( asset is IHashedSO t )
 			{
-				Debug.Log("<><><><> VOU ADICIONAR ELEMENTO COM ID BASEADO NO COUNT");
 				( (IHashedSOEditor)t ).SetHashID( Count - 1 );
 				AddElement( t ); 
 			}
 		}
 
-		for( int i = 0; i < Count; i++ ) after.Add( GetElementBase( i ).ToStringOrNull() );
+		for (int i = 0; i < Count; i++)
+		{
+			after.Add( GetElementBase( i ).ToStringOrNull() );
+		}
+		
 		var logs = new List<string>();
 		var count = Mathf.Min( before.Count, after.Count );
 		for( int i = 0; i < count; i++ ) logs.Add( $"[{i}]\t\t=>\t\t{before[i]}\t\t=>\t\t{after[i]}" );

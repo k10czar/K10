@@ -25,7 +25,11 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	public override int Count => objDic.Count;
 
 	public T GetElement(int hashId) => this[hashId];  //TODO: SEE IF NEED TO CREATE A METHOD TO GET BY ID
-	
+
+	public T GetRandomElement()
+	{
+		return  objDic.ElementAt(Random.Range(0, objDic.Count)).Value;
+	}
 	protected override bool DicHasIDKey(int hashID)
 	{
 		return objDic.ContainsKey(hashID);
@@ -48,7 +52,7 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 
 	public T GetElementOrDefault(int hashId)
 	{
-		if (hashId >= 0 && hashId < objDic.Count) return this[hashId];  //todo remove count based
+		if (ContainsHashID(hashId)) return objDic[hashId];  
 		return default(T);
 	}
 
@@ -104,7 +108,6 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	
 	public override bool TryResolveConflict( int i )
 	{
-		Debug.Log($"!!!!!ADICIONAR TryResolveConflict " );
 		if( i >= Count ) return false;
 		var element = objDic[i];
 		var realId = element.HashID;

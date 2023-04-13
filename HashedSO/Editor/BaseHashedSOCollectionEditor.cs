@@ -25,9 +25,9 @@ public class BaseHashedSOCollectionEditor : Editor
 		int size = collection.Count;
 
 		var count = 0;
-		for( int i = 0; i < size; i++ ) //Count all elements on current collecion (dictionary) that are not null.
+
+		foreach (var entry in collection)//Count all elements on current collecion (dictionary) that are not null.
 		{
-			var entry = collection.GetElementBase( i );
 			if( entry == null ) continue;
 			count++;
 		}
