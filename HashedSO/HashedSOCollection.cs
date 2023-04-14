@@ -45,19 +45,11 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	{
 		return objDic.FirstOrDefault(x => x.Value == element).Key;
 	}
-	
-	
-	
-
-
 	public T GetElementOrDefault(int hashId)
 	{
 		if (ContainsHashID(hashId)) return objDic[hashId];  
 		return default(T);
 	}
-
-	
-
 	public override System.Type GetElementType() => typeof(T);
 
 	public override IHashedSO GetElementBase(int hashId)
@@ -67,7 +59,6 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		if (hashId >= objDic.GetValuesList().Count) return null;
 		return	objDic.GetValuesList()[hashId]; //   this[hashId];
 	}
-
 
 	//public override bool ContainsHashID(int hashID) => (hashID < objDic.Count || objDic[hashID] != null);
 
