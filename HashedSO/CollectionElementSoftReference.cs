@@ -62,7 +62,7 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 	{
 		if(_id >= 0) 
 		{
-			_assetRuntimeReference = (T)Dummy.GetCollection().GetElementBase( Mathf.Max( _id, 0 ) );
+			_assetRuntimeReference = (T)Dummy.GetCollection().GetElementBase( Mathf.Max( _id, 0 ) ); //todo the math.max wont work
 		}
 #if UNITY_EDITOR
 		_referenceState = _assetRuntimeReference != null ? EAssetReferenceState.Loaded : EAssetReferenceState.LoadedNull;

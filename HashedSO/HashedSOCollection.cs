@@ -56,8 +56,20 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	{
 		//Debug.Log("<><>< hashId: "+hashId + " Count: "+objDic.GetValuesList().Count);
 
-		if (hashId >= objDic.GetValuesList().Count) return null;
-		return	objDic.GetValuesList()[hashId]; //   this[hashId];
+		//if (hashId >= objDic.GetValuesList().Count) return null;
+		//if (!ContainsHashID(hashId)) return null;
+		//return	objDic.GetValuesList()[hashId]; //   this[hashId];
+
+
+		if (!ContainsHashID(hashId))
+		{
+			Debug.LogError($" HASH ID DO NOT CONTAINS ON DICTIONARY, WILL RETURN NULL - Check why it is asking for this ID");
+			return null;
+		}
+		
+		return objDic[hashId];
+		
+		
 	}
 
 	//public override bool ContainsHashID(int hashID) => (hashID < objDic.Count || objDic[hashID] != null);
