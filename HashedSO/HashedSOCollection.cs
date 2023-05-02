@@ -17,7 +17,8 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	
 	[FormerlySerializedAs("_list")][SerializeField] List<T> _listOld = new List<T>();
 	
-	public SerializableDictionary<int, T> objDic;	
+	[SerializeField]
+	private SerializableDictionary<int, T> objDic;	
 	
 //	public T this[int index] => objDic[index];
 //	public T this[int index] => objDic.GetValuesList()[index];  // USING POS IN VALUE  TODO: SEE IF NEED TO CREATE A METHOD TO GET BY ID
