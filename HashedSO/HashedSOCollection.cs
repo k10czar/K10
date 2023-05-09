@@ -20,37 +20,27 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	[SerializeField]
 	private SerializableDictionary<int, T> objDic;	
 	
-//	public T this[int index] => objDic[index];
-//	public T this[int index] => objDic.GetValuesList()[index];  // USING POS IN VALUE  TODO: SEE IF NEED TO CREATE A METHOD TO GET BY ID
-	public T this[int hashId] => objDic[hashId];   // USING POS IN VALUE  TODO: SEE IF NEED TO CREATE A METHOD TO GET BY ID
+	
+	public T this[int hashId] => GetElementOrDefault( hashId );
 	public override int Count => objDic.Count;
 
 	public T GetElement(int hashId) => this[hashId];  //TODO: SEE IF NEED TO CREATE A METHOD TO GET BY ID
 
-	public T GetRandomElement()
-	{
-		return  objDic.ElementAt(Random.Range(0, objDic.Count)).Value;
-	}
-	protected override bool DicHasIDKey(int hashID)
-	{
-		return objDic.ContainsKey(hashID);
-	}
+	public T GetRandomElement() { return objDic.GetRandomValue(); }
 
-	//public T GetElement(int hashId) => objDic[hashId];  
-	protected override IHashedSO GetIHashSOByKey(int hashID)
-	{
-		return objDic[hashID];
-	}
+	//public T GetElement(int hashId) => objDic[hashId];
 
 	public override int GetDicIDbyElement(IHashedSO element)
 	{
 		return objDic.FirstOrDefault(x => x.Value == element).Key;
 	}
+
 	public T GetElementOrDefault(int hashId)
 	{
-		if (ContainsHashID(hashId)) return objDic[hashId];  
+		if( objDic.TryGetValue( hashId, out var t ) ) return t;
 		return default(T);
 	}
+
 	public override System.Type GetElementType() => typeof(T);
 
 	public override IHashedSO GetElementBase(int hashId)
@@ -61,7 +51,6 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		//if (!ContainsHashID(hashId)) return null;
 		//return	objDic.GetValuesList()[hashId]; //   this[hashId];
 
-
 		if (!ContainsHashID(hashId))
 		{
 			Debug.LogError($" HASH ID DO NOT CONTAINS ON DICTIONARY, WILL RETURN NULL - Check why it is asking for this ID");
@@ -69,17 +58,19 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		}
 		
 		return objDic[hashId];
-		
-		
 	}
 
 	//public override bool ContainsHashID(int hashID) => (hashID < objDic.Count || objDic[hashID] != null);
 
-	public override bool ContainsHashID(int hashID) => (objDic.ContainsKey(hashID) && objDic[hashID] != null);
+	public override bool ContainsHashID(int hashID) => TryGetElement( hashID, out var element ) && element != null;
 	public bool TryGetElement(int hashID, out T element) => objDic.TryGetValue(hashID, out element);
-	public override bool Contains( IHashedSO obj ) => objDic.ContainsKey( (obj as T).HashID );
+	public override bool Contains( IHashedSO obj ) => obj != null && TryGetElement( obj.HashID, out var element ) && element == obj;
 
-	public IEnumerator<T> GetEnumerator() => objDic.Values.GetEnumerator();  //TODO: VALIDATE FOR REAL
+
+	protected override IEnumerable<int> Editor_HACK_GetKeysCollection() => objDic.Keys;
+	protected override System.Collections.IEnumerator GetNonGenericEnumerator() => objDic.Values.GetEnumerator();
+	IEnumerator<T> IEnumerable<T>.GetEnumerator() => objDic.Values.GetEnumerator();
+	
 
 #if UNITY_EDITOR
 
@@ -88,8 +79,6 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		objDic.Clear();
 		UnityEditor.EditorUtility.SetDirty( this );
 	}
-	
-	public override bool EditorCanChangeIDsToOptimizeSpace => true;
 
 	public override void Editor_HACK_Remove(int id)
 	{
@@ -186,48 +175,5 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 		//string s = "";
 		//s += $"NULL\n";
 		return $"{this.GetType()}:\n{s}";
-
 	}
-
-
-
-	public override List<IHashedSO> CheckNullInDic()
-	{
-		List<IHashedSO> _elementsToRemove = new List<IHashedSO>();
-		List<int> _keysToRemove = new List<int>();
-
-		
-		foreach (KeyValuePair<int, T> pair in objDic)
-		{
-			T value = pair.Value;
-			try
-			{
-				var name =	pair.Value.ToString();
-			}
-			catch (Exception e)
-			{
-			//	Console.WriteLine(e);
-				_keysToRemove.Add(pair.Key);
-			//	throw;
-			}
-		
-		}
-
-		foreach (var key in _keysToRemove)
-		{
-			Editor_HACK_Remove( key  );
-		}
-
-	
-
-
-		return _elementsToRemove;
- 
-	}
-//	private int SetRandomID()
-//	{
-//		Debug.Log($"<><>PlaceholderCount Before : {PlaceholderCount}");
-//		return Random.Range(PlaceholderCount, int.MaxValue);
-//	
-//	}
 }

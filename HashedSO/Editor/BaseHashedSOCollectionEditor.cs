@@ -81,7 +81,7 @@ public class BaseHashedSOCollectionEditor : Editor
 
 		EditorGUILayout.EndVertical();
 		if( GUILayout.Button( "Check Consistency" ) ) edit.EditorCheckConsistency();
-		if( edit.EditorCanChangeIDsToOptimizeSpace && GUILayout.Button( "Optimize" ) ) edit.EditorTryOptimize();
+		// if( edit.EditorCanChangeIDsToOptimizeSpace && GUILayout.Button( "Optimize" ) ) edit.EditorTryOptimize();
 		
 		GuiColorManager.New( Color.red );
 		if( GUILayout.Button( "!DANGER! Enforce HashIDs" ) ) edit.Editor_HACK_EnforceHashIDs();

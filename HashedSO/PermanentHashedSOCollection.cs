@@ -8,7 +8,6 @@ public class PermanentHashedSOCollection<T> : HashedSOCollection<T> where T : Ha
 {
 #if UNITY_EDITOR
 	protected override void Clear() { throw new System.Exception( "PermanentHashedCollection cannot clear already hashed elements" ); }
-	public override bool EditorCanChangeIDsToOptimizeSpace => false;
 	protected override bool ResolveConflictedFile( IHashedSO t, string assetPath )
 	{
 		if( !UnityEditor.EditorUtility.DisplayDialog( "Conflict on PermanentHashedSOCollection",

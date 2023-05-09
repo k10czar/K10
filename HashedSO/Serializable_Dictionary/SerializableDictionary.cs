@@ -44,5 +44,10 @@ namespace GitHub.Unity
                 Add(keys[i], values[i]);
             }
         }
+
+        public TValue GetRandomValue()
+        {
+		    return values[ UnityEngine.Random.Range(0, values.Count) ];
+        }
     }
 }
