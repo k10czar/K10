@@ -150,18 +150,41 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 	{
 		if( _killed ) return false;
 
-		if( Mathf.Approximately( deltaTime, 0 ) ) return !_isOnDesired.Value;
+		if( deltaTime < float.Epsilon ) return !_isOnDesired.Value;
 
         float diff = _desired - _current;
         var aVel = _velocity + Mathf.Sign( diff ) * _acceleration * deltaTime;
         var dVel = Mathf.Sqrt( Mathf.Abs( 2 * _deacceleration * diff ) );
-        var vel = Mathf.Sign( aVel ) * Mathf.Min( Mathf.Abs( aVel ), Mathf.Abs( dVel ) );
+        var vel = Mathf.Sign( aVel ) * Mathf.Min( Mathf.Abs( aVel ), dVel );
         _velocity = Mathf.Clamp( vel, -_maxVelocity, _maxVelocity );
 		var step = _velocity * deltaTime;
 
-		if( !Mathf.Approximately( step, 0 ) )
+		if( step > float.Epsilon ) // Not 0 == !Mathf.Approximately( step, 0 )
 		{
-			if( Mathf.Abs( step ) >= Mathf.Abs( diff ) )
+			if( step + float.Epsilon > diff )
+	        {
+	            _current = _desired;
+				_onValueUpdate.Trigger( _current );
+				_isOnDesired.Value = true;
+
+	            if( _velocity != 0 ) { _velocity = 0; }
+	        }
+	        else
+	        {
+				_current += step;
+				_onValueUpdate.Trigger( _current );
+
+				if( Mathf.Approximately( _current, _desired ) )
+				{
+					_current = _desired;
+					_isOnDesired.Value = true;
+					_velocity = 0;
+	            }
+	        }
+		}
+		else if( step < -float.Epsilon )
+		{
+			if( step - float.Epsilon < diff )
 	        {
 	            _current = _desired;
 				_onValueUpdate.Trigger( _current );
