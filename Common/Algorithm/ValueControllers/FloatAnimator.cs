@@ -153,9 +153,17 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 		if( deltaTime < float.Epsilon ) return !_isOnDesired.Value;
 
         float diff = _desired - _current;
-        var aVel = _velocity + Mathf.Sign( diff ) * _acceleration * deltaTime;
-        var dVel = Mathf.Sqrt( Mathf.Abs( 2 * _deacceleration * diff ) );
-        var vel = Mathf.Sign( aVel ) * Mathf.Min( Mathf.Abs( aVel ), dVel );
+		var diffSign = 1f;
+		if( diff < float.Epsilon ) diffSign = -1f;
+
+        var aVel = _velocity + diffSign * _acceleration * deltaTime;
+        var dVel = Mathf.Sqrt( 2 * _deacceleration * diff * diffSign );
+
+		var aVelSign = 1f;
+		if( aVel < float.Epsilon ) aVelSign = -1f;
+
+        var vel = aVelSign * Mathf.Min( aVel * aVelSign, dVel );
+
         _velocity = Mathf.Clamp( vel, -_maxVelocity, _maxVelocity );
 		var step = _velocity * deltaTime;
 
@@ -206,7 +214,7 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 	        }
 		}
 
-		if( float.IsNaN( _current ) ) Debug.LogError( string.Format( "NaN on float animator | _velocity:{0} _maxVelocity:{1} deltaTime:{2} _desired:{3} _current:{4} diff:{5} aVel:{6} dVel:{7} vel:{8} step:{9}", _velocity, _maxVelocity, deltaTime, _desired, _current, diff, aVel, dVel, vel, step ) );
+		// if( float.IsNaN( _current ) ) Debug.LogError( string.Format( "NaN on float animator | _velocity:{0} _maxVelocity:{1} deltaTime:{2} _desired:{3} _current:{4} diff:{5} aVel:{6} dVel:{7} vel:{8} step:{9}", _velocity, _maxVelocity, deltaTime, _desired, _current, diff, aVel, dVel, vel, step ) );
 
 		return !_isOnDesired.Value;
     }
