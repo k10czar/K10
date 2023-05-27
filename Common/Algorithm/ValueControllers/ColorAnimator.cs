@@ -18,10 +18,9 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 	[SerializeField] FloatAnimator01 _b;
 	[SerializeField] FloatAnimator01 _a;
 
-	float test;
-
 	Color _cachedColor = Color.white;
 	float _transitionTime = 0;
+	bool _dirty = false;
 
 	EventSlot<Color> _desiredReach = new EventSlot<Color>();
 	public IEventRegister<Color> OnDesiredReach { get { return _desiredReach; } }
@@ -102,22 +101,23 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 		_g.Reset(val, val, float.MaxValue);
 		_b.Reset(val, val, float.MaxValue);
 		_a.Reset(val, val, float.MaxValue);
-
 	}
 
 	public bool Update( float delta )
 	{
-		if( _killed ) return false;
+		if( !_dirty || _killed ) return false;
 
 		bool updated = false;
-		bool updateMore = false;
+		_dirty = false;
+		bool changed = false;
 
 		if( !_r.IsOnDesired.Value )
 		{
 			updated = true;
 			_r.Update( delta );
 			_cachedColor.r = _r.Value;
-			updateMore |= !_r.IsOnDesired.Value;
+			_dirty |= !_r.IsOnDesired.Value;
+			changed = true;
 		}
 
 		if( !_g.IsOnDesired.Value )
@@ -125,7 +125,8 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 			updated = true;
 			_g.Update( delta );
 			_cachedColor.g = _g.Value;
-			updateMore |= !_b.IsOnDesired.Value;
+			_dirty |= !_b.IsOnDesired.Value;
+			changed = true;
 		}
 
 		if( !_b.IsOnDesired.Value )
@@ -133,7 +134,8 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 			updated = true;
 			_b.Update( delta );
 			_cachedColor.b = _b.Value;
-			updateMore |= !_g.IsOnDesired.Value;
+			_dirty |= !_g.IsOnDesired.Value;
+			changed = true;
 		}
 
 		if( !_a.IsOnDesired.Value )
@@ -141,17 +143,14 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 			updated = true;
 			_a.Update( delta );
 			_cachedColor.a = _a.Value;
-			updateMore |= !_a.IsOnDesired.Value;
+			_dirty |= !_a.IsOnDesired.Value;
+			changed = true;
 		}
 
 		if( updated ) _colorUpdate.Trigger( _cachedColor );
-		if( !updateMore )
-		{
-			var d = Time.time - test;
-			_desiredReach.Trigger( _cachedColor );
-		}
+		if( !_dirty && changed ) _desiredReach.Trigger( _cachedColor );
 
-		return updateMore;
+		return _dirty;
 	}
 
 	void IValueStateSetter<Color>.Setter( Color t ) { SetColor( t ); }
@@ -162,14 +161,20 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 		_b.SetDesire( color.b );
 		if( useAlpha ) _a.SetDesire( color.a );
 
-		if( _updater != null && ( !_r.IsOnDesired.Value || !_g.IsOnDesired.Value || !_b.IsOnDesired.Value || ( useAlpha && !_a.IsOnDesired.Value ) ) ) _updater.RequestUpdate( this );
+		bool needsUpdate = ( !_r.IsOnDesired.Value || !_g.IsOnDesired.Value || !_b.IsOnDesired.Value || !_a.IsOnDesired.Value );
+		_dirty |= needsUpdate;
+
+		if( _updater != null && needsUpdate ) _updater.RequestUpdate( this );
 	}
 
 	public void SetAlpha( float value )
 	{
 		_a.SetDesire( value );
 
-		if( _updater != null && !_a.IsOnDesired.Value ) _updater.RequestUpdate( this );
+		bool needsUpdate = !_a.IsOnDesired.Value;
+		_dirty |= needsUpdate;
+
+		if( _updater != null && needsUpdate ) _updater.RequestUpdate( this );
 	}
 
 	public void SetAlphaMax( bool max = true ) { SetAlpha( max ? 1 : 0 ); }
