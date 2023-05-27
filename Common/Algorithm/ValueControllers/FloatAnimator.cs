@@ -36,15 +36,43 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 	public FloatAnimator( IUpdaterOnDemand updater, float min, float max, float accel, float deaccel, float maxVelocity ) : this( min, max, accel, deaccel, maxVelocity )  { _updater = updater; }
 
     float _velocity, _current, _desired;
+	bool _dirty;
 
 	void CheckOnMin() 
 	{ 
-		var isOnMin = Mathf.Approximately( _current, _min ) && Mathf.Approximately( _desired, _min );
+		var currMinDiff = _current - _min;
+		var isOnMin = currMinDiff < float.Epsilon && currMinDiff > -float.Epsilon;
+		if( isOnMin )
+		{
+			var desiredMinDiff =  _desired - _min;
+			isOnMin = desiredMinDiff < float.Epsilon && desiredMinDiff > -float.Epsilon;
+		}
+
 		_isOnMinimumValue.Value = isOnMin;
 		_notOnMinimumValue.Value = !isOnMin;
 	}
-    void CheckOnMax() { _isOnMaximumValue.Value = Mathf.Approximately( _current, _max ) && Mathf.Approximately( _desired, _max ); }
-    void CheckDesired() { _isOnDesired.Value = Mathf.Approximately( _current, _desired ); }
+
+    void CheckOnMax() 
+	{ 
+		var currMaxDiff = _current - _max;
+		var isOnMax = currMaxDiff < float.Epsilon && currMaxDiff > -float.Epsilon;
+		if( isOnMax )
+		{
+			var desiredMaxDiff =  _desired - _max;
+			isOnMax = desiredMaxDiff < float.Epsilon && desiredMaxDiff > -float.Epsilon;
+		}
+
+		_isOnMaximumValue.Value = isOnMax;
+	}
+
+    bool CheckDesired() 
+	{
+		var diff = _current - _desired;
+		var isOnDesired = diff < float.Epsilon && diff > -float.Epsilon;
+		_dirty = !isOnDesired;
+		_isOnDesired.Value = isOnDesired;
+		return isOnDesired;
+	}
 
 	public IUpdaterOnDemand Updater { set { _updater = value; } }
     public IEventRegister OnValueReach { get { return _isOnDesired.OnTrueState; } }
@@ -138,7 +166,8 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 
     public void SetDesire( float desired )
     {
-		if( Mathf.Approximately( _desired, desired ) )
+		var diff = desired - _desired;
+		if( diff < float.Epsilon && diff > -float.Epsilon )
 			return;
         _desired = Mathf.Clamp( desired, _min, _max );
 		CheckDesired();
@@ -148,7 +177,7 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 
     public bool Update( float deltaTime )
 	{
-		if( _killed ) return false;
+		if( !_dirty || _killed ) return false;
 
 		if( deltaTime < float.Epsilon ) return !_isOnDesired.Value;
 
