@@ -15,7 +15,20 @@ public class Vector3State : IValueState<Vector3>, ICustomDisposableKill
 
     public void Setter( Vector3 value )
     {
-        if( Mathf.Approximately( _value.x, value.x ) && Mathf.Approximately( _value.y, value.y ) && Mathf.Approximately( _value.z, value.z ) ) return;
+        var xDiff = _value.x - value.x;
+        if( xDiff < float.Epsilon && xDiff > -float.Epsilon )
+        {
+            var yDiff = _value.y - value.y;
+            if( yDiff < float.Epsilon && yDiff > -float.Epsilon )
+            {
+                var zDiff = _value.z - value.z;
+                if( zDiff < float.Epsilon && zDiff > -float.Epsilon )
+                {
+                    return;
+                }
+            }
+        }
+
         _value = value;
         _onChange?.Trigger( value );
     }

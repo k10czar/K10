@@ -12,7 +12,16 @@ public class Vector2State : IValueState<Vector2>, ISerializationCallbackReceiver
 
     public void Setter( Vector2 value )
     {
-        if( Mathf.Approximately( _value.x, value.x ) && Mathf.Approximately( _value.y, value.y ) ) return;
+        var xDiff = _value.x - value.x;
+        if( xDiff < float.Epsilon && xDiff > -float.Epsilon )
+        {
+            var yDiff = _value.y - value.y;
+            if( yDiff < float.Epsilon && yDiff > -float.Epsilon )
+            {
+                return;
+            }
+        }
+
         _value = value;
         _onChange.Trigger( value );
     }
