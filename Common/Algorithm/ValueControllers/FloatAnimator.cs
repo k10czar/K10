@@ -211,7 +211,8 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 				_current += step;
 				_onValueUpdate.Trigger( _current );
 
-				if( Mathf.Approximately( _current, _desired ) )
+				var currDiff = _current - _desired;
+				if( currDiff < float.Epsilon && currDiff > -float.Epsilon ) //if( Mathf.Approximately( _current, _desired ) )
 				{
 					_current = _desired;
 					_isOnDesired.Value = true;
@@ -234,7 +235,8 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 				_current += step;
 				_onValueUpdate.Trigger( _current );
 
-				if( Mathf.Approximately( _current, _desired ) )
+				var currDiff = _current - _desired;
+				if( currDiff < float.Epsilon && currDiff > -float.Epsilon ) //if( Mathf.Approximately( _current, _desired ) )
 				{
 					_current = _desired;
 					_isOnDesired.Value = true;

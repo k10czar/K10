@@ -65,8 +65,8 @@ public class PoliModifiedValue : ICustomDisposableKill
 
 	public void Add( float value, float seconds = 0, IInterpolationFunction interpolation = null )
 	{
-		if( Mathf.Approximately( value, 0 ) ) return;
-		if( Mathf.Approximately( seconds, 0 ) || seconds < 0 ) _modifiedValue.Increment( value );
+		if( value < float.Epsilon && value > -float.Epsilon ) return;
+		if( seconds < float.Epsilon ) _modifiedValue.Increment( value );
 		else { _overTimeModifiers.Add( ObjectPool<InterpolatedOverTimeModifier>.Request().Reseted( value, seconds, interpolation ?? _interpolation, _lastTime - Time.time ) ); }
 	}
 }
