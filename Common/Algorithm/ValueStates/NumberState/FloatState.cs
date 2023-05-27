@@ -13,14 +13,15 @@ public class FloatState : INumericValueState<float>, ICustomDisposableKill
 
 	public void Setter( float value )
 	{
-		if( Mathf.Approximately( _value, value ) ) return;
+		var diff = _value - value;
+		if( diff < float.Epsilon && diff > -float.Epsilon ) return;
 		_value = value;
 		_onChange?.Trigger( value );
 	}
 
 	public void Increment( float increment )
 	{
-		if( Mathf.Approximately( 0, increment ) ) return;
+		if( increment < float.Epsilon && increment > -float.Epsilon ) return;
 		Setter( _value + increment );
 	}
 

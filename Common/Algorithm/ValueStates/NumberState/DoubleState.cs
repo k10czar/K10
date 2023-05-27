@@ -14,14 +14,15 @@ public class DoubleState : INumericValueState<double>, ICustomDisposableKill
 
 	public void Setter( double value )
 	{
-		if( Math.Abs( _value - value ) < double.Epsilon ) return;
+		var diff = _value - value;
+		if( diff < double.Epsilon && diff > -double.Epsilon ) return;
 		_value = value;
 		_onChange?.Trigger( value );
 	}
 
 	public void Increment( double increment )
 	{
-		if( increment == 0 ) return;
+		if( increment < double.Epsilon && increment > -double.Epsilon ) return;
 		Setter( _value + increment );
 	}
 

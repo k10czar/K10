@@ -44,7 +44,7 @@ public class PercentageRangedFloatState : RangedFloatState, IPercentageRangedFlo
 		var max = _max.Value;
 		var delta = max - min;
 
-		if( Approximately( delta, 0 ) )
+		if( delta < float.Epsilon && delta > -float.Epsilon )
 		{
 			_percentage.Value = 0;
 			return;
