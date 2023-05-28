@@ -13,10 +13,10 @@ public class Vector2State : IValueState<Vector2>, ISerializationCallbackReceiver
     public void Setter( Vector2 value )
     {
         var xDiff = _value.x - value.x;
-        if( xDiff < float.Epsilon && xDiff > -float.Epsilon )
+        if( xDiff < float.Epsilon && xDiff > FloatHelper.NegativeEpsilon )
         {
             var yDiff = _value.y - value.y;
-            if( yDiff < float.Epsilon && yDiff > -float.Epsilon )
+            if( yDiff < float.Epsilon && yDiff > FloatHelper.NegativeEpsilon )
             {
                 return;
             }

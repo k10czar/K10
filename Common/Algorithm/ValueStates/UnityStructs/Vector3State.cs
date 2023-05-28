@@ -16,13 +16,13 @@ public class Vector3State : IValueState<Vector3>, ICustomDisposableKill
     public void Setter( Vector3 value )
     {
         var xDiff = _value.x - value.x;
-        if( xDiff < float.Epsilon && xDiff > -float.Epsilon )
+        if( xDiff < float.Epsilon && xDiff > FloatHelper.NegativeEpsilon )
         {
             var yDiff = _value.y - value.y;
-            if( yDiff < float.Epsilon && yDiff > -float.Epsilon )
+            if( yDiff < float.Epsilon && yDiff > FloatHelper.NegativeEpsilon )
             {
                 var zDiff = _value.z - value.z;
-                if( zDiff < float.Epsilon && zDiff > -float.Epsilon )
+                if( zDiff < float.Epsilon && zDiff > FloatHelper.NegativeEpsilon )
                 {
                     return;
                 }

@@ -41,11 +41,11 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 	void CheckOnMin() 
 	{ 
 		var currMinDiff = _current - _min;
-		var isOnMin = currMinDiff < float.Epsilon && currMinDiff > -float.Epsilon;
+		var isOnMin = currMinDiff < float.Epsilon && currMinDiff > FloatHelper.NegativeEpsilon;
 		if( isOnMin )
 		{
 			var desiredMinDiff =  _desired - _min;
-			isOnMin = desiredMinDiff < float.Epsilon && desiredMinDiff > -float.Epsilon;
+			isOnMin = desiredMinDiff < float.Epsilon && desiredMinDiff > FloatHelper.NegativeEpsilon;
 		}
 
 		_isOnMinimumValue.Value = isOnMin;
@@ -55,11 +55,11 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
     void CheckOnMax() 
 	{ 
 		var currMaxDiff = _current - _max;
-		var isOnMax = currMaxDiff < float.Epsilon && currMaxDiff > -float.Epsilon;
+		var isOnMax = currMaxDiff < float.Epsilon && currMaxDiff > FloatHelper.NegativeEpsilon;
 		if( isOnMax )
 		{
 			var desiredMaxDiff =  _desired - _max;
-			isOnMax = desiredMaxDiff < float.Epsilon && desiredMaxDiff > -float.Epsilon;
+			isOnMax = desiredMaxDiff < float.Epsilon && desiredMaxDiff > FloatHelper.NegativeEpsilon;
 		}
 
 		_isOnMaximumValue.Value = isOnMax;
@@ -68,7 +68,7 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
     bool CheckDesired() 
 	{
 		var diff = _current - _desired;
-		var isOnDesired = diff < float.Epsilon && diff > -float.Epsilon;
+		var isOnDesired = diff < float.Epsilon && diff > FloatHelper.NegativeEpsilon;
 		_dirty = !isOnDesired;
 		_isOnDesired.Value = isOnDesired;
 		return isOnDesired;
@@ -167,7 +167,7 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
     public void SetDesire( float desired )
     {
 		var diff = desired - _desired;
-		if( diff < float.Epsilon && diff > -float.Epsilon )
+		if( diff < float.Epsilon && diff > FloatHelper.NegativeEpsilon )
 			return;
         _desired = Mathf.Clamp( desired, _min, _max );
 		CheckDesired();
@@ -212,7 +212,7 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 				_onValueUpdate.Trigger( _current );
 
 				var currDiff = _current - _desired;
-				if( currDiff < float.Epsilon && currDiff > -float.Epsilon ) //if( Mathf.Approximately( _current, _desired ) )
+				if( currDiff < float.Epsilon && currDiff > FloatHelper.NegativeEpsilon ) //if( Mathf.Approximately( _current, _desired ) )
 				{
 					_current = _desired;
 					_isOnDesired.Value = true;
@@ -220,7 +220,7 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 	            }
 	        }
 		}
-		else if( step < -float.Epsilon )
+		else if( step < FloatHelper.NegativeEpsilon )
 		{
 			if( step - float.Epsilon < diff )
 	        {
@@ -236,7 +236,7 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 				_onValueUpdate.Trigger( _current );
 
 				var currDiff = _current - _desired;
-				if( currDiff < float.Epsilon && currDiff > -float.Epsilon ) //if( Mathf.Approximately( _current, _desired ) )
+				if( currDiff < float.Epsilon && currDiff > FloatHelper.NegativeEpsilon ) //if( Mathf.Approximately( _current, _desired ) )
 				{
 					_current = _desired;
 					_isOnDesired.Value = true;

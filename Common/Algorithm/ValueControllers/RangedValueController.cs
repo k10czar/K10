@@ -65,7 +65,7 @@ public class PoliModifiedValue : ICustomDisposableKill
 
 	public void Add( float value, float seconds = 0, IInterpolationFunction interpolation = null )
 	{
-		if( value < float.Epsilon && value > -float.Epsilon ) return;
+		if( value < float.Epsilon && value > FloatHelper.NegativeEpsilon ) return;
 		if( seconds < float.Epsilon ) _modifiedValue.Increment( value );
 		else { _overTimeModifiers.Add( ObjectPool<InterpolatedOverTimeModifier>.Request().Reseted( value, seconds, interpolation ?? _interpolation, _lastTime - Time.time ) ); }
 	}
