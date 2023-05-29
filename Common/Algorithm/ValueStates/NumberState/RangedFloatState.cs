@@ -34,7 +34,7 @@ public class RangedFloatState : IRangedFloatState, IRangedFloatStateObserver, IS
 
 	public void Increment( float increment = 1 )
 	{
-		if( Mathf.Approximately( increment, 0 ) ) return;
+		if( increment < float.Epsilon && increment > FloatHelper.NegativeEpsilon ) return;
 		Setter( _value.Value + increment );
 	}
 
