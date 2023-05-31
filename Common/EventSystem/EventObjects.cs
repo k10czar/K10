@@ -28,7 +28,8 @@ public class EventSlot : IEvent, ICustomDisposableKill
 		var listenersToTrigger = ObjectPool<List<IEventTrigger>>.Request();
 		listenersToTrigger.AddRange( _listeners );
 
-		for( int i = 0; i < listenersToTrigger.Count; i++ )
+		var count = listenersToTrigger.Count;
+		for( int i = 0; i < count; i++ )
 		{
 			var listener = listenersToTrigger[i];
 			if( listener.IsValid ) listener.Trigger();
@@ -98,7 +99,8 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 			var listenersToTrigger = ObjectPool<List<IEventTrigger<T>>>.Request();
 			listenersToTrigger.AddRange( _listeners );
 
-			for( int i = 0; i < listenersToTrigger.Count; i++ )
+			var count = listenersToTrigger.Count;
+			for( int i = 0; i < count; i++ )
 			{
 				var listener = listenersToTrigger[i];
 				if( listener.IsValid ) listener.Trigger( t );
@@ -197,7 +199,8 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 			var listenersToTrigger = ObjectPool<List<IEventTrigger<T,K>>>.Request();
 			listenersToTrigger.AddRange( _listeners );
 
-			for( int i = 0; i < listenersToTrigger.Count; i++ )
+			var count = listenersToTrigger.Count;
+			for( int i = 0; i < count; i++ )
 			{
 				var listener = listenersToTrigger[i];
 				if( listener.IsValid ) listener.Trigger( t, k );
@@ -309,7 +312,8 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 			var listenersToTrigger = ObjectPool<List<IEventTrigger<T, K, L>>>.Request();
 			listenersToTrigger.AddRange( _listeners );
 
-			for( int i = 0; i < listenersToTrigger.Count; i++ )
+			var count = listenersToTrigger.Count;
+			for( int i = 0; i < count; i++ )
 			{
 				var listener = listenersToTrigger[i];
 				if( listener.IsValid ) listener.Trigger( t, k, l );
