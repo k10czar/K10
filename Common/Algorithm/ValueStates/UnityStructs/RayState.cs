@@ -16,8 +16,28 @@ public class RayState : IValueState<Ray>, ICustomDisposableKill
         var _vd = _value.direction;
         var _vo = _value.origin;
 
-        if( Mathf.Approximately( _vd.x, vd.x ) && Mathf.Approximately( _vd.y, vd.y ) && Mathf.Approximately( _vd.z, vd.z ) &&
-            Mathf.Approximately( _vo.x, vo.x ) && Mathf.Approximately( _vo.y, vo.y ) && Mathf.Approximately( _vo.z, vo.z ) ) return;
+        var diffDX = _vd.x - vd.x;
+        if( diffDX < float.Epsilon && diffDX > FloatHelper.NegativeEpsilon )
+        {
+            var diffDY = _vd.y - vd.y;
+            if( diffDY < float.Epsilon && diffDY > FloatHelper.NegativeEpsilon )
+            {
+                var diffDZ = _vd.z - vd.z;
+                if( diffDZ < float.Epsilon && diffDZ > FloatHelper.NegativeEpsilon )
+                {
+                    var diffOX = _vo.x - _vo.x;
+                    if( diffOX < float.Epsilon && diffOX > FloatHelper.NegativeEpsilon )
+                    {
+                        var diffOY = _vo.y - _vo.y;
+                        if( diffOY < float.Epsilon && diffOY > FloatHelper.NegativeEpsilon )
+                        {
+                            var diffOZ = _vo.z - _vo.z;
+                            if( diffOZ < float.Epsilon && diffOZ > FloatHelper.NegativeEpsilon ) return;
+                        }
+                    }
+                }
+            }
+        }
 
         _value = value;
         _onChange.Trigger( value );

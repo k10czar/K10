@@ -125,8 +125,8 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 	{
         var val = Mathf.Clamp( value, _min, _max );
 
-		if( Mathf.Approximately( _current, val ) )
-			return;
+		var diff = val - _current;
+		if( diff < float.Epsilon && diff > FloatHelper.NegativeEpsilon ) return;
 
 		_current = val;
 
@@ -204,7 +204,7 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 				_onValueUpdate.Trigger( _current );
 				_isOnDesired.Value = true;
 
-	            if( _velocity != 0 ) { _velocity = 0; }
+	            _velocity = 0;
 	        }
 	        else
 	        {
@@ -228,7 +228,7 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 				_onValueUpdate.Trigger( _current );
 				_isOnDesired.Value = true;
 
-	            if( _velocity != 0 ) { _velocity = 0; }
+	            _velocity = 0;
 	        }
 	        else
 	        {
