@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public struct FastFloatAnimator
@@ -23,7 +24,13 @@ public struct FastFloatAnimator
         _max = max;
     }
 
-    public void SetDesire( float desired )
+	public void ForceToDesired()
+	{
+		_currentValue = _desiredValue;
+		_currentSpeed = 0;
+	}
+
+	public void SetDesire( float desired )
     {
 		var diff = desired - _desiredValue;
 		if( diff < float.Epsilon && diff > FloatHelper.NegativeEpsilon )

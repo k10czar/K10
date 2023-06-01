@@ -16,6 +16,19 @@ public struct FastCircularFloatAnimator
     static float RealMax( float min, float max ) { return min + 2 * ( max - min ); }
     // float Convert( float value ) { var min = _animator._min; return min + ( ( value - min ) % _halfRangeDelta ); }
     
+	public void ForceToDesired()
+	{
+		_animator.ForceToDesired();
+        UpdateValue();
+	}
+
+    private void UpdateValue()
+    {
+        var min = _animator._min;
+        _currentValue = min + ( ( _animator._currentValue - min ) % _realRangeDelta );
+        // _currentValue = Convert( _animator._currentValue );
+    }
+    
     public void SetDesire( float value )
     {
         var diff = _animator._desiredValue - value;
@@ -39,8 +52,6 @@ public struct FastCircularFloatAnimator
     public void Update( float deltaTime )
     {
         _animator.Update( deltaTime );
-        var min = _animator._min; 
-        _currentValue = min + ( ( _animator._currentValue - min ) % _realRangeDelta );
-        // _currentValue = Convert( _animator._currentValue );
+        UpdateValue();
     }
 }
