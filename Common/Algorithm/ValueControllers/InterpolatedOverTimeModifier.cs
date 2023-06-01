@@ -14,7 +14,7 @@ public class InterpolatedOverTimeModifier
 
 	public InterpolatedOverTimeModifier() { }
 
-	public void Reset( float value, float duration, IInterpolationFunction interpolation = null, float offset = 0 )
+	public void Reset( float value, float duration, IInterpolationFunction interpolation, float offset )
 	{
 		_value = value;
 		_duration = duration;
@@ -23,7 +23,7 @@ public class InterpolatedOverTimeModifier
 		_interpolation = interpolation ?? LinearInterpolation.Instance;
 	}
 
-	public InterpolatedOverTimeModifier Reseted( float value, float duration, IInterpolationFunction interpolation = null, float offset = 0 )
+	public InterpolatedOverTimeModifier Reseted( float value, float duration, IInterpolationFunction interpolation, float offset )
 	{
 		Reset( value, duration, interpolation, offset );
 		return this;
