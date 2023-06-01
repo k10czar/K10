@@ -15,7 +15,13 @@ public static class CodeTimingDebug
 		enabled = false;
 		#endif
 	}
-	public static void Disable() { enabled = false; _logStopwatch.Stop(); }
+	public static void Disable() 
+	{ 
+		if( !enabled ) return;
+		enabled = false;
+		Clear();
+		_logStopwatch.Stop();
+	}
 
 	private static readonly Dictionary<string,Stopwatch> _watches = new Dictionary<string, Stopwatch>();
 	private static readonly Dictionary<string,double> _accTimmings = new Dictionary<string,double>();
@@ -35,6 +41,8 @@ public static class CodeTimingDebug
 
 	public static double LogEnd( string tag )
 	{
+		if( !enabled ) return 0;
+
 		if( !_watches.TryGetValue( tag, out var osw ) ) return 0;
 		_watches.Remove( tag );
 		
