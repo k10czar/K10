@@ -44,7 +44,7 @@ public sealed class TMP_FpsCounter : MonoBehaviour
     void Update()
     {
         var sampleTime = ( Time.timeSinceLevelLoadAsDouble - _sampleSecond );
-        while( _frame.Count > 0 && _frame[0] < sampleTime ) _frame.RemoveAt( 0 );
+        while( _frame.Count > 1 && _frame[0] < sampleTime ) _frame.RemoveAt( 0 );
 
         // _timeleft -= Time.deltaTime;
         // _accum += Time.timeScale / Time.deltaTime;
