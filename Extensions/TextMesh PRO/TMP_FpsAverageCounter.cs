@@ -43,7 +43,7 @@ public class TMP_FpsAverageCounter : MonoBehaviour
         _string[2] = ( dataToShow > 99 ) ? (char)( (int)'0' + ( dataToShow % 1000 ) / 100 ) : ' ';
         _string[3] = (char)( (int)'0' + ( dataToShow % 100 ) / 10 );
         _string[5] = (char)( (int)'0' + ( dataToShow % 10 ) );
-        _textMesh.text = new string( _string );
+        _textMesh.SetText( _string );
     }
 
     void Update()

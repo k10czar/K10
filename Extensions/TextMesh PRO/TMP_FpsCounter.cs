@@ -6,15 +6,8 @@ public sealed class TMP_FpsCounter : MonoBehaviour
     [Range(.1f,2),SerializeField] float _sampleSecond = .5f;
     [SerializeField,HideInInspector] TMPro.TMP_Text _textMesh;
     List<double> _frame = new List<double>();
-    private float _accum = 0;
-    // FPS accumulated over the interval
-    private int _frames = 0;
-    // Frames drawn over the interval
-    private float _timeleft;
-    // Left time for current interval
 
-    //Avoid GC Collection;
-    string[] _fpsCounterStringsCache = new string[ 500 ];
+    string[] _fpsCounterStringsCache = new string[ 800 ];
 
     private int _lastFpsValue = -1;
 
@@ -58,7 +51,7 @@ public sealed class TMP_FpsCounter : MonoBehaviour
         var fps = (int)( System.Math.Round( ( _frame.Count ) / sample ) + .01 );
         if( _lastFpsValue != fps )
         {
-            _textMesh.text = RequestString( fps );
+            _textMesh.SetText( RequestString( fps ) );
             _lastFpsValue = fps;
         }
 
