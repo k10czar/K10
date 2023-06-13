@@ -50,7 +50,7 @@ public class TMP_FpsAverageCounter : MonoBehaviour
     {
         if( !_canUpdateData ) return;
         
-        _time += Time.deltaTime;
+        _time += Time.unscaledDeltaTime;
         _frames++;
         if( _time > 0 )
         {
