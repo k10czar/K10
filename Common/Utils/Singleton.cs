@@ -28,7 +28,15 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 		{
 			if( !_instance.IsValid )
 			{
+				var stopwatch = new System.Diagnostics.Stopwatch();
+				stopwatch.Start();
 				var candidate = (T)MonoBehaviour.FindObjectOfType( typeof( T ) );
+#if UNITY_EDITOR
+				Debug.LogError( $"<color=purple>Shame</color> Singleton<<color=lime>{typeof(T).Name}</color>>.Instance Didn't have a cached object of type! So will call !!!<color=red>FindObjectOfType()</color>!!! took:<color=orange>{stopwatch.Elapsed.TotalMilliseconds:N2}</color>ms {((candidate!=null)?$"<color=cyan>Found</color> @ {candidate.HierarchyNameOrNull()}":"<color=red>Fail</color>")}" );
+#else
+				Debug.LogError( $"Singleton<{typeof(T).Name}>.Instance Didn't have a cached object of type! So will call !!!FindObjectOfType()!!! took:{stopwatch.Elapsed.TotalMilliseconds:N2}ms {((candidate!=null)?$"Found @ {candidate.HierarchyNameOrNull()}":"Fail")}" );
+#endif
+				stopwatch.Stop();
 				_instance.RegisterNewReference( candidate );
 				if( candidate == null )
 				{
@@ -68,8 +76,15 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 
 	public static void SayHello( T candidate ) 
 	{
-		if( _instance.IsValid ) return;
-		//Debug.Log( $"Singleton<<color=lime>{(typeof(T))}</color>> Hello with {candidate.HierarchyNameOrNull()}" );
+		if( _instance.IsValid ) 
+		{
+#if UNITY_EDITOR
+			if( _instance.Reference != candidate ) Debug.LogError( $"<color=purple>Shame</color> Conflict with Singleton<<color=lime>{(typeof(T))}</color>>SayHello( {candidate.HierarchyNameOrNull()} ) conflicting with already setted {_instance.Reference.HierarchyNameOrNull()}" );
+#else
+			if( _instance.Reference != candidate ) Debug.LogError( $"Conflict with Singleton<{(typeof(T))}>SayHello( {candidate.HierarchyNameOrNull()} ) conflicting with already setted {_instance.Reference.HierarchyNameOrNull()}" );
+#endif
+			return;
+		}
 		_instance.RegisterNewReference( candidate );
 	}
 
@@ -78,20 +93,36 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 	/// </summary>
 	public static T FindObjectOfTypeAll()
 	{
-		for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+		var stopwatch = new System.Diagnostics.Stopwatch();
+		stopwatch.Start();
+		var sceneCount = UnityEngine.SceneManagement.SceneManager.sceneCount;
+		for (int i = 0; i < sceneCount; i++)
 		{
 			var s =  UnityEngine.SceneManagement.SceneManager.GetSceneAt(i);
 			var allGameObjects = s.GetRootGameObjects();
-			for (int j = 0; j < allGameObjects.Length; j++)
+			var objectsCount = allGameObjects.Length;
+			for (int j = 0; j < objectsCount; j++)
 			{
 				var go = allGameObjects[j];
 				var obj = go.GetComponentInChildren<T>(true);
 				if (obj != null && obj is T)
 				{
+#if UNITY_EDITOR
+					Debug.LogError( $"<color=purple>Shame</color> Singleton<<color=lime>{typeof(T).Name}</color>>.GetInstance() Didn't have a cached object of type! So will call !!!<color=red>FindObjectOfTypeAll()</color>!!! took:<color=orange>{stopwatch.Elapsed.TotalMilliseconds:N2}</color>ms <color=cyan>Found</color> @ {obj.HierarchyNameOrNull()}" );
+#else
+					Debug.LogError( $"Singleton<{typeof(T).Name}>.GetInstance() Didn't have a cached object of type! So will call !!!FindObjectOfTypeAll()!!! took:{stopwatch.Elapsed.TotalMilliseconds:N2}ms Found @ {obj.HierarchyNameOrNull()}" );
+#endif
+					stopwatch.Stop();
 					return obj;
 				}
 			}
 		}
+#if UNITY_EDITOR
+		Debug.LogError( $"<color=purple>Shame</color> Singleton<<color=lime>{typeof(T).Name}</color>>.GetInstance() Didn't have a cached object of type! So will call !!!<color=red>FindObjectOfTypeAll()</color>!!! took:<color=orange>{stopwatch.Elapsed.TotalMilliseconds:N2}</color>ms <color=red>Fail</color>" );
+#else
+		Debug.LogError( $"Singleton<{typeof(T).Name}>.GetInstance() Didn't have a cached object of type! So will call !!!FindObjectOfTypeAll()!!! took:{stopwatch.Elapsed.TotalMilliseconds:N2}ms Fail" );
+#endif
+		stopwatch.Stop();
 		return default;
 	}
 }
@@ -155,58 +186,41 @@ public abstract class Eternal<T> : Guaranteed<T> where T : UnityEngine.Component
 {
 	public new static T Instance { get { return GetInstance( true ); } }
 	public new static void Request() { GetInstance( true ); }
-
-	//TODO: Need to implements the DontDestroy on Load?
 }
 
 public abstract class Guaranteed<T> where T : UnityEngine.Component
 {
-	private readonly static AutoClearedReference<T> _instance = new AutoClearedReference<T>();
 	private static bool _markedEternal = false;
 
 	protected static T GetInstance( bool eternal )
 	{
-		if( !_instance.IsValid )
+		if( !Singleton<T>.IsValid )
 		{
 			_markedEternal = false;
-			var instance = (T)MonoBehaviour.FindObjectOfType( typeof( T ) );
-
-			if( instance == null )
+			if( Singleton<T>.Instance == null )
 			{
 				GameObject obj = new GameObject( string.Format( "_GS_{0}", ( typeof( T ) ).ToString() ) );
-				instance = obj.AddComponent<T>();
 #if UNITY_EDITOR
 				obj.AddComponent<OnlyOnPlaymodeObject>();
 #endif
 				// Debug.Log( $"GuaranteedSingleton created for {typeof(T)}" );
+				Singleton<T>.SayHello( obj.AddComponent<T>() );
 			}
-
-			_instance.RegisterNewReference( instance );
-			Singleton<T>.SayHello( instance );
 		}
 
+		var instance = Singleton<T>.Instance;
 		if( eternal && !_markedEternal )
 		{
-			var reference = _instance.Reference;
-			GameObject.DontDestroyOnLoad( reference.transform );
+			GameObject.DontDestroyOnLoad( instance.transform );
 			_markedEternal = true;
-			reference.name = string.Format( "_ES_{0}", ( typeof( T ) ).ToString() );
+			instance.name = string.Format( "_ES_{0}", ( typeof( T ) ).ToString() );
 
-			reference.gameObject.hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild;// | HideFlags.HideInHierarchy | HideFlags.HideInInspector;
+			instance.gameObject.hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild;// | HideFlags.HideInHierarchy | HideFlags.HideInInspector;
 		}
 
-		return _instance.Reference;
+		return instance;
 	}
 
 	public static T Instance { get { return GetInstance( false ); } }
 	public static void Request() { GetInstance( false ); }
-
-	public static void SayHello( T candidate ) 
-	{
-		if( !_instance.IsValid )
-		{
-			_instance.RegisterNewReference( candidate );
-			Singleton<T>.SayHello( candidate );
-		}
-	}
 }
