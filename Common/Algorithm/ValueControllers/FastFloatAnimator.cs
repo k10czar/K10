@@ -24,6 +24,14 @@ public struct FastFloatAnimator
         _max = max;
     }
 
+	public void Reset( float value )
+	{
+        if( value > _max ) value = _max;
+        else if( value < _min ) value = _min;
+		_currentValue = _desiredValue = value;
+		_currentSpeed = 0;
+	}
+
 	public void ForceToDesired()
 	{
 		_currentValue = _desiredValue;
@@ -41,13 +49,13 @@ public struct FastFloatAnimator
         else _desiredValue = desired;
     }
 
-    public void Update( float deltaTime )
+    public bool Update( float deltaTime )
     {
-		if( deltaTime < float.Epsilon ) return;
+		if( deltaTime < float.Epsilon ) return false;
 
         var diff = _desiredValue - _currentValue;
 
-        if( diff < float.Epsilon && diff > FloatHelper.NegativeEpsilon ) return;
+        if( diff < float.Epsilon && diff > FloatHelper.NegativeEpsilon ) return false;
 
 		var diffSign = 1f;
 		if( diff < float.Epsilon ) diffSign = -1f;
@@ -103,5 +111,7 @@ public struct FastFloatAnimator
 	            }
 	        }
 		}
+
+		return true;
     }
 }
