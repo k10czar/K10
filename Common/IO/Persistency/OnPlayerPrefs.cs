@@ -22,7 +22,7 @@ public static class OnPlayerPrefsInt<T> where T : struct, System.IConvertible
 	private static void UpdatePlayerPrefs( T value )
 	{
 		PlayerPrefs.SetInt( typeof( T ).ToString(), value.ToInt32( null ) );
-		PlayerPrefs.Save();
+		FileAdapter.SavePlayerPrefs();
 	}
 
 	public static void Set( T value ) { _current.Setter( value ); }

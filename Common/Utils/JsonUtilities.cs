@@ -5,7 +5,7 @@ using UnityEngine;
 
 public static class JsonUtilities
 {
-	public static string DEBUG_FOLDER => ( UnityEngine.Application.persistentDataPath + "/JsonDebug/" );
+	public static string DEBUG_FOLDER => ( FileAdapter.debugPersistentDataPath + "/JsonDebug/" );
 
 	public static string LogToJsonFile( this string rawJson, string prefix = "", string suffix = "" , string environment = "")
 	{
