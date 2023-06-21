@@ -32,9 +32,9 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 				stopwatch.Start();
 				var candidate = (T)MonoBehaviour.FindObjectOfType( typeof( T ) );
 #if UNITY_EDITOR
-				Debug.LogError( $"<color=purple>Shame</color> Singleton<<color=lime>{typeof(T).Name}</color>>.Instance Didn't have a cached object of type! So will call !!!<color=red>FindObjectOfType()</color>!!! took:<color=orange>{stopwatch.Elapsed.TotalMilliseconds:N2}</color>ms {((candidate!=null)?$"<color=cyan>Found</color> @ {candidate.HierarchyNameOrNull()}":"<color=red>Fail</color>")}" );
+				Debug.LogError( $"<color=purple>Shame</color> Singleton<<color=lime>{typeof(T).Name}</color>>.Instance Didn't have a cached object of type! So will call !!!<color=red>FindObjectOfType()</color>!!! took:<color=orange>{stopwatch.Elapsed.TotalMilliseconds:N2}</color>ms {((candidate!=null)?$"<color=cyan>Found</color> @ {candidate.HierarchyNameOrNull()}":"<color=red>Fail</color>")} on <color=yellow>{UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}</color>" );
 #else
-				Debug.LogError( $"Singleton<{typeof(T).Name}>.Instance Didn't have a cached object of type! So will call !!!FindObjectOfType()!!! took:{stopwatch.Elapsed.TotalMilliseconds:N2}ms {((candidate!=null)?$"Found @ {candidate.HierarchyNameOrNull()}":"Fail")}" );
+				Debug.LogError( $"Singleton<{typeof(T).Name}>.Instance Didn't have a cached object of type! So will call !!!FindObjectOfType()!!! took:{stopwatch.Elapsed.TotalMilliseconds:N2}ms {((candidate!=null)?$"Found @ {candidate.HierarchyNameOrNull()}":"Fail")} on {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}" );
 #endif
 				stopwatch.Stop();
 				_instance.RegisterNewReference( candidate );
@@ -79,9 +79,9 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 		if( _instance.IsValid ) 
 		{
 #if UNITY_EDITOR
-			if( _instance.Reference != candidate ) Debug.LogError( $"<color=purple>Shame</color> Conflict with Singleton<<color=lime>{(typeof(T))}</color>>SayHello( {candidate.HierarchyNameOrNull()} ) conflicting with already setted {_instance.Reference.HierarchyNameOrNull()}" );
+			if( _instance.Reference != candidate ) Debug.LogError( $"<color=purple>Shame</color> Conflict with Singleton<<color=lime>{(typeof(T))}</color>>SayHello( {candidate.HierarchyNameOrNull()} ) conflicting with already setted {_instance.Reference.HierarchyNameOrNull()} on <color=yellow>{UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}</color>" );
 #else
-			if( _instance.Reference != candidate ) Debug.LogError( $"Conflict with Singleton<{(typeof(T))}>SayHello( {candidate.HierarchyNameOrNull()} ) conflicting with already setted {_instance.Reference.HierarchyNameOrNull()}" );
+			if( _instance.Reference != candidate ) Debug.LogError( $"Conflict with Singleton<{(typeof(T))}>SayHello( {candidate.HierarchyNameOrNull()} ) conflicting with already setted {_instance.Reference.HierarchyNameOrNull()} on {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}" );
 #endif
 			return;
 		}
@@ -108,9 +108,9 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 				if (obj != null && obj is T)
 				{
 #if UNITY_EDITOR
-					Debug.LogError( $"<color=purple>Shame</color> Singleton<<color=lime>{typeof(T).Name}</color>>.GetInstance() Didn't have a cached object of type! So will call !!!<color=red>FindObjectOfTypeAll()</color>!!! took:<color=orange>{stopwatch.Elapsed.TotalMilliseconds:N2}</color>ms <color=cyan>Found</color> @ {obj.HierarchyNameOrNull()}" );
+					Debug.LogError( $"<color=purple>Shame</color> Singleton<<color=lime>{typeof(T).Name}</color>>.GetInstance() Didn't have a cached object of type! So will call !!!<color=red>FindObjectOfTypeAll()</color>!!! took:<color=orange>{stopwatch.Elapsed.TotalMilliseconds:N2}</color>ms <color=cyan>Found</color> @ {obj.HierarchyNameOrNull()} on <color=yellow>{UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}</color>" );
 #else
-					Debug.LogError( $"Singleton<{typeof(T).Name}>.GetInstance() Didn't have a cached object of type! So will call !!!FindObjectOfTypeAll()!!! took:{stopwatch.Elapsed.TotalMilliseconds:N2}ms Found @ {obj.HierarchyNameOrNull()}" );
+					Debug.LogError( $"Singleton<{typeof(T).Name}>.GetInstance() Didn't have a cached object of type! So will call !!!FindObjectOfTypeAll()!!! took:{stopwatch.Elapsed.TotalMilliseconds:N2}ms Found @ {obj.HierarchyNameOrNull()} on {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}" );
 #endif
 					stopwatch.Stop();
 					return obj;
@@ -118,9 +118,9 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 			}
 		}
 #if UNITY_EDITOR
-		Debug.LogError( $"<color=purple>Shame</color> Singleton<<color=lime>{typeof(T).Name}</color>>.GetInstance() Didn't have a cached object of type! So will call !!!<color=red>FindObjectOfTypeAll()</color>!!! took:<color=orange>{stopwatch.Elapsed.TotalMilliseconds:N2}</color>ms <color=red>Fail</color>" );
+		Debug.LogError( $"<color=purple>Shame</color> Singleton<<color=lime>{typeof(T).Name}</color>>.GetInstance() Didn't have a cached object of type! So will call !!!<color=red>FindObjectOfTypeAll()</color>!!! took:<color=orange>{stopwatch.Elapsed.TotalMilliseconds:N2}</color>ms <color=red>Fail</color> on <color=yellow>{UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}</color>" );
 #else
-		Debug.LogError( $"Singleton<{typeof(T).Name}>.GetInstance() Didn't have a cached object of type! So will call !!!FindObjectOfTypeAll()!!! took:{stopwatch.Elapsed.TotalMilliseconds:N2}ms Fail" );
+		Debug.LogError( $"Singleton<{typeof(T).Name}>.GetInstance() Didn't have a cached object of type! So will call !!!FindObjectOfTypeAll()!!! took:{stopwatch.Elapsed.TotalMilliseconds:N2}ms Fail on {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}" );
 #endif
 		stopwatch.Stop();
 		return default;
