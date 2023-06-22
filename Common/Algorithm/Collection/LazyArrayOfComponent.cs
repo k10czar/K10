@@ -10,8 +10,10 @@ public class LazyArrayOfComponent<T> where T : UnityEngine.Component
 	int _elementsCount = 0;
 	float _growthFactor = 2;
 	bool _isDirty = false;
+	int _dirtyElementsPrediction = 0;
 
 	public int Count => _elementsCount;
+	public int PredictedCount => _elementsCount - _dirtyElementsPrediction;
 
 	public LazyArrayOfComponent( int initialSize = DEFAULT_ARRAY_SIZE, float growthFactor = GROWTH_FACTOR )
 	{
@@ -52,6 +54,7 @@ public class LazyArrayOfComponent<T> where T : UnityEngine.Component
 		}
 		_elementsCount = lastValidElement + 1;
 		_isDirty = false;
+		_dirtyElementsPrediction = 0;
 	}
 
 	public bool AddIfNotContains( T newElement )
@@ -65,7 +68,11 @@ public class LazyArrayOfComponent<T> where T : UnityEngine.Component
 	{
 		if( newElement == null ) return false;
 		var instanceId = newElement.GetInstanceID();
-		for( int i = 0; i < _elementsCount; i++ ) if( _elements[i] != null && _elements[i].GetInstanceID() == instanceId ) return true;
+		for( int i = 0; i < _elementsCount; i++ ) 
+		{
+			var element = _elements[i];
+			if( element != null && element.GetInstanceID() == instanceId ) return true;
+		}
 		return false;
 	}
 
@@ -101,6 +108,7 @@ public class LazyArrayOfComponent<T> where T : UnityEngine.Component
 			if( element.GetInstanceID() != instanceId ) continue;
 			_elements[i] = null;
 			_isDirty = true;
+			_dirtyElementsPrediction++;
 			return true;
 		}
 		return false;
@@ -109,8 +117,10 @@ public class LazyArrayOfComponent<T> where T : UnityEngine.Component
 	public bool LazyRemoveAt( int id )
 	{
 		if( id >= _elementsCount ) return false;
+		if( _elements[id] == null ) return false;
 		_elements[id] = null;
 		_isDirty = true;
+		_dirtyElementsPrediction++;
 		return true;
 	}
 }
