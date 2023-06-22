@@ -8,7 +8,7 @@ public class NullFileAdapter : IFileAdapter
 	{
 		if( _warningLogged ) return;
 		Debug.LogWarning( "NullFileAdapter currently in use, file reads and writes will not work. " +
-						 "Use FileAdapter.SetImplementation() to provide a IFileAdapter for this platform." );
+				"Use FileAdapter.SetImplementation() to provide a IFileAdapter for this platform." );
 		_warningLogged = true;
 	}
 
