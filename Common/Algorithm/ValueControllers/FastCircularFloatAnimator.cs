@@ -54,4 +54,6 @@ public struct FastCircularFloatAnimator
         _animator.Update( deltaTime );
         UpdateValue();
     }
+
+    public override string ToString() => $"[(FastCircularFloatAnimator)_realRangeDelta:{_realRangeDelta}|_currentValue:{_currentValue}|_animator:{_animator}]";
 }

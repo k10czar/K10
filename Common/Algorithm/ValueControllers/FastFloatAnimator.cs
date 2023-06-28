@@ -114,4 +114,6 @@ public struct FastFloatAnimator
 
 		return true;
     }
+
+    public override string ToString() => $"[(FastFloatAnimator) _min:{_min} _max:{_max} _acceleration:{_acceleration} _deacceleration:{_deacceleration} _currentValue:{_currentValue} _desiredValue:{_desiredValue} _currentSpeed:{_currentSpeed} _maximumSpeed:{_maximumSpeed}]";
 }
