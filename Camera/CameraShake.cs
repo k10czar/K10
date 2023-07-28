@@ -66,6 +66,11 @@ public class CameraShake : MonoBehaviour
 
 	List<CameraShakeInstance> _shakes = new List<CameraShakeInstance>();
 
+    void Awake()
+    {
+        Singleton<CameraShake>.SayHello( this );
+    }
+
 	void AddCameraShake( CameraShakeInfo info )
 	{
 		if( info == null ) return;

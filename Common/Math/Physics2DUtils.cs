@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using Unity.Mathematics;
 using UnityEngine;
 
 #if USE_NEW_MATHEMATICS

@@ -10,10 +10,14 @@ public struct FastCircularFloatAnimator
     {
         _currentValue = initialValue;
         _realRangeDelta = max - min;
-        _animator = new FastFloatAnimator( initialValue, accel, deaccel, maximumSpeed, min, RealMax( min, max ) );
+        if( !float.IsFinite( _realRangeDelta ) ) _realRangeDelta = float.MaxValue;
+        _animator = new FastFloatAnimator( initialValue, accel, deaccel, maximumSpeed, min, ExpandedMax( min, _realRangeDelta ) );
     }
     
-    static float RealMax( float min, float max ) { return min + 2 * ( max - min ); }
+    static float ExpandedMax( float min, float range ) 
+    {
+        return min + 2 * range;
+    }
     // float Convert( float value ) { var min = _animator._min; return min + ( ( value - min ) % _halfRangeDelta ); }
     
 	public void ForceToDesired()
@@ -54,4 +58,6 @@ public struct FastCircularFloatAnimator
         _animator.Update( deltaTime );
         UpdateValue();
     }
+
+    public override string ToString() => $"[(FastCircularFloatAnimator)_realRangeDelta:{_realRangeDelta}|_currentValue:{_currentValue}|_animator:{_animator}]";
 }

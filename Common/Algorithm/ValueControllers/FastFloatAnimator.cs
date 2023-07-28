@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 
+[System.Serializable]
 public struct FastFloatAnimator
 {
 	public float _min;
@@ -24,6 +25,14 @@ public struct FastFloatAnimator
         _max = max;
     }
 
+	public void Reset( float value )
+	{
+        if( value > _max ) value = _max;
+        else if( value < _min ) value = _min;
+		_currentValue = _desiredValue = value;
+		_currentSpeed = 0;
+	}
+
 	public void ForceToDesired()
 	{
 		_currentValue = _desiredValue;
@@ -41,13 +50,14 @@ public struct FastFloatAnimator
         else _desiredValue = desired;
     }
 
-    public void Update( float deltaTime )
+	public static bool FORCE_DEBUG = false;
+    public bool Update( float deltaTime )
     {
-		if( deltaTime < float.Epsilon ) return;
+		if( deltaTime < float.Epsilon ) return false;
 
         var diff = _desiredValue - _currentValue;
 
-        if( diff < float.Epsilon && diff > FloatHelper.NegativeEpsilon ) return;
+        if( diff < float.Epsilon && diff > FloatHelper.NegativeEpsilon ) return false;
 
 		var diffSign = 1f;
 		if( diff < float.Epsilon ) diffSign = -1f;
@@ -67,7 +77,7 @@ public struct FastFloatAnimator
 
 		if( step > float.Epsilon ) // Not 0 == !Mathf.Approximately( step, 0 )
 		{
-			if( step + float.Epsilon > diff )
+			if( diffSign > 0 && ( diff - step ) < float.Epsilon )
 	        {
 	            _currentValue = _desiredValue;
 	            _currentSpeed = 0;
@@ -86,10 +96,11 @@ public struct FastFloatAnimator
 		}
 		else if( step < FloatHelper.NegativeEpsilon )
 		{
-			if( step - float.Epsilon < diff )
+			if( diffSign < 0 && ( step - diff ) < float.Epsilon )
 	        {
 	            _currentValue = _desiredValue;
 	            _currentSpeed = 0;
+
 	        }
 	        else
 	        {
@@ -103,5 +114,14 @@ public struct FastFloatAnimator
 	            }
 	        }
 		}
+		else
+		{
+			_currentValue = _desiredValue;
+			_currentSpeed = 0;
+		}
+
+		return true;
     }
+
+    public override string ToString() => $"[(FastFloatAnimator) _min:{_min} _max:{_max} _acceleration:{_acceleration} _deacceleration:{_deacceleration} _currentValue:{_currentValue} _desiredValue:{_desiredValue} _currentSpeed:{_currentSpeed} _maximumSpeed:{_maximumSpeed}]";
 }

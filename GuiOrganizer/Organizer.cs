@@ -15,14 +15,14 @@ public class Organizer : MonoBehaviour
     [SerializeField] float _margin;
     [SerializeField,UnityEngine.Serialization.FormerlySerializedAs("_minimunSpacing")] float _minimumSpacing = float.MinValue;
     [SerializeField, UnityEngine.Serialization.FormerlySerializedAs( "_maximunSpacing" )] float _maximumSpacing = float.MaxValue;
-    [SerializeField] List<RectTransform> _ignoreList = new List<RectTransform>();
+    // [SerializeField] List<RectTransform> _ignoreList = new List<RectTransform>();
     float _totalWidth, _totalHeight;
 
-	private readonly EventSlot _beforeOrganize = new EventSlot();
-	private readonly EventSlot _afterOrganize = new EventSlot();
+	private EventSlot _beforeOrganize;
+	private EventSlot _afterOrganize;
 
-	public IEventRegister BeforeOrganize => _beforeOrganize;
-	public IEventRegister AfterOrganize => _afterOrganize;
+	public IEventRegister BeforeOrganize => _beforeOrganize ?? ( _beforeOrganize = new EventSlot() );
+	public IEventRegister AfterOrganize => _afterOrganize ?? ( _afterOrganize = new EventSlot() );
 
 	public float TotalWidth => _totalWidth;
     public float TotalHeight => _totalHeight;
@@ -31,7 +31,7 @@ public class Organizer : MonoBehaviour
 
     public void Organize()
     {
-		_beforeOrganize.Trigger();
+		_beforeOrganize?.Trigger();
 
 		var rt = transform as RectTransform;
         var rect = rt.rect;
@@ -44,16 +44,17 @@ public class Organizer : MonoBehaviour
 		float maxHeight = 0;
 		float maxWidth = 0;
 
-        int childCount = transform.childCount;
-        for( int i = 0; i < transform.childCount; i++ )
+        int childCount = rt.childCount;
+        int activeChildCount = childCount;
+        for( int i = 0; i < childCount; i++ )
         {
-            var child = transform.GetChild( i );
+            var child = rt.GetChild( i );
             
-            var childTransform = child.transform as RectTransform;
-            if(_ignoreList.Contains(childTransform)) continue;
+            var childRectTransform = child.transform as RectTransform;
+            // if(_ignoreList.Contains(childRectTransform)) continue;
 
-            var childRect = childTransform.rect;
-			var childScale = childTransform.localScale;
+            var childRect = childRectTransform.rect;
+			var childScale = childRectTransform.localScale;
 
             if( _countInactive || child.gameObject.activeInHierarchy )
 			{
@@ -61,16 +62,16 @@ public class Organizer : MonoBehaviour
 				var h = childRect.height * childScale.y;
                 _totalWidth += w;
 				_totalHeight += h;
-				maxWidth = Mathf.Max( maxWidth, w );
-				maxHeight = Mathf.Max( maxHeight, h );
+				if( w > maxWidth ) maxWidth = w;
+				if( h > maxHeight ) maxHeight = h;
             }
             else
             {
-                childCount--;
+                activeChildCount--;
             }
         }
 
-		if( childCount == 0 )
+		if( activeChildCount == 0 )
 			return;
 
         float scaledMarginX = _margin /** scale.x*/;
@@ -85,22 +86,26 @@ public class Organizer : MonoBehaviour
 		float dx = 0;
 		float dy = 0;
 
-		if( childCount > 1 )
+		if( activeChildCount > 1 )
 		{
-	        int spacingCount = ( childCount - 1 );
+	        int spacingCount = ( activeChildCount - 1 );
 
 			float ddx = restX / spacingCount;
 			float ddy = restY / spacingCount;
 
-	        dx = Mathf.Clamp( ddx, _minimumSpacing, _maximumSpacing );
-	        dy = Mathf.Clamp( ddy, _minimumSpacing, _maximumSpacing );
+            if( ddx < _minimumSpacing ) dx = _minimumSpacing;
+            else if( ddx > _maximumSpacing )  dx = _maximumSpacing;
+            else dx = ddx;
+
+            if( ddy < _minimumSpacing ) dy = _minimumSpacing;
+            else if( ddy > _maximumSpacing )  dy = _maximumSpacing;
+            else dy = ddy;
 
 	        restX = ( ddx - dx ) * spacingCount;
 	        restY = ( ddy - dy ) * spacingCount;
 		}
         
-        Vector2 startPos = new Vector2( rect.xMin + scaledMarginX, rect.yMin + scaledMarginY );
-        Vector2 pos = startPos;
+        Vector2 pos = new Vector2( rect.xMin + scaledMarginX, rect.yMin + scaledMarginY );
 
         switch( _type )
         {
@@ -149,18 +154,17 @@ public class Organizer : MonoBehaviour
                 break;
         }
 
-        for( int i = 0; i < transform.childCount; i++ )
+        for( int i = 0; i < childCount; i++ )
         {
             var id = GetRealId( i );
-            var child = transform.GetChild( id );
+            var child = rt.GetChild( id );
         
-
             if( /*!_countInactive &&*/ !child.gameObject.activeInHierarchy ) 
                 continue;
 
             var childTransform = child.transform as RectTransform;
 			var childRect = childTransform.rect;
-            if(_ignoreList.Contains(childTransform)) continue;
+            // if(_ignoreList.Contains(childTransform)) continue;
 			var childScale = childTransform.localScale;
             var pivot = childTransform.pivot;
 
@@ -169,45 +173,51 @@ public class Organizer : MonoBehaviour
                 // case EOrganizerType.GRID:
                 case EOrganizerType.VERTICAL:
                 {
-					pos.y += pivot.y * childRect.height * childScale.y;
+                    var h = childRect.height;
+                    var sh = h * childScale.y;
+					pos.y += pivot.y * sh;
 
                     childTransform.localPosition = pos;
 
-					pos.y += ( 1 - pivot.y ) * childRect.height * childScale.y; 
-                    pos.y += dy;
+					pos.y += ( 1 - pivot.y ) * sh + dy;
                     break;
                 }
 
                 case EOrganizerType.HORIZONTAL:
                 {
-					pos.x += pivot.x * childRect.width * childScale.x;
+                    var w = childRect.width;
 
+                    var sw = w * childScale.x;
+					pos.x += pivot.x * sw;
 
                     childTransform.localPosition = pos;
 
-					pos.x += ( 1 - pivot.x ) * childRect.width * childScale.x;
-                    pos.x += dx;
+					pos.x += ( 1 - pivot.x ) * sw + dx;
                     break;
                 }
 
                 case EOrganizerType.DIAGONAL:
                 {
-					pos.x += pivot.x * childRect.width * childScale.x;
-                    pos.y += pivot.y * childRect.height * childScale.y;
+                    var w = childRect.width;
+                    var h = childRect.height;
+                    
+                    var sw = w * childScale.x;
+                    var sh = h * childScale.y;
+
+					pos.x += pivot.x * sw;
+                    pos.y += pivot.y * sh;
 
                     childTransform.localPosition = pos;
 
-					pos.x += ( 1 - pivot.x ) * childRect.width * childScale.x; 
-                    pos.x += dx; 
-					pos.y += ( 1 - pivot.y ) * childRect.height * childScale.y; 
-                    pos.y += dy;
+					pos.x += ( 1 - pivot.x ) * sw + dx;
+					pos.y += ( 1 - pivot.y ) * sh + dy;
 
                     break;
                 }
             }
 		}
 		
-		_afterOrganize.Trigger();
+		_afterOrganize?.Trigger();
     }
 
     int GetRealId( int i )
