@@ -29,7 +29,7 @@ public static class TimeService
 		var timeSpan = DateTime.UtcNow.Subtract( _dateTimeSetted );
 		var timeSpanSeconds = timeSpan.TotalSeconds;
         // Debug.Log( $"secsDiff:{secsDiff} timeSpanSeconds:{timeSpanSeconds} timeSpan:{timeSpan}" );
-		if( secsDiff > timeSpanSeconds ) secsDiff = timeSpanSeconds;
+		if( secsDiff > timeSpanSeconds || secsDiff < 0 ) secsDiff = timeSpanSeconds;
 		return _timeServerTimeOnAuth.AddSeconds( secsDiff );
 	}
 }
