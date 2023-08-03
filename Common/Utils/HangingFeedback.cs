@@ -4,7 +4,7 @@ using System.Collections;
 
 public abstract class HangingFeedback : MonoBehaviour
 {
-	private static HangingFeedback _instance;
+	public static HangingFeedback Instance { get; private set; }
 
 	private static readonly List<Message> _messages = new List<Message>();
 	private static StateRequester _hasSomeActive = new StateRequester();
@@ -23,7 +23,7 @@ public abstract class HangingFeedback : MonoBehaviour
 
 	void Awake()
 	{
-		_instance = this;
+		Instance = this;
 		_hasSomeActive.RequestOn( gameObject, _isActive );
 		_isActive.Synchronize( this.UntilLifeTime<bool>( ChangeActivity ) );
 		ReallyUpdateData();
@@ -31,8 +31,8 @@ public abstract class HangingFeedback : MonoBehaviour
 	}
 
 	public void VoidAll()
-	{ 
-		for(int i = _messages.Count - 1; i >= 0; i--) 
+	{
+		for(int i = _messages.Count - 1; i >= 0; i--)
 		{
 			_messages[i].Void();
 		}
@@ -78,7 +78,7 @@ public abstract class HangingFeedback : MonoBehaviour
 			_messages.RemoveAt( i );
 		}
 
-		if( _instance != null ) _instance.ReallyUpdateData();
+		if( Instance != null ) Instance.ReallyUpdateData();
 	}
 
 	public static Message CreateNewMessage( string messageText, IEventTrigger executeBeforeVanish = null )
