@@ -257,7 +257,7 @@ public class SearchForComponents : EditorWindow {
                 if ( listResult.Count == 0 ) {
                     GUILayout.Label( editorMode == 0 ? ( componentName == "" ? "Choose a component" : "No prefabs use component " + componentName ) : ( "No prefabs have missing components!\nClick Search to check again" ) );
                 } else {
-                    GUILayout.Label( editorMode == 0 ? ( "The following prefabs use component " + componentName + ":" ) : ( "The following prefabs have missing components:" ) );
+                    GUILayout.Label( editorMode == 0 ? ( $"The following {listResult.Count} prefabs use component " + componentName + ":" ) : ( $"The following prefabs have {listResult.Count} missing components:" ) );
                     scroll = GUILayout.BeginScrollView( scroll );
                     foreach ( string s in listResult ) {
                         GUILayout.BeginHorizontal();
