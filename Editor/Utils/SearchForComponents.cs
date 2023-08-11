@@ -20,6 +20,9 @@ public class SearchForComponents : EditorWindow {
     int editorMode, selectedCheckType;
     MonoScript targetComponent;
     string componentName = "";
+
+    string filterProp = "";
+    string methodToExecute = "";
  
     bool showPrefabs, showAdded, showScene, showUnused = true;
     Vector2 scroll, scroll1, scroll2, scroll3, scroll4;
@@ -69,13 +72,22 @@ public class SearchForComponents : EditorWindow {
                             string targetPath = AssetDatabase.GetAssetPath( targetComponent );
                             string[] allPrefabs = GetAllPrefabs();
                             listResult = new List<string>();
+                            var type = targetComponent.GetClass();
                             foreach ( string prefab in allPrefabs ) {
                                 string[] single = new string[] { prefab };
                                 string[] dependencies = AssetDatabase.GetDependencies( single );
+                                bool hasDependency = false;
                                 foreach ( string dependedAsset in dependencies ) {
-                                    if ( dependedAsset == targetPath ) {
-                                        listResult.Add( prefab );
-                                    }
+                                    if ( dependedAsset != targetPath ) continue;
+                                    hasDependency = true;
+                                    break;
+                                }
+                                if( !hasDependency ) continue;
+                                var obj = AssetDatabase.LoadMainAssetAtPath( prefab );
+                                if( obj is GameObject go )
+                                {
+                                    var comp = go.GetComponentInChildren( type, true );
+                                    if( comp != null ) listResult.Add( prefab );
                                 }
                             }
                             break;
@@ -243,6 +255,7 @@ public class SearchForComponents : EditorWindow {
                             foreach ( Component c in components ) {
                                 if ( c == null ) {
                                     listResult.Add( prefab );
+                                    break;
                                 }
                             }
                         } catch {
@@ -258,6 +271,54 @@ public class SearchForComponents : EditorWindow {
                     GUILayout.Label( editorMode == 0 ? ( componentName == "" ? "Choose a component" : "No prefabs use component " + componentName ) : ( "No prefabs have missing components!\nClick Search to check again" ) );
                 } else {
                     GUILayout.Label( editorMode == 0 ? ( $"The following {listResult.Count} prefabs use component " + componentName + ":" ) : ( $"The following prefabs have {listResult.Count} missing components:" ) );
+                    var count = listResult.Count;
+                    if( editorMode == 0 )
+                    {
+                        if( GUILayout.Button( "Recheck With GetComponent" ) )
+                        {
+                            var sw = new System.Diagnostics.Stopwatch();
+                            sw.Start();
+                            for( int i = count - 1; i >= 0; i-- )
+                            {
+                                var result = listResult[i];
+                                var obj = AssetDatabase.LoadMainAssetAtPath( result );
+                                if( obj is GameObject go )
+                                {
+                                    var type = targetComponent.GetClass();
+                                    var comp = go.GetComponentInChildren( type, true );
+                                    if( comp != null ) Debug.Log( $"{result} has {componentName} on {comp.HierarchyNameOrNull()}" );
+                                    else listResult.RemoveAt( i );
+                                }
+                                else listResult.RemoveAt( i );
+                            }
+                            sw.Stop();
+                            Debug.Log( $"Took {sw.Elapsed.TotalMilliseconds}ms to Recheck {count} {componentName}" );
+                        }
+                    }
+                    else if( editorMode == 1 && GUILayout.Button( "Remove Missing Components" ) )
+                    {
+                        var sw = new System.Diagnostics.Stopwatch();
+                        sw.Start();
+                        for( int i = count - 1; i >= 0; i-- )
+                        {
+                            var result = listResult[i];
+                            var obj = AssetDatabase.LoadMainAssetAtPath( result );
+                            if( obj is GameObject go )
+                            {
+                                GameObjectUtility.RemoveMonoBehavioursWithMissingScript( go );
+                                if( HasMissingComponents( go ) )
+                                {
+                                    RecursiveRemoveMissingComponents( go.transform );
+                                    if( HasMissingComponents( go ) ) Debug.Log( $"{result} still has Missing Components" );
+                                    else listResult.RemoveAt( i );
+                                }
+                                else listResult.RemoveAt( i );
+                                AssetDatabase.SaveAssetIfDirty( go );
+                            }
+                        }
+                        sw.Stop();
+                        Debug.Log( $"Took {sw.Elapsed.TotalMilliseconds}ms to Remove Missing" );
+                    }
                     scroll = GUILayout.BeginScrollView( scroll );
                     foreach ( string s in listResult ) {
                         GUILayout.BeginHorizontal();
@@ -291,6 +352,23 @@ public class SearchForComponents : EditorWindow {
                 GUILayout.Label( "The following components are not used by prefabs, by AddComponent, OR in any scene:" );
                 DisplayResults( ref scroll4, ref notUsedComponents );
             }
+        }
+    }
+
+    bool HasMissingComponents( GameObject go )
+    {
+        var components = go.GetComponentsInChildren<Component>( true );
+        foreach ( Component c in components ) {
+            if ( c == null )  return true;
+        }
+        return false;
+    }
+
+    void RecursiveRemoveMissingComponents( Transform t )
+    {
+        GameObjectUtility.RemoveMonoBehavioursWithMissingScript( t.gameObject );
+        for (int i = t.childCount - 1; i >= 0; i--) {
+            RecursiveRemoveMissingComponents( t.GetChild(i) );
         }
     }
  
