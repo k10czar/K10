@@ -374,9 +374,14 @@ public class SearchForComponents : EditorWindow {
                                 {
                                     var type = targetComponent.GetClass();
                                     var comps = go.GetComponentsInChildren( type, true );
-                                    var exists = false;
+
+                                    bool compOnRoot = false;
+
+                                    var exists = !filterProp.IsValid;
                                     foreach( var c in comps )
                                     {
+                                        if( c == null ) continue;
+                                        if( c.transform.parent == null ) compOnRoot = true;
                                         if( filterProp.IsValid ) 
                                         {
                                             var filter = filterProp.GetMemberObject( c, type, out var name );
@@ -400,6 +405,8 @@ public class SearchForComponents : EditorWindow {
                                     {
                                         listResult.RemoveAt( i );
                                     }
+
+                                    if( !compOnRoot ) Debug.Log( $"{go.HierarchyNameOrNull()} does not have component on Root" );
                                 }
                                 else listResult.RemoveAt( i );
                             }
@@ -411,10 +418,11 @@ public class SearchForComponents : EditorWindow {
                     scroll = GUILayout.BeginScrollView( scroll );
                     foreach ( string s in listResult ) {
                         GUILayout.BeginHorizontal();
-                        GUILayout.Label( s, GUILayout.Width( position.width / 2 ) );
-                        if ( GUILayout.Button( "Select", GUILayout.Width( position.width / 2 - 10 ) ) ) {
+                        // GUILayout.Label( s, GUILayout.Width( position.width / 2 ) );
+                        if ( GUILayout.Button( "Select", GUILayout.MaxWidth( 64 ) ) ) {
                             Selection.activeObject = AssetDatabase.LoadMainAssetAtPath( s );
                         }
+                        GUILayout.Label( s, GUILayout.Width( position.width - 74 ) );
                         GUILayout.EndHorizontal();
                     }
                     GUILayout.EndScrollView();
