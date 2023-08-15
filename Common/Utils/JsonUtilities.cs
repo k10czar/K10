@@ -5,7 +5,7 @@ using UnityEngine;
 
 public static class JsonUtilities
 {
-	public static string DEBUG_FOLDER => ( Application.persistentDataPath + "/JsonDebug/" );
+	public static string DEBUG_FOLDER => ( FileAdapter.debugPersistentDataPath + "/JsonDebug/" );
 
 	public static string GenerateSavePath(string fileName, string fileExtension)
 		=> $"{DEBUG_FOLDER}{fileName}{fileExtension}";
