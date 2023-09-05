@@ -3,6 +3,80 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
+
+[System.Serializable]
+public class ReflectedPath
+{
+    [SerializeField] string _path = "";    
+	[SerializeField] System.Reflection.BindingFlags _bindingAttr = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+
+    public bool IsValid => !string.IsNullOrEmpty( _path );
+    public string Path { get { return _path; } set { _path = value; } }
+    public System.Reflection.BindingFlags BindingAttr  { get { return _bindingAttr; } set { _bindingAttr = value; } }
+
+	public object GetMemberObject( object rootObject, System.Type type, out string lastMemberName )
+	{
+		lastMemberName = "";
+		var obj = rootObject;
+		var stack = _path.Split( '.' );
+		var sLen = stack.Length;
+		for( int i = 0; i < sLen; i++ )
+		{
+			lastMemberName = stack[i];
+			obj = GetMember( lastMemberName, obj, ref type );
+			if( obj == null ) return null;
+		}
+		return obj;
+	}
+
+	public void Execute( object rootObject, System.Type type, out string lastMemberName, params object[] parameters )
+	{
+		lastMemberName = "";
+		var obj = rootObject;
+		var stack = _path.Split( '.' );
+		var sLen = stack.Length;
+		for( int i = 0; i < sLen - 1; i++ )
+		{
+			lastMemberName = stack[i];
+			obj = GetMember( lastMemberName, obj, ref type );
+			if( obj == null ) return;
+		}
+
+        if( sLen > 0 )
+        {
+            var method = type.GetMethod( stack[sLen - 1], _bindingAttr );
+            method.Invoke( obj, parameters );
+        }
+	}
+
+	public object GetMember( string memberName, object element, ref System.Type type )
+	{
+		if( element == null ) return element;
+		var field = type.GetField( memberName, _bindingAttr );
+		if( field != null )
+		{
+			type = field.FieldType;
+			object ret = null;
+			try { ret = field.GetValue( element ); }
+			catch { }
+			return ret;
+			//return field.GetValue( element );
+		}
+		var property = type.GetProperty( memberName, _bindingAttr );
+		if( property != null )
+		{
+			type = property.PropertyType;
+			object ret = null;
+			try { ret = property.GetValue( element ); }
+			catch { }
+			return ret;
+			// return property.GetValue( element );
+		}
+		type = type.BaseType;
+		if( type.BaseType != null ) return GetMember( memberName, element, ref type );
+		return element;
+	}
+}
  
 public class SearchForComponents : EditorWindow {
     [MenuItem( "K10/Editors/Search For Components" )]
@@ -21,8 +95,8 @@ public class SearchForComponents : EditorWindow {
     MonoScript targetComponent;
     string componentName = "";
 
-    string filterProp = "";
-    string methodToExecute = "";
+    ReflectedPath filterProp = new ReflectedPath();
+    ReflectedPath methodToExecute = new ReflectedPath();
  
     bool showPrefabs, showAdded, showScene, showUnused = true;
     Vector2 scroll, scroll1, scroll2, scroll3, scroll4;
@@ -274,10 +348,24 @@ public class SearchForComponents : EditorWindow {
                     var count = listResult.Count;
                     if( editorMode == 0 )
                     {
-                        if( GUILayout.Button( "Recheck With GetComponent" ) )
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label( "Filter:", GUILayout.MaxWidth( 35 ) );
+                        filterProp.BindingAttr = (System.Reflection.BindingFlags)EditorGUILayout.EnumFlagsField( filterProp.BindingAttr, GUILayout.MaxWidth( 80 ) );
+                        filterProp.Path = EditorGUILayout.TextField( filterProp.Path );
+                        GUILayout.EndHorizontal();
+
+                        
+                        GUILayout.BeginHorizontal();
+                        methodToExecute.BindingAttr = (System.Reflection.BindingFlags)EditorGUILayout.EnumFlagsField( methodToExecute.BindingAttr, GUILayout.MaxWidth( 80 ) );
+                        methodToExecute.Path = EditorGUILayout.TextField( methodToExecute.Path );
+                        var exec = GUILayout.Button( "Execute", GUILayout.MaxWidth( 64 ) );
+                        GUILayout.EndHorizontal();
+
+                        if( exec )
                         {
                             var sw = new System.Diagnostics.Stopwatch();
                             sw.Start();
+                            // count = 1;
                             for( int i = count - 1; i >= 0; i-- )
                             {
                                 var result = listResult[i];
@@ -285,9 +373,40 @@ public class SearchForComponents : EditorWindow {
                                 if( obj is GameObject go )
                                 {
                                     var type = targetComponent.GetClass();
-                                    var comp = go.GetComponentInChildren( type, true );
-                                    if( comp != null ) Debug.Log( $"{result} has {componentName} on {comp.HierarchyNameOrNull()}" );
-                                    else listResult.RemoveAt( i );
+                                    var comps = go.GetComponentsInChildren( type, true );
+
+                                    bool compOnRoot = false;
+
+                                    var exists = !filterProp.IsValid;
+                                    foreach( var c in comps )
+                                    {
+                                        if( c == null ) continue;
+                                        if( c.transform.parent == null ) compOnRoot = true;
+                                        if( filterProp.IsValid ) 
+                                        {
+                                            var filter = filterProp.GetMemberObject( c, type, out var name );
+                                            if( filter is System.Boolean b && b )
+                                            {
+                                                exists = true;
+                                                Debug.Log( $"{c.HierarchyNameOrNull()}.{filterProp.Path} {b} - {name.ToStringOrNull()}" );
+                                            }
+                                            else 
+                                            {
+                                                continue;
+                                            }
+                                        }
+                                        if( methodToExecute.IsValid ) 
+                                        {
+                                            methodToExecute.Execute( c, type, out var name, new object[0] );
+                                            // Debug.Log( methodToExecute.GetMemberObject( c, type, out var name ) + $" - {name.ToStringOrNull()}" );
+                                        }
+                                    }
+                                    if( !exists )
+                                    {
+                                        listResult.RemoveAt( i );
+                                    }
+
+                                    if( !compOnRoot ) Debug.Log( $"{go.HierarchyNameOrNull()} does not have component on Root" );
                                 }
                                 else listResult.RemoveAt( i );
                             }
@@ -295,37 +414,15 @@ public class SearchForComponents : EditorWindow {
                             Debug.Log( $"Took {sw.Elapsed.TotalMilliseconds}ms to Recheck {count} {componentName}" );
                         }
                     }
-                    else if( editorMode == 1 && GUILayout.Button( "Remove Missing Components" ) )
-                    {
-                        var sw = new System.Diagnostics.Stopwatch();
-                        sw.Start();
-                        for( int i = count - 1; i >= 0; i-- )
-                        {
-                            var result = listResult[i];
-                            var obj = AssetDatabase.LoadMainAssetAtPath( result );
-                            if( obj is GameObject go )
-                            {
-                                GameObjectUtility.RemoveMonoBehavioursWithMissingScript( go );
-                                if( HasMissingComponents( go ) )
-                                {
-                                    RecursiveRemoveMissingComponents( go.transform );
-                                    if( HasMissingComponents( go ) ) Debug.Log( $"{result} still has Missing Components" );
-                                    else listResult.RemoveAt( i );
-                                }
-                                else listResult.RemoveAt( i );
-                                AssetDatabase.SaveAssetIfDirty( go );
-                            }
-                        }
-                        sw.Stop();
-                        Debug.Log( $"Took {sw.Elapsed.TotalMilliseconds}ms to Remove Missing" );
-                    }
+                    else if( editorMode == 1 && GUILayout.Button( "Remove Missing Components" ) ) RemoveMissingComponents(count);
                     scroll = GUILayout.BeginScrollView( scroll );
                     foreach ( string s in listResult ) {
                         GUILayout.BeginHorizontal();
-                        GUILayout.Label( s, GUILayout.Width( position.width / 2 ) );
-                        if ( GUILayout.Button( "Select", GUILayout.Width( position.width / 2 - 10 ) ) ) {
+                        // GUILayout.Label( s, GUILayout.Width( position.width / 2 ) );
+                        if ( GUILayout.Button( "Select", GUILayout.MaxWidth( 64 ) ) ) {
                             Selection.activeObject = AssetDatabase.LoadMainAssetAtPath( s );
                         }
+                        GUILayout.Label( s, GUILayout.Width( position.width - 74 ) );
                         GUILayout.EndHorizontal();
                     }
                     GUILayout.EndScrollView();
@@ -353,6 +450,31 @@ public class SearchForComponents : EditorWindow {
                 DisplayResults( ref scroll4, ref notUsedComponents );
             }
         }
+    }
+
+    private void RemoveMissingComponents(int count)
+    {
+        var sw = new System.Diagnostics.Stopwatch();
+        sw.Start();
+        for (int i = count - 1; i >= 0; i--)
+        {
+            var result = listResult[i];
+            var obj = AssetDatabase.LoadMainAssetAtPath(result);
+            if (obj is GameObject go)
+            {
+                GameObjectUtility.RemoveMonoBehavioursWithMissingScript(go);
+                if (HasMissingComponents(go))
+                {
+                    RecursiveRemoveMissingComponents(go.transform);
+                    if (HasMissingComponents(go)) Debug.Log($"{result} still has Missing Components");
+                    else listResult.RemoveAt(i);
+                }
+                else listResult.RemoveAt(i);
+                AssetDatabase.SaveAssetIfDirty(go);
+            }
+        }
+        sw.Stop();
+        Debug.Log($"Took {sw.Elapsed.TotalMilliseconds}ms to Remove Missing");
     }
 
     bool HasMissingComponents( GameObject go )
