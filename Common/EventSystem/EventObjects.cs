@@ -51,12 +51,14 @@ public class EventSlot : IEvent, ICustomDisposableKill
 		_listeners = null;
 	}
 
+	public void Clear() => _listeners?.Clear();
+
 	private void TryClearFullSignatureList()
 	{
 		if( _listeners == null || _listeners.Count == 0 ) _listeners = null;
 	}
 
-	public void Register( IEventTrigger listener ) 
+	public void Register( IEventTrigger listener )
 	{
 		if( _killed || listener == null ) return;
 		Lazy.Request( ref _listeners ).Add( listener );
@@ -130,7 +132,13 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 		_generic = null;
 	}
 
-	private void TryClearGeneric() 
+	public void Clear()
+	{
+		_generic.Clear();
+		_listeners?.Clear();
+	}
+
+	private void TryClearGeneric()
 	{
 		if( _generic == null ) return;
 		if( _generic.EventsCount == 0 ) _generic = null;
@@ -241,6 +249,12 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 		_generic = null;
 	}
 
+	public void Clear()
+	{
+		_generic.Clear();
+		_listeners?.Clear();
+	}
+
 	public void Register( IEventTrigger<T, K> listener )
 	{
 		if( _killed || listener == null ) return;
@@ -338,7 +352,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 	{
 		if( _generic == null || _generic.EventsCount == 0 ) _generic = null;
 	}
-	
+
 	private void TryClearFullSignatureList()
 	{
 		if( _listeners == null || _listeners.Count == 0 ) _listeners = null;
@@ -351,6 +365,12 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 		_generic?.Kill();
 		_listeners = null;
 		_generic = null;
+	}
+
+	public void Clear()
+	{
+		_generic.Clear();
+		_listeners?.Clear();
 	}
 
 	public void Register( IEventTrigger<T, K, L> listener )
@@ -393,7 +413,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 		return removed;
 	}
 
-	public bool Unregister( IEventTrigger<T> listener ) 
+	public bool Unregister( IEventTrigger<T> listener )
 	{
 		if( _killed || _generic == null ) return false;
 		bool removed = _generic.Unregister( listener );
