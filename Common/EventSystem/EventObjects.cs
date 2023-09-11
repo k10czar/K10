@@ -31,13 +31,20 @@ public class EventSlot : IEvent, ICustomDisposableKill
 		var count = listenersToTrigger.Count;
 		for( int i = 0; i < count; i++ )
 		{
-			var listener = listenersToTrigger[i];
-			if( listener.IsValid ) listener.Trigger();
-			//NOT else Trigger can invalidate listener
-			if( !listener.IsValid )
+			try
 			{
-				_listeners?.Remove( listener );
-				TryClearFullSignatureList();
+				var listener = listenersToTrigger[i];
+				if (listener.IsValid) listener.Trigger();
+				//NOT else Trigger can invalidate listener
+				if (!listener.IsValid)
+				{
+					_listeners?.Remove(listener);
+					TryClearFullSignatureList();
+				}
+			}
+			catch (Exception exception)
+			{
+				Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
 			}
 		}
 
@@ -104,13 +111,20 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 			var count = listenersToTrigger.Count;
 			for( int i = 0; i < count; i++ )
 			{
-				var listener = listenersToTrigger[i];
-				if( listener.IsValid ) listener.Trigger( t );
-				//NOT else Trigger can invalidate listener
-				if( !listener.IsValid )
+				try
 				{
-					_listeners?.Remove( listener );
-					TryClearFullSignatureList();
+					var listener = listenersToTrigger[i];
+					if (listener.IsValid) listener.Trigger(t);
+					//NOT else Trigger can invalidate listener
+					if (!listener.IsValid)
+					{
+						_listeners?.Remove(listener);
+						TryClearFullSignatureList();
+					}
+				}
+				catch (Exception exception)
+				{
+					Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
 				}
 			}
 			ObjectPool<List<IEventTrigger<T>>>.Return( listenersToTrigger );
@@ -210,13 +224,20 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 			var count = listenersToTrigger.Count;
 			for( int i = 0; i < count; i++ )
 			{
-				var listener = listenersToTrigger[i];
-				if( listener.IsValid ) listener.Trigger( t, k );
-				//NOT else Trigger can invalidate listener
-				if( !listener.IsValid )
+				try
 				{
-					_listeners?.Remove( listener );
-					TryClearFullSignatureList();
+					var listener = listenersToTrigger[i];
+					if (listener.IsValid) listener.Trigger(t, k);
+					//NOT else Trigger can invalidate listener
+					if (!listener.IsValid)
+					{
+						_listeners?.Remove(listener);
+						TryClearFullSignatureList();
+					}
+				}
+				catch (Exception exception)
+				{
+					Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
 				}
 			}
 			ObjectPool<List<IEventTrigger<T,K>>>.Return( listenersToTrigger );
@@ -329,13 +350,20 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 			var count = listenersToTrigger.Count;
 			for( int i = 0; i < count; i++ )
 			{
-				var listener = listenersToTrigger[i];
-				if( listener.IsValid ) listener.Trigger( t, k, l );
-				//NOT else Trigger can invalidate listener
-				if( !listener.IsValid )
+				try
 				{
-					_listeners?.Remove( listener );
-					TryClearFullSignatureList();
+					var listener = listenersToTrigger[i];
+					if (listener.IsValid) listener.Trigger(t, k, l);
+					//NOT else Trigger can invalidate listener
+					if (!listener.IsValid)
+					{
+						_listeners?.Remove(listener);
+						TryClearFullSignatureList();
+					}
+				}
+				catch (Exception exception)
+				{
+					Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
 				}
 			}
 			ObjectPool<List<IEventTrigger<T, K, L>>>.Return( listenersToTrigger );
