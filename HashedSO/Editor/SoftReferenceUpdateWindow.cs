@@ -119,11 +119,15 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 		var sb = new StringBuilder();
 		for( int j = 0; j < _mbTypes.Count; j++ )
 		{
-			_mbTypesCount.Add(0);
-			_mbPrefabsCount.Add(0);
 			sb.AppendLine( $"\t-<color=lime>{_mbTypes[j]}</color> as <color=orange>{_mbTypesCount[j]}</color> components in <color=orange>{_mbPrefabsCount[j]}</color>" );
 		}
         UnityEngine.Debug.Log( $"Counted {components} components in {prefabs} prefabs of total of {totalPrefabs} prefabs of the project\n{sb.ToString()}" );
+	}
+
+	private string NumToString( int num )
+	{
+		if( num < 0 ) return "?";
+		return num.ToString();
 	}
 	
 	private void OnGUI()
@@ -161,7 +165,7 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 			Type type = _soTypes[i];
 			var tggl = !_soSelectionIgnore.Contains( i );
 			var newTggl = tggl;
-			if( i < _soTypesCount.Count ) newTggl = EditorGUILayout.ToggleLeft( $"{type.FullName} ({_soTypesCount[i]})", tggl );
+			if( i < _soTypesCount.Count ) newTggl = EditorGUILayout.ToggleLeft( $"{type.FullName} ({NumToString(_soTypesCount[i])})", tggl );
 			else newTggl = EditorGUILayout.ToggleLeft( type.FullName, tggl );
 			if( tggl != newTggl ) 
 			{
@@ -171,17 +175,18 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 		}
 		if( GUILayout.Button( $"Transfer ({_soTypes.Count - _soSelectionIgnore.Count}) ScriptableObject Types" ) )
 		{
-			var sw = new Stopwatch();
-			sw.Start();
 			var sb = new StringBuilder();
-			var transfers = 0;
 			for( int j = 0; j < _soTypes.Count; j++ )
 			{
+				if( _soSelectionIgnore.Contains( j ) ) continue;
+				var sw = new Stopwatch();
+				sw.Start();
+				var transfers = 0;
 				var typeClass = _soTypes[j];
 				var transferables = AssetDatabaseUtils.GetAll( typeClass );
+				sb.Clear();
 				for( int i = 0; i < transferables.Length; i++ ) 
 				{
-					if( _soSelectionIgnore.Contains( i ) ) continue;
 					var transferable = transferables[i] as ISoftReferenceTransferable;
 					if( transferable == null ) continue;
 					var transfered = transferable.EDITOR_TransferToSoftReference();
@@ -190,9 +195,9 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 					sb.AppendLine( $"\t-{typeClass.Name}[{i}] = {transferables[i].NameOrNull()}" );
 					transfers++;
 				}
+				sw.Stop();
+            	UnityEngine.Debug.Log( $"Transfered <color=yellow>{transfers}</color> {typeClass.Name} in <color=orange>{sw.Elapsed.TotalMilliseconds}</color>ms:\n{sb.ToString()}" );
 			}
-			sw.Stop();
-            UnityEngine.Debug.Log( $"Transfered <color=yellow>{transfers}</color> ScriptableObject in <color=orange>{sw.Elapsed.TotalMilliseconds}</color>ms:\n{sb.ToString()}" );
 		}
 		EditorGUILayout.EndVertical();
 		EditorGUILayout.BeginVertical();
@@ -215,7 +220,7 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 			Type type = _mbTypes[i];
 			var tggl = !_mbSelectionIgnore.Contains( i );
 			var newTggl = tggl;
-			if( i < _mbTypesCount.Count && i < _mbPrefabsCount.Count ) newTggl = EditorGUILayout.ToggleLeft( $"{type.FullName} ({_mbTypesCount[i]}/{_mbPrefabsCount[i]})", tggl );
+			if( i < _mbTypesCount.Count && i < _mbPrefabsCount.Count ) newTggl = EditorGUILayout.ToggleLeft( $"{type.FullName} ({NumToString(_mbTypesCount[i])}/{NumToString(_mbPrefabsCount[i])})", tggl );
 			else newTggl = EditorGUILayout.ToggleLeft( type.FullName, tggl );
 			if( tggl != newTggl ) 
 			{
@@ -232,6 +237,16 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 			var objects = 0;
 			var components = 0;
 			string[] guids = AssetDatabase.FindAssets("t:Prefab");
+
+			for( int j = _mbPrefabsCount.Count; j < _mbTypes.Count; j++ ) _mbPrefabsCount.Add( int.MinValue );
+			for( int j = _mbTypesCount.Count; j < _mbTypes.Count; j++ ) _mbTypesCount.Add( int.MinValue );
+			
+			for( int j = 0; j < _mbTypes.Count; j++ )
+			{
+				if( _mbSelectionIgnore.Contains( j ) ) continue;
+				_mbPrefabsCount[j] = 0;
+				_mbTypesCount[j] = 0;
+			}
 			
 			foreach( string guid in guids )
 			{
@@ -247,9 +262,11 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 					var refs = prefab.GetComponentsInChildren( typeClass );
 					if( refs == null || refs.Length == 0 ) continue;
 					objects++;
+					_mbPrefabsCount[j]++;
 					for( int i = 0; i < refs.Length; i++ )
 					{
 						var component = refs[i];
+						_mbTypesCount[j]++;
 						components++;
 						var transferable = component as ISoftReferenceTransferable;
 						if( transferable == null ) continue;
