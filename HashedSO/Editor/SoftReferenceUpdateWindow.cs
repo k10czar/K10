@@ -20,9 +20,12 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 	}
 
 	List<Type> _soTypes = new List<Type>();
+	List<int> _soTypesCount = new List<int>();
 	HashSet<int> _soSelectionIgnore = new HashSet<int>();
 
 	List<Type> _mbTypes = new List<Type>();
+	List<int> _mbTypesCount = new List<int>();
+	List<int> _mbPrefabsCount = new List<int>();
 	HashSet<int> _mbSelectionIgnore = new HashSet<int>();
 
 	[MenuItem("K10/Soft References Utils")] static void Init() { var i = Instance; }
@@ -34,6 +37,7 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 	void ScanTypes()
 	{
 		_soTypes.Clear();
+		_mbTypes.Clear();
 		Type interfaceType = typeof(ISoftReferenceTransferable);
 		Type soType = typeof(ScriptableObject);
 		Type mbType = typeof(MonoBehaviour);
@@ -55,13 +59,86 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 			}
 		}
 	}
+
+	void CountSoTypes()
+	{
+		_soTypesCount.Clear();
+		var totalSO = 0;
+		var sb = new StringBuilder();
+		for( int j = 0; j < _soTypes.Count; j++ )
+		{
+			var typeClass = _soTypes[j];
+			var transferables = AssetDatabaseUtils.GetAll( typeClass );
+			_soTypesCount.Add( transferables.Length );
+			sb.AppendLine( $"\t-<color=lime>{_soTypes[j]}</color> as <color=orange>{transferables.Length}</color> objects" );
+			totalSO += transferables.Length;
+		}
+        UnityEngine.Debug.Log( $"Counted {totalSO} ISoftReferenceTransferable valid ScriptableObject\n{sb.ToString()}" );
+	}
+
+	void CountMbTypes()
+	{
+		_mbTypesCount.Clear();
+		_mbPrefabsCount.Clear();
+
+		var components = 0;
+		var prefabs = 0;
+		var totalPrefabs = 0;
+		
+		for( int j = 0; j < _mbTypes.Count; j++ )
+		{
+			_mbTypesCount.Add(0);
+			_mbPrefabsCount.Add(0);
+		}
+
+		string[] guids = AssetDatabase.FindAssets("t:Prefab");
+		totalPrefabs += guids.Length;
+		
+		foreach( string guid in guids )
+		{
+			string assetPath = AssetDatabase.GUIDToAssetPath( guid );
+			GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>( assetPath );
+			if( prefab == null ) continue;
+
+			for( int j = 0; j < _mbTypes.Count; j++ )
+			{
+				if( _mbSelectionIgnore.Contains( j ) ) continue;
+				var typeClass = _mbTypes[j];
+				var refs = prefab.GetComponentsInChildren( typeClass );
+				if( refs == null || refs.Length == 0 ) continue;
+				_mbPrefabsCount[j]++;
+				prefabs++;
+				for( int i = 0; i < refs.Length; i++ )
+				{
+					_mbTypesCount[j]++;
+					components++;
+				}
+			}
+		}
+		
+		var sb = new StringBuilder();
+		for( int j = 0; j < _mbTypes.Count; j++ )
+		{
+			_mbTypesCount.Add(0);
+			_mbPrefabsCount.Add(0);
+			sb.AppendLine( $"\t-<color=lime>{_mbTypes[j]}</color> as <color=orange>{_mbTypesCount[j]}</color> components in <color=orange>{_mbPrefabsCount[j]}</color>" );
+		}
+        UnityEngine.Debug.Log( $"Counted {components} components in {prefabs} prefabs of total of {totalPrefabs} prefabs of the project\n{sb.ToString()}" );
+	}
 	
 	private void OnGUI()
 	{
+		EditorGUILayout.BeginHorizontal();
 		if( GUILayout.Button( $"Rescan Types" ) )
 		{
 			ScanTypes();
 		}
+		if( GUILayout.Button( $"Count Types" ) )
+		{
+			CountSoTypes();
+			CountMbTypes();
+		}
+		EditorGUILayout.EndHorizontal();
 		
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.BeginVertical();
@@ -83,7 +160,9 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 		{
 			Type type = _soTypes[i];
 			var tggl = !_soSelectionIgnore.Contains( i );
-			var newTggl = EditorGUILayout.ToggleLeft( type.FullName, tggl );
+			var newTggl = tggl;
+			if( i < _soTypesCount.Count ) newTggl = EditorGUILayout.ToggleLeft( $"{type.FullName} ({_soTypesCount[i]})", tggl );
+			else newTggl = EditorGUILayout.ToggleLeft( type.FullName, tggl );
 			if( tggl != newTggl ) 
 			{
 				if( newTggl ) _soSelectionIgnore.Remove( i );
@@ -135,7 +214,9 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 		{
 			Type type = _mbTypes[i];
 			var tggl = !_mbSelectionIgnore.Contains( i );
-			var newTggl = EditorGUILayout.ToggleLeft( type.FullName, tggl );
+			var newTggl = tggl;
+			if( i < _mbTypesCount.Count && i < _mbPrefabsCount.Count ) newTggl = EditorGUILayout.ToggleLeft( $"{type.FullName} ({_mbTypesCount[i]}/{_mbPrefabsCount[i]})", tggl );
+			else newTggl = EditorGUILayout.ToggleLeft( type.FullName, tggl );
 			if( tggl != newTggl ) 
 			{
 				if( newTggl ) _mbSelectionIgnore.Remove( i );
