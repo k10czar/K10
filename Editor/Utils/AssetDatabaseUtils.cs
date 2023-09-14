@@ -39,4 +39,18 @@ public static class AssetDatabaseUtils
 		if( debug ) Debug.Log( $"AssetDatabaseUtils<color=red>.</color><color=yellow>GetAll</color><color=red><</color><color=lime>{typeof(T).Name}</color><color=red>></color>:\n\t-{string.Join( ",\n\t-", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) )}" );
         return collection;
     }
+    
+    public static ScriptableObject[] GetAll( System.Type type, bool debug = true ) 
+    {
+        string[] assetNames = AssetDatabase.FindAssets( $"t:{type.Name}" );
+        var collection = new ScriptableObject[assetNames.Length];
+        for( int i = 0; i < assetNames.Length; i++ )
+        {
+            var SOpath = AssetDatabase.GUIDToAssetPath( assetNames[i] );
+            var element = AssetDatabase.LoadAssetAtPath<ScriptableObject>( SOpath );
+            collection[ i ] = element;
+        }
+		if( debug ) Debug.Log( $"AssetDatabaseUtils<color=red>.</color><color=yellow>GetAll</color><color=red>(</color><color=lime>{type.Name}</color><color=red>)</color>:\n\t-{string.Join( ",\n\t-", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) )}" );
+        return collection;
+    }
 }
