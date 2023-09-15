@@ -45,8 +45,8 @@ public class UpdaterOnDemandBehaviour : MonoBehaviour, IUpdaterOnDemand
 public class UpdaterOnDemand : IUpdaterOnDemand
 {
 	MonoBehaviour _behaviour;
-	HashSet<IUpdatableOnDemand> _updating = new HashSet<IUpdatableOnDemand>();
-	private Coroutine _courotine;
+	List<IUpdatableOnDemand> _updating = new List<IUpdatableOnDemand>();
+	private Coroutine _coroutine;
 
 	public UpdaterOnDemand( MonoBehaviour behaviour, IEventValidator validator = null )
 	{
@@ -56,29 +56,42 @@ public class UpdaterOnDemand : IUpdaterOnDemand
 
 	protected virtual void Kill()
 	{
-		if( _courotine != null ) _behaviour?.StopCoroutine( _courotine );
+		if( _coroutine != null ) _behaviour?.StopCoroutine( _coroutine );
 		_behaviour = null;
 		_updating = null;
 	}
 
 	public bool RequestUpdate( IUpdatableOnDemand updateRequester )
 	{
-		var contains = _updating.Contains( updateRequester );
+		if( _updating.Contains( updateRequester ) ) return false;
 		if( _behaviour != null && _behaviour.gameObject != null && _behaviour.gameObject.activeInHierarchy && _behaviour.enabled )
 		{
-			_courotine = _behaviour.StartCoroutine( UpdateCoroutine( updateRequester ) );
+			if( _coroutine != null ) _behaviour.StopCoroutine( _coroutine );
+			_updating.Add( updateRequester );
+			_coroutine = _behaviour.StartCoroutine( UpdateCoroutine() );
 		}
-		return !contains;
+		return true;
 	}
 
-	IEnumerator UpdateCoroutine( IUpdatableOnDemand updateRequester )
+	IEnumerator UpdateCoroutine()
 	{
-		if( !_updating.Contains( updateRequester ) )
+		while( _updating.Count > 0 && _behaviour != null )
 		{
-			_updating.Add( updateRequester );
-			while( _behaviour != null && updateRequester.Update( Time.deltaTime ) ) { yield return null; }
-			_updating.Remove( updateRequester );
+			float deltaTime = Time.deltaTime;
+			for( int i = _updating.Count - 1; i >= 0; i-- )
+			{
+				IUpdatableOnDemand updateRequester = _updating[i];
+				if( !updateRequester.Update(deltaTime) )
+				{
+					_updating.RemoveAt( i );
+				}
+			}
+
+			yield return null;
 		}
+
+		_updating.Clear();
+		_coroutine = null;
 	}
 }
 
