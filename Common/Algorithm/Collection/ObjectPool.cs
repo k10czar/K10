@@ -1,55 +1,40 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
 
 public static class ObjectPool<T> where T : new()
 {
-	private static readonly Dictionary<System.Threading.Thread,List<T>> _pools = new Dictionary<System.Threading.Thread,List<T>>();
+	private static readonly ThreadLocal<List<T>> _pool = new ThreadLocal<List<T>>(() => new List<T>());
 
 	public static T Request()
 	{
-		T obj;
-		var thread = System.Threading.Thread.CurrentThread;
-		if( !_pools.TryGetValue( thread, out var pool ) ) return new T();
+		if (!_pool.IsValueCreated) return new T();
+		
+		var pool = _pool.Value;
 		var count = pool.Count;
-		if( count == 0 ) return new T();
-		else
-		{ 
-			obj = pool[count - 1];
-			pool.RemoveAt( count - 1 );
-			return obj;
-		}
+		if (count == 0) return new T();
+		T obj = pool[count - 1];
+		pool.RemoveAt( count - 1 );
+		return obj;
 	}
 
-	public static void Return( T t ) 
+	public static void Return( T t )
 	{
 		if( t is System.Collections.IList list ) list.Clear();
-		var thread = System.Threading.Thread.CurrentThread;
-		if( !_pools.TryGetValue( thread, out var pool ) )
-		{
-			// UnityEngine.Debug.Log( $"New Thread for ObjectPool<{typeof(T)}>( {thread?.Name ?? "NULL"} )[ {(thread?.ManagedThreadId ?? -1)} ]" );
-			pool = new List<T>();
-			_pools.Add( thread, pool );
-		}
-		pool.Add( t );
+		_pool.Value.Add(t);
 	}
 
 	public static void Cache( int size )
 	{
-		var thread = System.Threading.Thread.CurrentThread;
-		if( !_pools.TryGetValue( thread, out var pool ) )
-		{
-			pool = new List<T>();
-			_pools.Add( thread, pool );
-		}
+		var pool = _pool.Value;
 		var elementsToAdd = size - pool.Count;
 		for( int i = 0; i < elementsToAdd; i++ ) pool.Add( new T() );
 	}
 
 	public static void Clear()
 	{
-		foreach( var kvp in _pools )
-		{
-			kvp.Value?.Clear();
+		foreach(var pool in _pool.Values) {
+			pool.Clear();
 		}
-		_pools.Clear();
 	}
 }
