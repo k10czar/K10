@@ -7,6 +7,6 @@ namespace Unity.Automation
 	{
 		[SerializeField] float _seconds;
 
-		public override IEnumerator ExecutionCoroutine() { yield return new WaitForSeconds( _seconds ); }
+		public override IEnumerator ExecutionCoroutine() { yield return new WaitForSecondsRealtime( _seconds ); }
 	}
 }
