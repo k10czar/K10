@@ -13,6 +13,8 @@ public class ScalePorting : MonoBehaviour
 	const float SIZE = .6666666f;
 	#elif UNITY_ANDROID || UNITY_IOS || UNITY_WP_8 || UNITY_WP_8_1
 	const float SIZE = 1;
+	#else
+	const float SIZE = 1;
 	#endif
 
 	void Start() { UpdateScale(); }
@@ -29,6 +31,9 @@ public class ScalePorting : MonoBehaviour
 //			if( _forceMobileSize ) return _forcedMobileSize;
 			return _forcePcSize ? _forcedPcSize : SIZE;
 			#elif UNITY_ANDROID || UNITY_IOS || UNITY_WP_8 || UNITY_WP_8_1
+//			if( _forcePcSize ) return _forcedPcSize;
+			return _forceMobileSize ? _forcedMobileSize : SIZE;
+			#else
 //			if( _forcePcSize ) return _forcedPcSize;
 			return _forceMobileSize ? _forcedMobileSize : SIZE;
 			#endif
