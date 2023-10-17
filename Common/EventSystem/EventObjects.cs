@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 
 
 public class EventSlot : IEvent, ICustomDisposableKill
@@ -13,6 +14,7 @@ public class EventSlot : IEvent, ICustomDisposableKill
 
 	public bool IsValid => !_killed;
 	public int EventsCount => _listeners?.Count ?? 0;
+	public int CountValidEvents => _listeners.Count( ( et ) => et.IsValid );
 	public bool HasListeners => EventsCount > 0;
 
 	public void Trigger()
@@ -84,6 +86,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 
 	public bool IsValid => !_killed;
 	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
+	public int CountValidEvents => ( _generic?.CountValidEvents ?? 0 ) + _listeners.Count( ( et ) => et.IsValid );
 	public bool HasListeners => EventsCount > 0;
 
 	public void Trigger( T t )
@@ -184,6 +187,7 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 
 	public bool IsValid => !_killed;
 	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
+	public int CountValidEvents => ( _generic?.CountValidEvents ?? 0 ) + _listeners.Count( ( et ) => et.IsValid );
 	public bool HasListeners => EventsCount > 0;
 
 	public void Trigger( T t, K k )
@@ -297,6 +301,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 
 	public bool IsValid => !_killed;
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
+	public int CountValidEvents => ( _generic?.CountValidEvents ?? 0 ) + _listeners.Count( ( et ) => et.IsValid );
 	public bool HasListeners => EventsCount > 0;
 
 	public void Trigger( T t, K k, L l )
