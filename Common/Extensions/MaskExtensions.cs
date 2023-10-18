@@ -23,6 +23,19 @@ public static class MaskExtensions
 		return mask;
 	}
 
+	public static string DebugMaskValues<T>( this T mask ) where T : struct, IConvertible
+	{
+		string str = "";
+		var intMask = mask.ToInt32(null);
+		foreach( T t in System.Enum.GetValues( typeof(T) ) )
+		{
+			if( ( intMask & t.ToInt32(null) ) == 0 ) continue;
+			if( string.IsNullOrEmpty( str ) ) str += t.ToStringOrNull();
+			else str += $", {t.ToStringOrNull()}";
+		}
+		return str;
+	}
+
 	public static void WriteBitsAsRef( this ref int data, int initialBit, int bitCount, int value ) 
 	{
 		data = WriteBits( data, initialBit, bitCount, value );
