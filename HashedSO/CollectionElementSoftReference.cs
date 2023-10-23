@@ -27,8 +27,9 @@ public static class HsoUtils
 		{
 			if( softRef != default(K) && softRef.GetReference() == default(T) )
 			{
-				softRef = default(K);
-				return true;
+				// softRef = default(K);
+				// return true;
+				return false;
 			} else
 			{
 				return softRef?.RefreshUsedRef() ?? false;
@@ -254,16 +255,30 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 
 	public virtual bool SetReference( T t )
 	{
-		var changed = _assetRuntimeReference != t;
+		var changed = false;
+
+		var changedRuntimeRef = _assetRuntimeReference != t;
+		// changed |= changedRuntimeRef;
 		_assetRuntimeReference = t;
+
 		var id = _assetRuntimeReference?.HashID ?? -1;
-		changed = id != _id;
+		var changedId = id != _id;
+		changed |= changedId;
 		_id = id;
+
 #if UNITY_EDITOR
-		changed = _assetHardReference != t;
+
+		var changedHardRef = _assetHardReference != t;
+		// changed |= changedHardRef;
 		_assetHardReference = t;
+
 		UpdateOldRef();
 		GetReference();
+
+		if( changed )
+		{
+			Debug.Log( $"Changed {t.ToStringOrNull()} {changedRuntimeRef} {changedId}({id}) {changedHardRef}" );
+		}
 #endif //UNITY_EDITOR
 		return changed;
 	}
