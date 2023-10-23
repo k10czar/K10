@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using UnityEngine.Rendering.VirtualTexturing;
 
 public sealed class SoftReferenceUpdateWindow : EditorWindow
 {
@@ -189,7 +190,15 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 				{
 					var transferable = transferables[i] as ISoftReferenceTransferable;
 					if( transferable == null ) continue;
-					var transfered = transferable.EDITOR_TransferToSoftReference();
+					var transfered = false;
+					try
+					{
+						transfered = transferable.EDITOR_TransferToSoftReference();
+					}
+					catch( System.Exception ex )
+					{
+						UnityEngine.Debug.LogError( $"Failed to execute {AssetDatabase.GetAssetPath(transferables[i])}.{nameof(transferable.EDITOR_TransferToSoftReference)}():\n{ex}" );
+					}
 					if( !transfered ) continue;
 					EditorUtility.SetDirty( transferables[i] );
 					sb.AppendLine( $"\t-{typeClass.Name}[{i}] = {transferables[i].NameOrNull()}" );
