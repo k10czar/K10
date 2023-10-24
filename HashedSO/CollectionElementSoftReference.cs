@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -149,6 +150,15 @@ public static class CollectionElementSoftReferenceExtensions
 		from = default(T);
 		return true;
 	}
+
+	public static IEnumerable<T> DirectRefsEnumerator<T>( this List<CollectionElementSoftReference<T>> collection ) where T : UnityEngine.ScriptableObject, IHashedSO
+	{
+		var count = collection.Count;
+		for( int i = 0; i < count; i++ )
+		{
+			yield return collection[i].GetReference();
+		}
+	}
 	
 #if UNITY_EDITOR
 	public static bool EDITOR_TransferToSoftReference<T>( this IList<T> collection ) where T : ISoftReferenceTransferable
@@ -165,18 +175,6 @@ public static class CollectionElementSoftReferenceExtensions
 		return modded;
 	}
 #endif
-}
-
-[System.Serializable]
-public class HashedSubcollection<T> : List<CollectionElementSoftReference<T>>, IEnumerable<T> where T : UnityEngine.ScriptableObject, IHashedSO
-{
-    IEnumerator<T> IEnumerable<T>.GetEnumerator()
-    {
-		for( int i = 0; i < this.Count; i++ )
-		{
-			yield return this[i].GetReference();
-		}
-    }
 }
 
 [System.Serializable]
