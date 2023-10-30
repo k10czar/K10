@@ -206,14 +206,14 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 		_referenceState = EAssetReferenceState.Empty;
 #endif //UNITY_EDITOR
 	}
-
-#if UNITY_EDITOR
-    public override System.Type EDITOR_GetAssetType() => typeof(T);
 	
     public bool RefreshUsedRef()
     {
         return SetReference( GetReference() );
     }
+
+#if UNITY_EDITOR
+    public override System.Type EDITOR_GetAssetType() => typeof(T);
 
     public void UpdateOldRef()
     {
