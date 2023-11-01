@@ -8,14 +8,14 @@ using System.Text;
 using System.Diagnostics;
 using UnityEngine.Rendering.VirtualTexturing;
 
-public sealed class SoftReferenceUpdateWindow : EditorWindow
+public sealed class EditorAssetValidationProcessWindow : EditorWindow
 {
-	static SoftReferenceUpdateWindow _instance;
-	public static SoftReferenceUpdateWindow Instance
+	static EditorAssetValidationProcessWindow _instance;
+	public static EditorAssetValidationProcessWindow Instance
 	{
 		get
 		{
-			if (_instance == null) _instance = GetWindow<SoftReferenceUpdateWindow>("Soft References Utils");
+			if (_instance == null) _instance = GetWindow<EditorAssetValidationProcessWindow>("Editor Asset Validation Processes");
 			return _instance;
 		}
 	}
@@ -29,7 +29,7 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 	List<int> _mbPrefabsCount = new List<int>();
 	HashSet<int> _mbSelectionIgnore = new HashSet<int>();
 
-	[MenuItem("K10/Soft References Utils")] static void Init() { var i = Instance; }
+	[MenuItem("K10/Editor Asset Validation Process")] static void Init() { var i = Instance; }
 	void OnEnable()
 	{
 		ScanTypes();
@@ -39,7 +39,7 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 	{
 		_soTypes.Clear();
 		_mbTypes.Clear();
-		Type interfaceType = typeof(ISoftReferenceTransferable);
+		Type interfaceType = typeof(IEditorAssetValidationProcess);
 		Type soType = typeof(ScriptableObject);
 		Type mbType = typeof(MonoBehaviour);
 		Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -74,7 +74,7 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 			sb.AppendLine( $"\t-<color=lime>{_soTypes[j]}</color> as <color=orange>{transferables.Length}</color> objects" );
 			totalSO += transferables.Length;
 		}
-        UnityEngine.Debug.Log( $"Counted {totalSO} ISoftReferenceTransferable valid ScriptableObject\n{sb.ToString()}" );
+        UnityEngine.Debug.Log( $"Counted {totalSO} {nameof(IEditorAssetValidationProcess)} valid ScriptableObject\n{sb.ToString()}" );
 	}
 
 	void CountMbTypes()
@@ -174,7 +174,7 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 				else _soSelectionIgnore.Add( i );
 			}
 		}
-		if( GUILayout.Button( $"Transfer ({_soTypes.Count - _soSelectionIgnore.Count}) ScriptableObject Types" ) )
+		if( GUILayout.Button( $"Process ({_soTypes.Count - _soSelectionIgnore.Count}) ScriptableObject Types" ) )
 		{
 			var sb = new StringBuilder();
 			for( int j = 0; j < _soTypes.Count; j++ )
@@ -188,16 +188,16 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 				sb.Clear();
 				for( int i = 0; i < transferables.Length; i++ ) 
 				{
-					var transferable = transferables[i] as ISoftReferenceTransferable;
+					var transferable = transferables[i] as IEditorAssetValidationProcess;
 					if( transferable == null ) continue;
 					var transfered = false;
 					try
 					{
-						transfered = transferable.EDITOR_TransferToSoftReference();
+						transfered = transferable.EDITOR_ExecuteAssetValidationProcess();
 					}
 					catch( System.Exception ex )
 					{
-						UnityEngine.Debug.LogError( $"Failed to execute {AssetDatabase.GetAssetPath(transferables[i])}.{nameof(transferable.EDITOR_TransferToSoftReference)}():\n{ex}" );
+						UnityEngine.Debug.LogError( $"Failed to execute {AssetDatabase.GetAssetPath(transferables[i])}.{nameof(transferable.EDITOR_ExecuteAssetValidationProcess)}():\n{ex}" );
 					}
 					if( !transfered ) continue;
 					EditorUtility.SetDirty( transferables[i] );
@@ -205,7 +205,7 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 					transfers++;
 				}
 				sw.Stop();
-            	UnityEngine.Debug.Log( $"Transfered <color=yellow>{transfers}</color> {typeClass.Name} in <color=orange>{sw.Elapsed.TotalMilliseconds}</color>ms:\n{sb.ToString()}" );
+            	UnityEngine.Debug.Log( $"Processed <color=yellow>{transfers}</color> {typeClass.Name} in <color=orange>{sw.Elapsed.TotalMilliseconds}</color>ms:\n{sb.ToString()}" );
 			}
 		}
 		EditorGUILayout.EndVertical();
@@ -237,7 +237,7 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 				else _mbSelectionIgnore.Add( i );
 			}
 		}
-		if( GUILayout.Button( $"Transfer ({_mbTypes.Count - _mbSelectionIgnore.Count}) MonoBehaviour Types" ) )
+		if( GUILayout.Button( $"Process ({_mbTypes.Count - _mbSelectionIgnore.Count}) MonoBehaviour Types" ) )
 		{
 			var sw = new Stopwatch();
 			sw.Start();
@@ -277,9 +277,9 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 						var component = refs[i];
 						_mbTypesCount[j]++;
 						components++;
-						var transferable = component as ISoftReferenceTransferable;
+						var transferable = component as IEditorAssetValidationProcess;
 						if( transferable == null ) continue;
-						var transfered = transferable.EDITOR_TransferToSoftReference();
+						var transfered = transferable.EDITOR_ExecuteAssetValidationProcess();
 						if( !transfered ) continue;
 						modifiedPrefab = true;
 						EditorUtility.SetDirty( refs[i] );
@@ -302,7 +302,7 @@ public sealed class SoftReferenceUpdateWindow : EditorWindow
 				AssetDatabase.Refresh();
 			}
 
-            UnityEngine.Debug.Log( $"Transfered <color=yellow>{transfers}</color> on <color=lime>{components}</color> components in <color=green>{objects}</color> valid objects of <color=red>{guids.Length}</color> total in <color=orange>{sw.Elapsed.TotalMilliseconds}</color>ms:\n{sb.ToString()}" );
+            UnityEngine.Debug.Log( $"Processed <color=yellow>{transfers}</color> on <color=lime>{components}</color> components in <color=green>{objects}</color> valid objects of <color=red>{guids.Length}</color> total in <color=orange>{sw.Elapsed.TotalMilliseconds}</color>ms:\n{sb.ToString()}" );
 		}
 		EditorGUILayout.EndVertical();
 		EditorGUILayout.EndHorizontal();
