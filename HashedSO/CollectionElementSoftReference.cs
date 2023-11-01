@@ -13,13 +13,6 @@ public abstract class BaseCollectionElementSoftReference
 #endif //UNITY_EDITOR
 }
 
-public interface ISoftReferenceTransferable
-{
-#if UNITY_EDITOR
-	bool EDITOR_TransferToSoftReference();
-#endif
-}
-
 public static class HsoUtils
 {
 	public static bool TryTransferRef<T,K>( ref K softRef, ref T directRef ) where T : UnityEngine.ScriptableObject, IHashedSO where K : CollectionElementSoftReference<T>, new()
@@ -161,7 +154,7 @@ public static class CollectionElementSoftReferenceExtensions
 	}
 	
 #if UNITY_EDITOR
-	public static bool EDITOR_TransferToSoftReference<T>( this IList<T> collection ) where T : ISoftReferenceTransferable
+	public static bool EDITOR_TransferToSoftReference<T>( this IList<T> collection ) where T : IEditorAssetValidationProcess
 	{
 		if( collection == null ) return false;
 		var modded = false;
@@ -169,7 +162,7 @@ public static class CollectionElementSoftReferenceExtensions
 		{
 			var t = collection[i];
 			if( t == null ) continue;
-			modded |= t.EDITOR_TransferToSoftReference();
+			modded |= t.EDITOR_ExecuteAssetValidationProcess();
 			collection[i] = t;
 		}
 		return modded;
