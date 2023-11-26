@@ -61,6 +61,25 @@ public class Weighted
 		}
 		return w;
 	}
+
+	public static readonly AscendingComparer Ascending = new AscendingComparer();
+	public static readonly DescendingComparer Descending = new DescendingComparer();
+
+	public sealed class AscendingComparer : IComparer<Weighted> 
+	{
+		public int Compare( Weighted x, Weighted y ) 
+		{
+			return x.Weight.CompareTo( y.Weight );
+		}
+	}
+
+	public sealed class DescendingComparer : IComparer<Weighted> 
+	{
+		public int Compare( Weighted x, Weighted y ) 
+		{
+			return y.Weight.CompareTo( x.Weight );
+		}
+	}
 }
 
 [System.Serializable]
