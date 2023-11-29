@@ -260,39 +260,47 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 			foreach( string guid in guids )
 			{
 				string assetPath = AssetDatabase.GUIDToAssetPath( guid );
-				GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>( assetPath );
-				if( prefab == null ) continue;
-
-				var modifiedPrefab = false;
-				for( int j = 0; j < _mbTypes.Count; j++ )
+				try
 				{
-					if( _mbSelectionIgnore.Contains( j ) ) continue;
-					var typeClass = _mbTypes[j];
-					var refs = prefab.GetComponentsInChildren( typeClass );
-					if( refs == null || refs.Length == 0 ) continue;
-					objects++;
-					_mbPrefabsCount[j]++;
-					for( int i = 0; i < refs.Length; i++ )
-					{
-						var component = refs[i];
-						_mbTypesCount[j]++;
-						components++;
-						var transferable = component as IEditorAssetValidationProcess;
-						if( transferable == null ) continue;
-						var transfered = transferable.EDITOR_ExecuteAssetValidationProcess();
-						if( !transfered ) continue;
-						modifiedPrefab = true;
-						EditorUtility.SetDirty( refs[i] );
-						sb.AppendLine( $"\t-{typeClass.Name}[{i}] = {refs[i].NameOrNull()}" );
-						transfers++;
-					}
-				}
-				
-				if( !modifiedPrefab ) continue;
+					GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>( assetPath );
+					if( prefab == null ) continue;
 
-				EditorUtility.SetDirty( prefab );
-				PrefabUtility.SavePrefabAsset( prefab, out var savedSuccessfully );
-				sb.AppendLine( $"{prefab.name} @ {assetPath} {(savedSuccessfully?"<color=lime>Successfully":"<color=red>Failed")}</color>" );
+					var modifiedPrefab = false;
+					for( int j = 0; j < _mbTypes.Count; j++ )
+					{
+						if( _mbSelectionIgnore.Contains( j ) ) continue;
+						var typeClass = _mbTypes[j];
+						var refs = prefab.GetComponentsInChildren( typeClass );
+						if( refs == null || refs.Length == 0 ) continue;
+						objects++;
+						_mbPrefabsCount[j]++;
+						for( int i = 0; i < refs.Length; i++ )
+						{
+							var component = refs[i];
+							_mbTypesCount[j]++;
+							components++;
+							var transferable = component as IEditorAssetValidationProcess;
+							if( transferable == null ) continue;
+							var transfered = transferable.EDITOR_ExecuteAssetValidationProcess();
+							if( !transfered ) continue;
+							modifiedPrefab = true;
+							EditorUtility.SetDirty( refs[i] );
+							sb.AppendLine( $"\t-{typeClass.Name}[{i}] = {refs[i].NameOrNull()}" );
+							transfers++;
+						}
+					}
+					
+					if( !modifiedPrefab ) continue;
+
+					EditorUtility.SetDirty( prefab );
+					PrefabUtility.SavePrefabAsset( prefab, out var savedSuccessfully );
+					sb.AppendLine( $"{prefab.name} @ {assetPath} {(savedSuccessfully?"<color=lime>Successfully":"<color=red>Failed")}</color>" );
+				}
+				catch( System.Exception ex )
+				{
+					UnityEngine.Debug.LogError( $"{assetPath} <color=red>Failed to Load</color>" );
+					sb.AppendLine( $"{assetPath} <color=red>Failed to Load</color>" );
+				}
 			}
 			sw.Stop();
 			
