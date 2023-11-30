@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Reflection;
+using Mono.Cecil;
 using UnityEditor;
 using UnityEngine;
 
@@ -81,7 +83,8 @@ public static partial class ScriptableObjectUtils
 
 			foreach (var t in types)
 			{
-				var tParsed = t.ToStringOrNull().Replace( ".", "/" );
+				var pathAtt = t.GetCustomAttribute<CreationPathAttribute>();
+				var tParsed = ( pathAtt != null ? pathAtt.Path : t.ToStringOrNull() ).Replace( ".", "/" );
 				
 				GenericMenu.MenuFunction2 onTypedElementCreatedOutside = ( tp ) =>
 				{
@@ -107,7 +110,7 @@ public static partial class ScriptableObjectUtils
 
 			menu.ShowAsContext();
 
-			Debug.LogError(type.ToStringOrNull() + " is a abstract ScriptableObject click again the button holding some of the following keys to choose some of the inherited type:\n" + string.Join("\n", types ) + "\n\n");
+			Debug.Log(type.ToStringOrNull() + " is a abstract ScriptableObject click again the button holding some of the following keys to choose some of the inherited type:\n" + string.Join("\n", types ) + "\n\n");
 			return;
 		}
 

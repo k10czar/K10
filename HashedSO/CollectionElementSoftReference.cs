@@ -1,6 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 
 [System.Serializable]
 public abstract class BaseCollectionElementSoftReference
@@ -13,11 +13,27 @@ public abstract class BaseCollectionElementSoftReference
 #endif //UNITY_EDITOR
 }
 
-public interface ISoftReferenceTransferable
+public static class HsoUtils
 {
-#if UNITY_EDITOR
-	bool EDITOR_TransferToSoftReference();
-#endif
+	public static bool TryTransferRef<T,K>( ref K softRef, ref T directRef ) where T : UnityEngine.ScriptableObject, IHashedSO where K : CollectionElementSoftReference<T>, new()
+	{
+		if( directRef == default(T) ) 
+		{
+			if( softRef != default(K) && softRef.GetReference() == default(T) )
+			{
+				softRef = default(K);
+				return true;
+				// return false;
+			} else
+			{
+				return softRef?.RefreshUsedRef() ?? false;
+			}
+		}
+		if( softRef == default(K) ) softRef = new K();
+		softRef.SetReference( directRef );
+		directRef = default(T);
+		return true;
+	}
 }
 
 public static class CollectionElementSoftReferenceExtensions
@@ -127,9 +143,18 @@ public static class CollectionElementSoftReferenceExtensions
 		from = default(T);
 		return true;
 	}
+
+	public static IEnumerable<T> DirectRefsEnumerator<T>( this List<CollectionElementSoftReference<T>> collection ) where T : UnityEngine.ScriptableObject, IHashedSO
+	{
+		var count = collection.Count;
+		for( int i = 0; i < count; i++ )
+		{
+			yield return collection[i].GetReference();
+		}
+	}
 	
 #if UNITY_EDITOR
-	public static bool EDITOR_TransferToSoftReference<T>( this IList<T> collection ) where T : ISoftReferenceTransferable
+	public static bool EDITOR_TransferToSoftReference<T>( this IList<T> collection ) where T : IEditorAssetValidationProcess
 	{
 		if( collection == null ) return false;
 		var modded = false;
@@ -137,24 +162,12 @@ public static class CollectionElementSoftReferenceExtensions
 		{
 			var t = collection[i];
 			if( t == null ) continue;
-			modded |= t.EDITOR_TransferToSoftReference();
+			modded |= t.EDITOR_ExecuteAssetValidationProcess();
 			collection[i] = t;
 		}
 		return modded;
 	}
 #endif
-}
-
-[System.Serializable]
-public class HashedSubcollection<T> : List<CollectionElementSoftReference<T>>, IEnumerable<T> where T : UnityEngine.ScriptableObject, IHashedSO
-{
-    IEnumerator<T> IEnumerable<T>.GetEnumerator()
-    {
-		for( int i = 0; i < this.Count; i++ )
-		{
-			yield return this[i].GetReference();
-		}
-    }
 }
 
 [System.Serializable]
@@ -170,8 +183,7 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 
 	public int HashID => _id;
 
-	private static T _dummyInstance = null;
-	private static T Dummy => _dummyInstance ?? ( _dummyInstance = ScriptableObject.CreateInstance<T>() );
+    public virtual IHashedSOCollection GetCollection() => CachedDummySO<T>.Instance.GetCollection();
 
 	public CollectionElementSoftReference() { }
 
@@ -187,6 +199,11 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 		_referenceState = EAssetReferenceState.Empty;
 #endif //UNITY_EDITOR
 	}
+	
+    public bool RefreshUsedRef()
+    {
+        return SetReference( GetReference() );
+    }
 
 #if UNITY_EDITOR
     public override System.Type EDITOR_GetAssetType() => typeof(T);
@@ -216,7 +233,10 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 	{
 		if( _id >= 0 && _assetRuntimeReference == null ) 
 		{
-			_assetRuntimeReference = (T)Dummy.GetCollection().GetElementBase( Mathf.Max( _id, 0 ) );
+			var collection = GetCollection();
+            if( collection == null ) return null;
+			var id = Mathf.Max( _id, 0 );
+			_assetRuntimeReference = (T)collection.GetElementBase( id );
 		}
 #if UNITY_EDITOR
 		_referenceState = _assetRuntimeReference != null ? EAssetReferenceState.Loaded : EAssetReferenceState.LoadedNull;
@@ -224,14 +244,37 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 		return _assetRuntimeReference;
 	}
 
-	public void SetReference( T t )
+	public virtual bool SetReference( T t )
 	{
+		var changed = false;
+		var initialId = _id;
+		var initialAssetRuntimeReference = _assetRuntimeReference;
+
+		var changedRuntimeRef = _assetRuntimeReference != t;
+		// changed |= changedRuntimeRef;
 		_assetRuntimeReference = t;
-		_id = _assetRuntimeReference?.HashID ?? -1;
+
+		var id = _assetRuntimeReference?.HashID ?? -1;
+		var changedId = id != _id;
+		changed |= changedId;
+		_id = id;
+
 #if UNITY_EDITOR
+
+		var changedHardRef = _assetHardReference != t;
+		// changed |= changedHardRef;
 		_assetHardReference = t;
+
 		UpdateOldRef();
 		GetReference();
+
+		if( changed && !Application.isPlaying )
+		{
+			Debug.Log( $"Changed {t.ToStringOrNull()} {changedRuntimeRef} {changedId}({initialId}->{id}) {changedHardRef}" );
+		}
 #endif //UNITY_EDITOR
+		return changed;
 	}
+
+    public override string ToString() => $"{typeof(T).FullName}[_id]";
 }
