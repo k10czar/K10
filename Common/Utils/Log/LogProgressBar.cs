@@ -24,17 +24,20 @@ public static class ConsoleProgressBar
 		if( totalBlocks > fullblocksPct && lastBlock > .0001 )
 		{
 			if( lastBlock > .6666 ) SB.Append( BLOCK_3_4 );
-			if( lastBlock > .3333 ) SB.Append( BLOCK_2_4 );
+			else if( lastBlock > .3333 ) SB.Append( BLOCK_2_4 );
 			else SB.Append( BLOCK_1_4 );
 		}
 
-		if( pct > 4 ) SB.Append( $" {pct:N0}%" );
-		else if( pct > .4 ) SB.Append( $" {pct:N1}%" );
-		else if( pct > .04 ) SB.Append( $" {pct:N2}%" );
-		else if( pct > .004 ) SB.Append( $" {pct:N3}%" );
-		else if( pct > .0004 ) SB.Append( $" {pct:N4}%" );
-		else if( pct > .00004 ) SB.Append( $" {pct:N5}%" );
-		else SB.Append( $" {pct:N6}%" );
+		if( showPercentage )
+		{
+			if( pct > 4 ) SB.Append( $" {pct:N0}%" );
+			else if( pct > .4 ) SB.Append( $" {pct:N1}%" );
+			else if( pct > .04 ) SB.Append( $" {pct:N2}%" );
+			else if( pct > .004 ) SB.Append( $" {pct:N3}%" );
+			else if( pct > .0004 ) SB.Append( $" {pct:N4}%" );
+			else if( pct > .00004 ) SB.Append( $" {pct:N5}%" );
+			else SB.Append( $" {pct:N6}%" );
+		}
 		
 		var ret = SB.ToString();
 		SB.Clear();
