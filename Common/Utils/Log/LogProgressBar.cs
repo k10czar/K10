@@ -42,9 +42,8 @@ public static class ConsoleProgressBar
 		var ret = SB.ToString();
 		SB.Clear();
 		#if UNITY_EDITOR
-		return ret.Colorfy( Color.Lerp( LOW_COLOR, HIGH_COLOR, fill ) );
-		#else
-		return ret;
+		if( colored ) return ret.Colorfy( Color.Lerp( LOW_COLOR, HIGH_COLOR, fill ) );
 		#endif //UNITY_EDITOR
+		return ret;
 	}
 }
