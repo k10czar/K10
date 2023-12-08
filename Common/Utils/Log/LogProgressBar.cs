@@ -12,11 +12,11 @@ public static class ConsoleProgressBar
 
 	static readonly System.Text.StringBuilder SB = new System.Text.StringBuilder();
 
-	public static string Create( float pct, int totalBlocks, bool showPercentage = true, bool colored = true )
+	public static string Create( float fill, int totalBlocks, bool showPercentage = true, bool colored = true )
 	{
 		SB.Clear();
 
-		var blocksPct = pct * totalBlocks / 100;
+		var blocksPct = fill * totalBlocks;
 		var fullblocksPct = Mathf.FloorToInt( blocksPct );
 		var lastBlock = blocksPct - fullblocksPct;
 
@@ -30,19 +30,19 @@ public static class ConsoleProgressBar
 
 		if( showPercentage )
 		{
-			if( pct > 4 ) SB.Append( $" {pct:N0}%" );
-			else if( pct > .4 ) SB.Append( $" {pct:N1}%" );
-			else if( pct > .04 ) SB.Append( $" {pct:N2}%" );
-			else if( pct > .004 ) SB.Append( $" {pct:N3}%" );
-			else if( pct > .0004 ) SB.Append( $" {pct:N4}%" );
-			else if( pct > .00004 ) SB.Append( $" {pct:N5}%" );
-			else SB.Append( $" {pct:N6}%" );
+			if( fill > .04 ) SB.Append( $" {100*fill:N0}%" );
+			else if( fill > .004 ) SB.Append( $" {100*fill:N1}%" );
+			else if( fill > .0004 ) SB.Append( $" {100*fill:N2}%" );
+			else if( fill > .00004 ) SB.Append( $" {100*fill:N3}%" );
+			else if( fill > .000004 ) SB.Append( $" {100*fill:N4}%" );
+			else if( fill > .0000004 ) SB.Append( $" {100*fill:N5}%" );
+			else SB.Append( $" {100*fill:N6}%" );
 		}
 		
 		var ret = SB.ToString();
 		SB.Clear();
 		#if UNITY_EDITOR
-		return ret.Colorfy( Color.Lerp( LOW_COLOR, HIGH_COLOR, pct / 100 ) );
+		return ret.Colorfy( Color.Lerp( LOW_COLOR, HIGH_COLOR, fill ) );
 		#else
 		return ret;
 		#endif //UNITY_EDITOR
