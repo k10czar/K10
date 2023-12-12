@@ -12,7 +12,20 @@ public static class ConsoleProgressBar
 
 	static readonly System.Text.StringBuilder SB = new System.Text.StringBuilder();
 
-	public static string Create( float fill, int totalBlocks = 10, bool showPercentage = true, bool colored = true )
+    public static string CreateColored(float fill, int totalBlocks = 10, bool showPercentage = true) => CreateColored(fill, LOW_COLOR, HIGH_COLOR, totalBlocks, showPercentage);
+    public static string CreateColored(float fill, Color lowColor, Color highColor, int totalBlocks = 10, bool showPercentage = true) => CreateColored(fill, Color.Lerp(LOW_COLOR, HIGH_COLOR, fill), totalBlocks, showPercentage);
+    public static string CreateColored( float fill, Color colorIfEditor, int totalBlocks = 10, bool showPercentage = true )
+	{
+		var ret = Create( fill, totalBlocks, showPercentage );
+		#if UNITY_EDITOR
+		return ret.Colorfy( colorIfEditor );
+		#else
+		return ret;
+		#endif //UNITY_EDITOR
+	}
+
+
+    public static string Create( float fill, int totalBlocks = 10, bool showPercentage = true )
 	{
 		SB.Clear();
 
@@ -41,9 +54,6 @@ public static class ConsoleProgressBar
 		
 		var ret = SB.ToString();
 		SB.Clear();
-		#if UNITY_EDITOR
-		if( colored ) return ret.Colorfy( Color.Lerp( LOW_COLOR, HIGH_COLOR, fill ) );
-		#endif //UNITY_EDITOR
 		return ret;
 	}
 }
