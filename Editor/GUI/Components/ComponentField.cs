@@ -212,6 +212,37 @@ namespace K10.EditorGUIExtention
 			}
 		}
 
+		public static void InsideLayout<T>( SerializedProperty prop, bool allowSceneObjects = false, params GUILayoutOption[] options )
+		{
+			var obj = prop.objectReferenceValue;
+
+			GUILayout.BeginHorizontal();
+			if( obj == null )
+			{
+				var icon = IconCache.Get( "match" ).Texture;
+				var slh = EditorGUIUtility.singleLineHeight;
+				var create = GUILayout.Button( icon, new GUIStyle(), GUILayout.Width( ( icon.width / icon.height ) * slh ), GUILayout.Height( slh ) );
+				if( create )
+				{
+					var path = AssetDatabase.GetAssetPath( prop.serializedObject.targetObject );
+					ScriptableObjectUtils.CreateInsideMenu( path, prop, typeof(T), false, ( go ) => {
+						prop.objectReferenceValue = go;
+						prop.serializedObject.ApplyModifiedProperties();
+					} );
+				}
+			}
+			
+			var newObj = EditorGUILayout.ObjectField( obj, typeof( T ), allowSceneObjects, options );
+			if( newObj != obj )
+			{
+				prop.objectReferenceValue = newObj;
+				prop.serializedObject.ApplyModifiedProperties();
+			}
+
+			GUILayout.EndHorizontal();
+		}
+
+
 		public static bool Layout<T>( SerializedProperty prop, string newFolderPath, params GUILayoutOption[] options ) where T : ScriptableObject
 		{
 			var createdNewSO = false;
