@@ -12,7 +12,7 @@ public static class ConsoleProgressBar
 
 	static readonly System.Text.StringBuilder SB = new System.Text.StringBuilder();
 
-	public static string Create( float fill, int totalBlocks, bool showPercentage = true, bool colored = true )
+	public static string Create( float fill, int totalBlocks = 10, bool showPercentage = true, bool colored = true )
 	{
 		SB.Clear();
 
