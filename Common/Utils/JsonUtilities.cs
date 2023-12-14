@@ -23,17 +23,6 @@ public static class JsonUtilities
 	public static string GenerateSavePath(string fileName, string fileExtension)
 		=> $"{DEBUG_FOLDER}{fileName}{fileExtension}";
 
-	public static string GenerateLogFileName(string suffix1 = "", string suffix2 = "", string environment = "")
-	{
-		var fileName = DateTime.Now.ToString("yyyyMMddTHHmmssfffffff");
-
-		if (!string.IsNullOrEmpty(suffix1)) fileName = fileName + "_" + suffix1;
-		if (!string.IsNullOrEmpty(suffix2)) fileName = fileName + "_" + suffix2;
-		if (!string.IsNullOrEmpty(environment)) fileName = environment + "_" + fileName;
-
-		return fileName;
-	}
-
 	public static string LogToJsonFile(this string rawJson, string suffix1 = "", string suffix2 = "", string environment = "")
 	{
 		var formattedJson = rawJson.FormatAsJson();
