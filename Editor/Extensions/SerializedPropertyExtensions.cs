@@ -60,7 +60,16 @@ public static class SerializedPropertyExtensions
 			else
 			{
 				var field = objType.GetField( element, flags );
-				obj = field.GetValue( obj );
+				try
+				{
+					obj = field.GetValue( obj );
+				}
+				catch( System.Exception ex )
+				{
+					Debug.LogError( $"{ex.Message} on field.GetValue( element[{i}]:{element.ToStringOrNull()} )" );
+					for( int j = 0; j < path.Length; j++ ) Debug.LogError( $"element[{j}]:{path[j].ToStringOrNull()}" );
+					return null;
+				}
 				objType = field.FieldType;
 			}
 		}
