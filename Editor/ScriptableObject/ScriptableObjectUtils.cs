@@ -22,11 +22,15 @@ public static partial class ScriptableObjectUtils
 
 	public static ScriptableObject CreationObjectInsideAssetFile( System.Type type, string rootFilePath, string newInsideFileName, bool focus, System.Action<ScriptableObject> OnObjectCreated = null )
 	{
+		// if( OnObjectCreated != null ) OnObjectCreated( null );
+		// return null;
 		ScriptableObject asset = ScriptableObject.CreateInstance( type );
 		asset.name = newInsideFileName;
 
-		var assetRef = SetInsideSO( rootFilePath, newInsideFileName, focus, asset );
+		var assetRef = SetInsideSO( rootFilePath, newInsideFileName, focus, asset, false );
 		if( OnObjectCreated != null ) OnObjectCreated( assetRef );
+		AssetDatabase.SaveAssets();
+		AssetDatabase.Refresh();
 		return assetRef;
 	}
 
@@ -60,7 +64,7 @@ public static partial class ScriptableObjectUtils
 		if (OnObjectCreated != null) OnObjectCreated(assetRef);
 	}
 
-	public static void CreateInsideMenu( string rootAssetPath, SerializedProperty prop, System.Type type, bool focus = false, System.Action<ScriptableObject> OnObjectCreated = null )
+	public static void CreateInsideMenu( string rootAssetPath, SerializedProperty prop, System.Type type, bool focus = false, System.Action<ScriptableObject> OnObjectCreated = null, string name = null )
 	{
 		System.Type selectedType = null;
 
@@ -68,25 +72,29 @@ public static partial class ScriptableObjectUtils
 					.SelectMany(s => s.GetTypes())
 					.Where(p => type.IsAssignableFrom(p) && !p.IsAbstract);
 
-					
-
 		var count = types.Count();
 		if (count <= 1)
 		{
 			selectedType = type;
 			foreach (var t in types) selectedType = t;
-			Debug.LogError( selectedType.ToStringOrNull() + " is the only non Abstract type that implements " + type + ". So dont need to show menu" );
+			Debug.Log( selectedType.ToStringOrNull() + " is the only non Abstract type that implements " + type + ". So dont need to show menu" );
+			
+			Debug.Log( $"{rootAssetPath} + {name ?? (prop.PropPathParsed() + " + _ + " + selectedType.ToStringOrNull())}" );
 		}
 		else
 		{
 			GenericMenu menu = new GenericMenu();
+			Debug.Log( selectedType.ToStringOrNull() + " is the only non Abstract type that implements " + type + ". So dont need to show menu" );
 
 			foreach (var t in types)
 			{
 				var pathAtt = t.GetCustomAttribute<CreationPathAttribute>();
 				var tParsed = ( pathAtt != null ? pathAtt.Path : t.ToStringOrNull() ).Replace( ".", "/" );
 
-				GenericMenu.MenuFunction2 onTypedElementCreatedInside = ( tp ) => CreationObjectInsideAssetFile( (System.Type)tp, rootAssetPath, prop.PropPathParsed() + "_" + tp.ToStringOrNull(), focus, OnObjectCreated );
+				var objName = name ?? (prop.PropPathParsed() + " + _ + " + t.ToStringOrNull());
+				Debug.Log( $"{rootAssetPath} + {objName}" );
+
+				GenericMenu.MenuFunction2 onTypedElementCreatedInside = ( tp ) => CreationObjectInsideAssetFile( (System.Type)tp, rootAssetPath, objName, focus, OnObjectCreated );
 				menu.AddItem( new GUIContent( tParsed ), false, onTypedElementCreatedInside, t );
 			}
 
@@ -96,7 +104,7 @@ public static partial class ScriptableObjectUtils
 			return;
 		}
 
-		CreationObjectInsideAssetFile( selectedType, rootAssetPath, prop.PropPathParsed() + "_" + selectedType.ToStringOrNull(), focus, OnObjectCreated );
+		CreationObjectInsideAssetFile( selectedType, rootAssetPath, name ?? (prop.PropPathParsed() + " + _ + " + selectedType.ToStringOrNull()), focus, OnObjectCreated );
 	}
 
 	public static void CreateMenu( string rootAssetPath, SerializedProperty prop, System.Type type, bool focus = false, System.Action<ScriptableObject> OnObjectCreated = null )
@@ -169,7 +177,7 @@ public static partial class ScriptableObjectUtils
 	}
 
 
-	private static T SetInsideSO<T>( string rootFilePath, string insideFile, bool focus, T asset ) where T : ScriptableObject
+	private static T SetInsideSO<T>( string rootFilePath, string insideFile, bool focus, T asset, bool saveAndRefresh = true ) where T : ScriptableObject
 	{
 		if( !rootFilePath.StartsWith( "Assets/" ) && !rootFilePath.StartsWith( "Assets\\" ) ) rootFilePath = "Assets/" + rootFilePath;
 
@@ -182,8 +190,11 @@ public static partial class ScriptableObjectUtils
 
 		AssetDatabase.AddObjectToAsset( asset, rootFile );
 
-		AssetDatabase.SaveAssets();
-		AssetDatabase.Refresh();
+		if( saveAndRefresh )
+		{
+			AssetDatabase.SaveAssets();
+			AssetDatabase.Refresh();
+		}
 
 		if( focus )
 		{
