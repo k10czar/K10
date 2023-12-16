@@ -84,7 +84,6 @@ public static partial class ScriptableObjectUtils
 		else
 		{
 			GenericMenu menu = new GenericMenu();
-			Debug.Log( selectedType.ToStringOrNull() + " is the only non Abstract type that implements " + type + ". So dont need to show menu" );
 
 			foreach (var t in types)
 			{
