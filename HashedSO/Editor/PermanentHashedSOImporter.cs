@@ -50,7 +50,7 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 		}
 
 		sw.Stop();
-		Debug.Log( $"PermanentHashedSOImporter.OnPostprocessAllAssets took {sw.ElapsedMilliseconds}ms"
+		Debug.Log( $"{"PermanentHashedSOImporter".Colorfy( Colors.Console.Types )}.{"OnPostprocessAllAssets".Colorfy( Colors.Console.Verbs )} took {$"{sw.ElapsedMilliseconds}ms".Colorfy( Colors.Console.Numbers )}"
 				+ $"\nimportedAssets({importedAssets.Length}):\n\t-{importedAssets.Length>0}{string.Join( ",\n\t-", importedAssets )}"
 				+ $"\ndeletedAssets({deletedAssets.Length}):\n\t-{string.Join( ",\n\t-", deletedAssets )}"
 				+ $"\nmovedAssets({movedAssets.Length}):\n\t-{string.Join( ",\n\t-", movedAssets )}"
