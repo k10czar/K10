@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 [System.Serializable]
@@ -183,6 +185,12 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 
 	public int HashID => _id;
 
+#if UNITY_EDITOR
+    public bool HasReference => _id >= 0 && !string.IsNullOrEmpty( _editorAssetRefGuid );
+#else
+    public bool HasReference => _id >= 0;
+#endif //UNITY_EDITOR
+
     public virtual IHashedSOCollection GetCollection() => CachedDummySO<T>.Instance.GetCollection();
 
 	public CollectionElementSoftReference() { }
@@ -199,6 +207,23 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 		_referenceState = EAssetReferenceState.Empty;
 #endif //UNITY_EDITOR
 	}
+
+#if UNITY_EDITOR
+	public T EDITOR_GetAsset()
+	{
+		if( _assetHardReference != null ) return _assetHardReference;
+		if( !string.IsNullOrEmpty( _editorAssetRefGuid ) ) 
+		{
+			var path = AssetDatabase.GUIDToAssetPath( _editorAssetRefGuid );
+			if( !string.IsNullOrEmpty( path ) )
+			{
+				var asset = AssetDatabase.LoadAssetAtPath<T>( path );
+				if( asset != null ) return asset;
+			}
+		}
+		return GetReference();
+	}
+#endif //UNITY_EDITOR
 	
     public bool RefreshUsedRef()
     {
@@ -243,6 +268,11 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 #endif //UNITY_EDITOR
 		return _assetRuntimeReference;
 	}
+
+    public void ClearReference()
+    {
+        SetReference( null );
+    }
 
 	public virtual bool SetReference( T t )
 	{
