@@ -12,9 +12,20 @@ public static class LogUtility
 		bool isEditor = false;
 		#endif
 		if( !isEditor && !evenOutEditor ) return str;
+		return str.Colorfy( $"#{ColorUtility.ToHtmlStringRGB(color)}" );
+	}
+
+	public static string Colorfy( this string str, string colorName, bool evenOutEditor = false )
+	{
+		#if UNITY_EDITOR
+		bool isEditor = true;
+		#else
+		bool isEditor = false;
+		#endif
+		if( !isEditor && !evenOutEditor ) return str;
 
 		SB.Clear();
-        SB.Append( $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>" );
+        SB.Append( $"<color={colorName}>" );
 		SB.Append( str );
         SB.Append( $"</color>" );
 		
