@@ -113,6 +113,13 @@ public static class ISemaphoreInterectionExtentions
 		condition.RegisterOnFalse( validator.Validated( () => semaphore.Block( condition ), goLifetime ) );
 		goEvents.OnDestroy.Register( validator.Validated( new CallOnce( releaseLambda ) ) );
 	}
+	
+	public static BoolState GetBoolObserver(this Semaphore semaphore)
+	{
+		var boolState = new BoolState();
+		semaphore.Synchronize(boolState);
+		return boolState;
+	}
 }
 
 public interface ISemaphore : ISemaphoreInfo, ISemaphoreInterection
