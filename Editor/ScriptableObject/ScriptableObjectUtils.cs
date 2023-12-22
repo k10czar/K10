@@ -163,20 +163,31 @@ public static partial class ScriptableObjectUtils
 		CreationObjectAndFile( selectedType, rootAssetPath, focus, OnObjectCreated );
 	}
 
-	public static ScriptableObject Create(string newPath, System.Type type, bool focus = false)
+	public static ScriptableObject Create( string newPath, System.Type type, bool focus = false, bool saveAndRefresh = true )
 	{
 		ScriptableObject asset = ScriptableObject.CreateInstance(type);
-		return SetSO(ref newPath, focus, asset);
+		var so = SetSO( ref newPath, focus, asset, saveAndRefresh );
+        Debug.Log( $"🏗 {"Created".Colorfy( Colors.Console.Verbs )} new {type.FullName.Colorfy( Colors.Console.Types )} at {newPath.Colorfy( Colors.Console.Keyword )}" );
+		return so;
 	}
 
-	public static T Create<T>( string newPath, bool focus = false ) where T : ScriptableObject
+	public static T Create<T>( string newPath, bool focus = false, bool saveAndRefresh = true ) where T : ScriptableObject
 	{
 		T asset = ScriptableObject.CreateInstance<T>();
-		return SetSO( ref newPath, focus, asset );
+		var so = SetSO( ref newPath, focus, asset, saveAndRefresh );
+        Debug.Log( $"🏗 {"Created".Colorfy( Colors.Console.Verbs )} new {typeof(T).FullName.Colorfy( Colors.Console.Types )} at {newPath.Colorfy( Colors.Console.Keyword )}" );
+		return so;
 	}
 
+	public static T CreateSibiling<T>( UnityEngine.Object sibiling, string name, bool focus = false, bool saveAndRefresh = true ) where T : ScriptableObject
+    {
+        var modelPath = AssetDatabase.GetAssetPath( sibiling );
+        var path = modelPath.Remove( modelPath.Length - ( ".asset".Length + sibiling.name.Length )  ) + name;
+		var newSO = ScriptableObjectUtils.Create<T>( path, focus, saveAndRefresh );
+        return newSO;
+    }
 
-	private static T SetInsideSO<T>( string rootFilePath, string insideFile, bool focus, T asset, bool saveAndRefresh = true ) where T : ScriptableObject
+	private static T SetInsideSO<T>( string rootFilePath, string insideFile, bool focus, T asset, bool saveAndRefresh = true) where T : ScriptableObject
 	{
 		if( !rootFilePath.StartsWith( "Assets/" ) && !rootFilePath.StartsWith( "Assets\\" ) ) rootFilePath = "Assets/" + rootFilePath;
 
@@ -204,18 +215,21 @@ public static partial class ScriptableObjectUtils
 		return asset;
 	}
 
-	private static T SetSO<T>( ref string newPath, bool focus, T asset ) where T : ScriptableObject
+	private static T SetSO<T>( ref string newPath, bool focus, T asset, bool saveAndRefresh = true ) where T : ScriptableObject
 	{
 		if( !newPath.StartsWith( "Assets/" ) && !newPath.StartsWith( "Assets\\" ) ) newPath = "Assets/" + newPath;
 		AssetDatabaseUtils.RequestPath( newPath );
 		string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath( newPath + ".asset" );
 
-		Debug.Log( "Try create(" + asset.ToStringOrNull() + ") asset at " + assetPathAndName + " from " + newPath + ".asset" );
+		Debug.Log( $"{"Try".Colorfy( Colors.Console.Verbs )} create({typeof(T).FullName.Colorfy( Colors.Console.Types )}) asset at {assetPathAndName.Colorfy(Colors.Console.Interfaces)} from {newPath.Colorfy(Colors.Console.Names)}.asset" );
 
 		AssetDatabase.CreateAsset( asset, assetPathAndName );
 
-		AssetDatabase.SaveAssets();
-		AssetDatabase.Refresh();
+		if( saveAndRefresh )
+		{
+			AssetDatabase.SaveAssets();
+			AssetDatabase.Refresh();
+		}
 
 		if( focus )
 		{

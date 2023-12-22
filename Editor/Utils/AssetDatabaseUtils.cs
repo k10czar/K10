@@ -6,7 +6,7 @@ public static class AssetDatabaseUtils
 {
     public static void RequestPath( string path )
     {
-        Debug.Log( "RequestPath " + path );
+        Debug.Log( $"{"RequestPath".Colorfy( Colors.Console.Verbs )}( {path.Colorfy( Colors.Console.Names )} )" );
         var last = -1;
         for( int i = 0; i < path.Length; i++ )
         {

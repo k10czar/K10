@@ -13,5 +13,6 @@ public static class Colors
         public static readonly Color Abstraction = Color.LerpUnclamped( Color.cyan, Color.blue, .5f );
         public static readonly Color Negation = Color.LerpUnclamped( Color.red, Color.yellow, .2f );
         public static readonly Color Verbs = Color.LerpUnclamped( Color.cyan, Color.green, .5f );
+        public static readonly Color Names = Color.LerpUnclamped( Color.red, Color.yellow, .75f );
     }
 }
