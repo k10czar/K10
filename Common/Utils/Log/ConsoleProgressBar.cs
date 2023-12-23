@@ -24,7 +24,6 @@ public static class ConsoleProgressBar
 		#endif //UNITY_EDITOR
 	}
 
-
     public static string Create( float fill, int totalBlocks = 10, bool showPercentage = true )
 	{
 		SB.Clear();
@@ -41,16 +40,7 @@ public static class ConsoleProgressBar
 			else SB.Append( BLOCK_1_4 );
 		}
 
-		if( showPercentage )
-		{
-			if( fill > .04 ) SB.Append( $" {100*fill:N0}%" );
-			else if( fill > .004 ) SB.Append( $" {100*fill:N1}%" );
-			else if( fill > .0004 ) SB.Append( $" {100*fill:N2}%" );
-			else if( fill > .00004 ) SB.Append( $" {100*fill:N3}%" );
-			else if( fill > .000004 ) SB.Append( $" {100*fill:N4}%" );
-			else if( fill > .0000004 ) SB.Append( $" {100*fill:N5}%" );
-			else SB.Append( $" {100*fill:N6}%" );
-		}
+		if( showPercentage ) SB.Append( fill.ToPercentageString() );
 		
 		var ret = SB.ToString();
 		SB.Clear();

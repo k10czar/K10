@@ -7,7 +7,7 @@ public static class LogUtility
 	public static string Colorfy( this string str, Color color, bool evenOutEditor = false )
 	{
 		#if UNITY_EDITOR
-		bool isEditor = true;
+		bool isEditor = !TestUtility.IsRunning;
 		#else
 		bool isEditor = false;
 		#endif
@@ -18,7 +18,7 @@ public static class LogUtility
 	public static string Colorfy( this string str, string colorName, bool evenOutEditor = false )
 	{
 		#if UNITY_EDITOR
-		bool isEditor = true;
+		bool isEditor = !TestUtility.IsRunning;
 		#else
 		bool isEditor = false;
 		#endif

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 [System.Serializable]
-public class Weighted
+public abstract class Weighted
 {
 	[SerializeField] protected float _weight = 1;
 	public float Weight { get { return _weight; } }
