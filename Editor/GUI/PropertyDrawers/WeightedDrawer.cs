@@ -1,7 +1,5 @@
 using UnityEngine;
-using UnityEngine.UIElements;
 using UnityEditor;
-using System;
 using K10.EditorGUIExtention;
 using System.Collections.Generic;
 
@@ -53,7 +51,7 @@ public class WeightedDrawer : PropertyDrawer
         var initialValue = weight.floatValue;
         EditorGUI.PropertyField( restArea.VerticalSlice( 0, 2 ), weight, new GUIContent("W") );
         weight.floatValue = Mathf.Max( 0, weight.floatValue );
-        if( !Mathf.Approximately( initialValue, weight.floatValue ) ) _sumCache.Remove( ( property.serializedObject.targetObject, GetParentArrayPropPath( property ) ) );
+        if( !Mathf.Approximately( initialValue, weight.floatValue ) ) _sumCache.Remove( ( property.serializedObject.targetObject, property.GetParentArrayPropPath() ) );
         GuiLabelWidthManager.Revert();
         // var sw = new System.Diagnostics.Stopwatch();
         // sw.Start();
@@ -70,24 +68,9 @@ public class WeightedDrawer : PropertyDrawer
         return weight / sum;
     }
 
-    private string GetParentArrayPropPath( SerializedProperty property )
-    {
-        var path = property.propertyPath;
-        var pLen = path.Length;
-        var it = 1;
-        while( path[pLen-it] != '[' && it < path.Length ) it++;
-        return path.Substring( 0, Mathf.Max( pLen - ( ".Array.data".Length + it ), 0 ) );
-    }
-
-    private SerializedProperty GetParentArrayProp( SerializedProperty property )
-    {
-        var parentPath = GetParentArrayPropPath( property );
-        return property.serializedObject.FindProperty( parentPath );
-    }
-
     private float CalculateListWeigthSum( SerializedProperty property )
     {
-        var parentPath = GetParentArrayPropPath( property );
+        var parentPath = property.GetParentArrayPropPath();
         if( _sumCache.TryGetValue( ( property.serializedObject.targetObject, parentPath ), out var sum ) ) return sum;
         var p = property.serializedObject.FindProperty( parentPath );
         if( !p.isArray ) return 0;
