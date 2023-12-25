@@ -178,36 +178,12 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 		{
 			var sb = new StringBuilder();
 			for( int j = 0; j < _soTypes.Count; j++ )
-			{
-				if( _soSelectionIgnore.Contains( j ) ) continue;
-				var sw = new Stopwatch();
-				sw.Start();
-				var transfers = 0;
-				var typeClass = _soTypes[j];
-				var transferables = AssetDatabaseUtils.GetAll( typeClass );
-				sb.Clear();
-				for( int i = 0; i < transferables.Length; i++ ) 
-				{
-					var transferable = transferables[i] as IEditorAssetValidationProcess;
-					if( transferable == null ) continue;
-					var transfered = false;
-					try
-					{
-						transfered = transferable.EDITOR_ExecuteAssetValidationProcess();
-					}
-					catch( System.Exception ex )
-					{
-						UnityEngine.Debug.LogError( $"Failed to execute {AssetDatabase.GetAssetPath(transferables[i])}.{nameof(transferable.EDITOR_ExecuteAssetValidationProcess)}():\n{ex}" );
-					}
-					if( !transfered ) continue;
-					EditorUtility.SetDirty( transferables[i] );
-					sb.AppendLine( $"\t-{typeClass.Name}[{i}] = {transferables[i].NameOrNull()}" );
-					transfers++;
-				}
-				sw.Stop();
-            	UnityEngine.Debug.Log( $"Processed <color=yellow>{transfers}</color> {typeClass.Name} in <color=orange>{sw.Elapsed.TotalMilliseconds}</color>ms:\n{sb.ToString()}" );
-			}
-		}
+            {
+                if (_soSelectionIgnore.Contains(j)) continue;
+                var typeClass = _soTypes[j];
+                RunAssetValidationInAll( typeClass, sb );
+            }
+        }
 		EditorGUILayout.EndVertical();
 		EditorGUILayout.BeginVertical();
 		if( GUILayout.Button( $"Select {((_mbSelectionIgnore.Count == 0)?"None":"All")} Types" ) )
@@ -315,4 +291,36 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 		EditorGUILayout.EndVertical();
 		EditorGUILayout.EndHorizontal();
 	}
+
+    public static void RunAssetValidationInAll( Type typeClass, StringBuilder sb = null )
+    {
+		if( sb == null ) sb = new StringBuilder();
+
+		var sw = new Stopwatch();
+		sw.Start();
+        var transfers = 0;
+        var transferables = AssetDatabaseUtils.GetAll(typeClass);
+        sb.Clear();
+        for (int i = 0; i < transferables.Length; i++)
+        {
+            var transferable = transferables[i] as IEditorAssetValidationProcess;
+            if (transferable == null) continue;
+            var transfered = false;
+            try
+            {
+                transfered = transferable.EDITOR_ExecuteAssetValidationProcess();
+            }
+            catch (System.Exception ex)
+            {
+                UnityEngine.Debug.LogError($"Failed to execute {AssetDatabase.GetAssetPath(transferables[i])}.{nameof(transferable.EDITOR_ExecuteAssetValidationProcess)}():\n{ex}");
+            }
+            if (!transfered) continue;
+            EditorUtility.SetDirty(transferables[i]);
+            sb.AppendLine($"\t-{typeClass.Name}[{i}] = {transferables[i].NameOrNull()}");
+            transfers++;
+        }
+        sw.Stop();
+        UnityEngine.Debug.Log($"Processed <color=yellow>{transfers}</color> {typeClass.Name} in <color=orange>{sw.Elapsed.TotalMilliseconds}</color>ms:\n{sb.ToString()}");
+		sb.Clear();
+    }
 }
