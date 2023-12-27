@@ -4,6 +4,14 @@ using UnityEngine;
 
 public static class AssetDatabaseUtils
 {
+    static readonly string OP = "(".Colorfy( Colors.Console.Punctuations );
+    static readonly string CP = ")".Colorfy( Colors.Console.Punctuations );
+    static readonly string OSB = "[".Colorfy( Colors.Console.Punctuations );
+    static readonly string CSB = "]".Colorfy( Colors.Console.Punctuations );
+    static readonly string OAB = "<".Colorfy( Colors.Console.Punctuations );
+    static readonly string CAB = ">".Colorfy( Colors.Console.Punctuations );
+    static readonly string DOT = ".".Colorfy( Colors.Console.Punctuations );
+
     public static void RequestPath( string path )
     {
         Debug.Log( $"{"RequestPath".Colorfy( Colors.Console.Verbs )}( {path.Colorfy( Colors.Console.Names )} )" );
@@ -36,7 +44,7 @@ public static class AssetDatabaseUtils
             var element = AssetDatabase.LoadAssetAtPath<T>( SOpath );
             collection[ i ] = element;
         }
-		if( debug ) Debug.Log( $"AssetDatabaseUtils<color=red>.</color><color=yellow>GetAll</color><color=red><</color><color=lime>{typeof(T).Name}</color><color=red>></color>:\n\t-{string.Join( ",\n\t-", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) )}" );
+		if( debug ) Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OAB}{typeof(T).Name.Colorfy( Colors.Lime )}{CAB}:\n\t-{string.Join( ",\n\t-", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) )}" );
         return collection;
     }
     
@@ -50,7 +58,7 @@ public static class AssetDatabaseUtils
             var element = AssetDatabase.LoadAssetAtPath<ScriptableObject>( SOpath );
             collection[ i ] = element;
         }
-		if( debug ) Debug.Log( $"AssetDatabaseUtils<color=red>.</color><color=yellow>GetAll</color><color=red>(</color><color=lime>{type.Name}</color><color=red>)</color>:\n\t-{string.Join( ",\n\t-", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) )}" );
+		if( debug ) Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Colors.Lime )}{CP}:\n\t-{string.Join( ",\n\t-", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) )}" );
         return collection;
     }
 }
