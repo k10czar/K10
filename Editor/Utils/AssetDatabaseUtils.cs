@@ -44,7 +44,7 @@ public static class AssetDatabaseUtils
             var element = AssetDatabase.LoadAssetAtPath<T>( SOpath );
             collection[ i ] = element;
         }
-		if( debug ) Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OAB}{typeof(T).Name.Colorfy( Colors.Lime )}{CAB}:\n\t-{string.Join( ",\n\t-", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) )}" );
+		if( debug ) Debug.Log( $"AssetDatabaseUtils{DOT}{"GetAll".Colorfy( Colors.Console.Methods )}{OAB}{typeof(T).Name.Colorfy( Colors.Console.Types )}{CAB}:\n   -{string.Join( ",\n   -", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) )}" );
         return collection;
     }
     
@@ -58,7 +58,7 @@ public static class AssetDatabaseUtils
             var element = AssetDatabase.LoadAssetAtPath<ScriptableObject>( SOpath );
             collection[ i ] = element;
         }
-		if( debug ) Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Colors.Lime )}{CP}:\n\t-{string.Join( ",\n\t-", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) )}" );
+		if( debug ) Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Colors.Lime )}{CP}:\n   -{string.Join( ",\n   -", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) )}" );
         return collection;
     }
 }

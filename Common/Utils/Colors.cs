@@ -15,9 +15,10 @@ public static class Colors
 
     public static class Console
     {
-        public static readonly Color Numbers = Color.cyan;
-        public static readonly Color Types = Color.yellow;
+        public static readonly Color Numbers = LightSkyBlue;
+        public static readonly Color Types = Khaki;
         public static readonly Color Interfaces = Orange;
+        public static readonly Color Methods = Peridot;
         public static readonly Color Keyword = Color.LerpUnclamped( Color.green, Color.yellow, .5f );
         public static readonly Color Abstraction = Color.LerpUnclamped( Color.cyan, Color.blue, .5f );
         public static readonly Color Negation = Color.LerpUnclamped( Color.red, Color.yellow, .2f );
