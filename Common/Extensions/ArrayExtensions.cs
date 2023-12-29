@@ -5,6 +5,7 @@ public static class ArrayExtensions
         var len = terms?.Length ?? 0;
         var newArray = new T[len+1];
         for( int i = 0; i < len; i++ ) newArray[i] = terms[i];
+        
         newArray[len] = newElement;
         return newArray;
     }

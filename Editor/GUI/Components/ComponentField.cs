@@ -158,7 +158,7 @@ namespace K10.EditorGUIExtention
 					// 			$"GetFullPath( aPath ) = {System.IO.Path.GetFullPath( selectedAssetPath )}\n" +
 					// 			$" = {0}" );
 
-					ScriptableObjectUtils.CreateMenu( selectedAssetPath, prop, type, false, setRef );
+					EditorScriptableObjectUtils.CreateMenu( selectedAssetPath, prop, type, false, setRef );
 					
 					createdNewSO = true;
 				}
@@ -230,7 +230,7 @@ namespace K10.EditorGUIExtention
 				if( create )
 				{
 					var path = AssetDatabase.GetAssetPath( prop.serializedObject.targetObject );
-					ScriptableObjectUtils.CreateInsideMenu( path, prop, type, false, ( go ) => {
+					EditorScriptableObjectUtils.CreateInsideMenu( path, prop, type, false, ( go ) => {
 						Debug.Log( $"prop.serializedObject: {prop.serializedObject.ToStringOrNull()} {prop.serializedObject.targetObject.NameOrNull()}" );
 						if( prop.serializedObject != null ) Debug.Log( $"prop.serializedObject.targetObject: {prop.serializedObject.targetObject.NameOrNull()}" );
 						var obj = prop.serializedObject;

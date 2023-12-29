@@ -18,11 +18,10 @@ public static class Colors
         public static readonly Color Numbers = LightSkyBlue;
         public static readonly Color Types = Khaki;
         public static readonly Color Interfaces = Orange;
-        public static readonly Color Methods = Peridot;
+        public static readonly Color Verbs = PaleGreen;
         public static readonly Color Keyword = Color.LerpUnclamped( Color.green, Color.yellow, .5f );
         public static readonly Color Abstraction = Color.LerpUnclamped( Color.cyan, Color.blue, .5f );
         public static readonly Color Negation = Color.LerpUnclamped( Color.red, Color.yellow, .2f );
-        public static readonly Color Verbs = Color.LerpUnclamped( Color.cyan, Color.green, .5f );
         public static readonly Color Names = Color.LerpUnclamped( Color.red, Color.yellow, .75f );
         public static readonly Color Punctuations = Color.LerpUnclamped( Color.red, Color.yellow, .75f );
     }
