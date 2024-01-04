@@ -22,6 +22,21 @@ public static class SerializedPropertyExtensions
 		return prop.serializedObject.targetObject.GetType() + "_" + PropPathParsed( prop );
 	}
 
+    public static string GetParentArrayPropPath( this SerializedProperty property )
+    {
+        var path = property.propertyPath;
+        var pLen = path.Length;
+        var it = 1;
+        while( path[pLen-it] != '[' && it < path.Length ) it++;
+        return path.Substring( 0, Mathf.Max( pLen - ( ".Array.data".Length + it ), 0 ) );
+    }
+
+    public static SerializedProperty GetParentArrayProp( this SerializedProperty property )
+    {
+        var parentPath = GetParentArrayPropPath( property );
+        return property.serializedObject.FindProperty( parentPath );
+    }
+
 	public static string PropPathParsed( this SerializedProperty prop )
 	{
 		var path = prop.propertyPath;
@@ -60,7 +75,16 @@ public static class SerializedPropertyExtensions
 			else
 			{
 				var field = objType.GetField( element, flags );
-				obj = field.GetValue( obj );
+				try
+				{
+					obj = field.GetValue( obj );
+				}
+				catch( System.Exception ex )
+				{
+					Debug.LogError( $"{ex.Message} on field.GetValue( element[{i}]:{element.ToStringOrNull()} )" );
+					for( int j = 0; j < path.Length; j++ ) Debug.LogError( $"element[{j}]:{path[j].ToStringOrNull()}" );
+					return null;
+				}
 				objType = field.FieldType;
 			}
 		}

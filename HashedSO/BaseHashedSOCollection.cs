@@ -32,11 +32,12 @@ public interface IHashedSOCollection
 
 public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollection, System.Collections.IEnumerable
 {
-
 	public abstract int Count { get; }
 	public abstract IHashedSO GetElementBase( int index );
 	public abstract bool Contains( IHashedSO element );
 	public abstract bool ContainsHashID( int hashID );
+
+	public virtual void GenerateSoftReference() { Debug.LogError( "Not Implemented" ); }
 
 	IEnumerator IEnumerable.GetEnumerator()
 	{

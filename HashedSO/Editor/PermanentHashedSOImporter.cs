@@ -50,10 +50,17 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 		}
 
 		sw.Stop();
-		Debug.Log( $"PermanentHashedSOImporter.OnPostprocessAllAssets took {sw.ElapsedMilliseconds}ms"
-				+ $"\nimportedAssets({importedAssets.Length}):\n\t-{importedAssets.Length>0}{string.Join( ",\n\t-", importedAssets )}"
-				+ $"\ndeletedAssets({deletedAssets.Length}):\n\t-{string.Join( ",\n\t-", deletedAssets )}"
-				+ $"\nmovedAssets({movedAssets.Length}):\n\t-{string.Join( ",\n\t-", movedAssets )}"
-				+ $"\nmovedFromAssetPaths({movedFromAssetPaths.Length}):\n\t-{string.Join( ",\n\t-", movedFromAssetPaths )}" );
+
+		var hasElements = importedAssets.Length > 0 || deletedAssets.Length > 0 || movedAssets.Length > 0 || movedFromAssetPaths.Length > 0;
+		if( !hasElements && sw.ElapsedMilliseconds < 10 ) return;
+
+		var afterLine = $"\n{Colorfy.OpenTag( Colors.Console.Names )}   -";
+		var log = $"{"PermanentHashedSOImporter".Colorfy( Colors.Console.Types )}.{"OnPostprocessAllAssets".Colorfy( Colors.Console.Verbs )} took {$"{sw.ElapsedMilliseconds}ms".Colorfy( Colors.Console.Numbers )}";
+		if( importedAssets.Length > 0 ) log += $"\n{$"{importedAssets.Length.ToString().Colorfy( Colors.Console.Numbers )} imported assets:".Colorfy( Colors.Console.Verbs )}{afterLine}{string.Join( ",\n   -", importedAssets ).Colorfy( Colors.Console.Names )}{Colorfy.CloseTag()}";
+		if( deletedAssets.Length > 0 ) log += $"\n{$"{deletedAssets.Length.ToString().Colorfy( Colors.Console.Numbers )} deleted assets:".Colorfy( Colors.Console.Negation )}{afterLine}{string.Join( ",\n   -", deletedAssets ).Colorfy( Colors.Console.Names )}{Colorfy.CloseTag()}";
+		if( movedAssets.Length > 0 ) log += $"\n{$"{movedAssets.Length.ToString().Colorfy( Colors.Console.Numbers )} moved assets:".Colorfy( Colors.Console.Types )}{afterLine}{string.Join( ",\n   -", movedAssets ).Colorfy( Colors.Console.Names )}{Colorfy.CloseTag()}";
+		if( movedFromAssetPaths.Length > 0 ) log += $"\n{$"{movedFromAssetPaths.Length.ToString().Colorfy( Colors.Console.Numbers )} moved from asset paths:".Colorfy( Colors.Console.Interfaces )}{afterLine}{string.Join( ",\n   -", movedFromAssetPaths ).Colorfy( Colors.Console.Names )}{Colorfy.CloseTag()}";
+
+		Debug.Log( log );
 	}
 }

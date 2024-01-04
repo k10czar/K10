@@ -158,7 +158,7 @@ namespace K10.EditorGUIExtention
 					// 			$"GetFullPath( aPath ) = {System.IO.Path.GetFullPath( selectedAssetPath )}\n" +
 					// 			$" = {0}" );
 
-					ScriptableObjectUtils.CreateMenu( selectedAssetPath, prop, type, false, setRef );
+					EditorScriptableObjectUtils.CreateMenu( selectedAssetPath, prop, type, false, setRef );
 					
 					createdNewSO = true;
 				}
@@ -211,6 +211,47 @@ namespace K10.EditorGUIExtention
 				prop.serializedObject.ApplyModifiedProperties();
 			}
 		}
+
+		public static void InsideLayout<T>( SerializedProperty prop, string name = null, params GUILayoutOption[] options )
+		{
+			InsideLayout( prop, typeof(T), name, options );
+		}
+
+		public static void InsideLayout( SerializedProperty prop, System.Type type, string name = null, params GUILayoutOption[] options )
+		{
+			var obj = prop.objectReferenceValue;
+
+			GUILayout.BeginHorizontal();
+			if( obj == null )
+			{
+				var icon = IconCache.Get( "match" ).Texture;
+				var slh = EditorGUIUtility.singleLineHeight;
+				var create = GUILayout.Button( icon, new GUIStyle(), GUILayout.Width( ( icon.width / icon.height ) * slh ), GUILayout.Height( slh ) );
+				if( create )
+				{
+					var path = AssetDatabase.GetAssetPath( prop.serializedObject.targetObject );
+					EditorScriptableObjectUtils.CreateInsideMenu( path, prop, type, false, ( go ) => {
+						Debug.Log( $"prop.serializedObject: {prop.serializedObject.ToStringOrNull()} {prop.serializedObject.targetObject.NameOrNull()}" );
+						if( prop.serializedObject != null ) Debug.Log( $"prop.serializedObject.targetObject: {prop.serializedObject.targetObject.NameOrNull()}" );
+						var obj = prop.serializedObject;
+						obj.Update();
+						// obj.FindProperty(  ); // Get prop again from obj
+						prop.objectReferenceValue = go;
+						obj.ApplyModifiedProperties();
+					}, name );
+				}
+			}
+			
+			var newObj = EditorGUILayout.ObjectField( obj, type, false, options );
+			if( newObj != obj )
+			{
+				prop.objectReferenceValue = newObj;
+				prop.serializedObject.ApplyModifiedProperties();
+			}
+
+			GUILayout.EndHorizontal();
+		}
+
 
 		public static bool Layout<T>( SerializedProperty prop, string newFolderPath, params GUILayoutOption[] options ) where T : ScriptableObject
 		{
