@@ -1,5 +1,7 @@
 using UnityEngine;
 
+using static Colors.Console;
+
 public static class CastingExtensions
 {
     public static bool TrySetOn<T>( this object obj, ref T t, bool logFailAsError = false )
@@ -25,7 +27,7 @@ public static class CastingExtensions
             t = tt;
             return true;
         }
-        if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Colors.Console.Negation)} to parse as {typeof(T).FullName.Colorfy( Colors.Console.Types )} the {"object".Colorfy( Colors.Console.Types )}: {obj.ToStringOrNull().Colorfy( Colors.Console.Numbers)}" );
+        if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy(Negation)} to parse as {typeof(T).FullName.Colorfy(TypeName)} the {"object".Colorfy( TypeName )}: {obj.ToStringOrNull().Colorfy( Numbers)}" );
         return false;
     }
 
@@ -41,7 +43,7 @@ public static class CastingExtensions
                 t = st;
                 return true;
             }
-            catch( System.Exception exTK ) { if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Colors.Console.Negation)} to parse as {"( object, object )".Colorfy( Colors.Console.Types )} = ( {str.ToStringOrNull().Colorfy( Colors.Console.Numbers)} )\n{"exception".Colorfy( Colors.Console.Negation )} trying cast as {typeof(T).FullName.Colorfy( Colors.Console.Types )}: {exTK.Message}" ); }
+            catch( System.Exception exTK ) { if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Negation)} to parse as {"( object, object )".Colorfy( TypeName )} = ( {str.ToStringOrNull().Colorfy( Numbers)} )\n{"exception".Colorfy( Negation )} trying cast as {typeof(T).FullName.Colorfy( TypeName )}: {exTK.Message}" ); }
             return false;
         }
         return false;
@@ -57,7 +59,7 @@ public static class CastingExtensions
         }
         if( typeof( T ) == typeof( K ) )
         {
-            if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Colors.Console.Negation)} to parse as {$"( {typeof(T).FullName}, {typeof(K).FullName} )".Colorfy( Colors.Console.Types )} the {"object".Colorfy( Colors.Console.Types )}: {obj.ToStringOrNull().Colorfy( Colors.Console.Numbers)}" );
+            if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Negation)} to parse as {$"( {typeof(T).FullName}, {typeof(K).FullName} )".Colorfy( TypeName )} the {"object".Colorfy( TypeName )}: {obj.ToStringOrNull().Colorfy( Numbers)}" );
             return false;
         }
 
@@ -67,7 +69,7 @@ public static class CastingExtensions
             t = itt;
             return true;
         }
-        if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Colors.Console.Negation)} to parse as {$"( {typeof(T).FullName}, {typeof(K).FullName} )".Colorfy( Colors.Console.Types )} and {$"( {typeof(K).FullName}, {typeof(T).FullName} )".Colorfy( Colors.Console.Types )} the {"object".Colorfy( Colors.Console.Types )}: {obj.ToStringOrNull().Colorfy( Colors.Console.Numbers)}" );
+        if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Negation)} to parse as {$"( {typeof(T).FullName}, {typeof(K).FullName} )".Colorfy( TypeName )} and {$"( {typeof(K).FullName}, {typeof(T).FullName} )".Colorfy( TypeName )} the {"object".Colorfy( TypeName )}: {obj.ToStringOrNull().Colorfy( Numbers)}" );
         return false;
     }
 
@@ -84,11 +86,11 @@ public static class CastingExtensions
                 k = ok;
                 return true;
             }
-            catch( System.Exception exTK ) { if( logFailAsError ) exTkLog = $"{"exception".Colorfy( Colors.Console.Negation )} trying cast as {$"( {typeof(T).FullName}, {typeof(K).FullName} )".Colorfy( Colors.Console.Types )}:{exTK.Message}"; }
+            catch( System.Exception exTK ) { if( logFailAsError ) exTkLog = $"{"exception".Colorfy( Negation )} trying cast as {$"( {typeof(T).FullName}, {typeof(K).FullName} )".Colorfy( TypeName )}:{exTK.Message}"; }
             
             if( typeof( T ) == typeof( K ) )
             {
-                if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Colors.Console.Negation)} to parse as {$"( {typeof(T).FullName}, {typeof(K).FullName} )".Colorfy( Colors.Console.Types )} the {"( object, object )".Colorfy( Colors.Console.Types )}: {obj.ToStringOrNull().Colorfy( Colors.Console.Numbers)}\n{exTkLog}" );
+                if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Negation)} to parse as {$"( {typeof(T).FullName}, {typeof(K).FullName} )".Colorfy( TypeName )} the {"( object, object )".Colorfy( TypeName )}: {obj.ToStringOrNull().Colorfy( Numbers)}\n{exTkLog}" );
                 return false;
             }
 
@@ -101,11 +103,11 @@ public static class CastingExtensions
                 k = ok;
                 return true;
             }
-            catch( System.Exception exKT ) { if( logFailAsError ) exKtLog = $"{"exception".Colorfy( Colors.Console.Negation )} trying cast as {$"( {typeof(K).FullName}, {typeof(T).FullName} )".Colorfy( Colors.Console.Types )}: {exKT.Message}"; }
-            if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Colors.Console.Negation)} to parse as {"( object, object )".Colorfy( Colors.Console.Types )} = ( {o1.ToStringOrNull().Colorfy( Colors.Console.Numbers)}, {o2.ToStringOrNull().Colorfy( Colors.Console.Numbers)} )\n{exTkLog}\n{exKtLog}" );
+            catch( System.Exception exKT ) { if( logFailAsError ) exKtLog = $"{"exception".Colorfy( Negation )} trying cast as {$"( {typeof(K).FullName}, {typeof(T).FullName} )".Colorfy( TypeName )}: {exKT.Message}"; }
+            if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Negation)} to parse as {"( object, object )".Colorfy( TypeName )} = ( {o1.ToStringOrNull().Colorfy( Numbers)}, {o2.ToStringOrNull().Colorfy( Numbers)} )\n{exTkLog}\n{exKtLog}" );
             return false;
         }
-        if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Colors.Console.Negation)} to cast {obj.ToStringOrNull().Colorfy( Colors.Console.Numbers)} as {"( object, object )".Colorfy( Colors.Console.Types )}" );
+        if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Negation)} to cast {obj.ToStringOrNull().Colorfy( Numbers)} as {"( object, object )".Colorfy( TypeName )}" );
         return false;
     }
 
@@ -126,11 +128,11 @@ public static class CastingExtensions
                 k = sk;
                 return true;
             }
-            catch( System.Exception exTK ) { if( logFailAsError ) exTkLog = $"{"exception".Colorfy( Colors.Console.Negation )} trying cast as {$"( {typeof(T).FullName}, {typeof(K).FullName} )".Colorfy( Colors.Console.Types )}:{exTK.Message}"; }
+            catch( System.Exception exTK ) { if( logFailAsError ) exTkLog = $"{"exception".Colorfy( Negation )} trying cast as {$"( {typeof(T).FullName}, {typeof(K).FullName} )".Colorfy( TypeName )}:{exTK.Message}"; }
             
             if( typeof( T ) == typeof( K ) )
             {
-                if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Colors.Console.Negation)} to parse as {$"( {typeof(T).FullName}, {typeof(K).FullName} )".Colorfy( Colors.Console.Types )} the {"( string, string )".Colorfy( Colors.Console.Types )}: {obj.ToStringOrNull().Colorfy( Colors.Console.Numbers)}\n{exTkLog}" );
+                if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Negation)} to parse as {$"( {typeof(T).FullName}, {typeof(K).FullName} )".Colorfy( TypeName )} the {"( string, string )".Colorfy( TypeName )}: {obj.ToStringOrNull().Colorfy( Numbers)}\n{exTkLog}" );
                 return false;
             }
 
@@ -143,11 +145,11 @@ public static class CastingExtensions
                 k = sk;
                 return true;
             }
-            catch( System.Exception exKT ) { if( logFailAsError ) exKtLog = $"{"exception".Colorfy( Colors.Console.Negation )} trying cast as {$"( {typeof(K).FullName}, {typeof(T).FullName} )".Colorfy( Colors.Console.Types )}: {exKT.Message}"; }
-            if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Colors.Console.Negation)} to parse as {"( object, object )".Colorfy( Colors.Console.Types )} = ( {s1.ToStringOrNull().Colorfy( Colors.Console.Numbers)}, {s2.ToStringOrNull().Colorfy( Colors.Console.Numbers)} )\n{exTkLog}\n{exKtLog}" );
+            catch( System.Exception exKT ) { if( logFailAsError ) exKtLog = $"{"exception".Colorfy( Negation )} trying cast as {$"( {typeof(K).FullName}, {typeof(T).FullName} )".Colorfy( TypeName )}: {exKT.Message}"; }
+            if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Negation)} to parse as {"( object, object )".Colorfy( TypeName )} = ( {s1.ToStringOrNull().Colorfy( Numbers)}, {s2.ToStringOrNull().Colorfy( Numbers)} )\n{exTkLog}\n{exKtLog}" );
             return false;
         }
-        if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Colors.Console.Negation)} to cast {obj.ToStringOrNull().Colorfy( Colors.Console.Numbers)} as {"( string, string )".Colorfy( Colors.Console.Types )}" );
+        if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Negation)} to cast {obj.ToStringOrNull().Colorfy( Numbers)} as {"( string, string )".Colorfy( TypeName )}" );
         return false;
     }
 }

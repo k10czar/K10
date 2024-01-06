@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Mono.Cecil;
 using UnityEngine;
+
+using static Colors.Console;
 
 public static class ScriptableObjectUtils
 {
@@ -62,7 +60,7 @@ public static class ScriptableObjectUtils
 
 	public static void CreationObjectInsideAssetFile( string selectedAssetPath, string v )
 	{
-		throw new NotImplementedException();
+		throw new System.NotImplementedException();
 	}
 
 	public static void CreationObjectAndFile( System.Type type, string newPath, bool focus, System.Action<ScriptableObject> OnObjectCreated = null )
@@ -84,7 +82,7 @@ public static class ScriptableObjectUtils
 	{
 		ScriptableObject asset = ScriptableObject.CreateInstance(type);
 		var so = SetSO( ref newPath, focus, asset, saveAndRefresh );
-        Debug.Log( $"🏗 {"Created".Colorfy( Colors.Console.Verbs )} new {type.FullName.Colorfy( Colors.Console.Types )} at {newPath.Colorfy( Colors.Console.Keyword )}" );
+        Debug.Log( $"🏗 {"Created".Colorfy( Verbs )} new {type.FullName.Colorfy( TypeName )} at {newPath.Colorfy( Keyword )}" );
 		return so;
 	}
 
@@ -92,7 +90,7 @@ public static class ScriptableObjectUtils
 	{
 		T asset = ScriptableObject.CreateInstance<T>();
 		var so = SetSO( ref newPath, focus, asset, saveAndRefresh );
-        Debug.Log( $"🏗 {"Created".Colorfy( Colors.Console.Verbs )} new {typeof(T).FullName.Colorfy( Colors.Console.Types )} at {newPath.Colorfy( Colors.Console.Keyword )}" );
+        Debug.Log( $"🏗 {"Created".Colorfy( Verbs )} new {typeof(T).FullName.Colorfy( TypeName )} at {newPath.Colorfy( Keyword )}" );
 		return so;
 	}
 
@@ -104,7 +102,7 @@ public static class ScriptableObjectUtils
 		var newSO = ScriptableObjectUtils.Create<T>( path, focus, saveAndRefresh );
         return newSO;
 #else //UNITY_EDITOR
-		Debug.Log( $"{"SetInsideSO".Colorfy( Colors.Console.Verbs )}<{typeof(T).FullName.Colorfy( Colors.Console.Types )}>( ref {rootFilePath.Colorfy(Colors.Console.Names)} ) {ConsoleMessage.ONLY_EDITOR}" );
+		Debug.Log( $"{"SetInsideSO".Colorfy( Verbs )}<{typeof(T).FullName.Colorfy( Console.Types )}>( ref {rootFilePath.Colorfy(Names)} ) {ConsoleMessage.ONLY_EDITOR}" );
 		return null;
 #endif //UNITY_EDITOR
     }
@@ -126,7 +124,7 @@ public static class ScriptableObjectUtils
 		if( saveAndRefresh ) SaveAssets();
 		if( focus ) FocusObject( asset );
 #else //UNITY_EDITOR
-		Debug.Log( $"{"SetInsideSO".Colorfy( Colors.Console.Verbs )}<{typeof(T).FullName.Colorfy( Colors.Console.Types )}>( ref {rootFilePath.Colorfy(Colors.Console.Names)} ) {ConsoleMessage.ONLY_EDITOR}" );
+		Debug.Log( $"{"SetInsideSO".Colorfy( Verbs )}<{typeof(T).FullName.Colorfy( Console.Types )}>( ref {rootFilePath.Colorfy(Names)} ) {ConsoleMessage.ONLY_EDITOR}" );
 		var asset = default(T);
 #endif //UNITY_EDITOR
 
@@ -140,12 +138,12 @@ public static class ScriptableObjectUtils
 		newPath = newPath.SanitizePathName();
 		AssetDatabaseUtils.RequestPath( newPath );
 		string assetPathAndName = UnityEditor.AssetDatabase.GenerateUniqueAssetPath( newPath + ".asset" );
-		Debug.Log( $"{"Try".Colorfy( Colors.Console.Verbs )} create({typeof(T).FullName.Colorfy( Colors.Console.Types )}) asset at {assetPathAndName.Colorfy(Colors.Console.Interfaces)} from {newPath.Colorfy(Colors.Console.Names)}.asset" );
+		Debug.Log( $"{"Try".Colorfy( Verbs )} create({typeof(T).FullName.Colorfy( TypeName )}) asset at {assetPathAndName.Colorfy(Interfaces)} from {newPath.Colorfy(Names)}.asset" );
 		UnityEditor.AssetDatabase.CreateAsset( asset, assetPathAndName );
 		if( saveAndRefresh ) SaveAssets();
 		if( focus ) FocusObject( asset );
 #else //UNITY_EDITOR
-		Debug.Log( $"{"SetSO".Colorfy( Colors.Console.Verbs )}<{typeof(T).FullName.Colorfy( Colors.Console.Types )}>( ref {newPath.Colorfy(Colors.Console.Names)} ) {ConsoleMessage.ONLY_EDITOR}" );
+		Debug.Log( $"{"SetSO".Colorfy( Verbs )}<{typeof(T).FullName.Colorfy( Console.Types )}>( ref {newPath.Colorfy(Names)} ) {ConsoleMessage.ONLY_EDITOR}" );
 		var asset = default(T);
 #endif //UNITY_EDITOR
 		return asset;

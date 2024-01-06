@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 
+using static Colors.Console;
+
 public sealed class PermanentHashedSOImporter : AssetPostprocessor
 {
 	static void OnPostprocessAllAssets( string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths )
@@ -54,12 +56,12 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 		var hasElements = importedAssets.Length > 0 || deletedAssets.Length > 0 || movedAssets.Length > 0 || movedFromAssetPaths.Length > 0;
 		if( !hasElements && sw.ElapsedMilliseconds < 10 ) return;
 
-		var afterLine = $"\n{Colorfy.OpenTag( Colors.Console.Names )}   -";
-		var log = $"{"PermanentHashedSOImporter".Colorfy( Colors.Console.Types )}.{"OnPostprocessAllAssets".Colorfy( Colors.Console.Verbs )} took {$"{sw.ElapsedMilliseconds}ms".Colorfy( Colors.Console.Numbers )}";
-		if( importedAssets.Length > 0 ) log += $"\n{$"{importedAssets.Length.ToString().Colorfy( Colors.Console.Numbers )} imported assets:".Colorfy( Colors.Console.Verbs )}{afterLine}{string.Join( ",\n   -", importedAssets ).Colorfy( Colors.Console.Names )}{Colorfy.CloseTag()}";
-		if( deletedAssets.Length > 0 ) log += $"\n{$"{deletedAssets.Length.ToString().Colorfy( Colors.Console.Numbers )} deleted assets:".Colorfy( Colors.Console.Negation )}{afterLine}{string.Join( ",\n   -", deletedAssets ).Colorfy( Colors.Console.Names )}{Colorfy.CloseTag()}";
-		if( movedAssets.Length > 0 ) log += $"\n{$"{movedAssets.Length.ToString().Colorfy( Colors.Console.Numbers )} moved assets:".Colorfy( Colors.Console.Types )}{afterLine}{string.Join( ",\n   -", movedAssets ).Colorfy( Colors.Console.Names )}{Colorfy.CloseTag()}";
-		if( movedFromAssetPaths.Length > 0 ) log += $"\n{$"{movedFromAssetPaths.Length.ToString().Colorfy( Colors.Console.Numbers )} moved from asset paths:".Colorfy( Colors.Console.Interfaces )}{afterLine}{string.Join( ",\n   -", movedFromAssetPaths ).Colorfy( Colors.Console.Names )}{Colorfy.CloseTag()}";
+		var afterLine = $"\n{Colorfy.OpenTag( Names )}   -";
+		var log = $"{"PermanentHashedSOImporter".Colorfy( TypeName )}.{"OnPostprocessAllAssets".Colorfy( Verbs )} took {$"{sw.ElapsedMilliseconds}ms".Colorfy( Numbers )}";
+		if( importedAssets.Length > 0 ) log += $"\n{$"{importedAssets.Length.ToString().Colorfy( Numbers )} imported assets:".Colorfy( Verbs )}{afterLine}{string.Join( ",\n   -", importedAssets ).Colorfy( Names )}{Colorfy.CloseTag()}";
+		if( deletedAssets.Length > 0 ) log += $"\n{$"{deletedAssets.Length.ToString().Colorfy( Numbers )} deleted assets:".Colorfy( Negation )}{afterLine}{string.Join( ",\n   -", deletedAssets ).Colorfy( Names )}{Colorfy.CloseTag()}";
+		if( movedAssets.Length > 0 ) log += $"\n{$"{movedAssets.Length.ToString().Colorfy( Numbers )} moved assets:".Colorfy( TypeName )}{afterLine}{string.Join( ",\n   -", movedAssets ).Colorfy( Names )}{Colorfy.CloseTag()}";
+		if( movedFromAssetPaths.Length > 0 ) log += $"\n{$"{movedFromAssetPaths.Length.ToString().Colorfy( Numbers )} moved from asset paths:".Colorfy( Interfaces )}{afterLine}{string.Join( ",\n   -", movedFromAssetPaths ).Colorfy( Names )}{Colorfy.CloseTag()}";
 
 		Debug.Log( log );
 	}

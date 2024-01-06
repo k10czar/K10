@@ -2,20 +2,22 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+using static Colors.Console;
+
 public static class AssetDatabaseUtils
 {
-    static readonly string OP = "(".Colorfy( Colors.Console.Punctuations );
-    static readonly string CP = ")".Colorfy( Colors.Console.Punctuations );
-    static readonly string OSB = "[".Colorfy( Colors.Console.Punctuations );
-    static readonly string CSB = "]".Colorfy( Colors.Console.Punctuations );
-    static readonly string OAB = "<".Colorfy( Colors.Console.Punctuations );
-    static readonly string CAB = ">".Colorfy( Colors.Console.Punctuations );
-    static readonly string DOT = ".".Colorfy( Colors.Console.Punctuations );
+    static readonly string OP = "(".Colorfy( Punctuations );
+    static readonly string CP = ")".Colorfy( Punctuations );
+    static readonly string OSB = "[".Colorfy( Punctuations );
+    static readonly string CSB = "]".Colorfy( Punctuations );
+    static readonly string OAB = "<".Colorfy( Punctuations );
+    static readonly string CAB = ">".Colorfy( Punctuations );
+    static readonly string DOT = ".".Colorfy( Punctuations );
 
     public static void RequestPath( string path )
     {
 #if UNITY_EDITOR
-        Debug.Log( $"{"RequestPath".Colorfy( Colors.Console.Verbs )}( {path.Colorfy( Colors.Console.Names )} )" );
+        Debug.Log( $"{"RequestPath".Colorfy( Verbs )}( {path.Colorfy( Names )} )" );
         var last = -1;
         for( int i = 0; i < path.Length; i++ )
         {
@@ -28,13 +30,13 @@ public static class AssetDatabaseUtils
                 if( !UnityEditor.AssetDatabase.IsValidFolder( path.Substring( 0, i ) ) )
                 {
                     UnityEditor.AssetDatabase.CreateFolder( root, folder );
-                    Debug.Log( $"{"CreateFolder".Colorfy( Colors.Console.Verbs )} folder at {root.Colorfy( Colors.Console.Names )}" );
+                    Debug.Log( $"{"CreateFolder".Colorfy( Verbs )} folder at {root.Colorfy( Names )}" );
                 }
                 last = i;
             }
         }
 #else //UNITY_EDITOR
-        Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Colors.Lime )}{CP} {ConsoleMessage.ONLY_EDITOR}" );
+        Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Keyword )}{CP} {ConsoleMessage.ONLY_EDITOR}" );
         return null;
 #endif //UNITY_EDITOR
     }
@@ -48,13 +50,13 @@ public static class AssetDatabaseUtils
             var SOpath = UnityEditor.AssetDatabase.GUIDToAssetPath( assetNames[i] );
             if( !SOpath.AsPathIsFilename( name ) ) continue;
             var element = UnityEditor.AssetDatabase.LoadAssetAtPath<T>( SOpath );
-		    if( debug ) Debug.Log( $"{"AssetDatabaseUtils".Colorfy( Colors.Console.Types )}{DOT}{"GetFirst".Colorfy( Colors.Console.Verbs )}{OAB}{typeof(T).Name.Colorfy( Colors.Console.Types )}{CAB} at {SOpath.Colorfy( Colors.ArcticLime )}" );
+		    if( debug ) Debug.Log( $"{"AssetDatabaseUtils".Colorfy( TypeName )}{DOT}{"GetFirst".Colorfy( Verbs )}{OAB}{typeof(T).Name.Colorfy( TypeName )}{CAB} at {SOpath.Colorfy( Names )}" );
             return element;
         }
-		if( debug ) Debug.Log( $"{"AssetDatabaseUtils".Colorfy( Colors.Console.Types )}{DOT}{"GetFirst".Colorfy( Colors.Console.Verbs )}{OAB}{typeof(T).Name.Colorfy( Colors.Console.Types )}{CAB}: {"NOT FOUND".Colorfy( Colors.Console.Negation )}" );
+		if( debug ) Debug.Log( $"{"AssetDatabaseUtils".Colorfy( TypeName )}{DOT}{"GetFirst".Colorfy( Verbs )}{OAB}{typeof(T).Name.Colorfy( TypeName )}{CAB}: {"NOT FOUND".Colorfy( Negation )}" );
         return null;
 #else //UNITY_EDITOR
-        Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Colors.Lime )}{CP} {ConsoleMessage.ONLY_EDITOR}" );
+        Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Keyword )}{CP} {ConsoleMessage.ONLY_EDITOR}" );
         return null;
 #endif //UNITY_EDITOR
     }
@@ -71,10 +73,10 @@ public static class AssetDatabaseUtils
             if( !SOpath.AsPathIsFilename( name ) ) continue;
             collection.Add( element );
         }
-		if( debug ) Debug.Log( $"{"AssetDatabaseUtils".Colorfy( Colors.Console.Types )}{DOT}{"GetAll".Colorfy( Colors.Console.Verbs )}{OAB}{typeof(T).Name.Colorfy( Colors.Console.Types )}{CAB} found {collection.Count}:\n{string.Join( ", ", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) ).Colorfy( Colors.ArcticLime )}" );
+		if( debug ) Debug.Log( $"{"AssetDatabaseUtils".Colorfy( TypeName )}{DOT}{"GetAll".Colorfy( Verbs )}{OAB}{typeof(T).Name.Colorfy( TypeName )}{CAB} found {collection.Count}:\n{string.Join( ", ", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) ).Colorfy( Names )}" );
         return collection.ToArray();
 #else //UNITY_EDITOR
-        Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Colors.Lime )}{CP} {ConsoleMessage.ONLY_EDITOR}" );
+        Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Keyword )}{CP} {ConsoleMessage.ONLY_EDITOR}" );
         return null;
 #endif //UNITY_EDITOR
     }
@@ -90,10 +92,10 @@ public static class AssetDatabaseUtils
             var element = UnityEditor.AssetDatabase.LoadAssetAtPath<T>( SOpath );
             collection[ i ] = element;
         }
-		if( debug ) Debug.Log( $"{"AssetDatabaseUtils".Colorfy( Colors.Console.Types )}{DOT}{"GetAll".Colorfy( Colors.Console.Verbs )}{OAB}{typeof(T).Name.Colorfy( Colors.Console.Types )}{CAB} found {collection.Length.ToString().Colorfy( Colors.Console.Numbers )}:\n{string.Join( ", ", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) ).Colorfy( Colors.ArcticLime )}" );
+		if( debug ) Debug.Log( $"{"AssetDatabaseUtils".Colorfy( TypeName )}{DOT}{"GetAll".Colorfy( Verbs )}{OAB}{typeof(T).Name.Colorfy( TypeName )}{CAB} found {collection.Length.ToString().Colorfy( Numbers )}:\n{string.Join( ", ", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) ).Colorfy( Colors.ArcticLime )}" );
         return collection;
 #else //UNITY_EDITOR
-        Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Colors.Lime )}{CP} {ConsoleMessage.ONLY_EDITOR}" );
+        Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Keyword )}{CP} {ConsoleMessage.ONLY_EDITOR}" );
         return null;
 #endif //UNITY_EDITOR
     }
@@ -109,10 +111,10 @@ public static class AssetDatabaseUtils
             var element = UnityEditor.AssetDatabase.LoadAssetAtPath<ScriptableObject>( SOpath );
             collection[ i ] = element;
         }
-		if( debug ) Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Colors.Lime )}{CP} found {collection.Length.ToString().Colorfy( Colors.Console.Numbers )}:\n   -{string.Join( ",\n   -", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) )}" );
+		if( debug ) Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Keyword )}{CP} found {collection.Length.ToString().Colorfy( Numbers )}:\n   -{string.Join( ",\n   -", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) )}" );
         return collection;
 #else //UNITY_EDITOR
-        Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Colors.Lime )}{CP} {ConsoleMessage.ONLY_EDITOR}" );
+        Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Keyword )}{CP} {ConsoleMessage.ONLY_EDITOR}" );
         return null;
 #endif //UNITY_EDITOR
     }

@@ -9,6 +9,19 @@ public static class StringExtension
     public static string SanitizeFileName( this string fileName ) => RemoveChars( fileName, INVALID_FILENAME_CHARS );
     public static string SanitizePathName( this string fileName ) => RemoveChars( fileName, INVALID_PATH_CHARS );
 
+    public static string[] Numerated<T>( this IEnumerable<T> objs )
+    {
+        var count = objs.Count();
+        var strs = new string[count];
+        var i = 0;
+        foreach( var obj in objs )
+        {
+            strs[i] = $"{i}) {obj.ToStringOrNull()}";
+            i++;
+        }
+        return strs;
+    }
+
     public static string RemoveChars( this string fileName, HashSet<char> charsToRemove )
     {
         // return new string( fileName.Where( c => !charsToRemove.Contains(c) ) );
