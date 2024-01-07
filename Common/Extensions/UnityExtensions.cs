@@ -483,6 +483,7 @@ public static class K10UnityExtensions
 
 	const string NULL_STRING = "NULL";
 	[MethodImpl( AggrInline )] public static string NameOrNull( this Object obj, string nullString = NULL_STRING ) => obj != null ? obj.name : nullString;
+	[MethodImpl( AggrInline )] public static string ToStringColored( this bool boolValue ) => boolValue.ToString().Colorfy( boolValue ? Colors.Console.Numbers : Colors.Console.Negation );
 	[MethodImpl( AggrInline )] public static string ToStringColored( this object obj, Color valueColor ) => obj.ToString().Colorfy(valueColor);
 	[MethodImpl( AggrInline )] public static string ToStringOrNull( this object obj, string nullString = NULL_STRING ) => obj != null ? obj.ToString() : nullString;
 	[MethodImpl( AggrInline )] public static string ToStringOrNullColored( this object obj, Color valueColor, string nullString = NULL_STRING ) => obj != null ? obj.ToString().Colorfy(valueColor) : nullString.Colorfy(Colors.Console.Negation);

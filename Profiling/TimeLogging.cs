@@ -1,15 +1,14 @@
-using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
+using UnityEngine;
 
 using static Colors.Console;
-using UnityEngine;
 
 public class TimeLogging<T>
 {
 	Log _currentLog;
-	Log _defaultLog = new Log( UnityEngine.Time.unscaledTime, "Default" );
+	Log _defaultLog = new Log( Time.unscaledTime, "Default" );
 	List<Log> _loadingLogs = new List<Log>();
 	Stopwatch _logMs = new Stopwatch();
 	double _totalLog = 0;
@@ -27,7 +26,7 @@ public class TimeLogging<T>
 	{
 		_logMs.Reset();
 		if( _currentLog != null && _onLogEnd.HasListeners ) _onLogEnd.Trigger( $"{"StartLog beyond old".Colorfy(Negation)} {_currentLog}" );
-		_currentLog = new Log( UnityEngine.Time.unscaledTime, name );
+		_currentLog = new Log( Time.unscaledTime, name );
 		_logMs.Stop();
 	}
 
@@ -83,7 +82,7 @@ public class TimeLogging<T>
 		_logMs.Start();
 		var log = ( _currentLog ?? _defaultLog );
 		log.EndSection( cat, key );
-		if( _onLogSectionEnd.HasListeners ) _onLogSectionEnd.Trigger( $"{"End loading log section:".Colorfy(Info)} {cat}{( ( key != null ) ? $" {key}" : "" )}\n{log.GetData( cat )}" );
+		if( _onLogSectionEnd.HasListeners ) _onLogSectionEnd.Trigger( $"{"End loading log section:".Colorfy(Info)} {cat.ToStringOrNullColored(Keyword)}{( ( key != null ) ? $" {key.ToStringOrNullColored(EventName)}" : "" )}\n{log.GetData( cat )}" );
 		_logMs.Stop();
 	}
 
@@ -240,17 +239,18 @@ public class TimeLogging<T>
 
 			public static string EndColorTag() => ( _colored ? "</color>" : "" );
 			public static string StartColorTag( string color ) => ( _colored ? $"<color=#{color}>" : "" );
+			public static string StartColorTag( Color color ) => StartColorTag( color.ToHexRGB() );
 
 			public string LogWithPercentage( float totalMs )
 			{
-				var mins = UnityEngine.Mathf.FloorToInt(_startTime / 60);
-				var secs = UnityEngine.Mathf.FloorToInt(_startTime % 60);
-				var ms = UnityEngine.Mathf.FloorToInt((_startTime * 1000) % 1000);
+				var mins = Mathf.FloorToInt(_startTime / 60);
+				var secs = Mathf.FloorToInt(_startTime % 60);
+				var ms = Mathf.FloorToInt((_startTime * 1000) % 1000);
 
 				var endTime = _startTime + (_duration / 1000);
-				var toMins = UnityEngine.Mathf.FloorToInt(endTime / 60);
-				var toSecs = UnityEngine.Mathf.FloorToInt(endTime % 60);
-				var toMs = UnityEngine.Mathf.FloorToInt((endTime * 1000) % 1000);
+				var toMins = Mathf.FloorToInt(endTime / 60);
+				var toSecs = Mathf.FloorToInt(endTime % 60);
+				var toMs = Mathf.FloorToInt((endTime * 1000) % 1000);
 
 				return $"{GetLogPrefix(_watch != null)}{_duration}ms{EndColorTag()} ({$"{(DurationMs / totalMs):P1}".ToStringColored( Keyword )}) @ ( {mins:N0}:{secs:D2}.{ms:D4} -> {toMins:N0}:{toSecs:D2}.{toMs:D4} [{_startTime} -> {endTime}] )";
 			}
@@ -259,8 +259,8 @@ public class TimeLogging<T>
             {
                 if( _colored )
                 {
-                    if( running ) return $"{StartColorTag( ColorUtility.ToHtmlStringRGB( Negation ) )}®{EndColorTag()}{StartColorTag( ColorUtility.ToHtmlStringRGB( Names ))}";
-                    else return StartColorTag( ColorUtility.ToHtmlStringRGB( Numbers ) );
+                    if( running ) return $"{StartColorTag( Negation )}®{EndColorTag()}{StartColorTag( Names )}";
+                    else return StartColorTag( Numbers );
                 }
 
                 if( running ) return "®";
@@ -269,14 +269,14 @@ public class TimeLogging<T>
 
 			public override string ToString()
 			{
-				var mins = UnityEngine.Mathf.FloorToInt(_startTime / 60);
-				var secs = UnityEngine.Mathf.FloorToInt(_startTime % 60);
-				var ms = UnityEngine.Mathf.FloorToInt((_startTime * 1000) % 1000);
+				var mins = Mathf.FloorToInt(_startTime / 60);
+				var secs = Mathf.FloorToInt(_startTime % 60);
+				var ms = Mathf.FloorToInt((_startTime * 1000) % 1000);
 
 				var endTime = _startTime + (_duration / 1000);
-				var toMins = UnityEngine.Mathf.FloorToInt(endTime / 60);
-				var toSecs = UnityEngine.Mathf.FloorToInt(endTime % 60);
-				var toMs = UnityEngine.Mathf.FloorToInt((endTime * 1000) % 1000);
+				var toMins = Mathf.FloorToInt(endTime / 60);
+				var toSecs = Mathf.FloorToInt(endTime % 60);
+				var toMs = Mathf.FloorToInt((endTime * 1000) % 1000);
 
 				return $"{GetLogPrefix(_watch != null)}{_duration}ms{EndColorTag()}@( {mins:N0}:{secs:D2}.{ms:D4} -> {toMins:N0}:{toSecs:D2}.{toMs:D4} [{_startTime} -> {endTime}] )";
 			}

@@ -72,14 +72,25 @@ public static class ColorExtention
 	#region Extention
 	public static ColorHSV ToHSV( this Color color ) { return new ColorHSV( color ); }
 
-	public static string ToHex( this Color color ) { return ToHex( color, false ); }
-	public static string ToHex( this Color color, bool includeHash )
+	public static string ToHex( this Color color, bool includeHash = false )
 	{
 		string red = Mathf.FloorToInt( color.r * 255 ).ToString( "X2" );
 		string green = Mathf.FloorToInt( color.g * 255 ).ToString( "X2" );
 		string blue = Mathf.FloorToInt( color.b * 255 ).ToString( "X2" );
 		string alpha = Mathf.FloorToInt( color.a * 255 ).ToString( "X2" );
 		return ( includeHash ? "#" : "" ) + red + green + blue + alpha;
+	}
+
+	public static string ToHexRGB( this Color color, bool includeHash = true )
+	{
+		if( includeHash ) return $"#{ColorUtility.ToHtmlStringRGB( color )}";
+		return ColorUtility.ToHtmlStringRGB( color );
+	}
+
+	public static string ToHexRGBA( this Color color, bool includeHash = true )
+	{
+		if( includeHash ) return $"#{ColorUtility.ToHtmlStringRGBA( color )}";
+		return ColorUtility.ToHtmlStringRGBA( color );
 	}
 	#endregion Extention
 
