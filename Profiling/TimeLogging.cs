@@ -47,7 +47,7 @@ public class TimeLogging<T>
 		_currentLog = null;
 
 		_logMs.Stop();
-		UnityEngine.Debug.Log( $"Log end with {_logMs.ElapsedMilliseconds}ms of overhead" );
+		UnityEngine.Debug.Log( $"{"Log".Colorfy(Info)} end with {$"{_logMs.ElapsedMilliseconds}ms".Colorfy(Numbers)} of {"overhead".Colorfy(Negation)}" );
 		_logMs.Reset();
 	}
 
