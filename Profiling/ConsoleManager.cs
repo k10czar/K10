@@ -63,7 +63,7 @@ public class ConsoleManager
         }
 
         _registeredConsoles[keyCode] = console;
-        if( _debugLogs ) Debug.Log( $"{"Console".Colorfy(Keyword)} {console.ToStringOrNullColored(TypeName)} registrated with {keyCode.ToStringColored(Numbers)}" );
+        if( _debugLogs ) Debug.Log( $"{"Console".Colorfy(Keyword)} {console.ToStringOrNullColored(TypeName)} registred with {keyCode.ToStringColored(Numbers)}" );
         _isDirty = true;
     }
 
