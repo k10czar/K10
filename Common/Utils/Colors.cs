@@ -13,6 +13,7 @@ public static class Colors
 
     public static class Console
     {
+        public static readonly Color Danger = Crimson;
         public static readonly Color Negation = OrangeRed;
         public static readonly Color Interfaces = Coral;
         public static readonly Color TypeName = Khaki;

@@ -102,7 +102,7 @@ public static class ScriptableObjectUtils
 		var newSO = ScriptableObjectUtils.Create<T>( path, focus, saveAndRefresh );
         return newSO;
 #else //UNITY_EDITOR
-		Debug.Log( $"{"SetInsideSO".Colorfy( Verbs )}<{typeof(T).FullName.Colorfy( Console.Types )}>( ref {rootFilePath.Colorfy(Names)} ) {ConsoleMessage.ONLY_EDITOR}" );
+		Debug.Log( $"CreateSibiling<{typeof(T).FullName}>( {sibiling.NameOrNull()}, {name} ) {ConsoleMessage.ONLY_EDITOR}" );
 		return null;
 #endif //UNITY_EDITOR
     }
@@ -124,8 +124,7 @@ public static class ScriptableObjectUtils
 		if( saveAndRefresh ) SaveAssets();
 		if( focus ) FocusObject( asset );
 #else //UNITY_EDITOR
-		Debug.Log( $"{"SetInsideSO".Colorfy( Verbs )}<{typeof(T).FullName.Colorfy( Console.Types )}>( ref {rootFilePath.Colorfy(Names)} ) {ConsoleMessage.ONLY_EDITOR}" );
-		var asset = default(T);
+		Debug.Log( $"SetInsideSO<{typeof(T).FullName}>( {rootFilePath} ) {ConsoleMessage.ONLY_EDITOR}" );
 #endif //UNITY_EDITOR
 
 		return asset;
@@ -143,8 +142,7 @@ public static class ScriptableObjectUtils
 		if( saveAndRefresh ) SaveAssets();
 		if( focus ) FocusObject( asset );
 #else //UNITY_EDITOR
-		Debug.Log( $"{"SetSO".Colorfy( Verbs )}<{typeof(T).FullName.Colorfy( Console.Types )}>( ref {newPath.Colorfy(Names)} ) {ConsoleMessage.ONLY_EDITOR}" );
-		var asset = default(T);
+		Debug.Log( $"SetSO<{typeof(T).FullName}>( ref {newPath} ) {ConsoleMessage.ONLY_EDITOR}" );
 #endif //UNITY_EDITOR
 		return asset;
 	}

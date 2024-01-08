@@ -36,7 +36,7 @@ public static class AssetDatabaseUtils
             }
         }
 #else //UNITY_EDITOR
-        Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Keyword )}{CP} {ConsoleMessage.ONLY_EDITOR}" );
+        Debug.LogError( $"RequestPath( {path} ) {ConsoleMessage.ONLY_EDITOR}" );
         return null;
 #endif //UNITY_EDITOR
     }
@@ -56,7 +56,7 @@ public static class AssetDatabaseUtils
 		if( debug ) Debug.Log( $"{"AssetDatabaseUtils".Colorfy( TypeName )}{DOT}{"GetFirst".Colorfy( Verbs )}{OAB}{typeof(T).Name.Colorfy( TypeName )}{CAB}: {"NOT FOUND".Colorfy( Negation )}" );
         return null;
 #else //UNITY_EDITOR
-        Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Keyword )}{CP} {ConsoleMessage.ONLY_EDITOR}" );
+        Debug.LogError( $"AssetDatabaseUtils.GetFirst<{typeof(T)}>( {name} ) {ConsoleMessage.ONLY_EDITOR}" );
         return null;
 #endif //UNITY_EDITOR
     }
@@ -76,7 +76,7 @@ public static class AssetDatabaseUtils
 		if( debug ) Debug.Log( $"{"AssetDatabaseUtils".Colorfy( TypeName )}{DOT}{"GetAll".Colorfy( Verbs )}{OAB}{typeof(T).Name.Colorfy( TypeName )}{CAB} found {collection.Count}:\n{string.Join( ", ", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) ).Colorfy( Names )}" );
         return collection.ToArray();
 #else //UNITY_EDITOR
-        Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Keyword )}{CP} {ConsoleMessage.ONLY_EDITOR}" );
+        Debug.Log( $"AssetDatabaseUtils.GetAll<{typeof(T)}>( {name} ) {ConsoleMessage.ONLY_EDITOR}" );
         return null;
 #endif //UNITY_EDITOR
     }
@@ -95,7 +95,7 @@ public static class AssetDatabaseUtils
 		if( debug ) Debug.Log( $"{"AssetDatabaseUtils".Colorfy( TypeName )}{DOT}{"GetAll".Colorfy( Verbs )}{OAB}{typeof(T).Name.Colorfy( TypeName )}{CAB} found {collection.Length.ToString().Colorfy( Numbers )}:\n{string.Join( ", ", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) ).Colorfy( Colors.ArcticLime )}" );
         return collection;
 #else //UNITY_EDITOR
-        Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Keyword )}{CP} {ConsoleMessage.ONLY_EDITOR}" );
+        Debug.Log( $"AssetDatabaseUtils.GetAll<{typeof(T)}>() {ConsoleMessage.ONLY_EDITOR}" );
         return null;
 #endif //UNITY_EDITOR
     }
@@ -114,7 +114,7 @@ public static class AssetDatabaseUtils
 		if( debug ) Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Keyword )}{CP} found {collection.Length.ToString().Colorfy( Numbers )}:\n   -{string.Join( ",\n   -", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) )}" );
         return collection;
 #else //UNITY_EDITOR
-        Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Keyword )}{CP} {ConsoleMessage.ONLY_EDITOR}" );
+        Debug.Log( $"AssetDatabaseUtils.GetAll( {type} ) {ConsoleMessage.ONLY_EDITOR}" );
         return null;
 #endif //UNITY_EDITOR
     }

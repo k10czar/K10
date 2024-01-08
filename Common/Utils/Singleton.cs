@@ -2,6 +2,8 @@ using UnityEngine;
 using System.Collections;
 using System;
 
+using static Colors.Console;
+
 #if UNITY_EDITOR
 [ExecuteInEditMode]
 public class OnlyOnPlaymodeObject : MonoBehaviour
@@ -31,11 +33,7 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 				var stopwatch = new System.Diagnostics.Stopwatch();
 				stopwatch.Start();
 				var candidate = (T)MonoBehaviour.FindObjectOfType( typeof( T ) );
-#if UNITY_EDITOR
-				Debug.Log( $"<color=purple>Shame</color> Singleton<<color=lime>{typeof(T).Name}</color>>.Instance Didn't have a cached object of type! So will call !!!<color=red>FindObjectOfType()</color>!!! took:<color=orange>{stopwatch.Elapsed.TotalMilliseconds:N2}</color>ms {((candidate!=null)?$"<color=cyan>Found</color> @ {candidate.HierarchyNameOrNull()}":"<color=red>Fail</color>")} on <color=yellow>{UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}</color>" );
-#else
-				Debug.Log( $"Singleton<{typeof(T).Name}>.Instance Didn't have a cached object of type! So will call !!!FindObjectOfType()!!! took:{stopwatch.Elapsed.TotalMilliseconds:N2}ms {((candidate!=null)?$"Found @ {candidate.HierarchyNameOrNull()}":"Fail")} on {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}" );
-#endif
+				Debug.Log( $"{"Shame".Colorfy( Negation )} {"Singleton".Colorfy(TypeName)}<{typeof(T).Name.Colorfy(Keyword)}>.Instance Didn't have a cached object of type! So called !!!{"FindObjectOfType()".Colorfy(Danger)}!!! took:{$"{stopwatch.Elapsed.TotalMilliseconds:N2}ms".Colorfy(Numbers)} {((candidate!=null)?$"{"Found".Colorfy(Verbs)} @ {candidate.HierarchyNameOrNull()}":"Fail".Colorfy(Negation))} on {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.Colorfy(Names)}" );
 				stopwatch.Stop();
 				_instance.RegisterNewReference( candidate );
 				if( candidate == null )
