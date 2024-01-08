@@ -37,7 +37,6 @@ public static class AssetDatabaseUtils
         }
 #else //UNITY_EDITOR
         Debug.LogError( $"RequestPath( {path} ) {ConsoleMessage.ONLY_EDITOR}" );
-        return null;
 #endif //UNITY_EDITOR
     }
     
