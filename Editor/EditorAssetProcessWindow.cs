@@ -288,7 +288,7 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 				AssetDatabase.Refresh();
 			}
 
-            UnityEngine.Debug.Log( $"Processed {transfers.ToStringColored( Numbers )} on {components.ToStringColored( TypeName )} components in {objects.ToStringColored( Negation )} valid objects of {guids.Length.ToStringColored( Danger )} total in {$"{sw.Elapsed.TotalMilliseconds}ms".ToStringColored( EventName )}:\n{sb.ToString()}" );
+            UnityEngine.Debug.Log( $"Processed {transfers.ToStringColored( Numbers )} on {components.ToStringColored( TypeName )} components in {objects.ToStringColored( EventName )} valid objects of {guids.Length.ToStringColored( Danger )} total in {$"{sw.Elapsed.TotalMilliseconds}ms".ToStringColored( Negation )}:\n{sb.ToString()}" );
 		}
 		EditorGUILayout.EndVertical();
 		EditorGUILayout.EndHorizontal();
@@ -322,7 +322,7 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
             transfers++;
         }
         sw.Stop();
-        UnityEngine.Debug.Log($"{"Processed".Colorfy(Verbs)} {transfers.ToStringColored( Numbers )} {typeClass.FullName.Colorfy(TypeName)} in {$"{sw.Elapsed.TotalMilliseconds}ms".ToStringColored( EventName )}:\n{sb.ToString()}");
+        UnityEngine.Debug.Log($"{"Processed".Colorfy(Verbs)} {transfers.ToStringColored( Numbers )} {typeClass.FullName.Colorfy(TypeName)} in {$"{sw.Elapsed.TotalMilliseconds}ms".ToStringColored( Negation )}:\n{sb.ToString()}");
 		sb.Clear();
     }
 }
