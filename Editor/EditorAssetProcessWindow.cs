@@ -8,6 +8,8 @@ using System.Text;
 using System.Diagnostics;
 using UnityEngine.Rendering.VirtualTexturing;
 
+using static Colors.Console;
+
 public sealed class EditorAssetValidationProcessWindow : EditorWindow
 {
 	static EditorAssetValidationProcessWindow _instance;
@@ -286,7 +288,7 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 				AssetDatabase.Refresh();
 			}
 
-            UnityEngine.Debug.Log( $"Processed <color=yellow>{transfers}</color> on <color=lime>{components}</color> components in <color=green>{objects}</color> valid objects of <color=red>{guids.Length}</color> total in <color=orange>{sw.Elapsed.TotalMilliseconds}</color>ms:\n{sb.ToString()}" );
+            UnityEngine.Debug.Log( $"Processed {transfers.ToStringColored( Numbers )} on {components.ToStringColored( TypeName )} components in {objects.ToStringColored( Negation )} valid objects of {guids.Length.ToStringColored( Danger )} total in {$"{sw.Elapsed.TotalMilliseconds}ms".ToStringColored( EventName )}:\n{sb.ToString()}" );
 		}
 		EditorGUILayout.EndVertical();
 		EditorGUILayout.EndHorizontal();
@@ -320,7 +322,7 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
             transfers++;
         }
         sw.Stop();
-        UnityEngine.Debug.Log($"Processed <color=yellow>{transfers}</color> {typeClass.Name} in <color=orange>{sw.Elapsed.TotalMilliseconds}</color>ms:\n{sb.ToString()}");
+        UnityEngine.Debug.Log($"{"Processed".Colorfy(Verbs)} {transfers.ToStringColored( Numbers )} {typeClass.FullName.Colorfy(TypeName)} in {$"{sw.Elapsed.TotalMilliseconds}ms".ToStringColored( EventName )}:\n{sb.ToString()}");
 		sb.Clear();
     }
 }
