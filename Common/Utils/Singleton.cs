@@ -33,7 +33,7 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 				var stopwatch = new System.Diagnostics.Stopwatch();
 				stopwatch.Start();
 				var candidate = (T)MonoBehaviour.FindObjectOfType( typeof( T ) );
-				Debug.Log( $"{"Shame".Colorfy( Negation )} {"Singleton".Colorfy(TypeName)}<{typeof(T).Name.Colorfy(Keyword)}>.Instance Didn't have a cached object of type! So called !!!{"FindObjectOfType()".Colorfy(Danger)}!!! took:{$"{stopwatch.Elapsed.TotalMilliseconds:N2}ms".Colorfy(Numbers)} {((candidate!=null)?$"{"Found".Colorfy(Verbs)} @ {candidate.HierarchyNameOrNull()}":"Fail".Colorfy(Negation))} on {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.Colorfy(Names)}" );
+				Debug.Log( $"{"Shame".Colorfy( Negation )} {"Singleton".Colorfy(TypeName)}<{typeof(T).Name.Colorfy(Keyword)}>.Instance Didn't have a cached object of type! So called {"FindObjectOfType()".Colorfy(Danger)} took:{$"{stopwatch.Elapsed.TotalMilliseconds:N2}ms".Colorfy(Numbers)} {((candidate!=null)?$"{"Found".Colorfy(Verbs)} @ {candidate.HierarchyNameOrNull()}":"Fail".Colorfy(Negation))} on {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.Colorfy(Names)}" );
 				stopwatch.Stop();
 				_instance.RegisterNewReference( candidate );
 				if( candidate == null )
