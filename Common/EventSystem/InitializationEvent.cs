@@ -20,6 +20,12 @@ public class InitializationEvent : ICustomDisposableKill
         if (isInitialized) callback.Invoke();
         else initialized.Register(callback);
     }
+
+    public void CallWhenReady(InitializationEvent otherInitialization, Action callback)
+    {
+        if (isInitialized) otherInitialization.CallWhenReady(callback);
+        else initialized.Register(() => otherInitialization.CallWhenReady(callback));
+    }
     
     public static implicit operator bool (InitializationEvent v) => v.isInitialized;
 
