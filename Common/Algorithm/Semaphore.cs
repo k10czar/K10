@@ -162,7 +162,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 
 	public void RegisterAndStart( IEventTrigger<bool> evnt ) { Lazy.Request( ref _changeStateEvent ).Register( _validator.Validated( evnt ) ); evnt.Trigger( Free ); }
 	public void RegisterAndStart( System.Action<bool> evnt ) { Lazy.Request( ref _changeStateEvent ).Register( _validator.Validated( evnt ) ); evnt( Free ); }
-
+	
 	public void Kill()
 	{
 		_onInteraction?.Kill();
@@ -277,6 +277,16 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 			_releaseEvent?.Trigger();
 			_changeStateEvent?.Trigger( true );
 		}
+	}
+	
+	public void Reset()
+	{
+		_semaphores.Clear();
+		
+		_blockEvent.ClearListeners();
+		_releaseEvent.ClearListeners();
+		_changeStateEvent.ClearListeners();
+		_onInteraction.ClearListeners();
 	}
 
 	string KeyName( object obj )
