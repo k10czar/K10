@@ -110,7 +110,7 @@ public static class AssetDatabaseUtils
             var element = UnityEditor.AssetDatabase.LoadAssetAtPath<ScriptableObject>( SOpath );
             collection[ i ] = element;
         }
-		if( debug ) Debug.Log( $"AssetDatabaseUtils{DOT}<color=yellow>GetAll</color>{OP}{type.Name.Colorfy( Keyword )}{CP} found {collection.Length.ToString().Colorfy( Numbers )}:\n   -{string.Join( ",\n   -", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) )}" );
+		if( debug ) Debug.Log( $"{"AssetDatabaseUtils".Colorfy( TypeName )}{DOT}{"GetAll".Colorfy( Verbs )}{OP} {type.Name.Colorfy( Keyword )} {CP} found {collection.Length.ToString().Colorfy( Numbers )}:\n   -{string.Join( ",\n   -", collection.ToList().ConvertAll<string>( ( so ) => so.NameOrNull() ) )}" );
         return collection;
 #else //UNITY_EDITOR
         Debug.Log( $"AssetDatabaseUtils.GetAll( {type} ) {ConsoleMessage.ONLY_EDITOR}" );
