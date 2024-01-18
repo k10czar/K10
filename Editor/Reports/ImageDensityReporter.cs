@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using System;
 using K10.EditorGUIExtention;
-using DG.DOTweenEditor.Core;
 using System.Linq;
-using System.Diagnostics;
 
 public class ImageDensityReporter : EditorWindow
 {
@@ -20,7 +18,9 @@ public class ImageDensityReporter : EditorWindow
     private bool _tickOnUpdate = false;
     private Vector2 _scroll;
 
-    private Stopwatch _lastReportMetrics;
+    private System.Diagnostics.Stopwatch _lastReportMetrics;
+
+    private readonly SortingField<InfoNode> _sort = new SortingField<InfoNode>( new (Comparison<InfoNode>,string)[]{ ( InfoNode.NAME_SORT, "Name" ), ( InfoNode.MINDENSITY_SORT, "MinDensity"), ( InfoNode.MAXDENSITY_SORT, "MaxDensity"), ( InfoNode.REPORTS_SORT, "Reports"), ( InfoNode.NODES_COUNT_SORT, "Childs") } );
 
     [MenuItem("K10/Reports/ImageDensity")] private static void Init() { GetWindow<ImageDensityReporter>( "Image Density Reporter" ); }
 
@@ -48,7 +48,7 @@ public class ImageDensityReporter : EditorWindow
 
     private void Report()
     {
-        _lastReportMetrics = new Stopwatch();
+        _lastReportMetrics = new System.Diagnostics.Stopwatch();
         _lastReportMetrics.Start();
         
         var objs = FindObjectsOfType<Image>();
@@ -81,7 +81,7 @@ public class ImageDensityReporter : EditorWindow
     void Update()
     {
         if( _tickOnUpdate ) Report();
-        Repaint();
+        // Repaint();
     }
     
     public void OnGUI()
@@ -110,13 +110,15 @@ public class ImageDensityReporter : EditorWindow
         EditorGUILayout.BeginHorizontal( GUI.skin.box );
         if( _lastReportMetrics != null ) GuiUtils.Label.ExactSizeLayout( $"{_lastReportMetrics.Elapsed.TotalMilliseconds:N2}ms", Colors.GreenEarth );
         EditorGUILayout.EndHorizontal();
+        _sort.LayoutAsDropdown( GUILayout.Width( 170 ) );
+        // _sort.LayoutAsButtonList();
         EditorGUILayout.EndHorizontal();
 
         _scroll = EditorGUILayout.BeginScrollView( _scroll );
         GuiUtils.Scroll.CalculateLinesToDraw( _scroll, height, out var startId, out var lines );
         GuiUtils.Scroll.DrawFakeLines( startId );
         int id = 0;
-        _root.Draw( ref id, startId, lines, _showHierarchy, _showReportCount );
+        _root.Draw( ref id, startId, lines, _showHierarchy, _showReportCount, _sort.ComparisonOrder );
         var linesCount = _root.CountLines();
         GuiUtils.Scroll.DrawFakeLines( linesCount - ( startId + lines ) );
         EditorGUILayout.EndScrollView();
@@ -153,15 +155,23 @@ public class ImageDensityReporter : EditorWindow
     public class InfoNode : ISerializationCallbackReceiver
     {
         [SerializeField] string _name;
-        [SerializeField] float _maxDensity;
         [SerializeField] float _minDensity;
+        [SerializeField] float _maxDensity;
         [SerializeField] bool _expanded = true;
         [SerializeField] ulong _reports;
-        [SerializeField] Texture _texture;
+        bool _readed = false;
+        Texture2D _texture;
+        [SerializeField] string _guid;
         [SerializeField] string _hierarchy;
         [SerializeField] string[] _serializedKeys;
         [SerializeField] InfoNode[] _serializedValues;
         Dictionary<string,InfoNode> _nodes = new Dictionary<string,InfoNode>();
+        
+        public static readonly Comparison<InfoNode> NAME_SORT = ( InfoNode a, InfoNode b ) => a._name?.CompareTo( b._name ) ?? 1;
+        public static readonly Comparison<InfoNode> MINDENSITY_SORT = ( InfoNode a, InfoNode b ) => a._minDensity.CompareTo( b._minDensity );
+        public static readonly Comparison<InfoNode> MAXDENSITY_SORT = ( InfoNode a, InfoNode b ) => a._maxDensity.CompareTo( b._maxDensity );
+        public static readonly Comparison<InfoNode> REPORTS_SORT = ( InfoNode a, InfoNode b ) => a._reports.CompareTo( b._reports );
+        public static readonly Comparison<InfoNode> NODES_COUNT_SORT = ( InfoNode a, InfoNode b ) => ( a._nodes?.Count ?? 0).CompareTo( b._nodes?.Count ?? 0 );
 
         private static readonly GUILayoutOption _ScaleWidth = GUILayout.Width( 100 );
         
@@ -180,6 +190,16 @@ public class ImageDensityReporter : EditorWindow
                 _serializedKeys = null;
                 _serializedValues = null;
             }
+
+            _readed = false;
+        }
+
+        void TryReadTexture()
+        {
+            if( _readed ) return;
+            if( string.IsNullOrEmpty( _guid ) ) return;
+            var path = AssetDatabase.GUIDToAssetPath( _guid );
+            _texture = AssetDatabase.LoadAssetAtPath<Texture2D>( path );
         }
 
         public void OnBeforeSerialize()
@@ -195,6 +215,12 @@ public class ImageDensityReporter : EditorWindow
                 _serializedValues[i] = kvp.Value;
                 ++i;
             }
+
+            _guid = null;
+            if( _texture != null )
+            {
+                _guid = AssetDatabase.AssetPathToGUID( AssetDatabase.GetAssetPath( _texture ) );
+            }
         }
 
         public  void ChageName( string newName )
@@ -207,7 +233,7 @@ public class ImageDensityReporter : EditorWindow
             Clear( name );
         }
 
-        public void Draw( ref int id, int startId, int lines, bool showHierarchy, bool showReportsCounter )
+        public void Draw( ref int id, int startId, int lines, bool showHierarchy, bool showReportsCounter, Comparison<InfoNode> order )
         {
             if( id > startId + lines ) return;
             if( id >= startId )
@@ -227,6 +253,7 @@ public class ImageDensityReporter : EditorWindow
                 }
                 else
                 {
+                    TryReadTexture();
                     if( _texture != null ) 
                     {
                         // EditorGuiIndentManager.New( 0 );
@@ -262,7 +289,9 @@ public class ImageDensityReporter : EditorWindow
             if( _nodes != null )
             {
                 EditorGuiIndentManager.New( EditorGUI.indentLevel + 1 );
-                foreach( var node in _nodes ) node.Value.Draw( ref id, startId, lines, showHierarchy, showReportsCounter );
+                var orderedNodes = _nodes.Values.ToList();
+                orderedNodes.Sort( order );
+                foreach( var node in orderedNodes ) node.Draw( ref id, startId, lines, showHierarchy, showReportsCounter, order );
                 EditorGuiIndentManager.Revert();
             }
         }
@@ -282,7 +311,7 @@ public class ImageDensityReporter : EditorWindow
             }
         }
 
-        public void Report( string[] path, int pathID, float minDensity, float maxDensity, Texture texture, Image image )
+        public void Report( string[] path, int pathID, float minDensity, float maxDensity, Texture2D texture, Image image )
         {
             _reports++;
             var lastNode = pathID >= path.Length;
@@ -298,6 +327,8 @@ public class ImageDensityReporter : EditorWindow
             if( lastNode ) 
             {
                 _texture = texture;
+                // if( texture != null ) _guid = AssetDatabase.AssetPathToGUID( AssetDatabase.GetAssetPath( _texture ) );
+                // else _guid = null;
                 return;
             }
             var currentPathNode = path[ pathID ];

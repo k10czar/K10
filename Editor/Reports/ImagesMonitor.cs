@@ -98,17 +98,24 @@ public class ImagesMonitor : EditorWindow
         observeds.Sort( comparison );
     }
 
-    private void SortByImage() { Sort( _lastComparison == IMAGE_SORT_ASC ? IMAGE_SORT_DESC : IMAGE_SORT_ASC ); }
-    private void SortByScreenWidth() { Sort( _lastComparison == SCREEN_WIDTH_ASC ? SCREEN_WIDTH_DESC : SCREEN_WIDTH_ASC ); }
-    private void SortByScreenHeight() { Sort( _lastComparison == SCREEN_HEIGHT_ASC ? SCREEN_HEIGHT_DESC : SCREEN_HEIGHT_ASC ); }
-    private void SortByTexture() { Sort( _lastComparison == TEXTURE_SORT_ASC ? TEXTURE_SORT_DESC : TEXTURE_SORT_ASC ); }
-    private void SortByTextureWidth() { Sort( _lastComparison == TEXTURE_WIDTH_ASC ? TEXTURE_WIDTH_DESC : TEXTURE_WIDTH_ASC ); }
-    private void SortByTextureHeight() { Sort( _lastComparison == TEXTURE_HEIGHT_ASC ? TEXTURE_HEIGHT_DESC : TEXTURE_HEIGHT_ASC ); }
-    private void SortByDensityX() { Sort( _lastComparison == DENSITY_X_ASC ? DENSITY_X_DESC : DENSITY_X_ASC ); }
-    private void SortByDensityY() { Sort( _lastComparison == DENSITY_Y_ASC ? DENSITY_Y_DESC : DENSITY_Y_ASC ); }
-    private void SortByMinDensity() { Sort( _lastComparison == DENSITY_MIN_ASC ? DENSITY_MIN_DESC : DENSITY_MIN_ASC ); }
-    private void SortByMaxDensity() { Sort( _lastComparison == DENSITY_MAX_ASC ? DENSITY_MAX_DESC : DENSITY_MAX_ASC ); }
-    private void SortBySize() { Sort( _lastComparison == FILE_SIZE_ASC ? FILE_SIZE_DESC : FILE_SIZE_ASC ); }
+    private void ToggleSort( Comparison<ImageInfo> comparison )
+    {
+        if( comparison == null ) return;
+        comparison.SetOrRevertOn( ref _lastComparison );
+        observeds.Sort( comparison );
+    }
+
+    private void SortByImage() { ToggleSort( IMAGE_NAME_SORT ); }
+    private void SortByScreenWidth() { ToggleSort( SCREEN_WIDTH_SORT ); }
+    private void SortByScreenHeight() { ToggleSort( SCREEN_HEIGHT_SORT ); }
+    private void SortByTexture() { ToggleSort( TEXTURE_SORT_SORT ); }
+    private void SortByTextureWidth() { ToggleSort( TEXTURE_WIDTH_SORT ); }
+    private void SortByTextureHeight() { ToggleSort( TEXTURE_HEIGHT_SORT ); }
+    private void SortByDensityX() { ToggleSort( DENSITY_X_SORT ); }
+    private void SortByDensityY() { ToggleSort( DENSITY_Y_SORT ); }
+    private void SortByMinDensity() { ToggleSort( DENSITY_MIN_SORT ); }
+    private void SortByMaxDensity() { ToggleSort( DENSITY_MAX_SORT ); }
+    private void SortBySize() { ToggleSort( FILE_SIZE_SORT ); }
 
     public class ImageInfo
     {
@@ -187,26 +194,15 @@ public class ImagesMonitor : EditorWindow
         }
     }
 
-    private static readonly Comparison<ImageInfo> IMAGE_SORT_ASC = ( ImageInfo a, ImageInfo b ) => a.image?.name.CompareTo( b.image.name ) ?? 1;
-    private static readonly Comparison<ImageInfo> IMAGE_SORT_DESC = ( ImageInfo a, ImageInfo b ) => b.image?.name.CompareTo( a.image.name ) ?? 1;
-    private static readonly Comparison<ImageInfo> SCREEN_WIDTH_ASC = ( ImageInfo a, ImageInfo b ) => a.Data.ExhibitionSize.x.CompareTo( b.Data.ExhibitionSize.x );
-    private static readonly Comparison<ImageInfo> SCREEN_WIDTH_DESC = ( ImageInfo a, ImageInfo b ) => b.Data.ExhibitionSize.x.CompareTo( a.Data.ExhibitionSize.x );
-    private static readonly Comparison<ImageInfo> SCREEN_HEIGHT_ASC = ( ImageInfo a, ImageInfo b ) => a.Data.ExhibitionSize.y.CompareTo( b.Data.ExhibitionSize.y );
-    private static readonly Comparison<ImageInfo> SCREEN_HEIGHT_DESC = ( ImageInfo a, ImageInfo b ) => b.Data.ExhibitionSize.y.CompareTo( a.Data.ExhibitionSize.y );
-    private static readonly Comparison<ImageInfo> TEXTURE_SORT_ASC = ( ImageInfo a, ImageInfo b ) => a.Data.Texture?.name.CompareTo( b.Data.Texture?.name ?? string.Empty ) ?? 1;
-    private static readonly Comparison<ImageInfo> TEXTURE_SORT_DESC = ( ImageInfo a, ImageInfo b ) => b.Data.Texture?.name.CompareTo( a.Data.Texture?.name ?? string.Empty ) ?? 1;
-    private static readonly Comparison<ImageInfo> TEXTURE_WIDTH_ASC = ( ImageInfo a, ImageInfo b ) => a.Data.TextureSize.x.CompareTo( b.Data.TextureSize.x );
-    private static readonly Comparison<ImageInfo> TEXTURE_WIDTH_DESC = ( ImageInfo a, ImageInfo b ) => b.Data.TextureSize.x.CompareTo( a.Data.TextureSize.x );
-    private static readonly Comparison<ImageInfo> TEXTURE_HEIGHT_ASC = ( ImageInfo a, ImageInfo b ) => a.Data.TextureSize.y.CompareTo( b.Data.TextureSize.y );
-    private static readonly Comparison<ImageInfo> TEXTURE_HEIGHT_DESC = ( ImageInfo a, ImageInfo b ) => b.Data.TextureSize.y.CompareTo( a.Data.TextureSize.y );
-    private static readonly Comparison<ImageInfo> DENSITY_X_ASC = ( ImageInfo a, ImageInfo b ) => a.Data.ExhibitionDensity.x.CompareTo( b.Data.ExhibitionDensity.x );
-    private static readonly Comparison<ImageInfo> DENSITY_X_DESC = ( ImageInfo a, ImageInfo b ) => b.Data.ExhibitionDensity.x.CompareTo( a.Data.ExhibitionDensity.x );
-    private static readonly Comparison<ImageInfo> DENSITY_Y_ASC = ( ImageInfo a, ImageInfo b ) => a.Data.ExhibitionDensity.y.CompareTo( b.Data.ExhibitionDensity.y );
-    private static readonly Comparison<ImageInfo> DENSITY_Y_DESC = ( ImageInfo a, ImageInfo b ) => b.Data.ExhibitionDensity.y.CompareTo( a.Data.ExhibitionDensity.y );
-    private static readonly Comparison<ImageInfo> DENSITY_MIN_ASC = ( ImageInfo a, ImageInfo b ) => a.Data.MinDensity.CompareTo( b.Data.MinDensity );
-    private static readonly Comparison<ImageInfo> DENSITY_MIN_DESC = ( ImageInfo a, ImageInfo b ) => b.Data.MinDensity.CompareTo( a.Data.MinDensity );
-    private static readonly Comparison<ImageInfo> DENSITY_MAX_ASC = ( ImageInfo a, ImageInfo b ) => a.Data.MaxDensity.CompareTo( b.Data.MaxDensity );
-    private static readonly Comparison<ImageInfo> DENSITY_MAX_DESC = ( ImageInfo a, ImageInfo b ) => b.Data.MaxDensity.CompareTo( a.Data.MaxDensity );
-    private static readonly Comparison<ImageInfo> FILE_SIZE_ASC = ( ImageInfo a, ImageInfo b ) => a.Data.FileSize.CompareTo( b.Data.FileSize );
-    private static readonly Comparison<ImageInfo> FILE_SIZE_DESC = ( ImageInfo a, ImageInfo b ) => b.Data.FileSize.CompareTo( a.Data.FileSize );
+    private static readonly Comparison<ImageInfo> IMAGE_NAME_SORT = ( ImageInfo a, ImageInfo b ) => a.image?.name?.CompareTo( b.image.name ) ?? 1;
+    private static readonly Comparison<ImageInfo> SCREEN_WIDTH_SORT = ( ImageInfo a, ImageInfo b ) => a.Data.ExhibitionSize.x.CompareTo( b.Data.ExhibitionSize.x );
+    private static readonly Comparison<ImageInfo> SCREEN_HEIGHT_SORT = ( ImageInfo a, ImageInfo b ) => a.Data.ExhibitionSize.y.CompareTo( b.Data.ExhibitionSize.y );
+    private static readonly Comparison<ImageInfo> TEXTURE_SORT_SORT = ( ImageInfo a, ImageInfo b ) => a.Data.Texture?.name.CompareTo( b.Data.Texture?.name ?? string.Empty ) ?? 1;
+    private static readonly Comparison<ImageInfo> TEXTURE_WIDTH_SORT = ( ImageInfo a, ImageInfo b ) => a.Data.TextureSize.x.CompareTo( b.Data.TextureSize.x );
+    private static readonly Comparison<ImageInfo> TEXTURE_HEIGHT_SORT = ( ImageInfo a, ImageInfo b ) => a.Data.TextureSize.y.CompareTo( b.Data.TextureSize.y );
+    private static readonly Comparison<ImageInfo> DENSITY_X_SORT = ( ImageInfo a, ImageInfo b ) => a.Data.ExhibitionDensity.x.CompareTo( b.Data.ExhibitionDensity.x );
+    private static readonly Comparison<ImageInfo> DENSITY_Y_SORT = ( ImageInfo a, ImageInfo b ) => a.Data.ExhibitionDensity.y.CompareTo( b.Data.ExhibitionDensity.y );
+    private static readonly Comparison<ImageInfo> DENSITY_MIN_SORT = ( ImageInfo a, ImageInfo b ) => a.Data.MinDensity.CompareTo( b.Data.MinDensity );
+    private static readonly Comparison<ImageInfo> DENSITY_MAX_SORT = ( ImageInfo a, ImageInfo b ) => a.Data.MaxDensity.CompareTo( b.Data.MaxDensity );
+    private static readonly Comparison<ImageInfo> FILE_SIZE_SORT = ( ImageInfo a, ImageInfo b ) => a.Data.FileSize.CompareTo( b.Data.FileSize );
 }

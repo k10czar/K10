@@ -20,6 +20,23 @@ public static class GuiUtils
         }
     }
 
+    public static class Button
+    {
+        public static bool ExactSizeLayout( string label )
+        {
+            var content = new GUIContent( label );
+            return GUILayout.Button( content, GUILayout.Width( GUI.skin.button.CalcSize( content ).x ) );
+        }
+
+        public static bool ExactSizeLayout( string label, Color color )
+        {
+            GuiColorManager.New( color );
+            var pressed = ExactSizeLayout( label );
+            GuiColorManager.Revert();
+            return pressed;
+        }
+    }
+
     public static class Label
     {
         public static void ExactSizeLayout( string label )
