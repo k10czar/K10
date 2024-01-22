@@ -33,6 +33,7 @@ public class ImagesMonitor : EditorWindow
         {
             if( sr == null ) continue;
             if( sr.type != Image.Type.Simple ) continue;
+            if( !_includeInactive && !sr.enabled ) continue;
             observeds.Add( new ImageInfo( sr ) );
         }
 
@@ -95,14 +96,14 @@ public class ImagesMonitor : EditorWindow
     {
         if( comparison == null ) return;
         _lastComparison = comparison;
-        observeds.Sort( comparison );
+        observeds.Sort( _lastComparison );
     }
 
     private void ToggleSort( Comparison<ImageInfo> comparison )
     {
         if( comparison == null ) return;
         comparison.SetOrRevertOn( ref _lastComparison );
-        observeds.Sort( comparison );
+        observeds.Sort( _lastComparison );
     }
 
     private void SortByImage() { ToggleSort( IMAGE_NAME_SORT ); }
@@ -123,7 +124,7 @@ public class ImagesMonitor : EditorWindow
 
         private AnalizedData cachedData;
 
-        public class AnalizedData
+        public struct AnalizedData
         {
             public readonly Sprite Sprite;
             public readonly Texture2D Texture;
@@ -134,7 +135,7 @@ public class ImagesMonitor : EditorWindow
             public readonly float MaxDensity;
             public readonly long FileSize;
 
-            public AnalizedData( Sprite sprite, Vector2 exhibitionSize )
+            public AnalizedData( Sprite sprite, Vector2 exhibitionSize, bool preserveAspect )
             {
                 Sprite = sprite;
                 Texture = sprite != null ? sprite.texture : null;
@@ -142,7 +143,16 @@ public class ImagesMonitor : EditorWindow
                 ExhibitionSize = exhibitionSize;
                 ExhibitionDensity = new Vector2( TextureSize.x / ExhibitionSize.x, TextureSize.y / ExhibitionSize.y );
                 MaxDensity = Mathf.Max( ExhibitionDensity.x, ExhibitionDensity.y );
-                MinDensity = Mathf.Min( ExhibitionDensity.x, ExhibitionDensity.y );
+                if( preserveAspect )
+                {
+                    ExhibitionDensity.x = MaxDensity;
+                    ExhibitionDensity.y = MaxDensity;
+                    MinDensity = MaxDensity;
+                }
+                else
+                {
+                    MinDensity = Mathf.Min( ExhibitionDensity.x, ExhibitionDensity.y );
+                }
                 FileSize = Texture != null ? UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong( Texture ) : 0;
             }
         }
@@ -156,8 +166,8 @@ public class ImagesMonitor : EditorWindow
                 var rect = rt.rect;
                 var scl = rt.lossyScale;
                 var eSize = new Vector2( rect.width * scl.x, rect.height * scl.y );
-                var cachedSize = cachedData?.ExhibitionSize ?? new Vector2( 1, 1 );
-                if( cachedData == null || cachedData.Sprite != sprite || !Mathf.Approximately( eSize.x, cachedSize.x ) || !Mathf.Approximately( eSize.y, cachedSize.y )  ) cachedData = new AnalizedData( sprite, eSize );
+                var cachedSize = cachedData.ExhibitionSize;
+                if( cachedData.Sprite != sprite || !Mathf.Approximately( eSize.x, cachedSize.x ) || !Mathf.Approximately( eSize.y, cachedSize.y )  ) cachedData = new AnalizedData( sprite, eSize, image.preserveAspect );
                 return cachedData;
             }
         }

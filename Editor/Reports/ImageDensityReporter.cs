@@ -62,16 +62,19 @@ public class ImageDensityReporter : EditorWindow
             // var texture = sprite.texture;
             // if( texture == null ) continue;
             var path = AssetDatabase.GetAssetPath( sprite );
+            if( string.IsNullOrEmpty( path ) ) path = $"Dynamic/{sprite.NameOrNull()}.sprite";
             var pathSplitted = path.Split( "/" );
-            var TextureSize = sprite != null ? new Vector2( sprite.rect.width, sprite.rect.height ) : Vector2.zero;
+
+            var sRect = sprite.rect;
+            var TextureSize = sprite != null ? new Vector2( sRect.width, sRect.height ) : Vector2.zero;
             
             var rt = uiImg.rectTransform;
             var rect = rt.rect;
             var scl = rt.lossyScale;
             var eSize = new Vector2( rect.width * scl.x, rect.height * scl.y );
-            var ExhibitionScale = new Vector2( TextureSize.x / eSize.x, TextureSize.y / eSize.y );
-            var minDensity = Mathf.Min( ExhibitionScale.x, ExhibitionScale.y );
-            var maxDensity = Mathf.Max( ExhibitionScale.x, ExhibitionScale.y );
+            var ExhibitionDensity = new Vector2( TextureSize.x / eSize.x, TextureSize.y / eSize.y );
+            var maxDensity = Mathf.Max( ExhibitionDensity.x, ExhibitionDensity.y );
+            var minDensity = uiImg.preserveAspect ? maxDensity : Mathf.Min( ExhibitionDensity.x, ExhibitionDensity.y );
             // var pixels = TextureSize.x * TextureSize.y;
             _root.Report( pathSplitted, 0, minDensity, maxDensity, sprite.texture, uiImg );
         }
@@ -81,7 +84,7 @@ public class ImageDensityReporter : EditorWindow
     void Update()
     {
         if( _tickOnUpdate ) Report();
-        // Repaint();
+        Repaint();
     }
     
     public void OnGUI()
