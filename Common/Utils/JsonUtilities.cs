@@ -8,9 +8,6 @@ public static class JsonUtilities
 {
 	public static string DEBUG_FOLDER => ( FileAdapter.debugPersistentDataPath + "/JsonDebug/" );
 
-	public static string GenerateSavePath(string fileName, string fileExtension)
-		=> $"{DEBUG_FOLDER}{fileName}{fileExtension}";
-
 	public static string GenerateLogFileName(string suffix1 = "", string suffix2 = "", string environment = "")
 	{
 		var fileName = DateTime.Now.ToString("yyyyMMddTHHmmssfffffff");
@@ -21,6 +18,10 @@ public static class JsonUtilities
 
 		return fileName;
 	}
+
+
+	public static string GenerateSavePath(string fileName, string fileExtension)
+		=> $"{DEBUG_FOLDER}{fileName}{fileExtension}";
 
 	public static string LogToJsonFile(this string rawJson, string suffix1 = "", string suffix2 = "", string environment = "")
 	{

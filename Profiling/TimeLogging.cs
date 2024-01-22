@@ -1,12 +1,14 @@
-using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
+using UnityEngine;
+
+using static Colors.Console;
 
 public class TimeLogging<T>
 {
 	Log _currentLog;
-	Log _defaultLog = new Log( UnityEngine.Time.unscaledTime, "Default" );
+	Log _defaultLog = new Log( Time.unscaledTime, "Default" );
 	List<Log> _loadingLogs = new List<Log>();
 	Stopwatch _logMs = new Stopwatch();
 	double _totalLog = 0;
@@ -23,8 +25,8 @@ public class TimeLogging<T>
 	public void StartLog( string name )
 	{
 		_logMs.Reset();
-		if( _currentLog != null && _onLogEnd.HasListeners ) _onLogEnd.Trigger( $"{StartColorTag("red")}StartLog beyond old{EndColorTag()} {_currentLog}" );
-		_currentLog = new Log( UnityEngine.Time.unscaledTime, name );
+		if( _currentLog != null && _onLogEnd.HasListeners ) _onLogEnd.Trigger( $"{"StartLog beyond old".Colorfy(Negation)} {_currentLog}" );
+		_currentLog = new Log( Time.unscaledTime, name );
 		_logMs.Stop();
 	}
 
@@ -45,15 +47,12 @@ public class TimeLogging<T>
 		_currentLog = null;
 
 		_logMs.Stop();
-		UnityEngine.Debug.Log( $"Log end with {_logMs.ElapsedMilliseconds}ms of overhead" );
+		UnityEngine.Debug.Log( $"{"Log".Colorfy(Info)} end with {$"{_logMs.ElapsedMilliseconds}ms".Colorfy(Numbers)} of {"overhead".Colorfy(Negation)}" );
 		_logMs.Reset();
 	}
 
-    public static string EndColorTag() => ( _colored ? "</color>" : "" );
-    public static string StartColorTag( string color ) => ( _colored ? $"<color={color}>" : "" );
-
-    private string GetEndLog() => $"{StartColorTag("orange")}Loading log [{_loadingLogs.Count}] => {_currentLog.Name}:{EndColorTag()}\n{_currentLog.LogWithPercentage()}";
-    private string GetExportLog() => $"{StartColorTag("orange")}Loading log data export{EndColorTag()}:\n{_currentLog.GetExportedData(-_currentLog.StartMs)}";
+    private string GetEndLog() => $"{$"Loading log [{_loadingLogs.Count}] => {_currentLog.Name}:".Colorfy(Info)}\n{_currentLog.LogWithPercentage()}";
+    private string GetExportLog() => $"{"Loading log data export".Colorfy(Info)}:\n{_currentLog.GetExportedData(-_currentLog.StartMs)}";
 
 	public void CancelLog()
 	{
@@ -62,11 +61,11 @@ public class TimeLogging<T>
 		_logMs.Start();
 		
 		_currentLog.End();
-        if( _onLogEnd.HasListeners ) _onLogEnd.Trigger( $"{StartColorTag("red")}Canceled log:{EndColorTag()} {_currentLog.ToString()}" );
+        if( _onLogEnd.HasListeners ) _onLogEnd.Trigger( $"{"Canceled log:".Colorfy(Negation)} {_currentLog.ToString()}" );
 		_currentLog = null;
 
 		_logMs.Stop();
-		UnityEngine.Debug.Log( $"Log end with {StartColorTag("cyan")}{_logMs.ElapsedMilliseconds}ms{EndColorTag()} of {StartColorTag("red")}overhead{EndColorTag()}" );
+		UnityEngine.Debug.Log( $"Log end with {$"{_logMs.ElapsedMilliseconds}ms".Colorfy(Numbers)} of {"overhead".Colorfy(Negation)}" );
 		_logMs.Reset();
 	}
 
@@ -83,7 +82,7 @@ public class TimeLogging<T>
 		_logMs.Start();
 		var log = ( _currentLog ?? _defaultLog );
 		log.EndSection( cat, key );
-		if( _onLogSectionEnd.HasListeners ) _onLogSectionEnd.Trigger( $"{StartColorTag("orange")}End loading log section:{EndColorTag()} {cat}{( ( key != null ) ? $" {key}" : "" )}\n{log.GetData( cat )}" );
+		if( _onLogSectionEnd.HasListeners ) _onLogSectionEnd.Trigger( $"{"End loading log section:".Colorfy(Info)} {cat.ToStringOrNullColored(Keyword)}{( ( key != null ) ? $" {key.ToStringOrNullColored(EventName)}" : "" )}\n{log.GetData( cat )}" );
 		_logMs.Stop();
 	}
 
@@ -131,18 +130,18 @@ public class TimeLogging<T>
 
 		public string GetExportedData( float startOffset = 0 )
 		{
-			return $"{string.Join(",\n", _logData.ToList().ConvertAll((kvp) => $"[{StartColorTag("orange")}\'{kvp.Key.ToStringOrNull()}\'{EndColorTag()}, {StartColorTag("red")}{kvp.Value.GenericLog.StartMs + startOffset}{EndColorTag()}, {StartColorTag("red")}{kvp.Value.GenericLog.EndMs + startOffset}{EndColorTag()}],{(kvp.Value.HasEntries()?($"\n{kvp.Value.GetExportedData(startOffset)}"):"")}"))}";
+			return $"{string.Join(",\n", _logData.ToList().ConvertAll((kvp) => $"[{$"\'{kvp.Key.ToStringOrNull()}\'".Colorfy(Info)}, {(kvp.Value.GenericLog.StartMs + startOffset).ToStringColored( Negation )}, {(kvp.Value.GenericLog.EndMs + startOffset).ToStringColored( Negation )}]{(kvp.Value.HasEntries()?($",\n{kvp.Value.GetExportedData(startOffset)}"):"")}"))}";
 		}
 
 		public override string ToString()
 		{
-			return $"Log:{_log}\n\n{string.Join( "\n\n", _logData.ToList().ConvertAll( ( kvp ) => $"{StartColorTag("yellow")}{kvp.Key}{EndColorTag()}: {kvp.Value}" ) )}";
+			return $"Log:{_log}\n\n{string.Join( "\n\n", _logData.ToList().ConvertAll( ( kvp ) => $"{kvp.Key.ToStringOrNullColored(Names)}: {kvp.Value}" ) )}";
 		}
 
 		public string LogWithPercentage()
 		{
 			var totalMs = _log.DurationMs;
-			return $"Log:{_log}\n\n{string.Join("\n\n", _logData.ToList().ConvertAll((kvp) => $"{StartColorTag("yellow")}{kvp.Key}{EndColorTag()}({StartColorTag("lime")}{(kvp.Value.DurationMs/totalMs):P1}{EndColorTag()}): {kvp.Value.LogWithPercentage(totalMs)}"))}";
+			return $"Log:{_log}\n\n{string.Join("\n\n", _logData.ToList().ConvertAll((kvp) => $"{kvp.Key.ToStringOrNullColored(Names)}({$"{(kvp.Value.DurationMs/totalMs):P1}".Colorfy( Keyword )}): {kvp.Value.LogWithPercentage(totalMs)}"))}";
 		}
 
 		public class LogCategoryEntry
@@ -190,12 +189,12 @@ public class TimeLogging<T>
 
 			public override string ToString()
 			{
-				return $"{_genericLog}{((_data.Count > 0) ? "\n" : "")}{string.Join(",\n", _data.ToList().ConvertAll((kvp) => $"\t-{StartColorTag("orange")}{kvp.Key.ToStringOrNull()}{EndColorTag()}: {kvp.Value}"))}";
+				return $"{_genericLog}{((_data.Count > 0) ? "\n" : "")}{string.Join(",\n", _data.ToList().ConvertAll((kvp) => $"\t-{kvp.Key.ToStringOrNull().Colorfy(Info)}: {kvp.Value}"))}";
 			}
 
 			public string LogWithPercentage( float totalMs )
 			{
-				return $"{_genericLog}{((_data.Count > 0) ? "\n" : "")}{string.Join(",\n", _data.ToList().ConvertAll((kvp) => $"\t-{StartColorTag("orange")}{kvp.Key.ToStringOrNull()}{EndColorTag()}({StartColorTag("green")}{(kvp.Value.DurationMs/totalMs):P1}{EndColorTag()}): {kvp.Value}"))}";
+				return $"{_genericLog}{((_data.Count > 0) ? "\n" : "")}{string.Join(",\n", _data.ToList().ConvertAll((kvp) => $"\t-{kvp.Key.ToStringOrNull().Colorfy(Info)}({$"{(kvp.Value.DurationMs/totalMs):P1}".Colorfy(Keyword)}): {kvp.Value}"))}";
 			}
 		}
 
@@ -235,29 +234,33 @@ public class TimeLogging<T>
 
 			public string GetExportedData( string name, float startOffset = 0 )
 			{
-				return $"[\'{StartColorTag("orange")}{name.ToStringOrNull()}{EndColorTag()}\', {StartColorTag("red")}{StartMs + startOffset}{EndColorTag()}, {StartColorTag("red")}{EndMs + startOffset}{EndColorTag()}]";
+				return $"[\'{name.ToStringOrNullColored( Info )}\', {(StartMs + startOffset).ToStringColored( Negation )}ms, {(EndMs + startOffset).ToStringColored( Negation )}ms]";
 			}
+
+			public static string EndColorTag() => ( _colored ? "</color>" : "" );
+			public static string StartColorTag( string color ) => ( _colored ? $"<color=#{color}>" : "" );
+			public static string StartColorTag( Color color ) => StartColorTag( color.ToHexRGB() );
 
 			public string LogWithPercentage( float totalMs )
 			{
-				var mins = UnityEngine.Mathf.FloorToInt(_startTime / 60);
-				var secs = UnityEngine.Mathf.FloorToInt(_startTime % 60);
-				var ms = UnityEngine.Mathf.FloorToInt((_startTime * 1000) % 1000);
+				var mins = Mathf.FloorToInt(_startTime / 60);
+				var secs = Mathf.FloorToInt(_startTime % 60);
+				var ms = Mathf.FloorToInt((_startTime * 1000) % 1000);
 
 				var endTime = _startTime + (_duration / 1000);
-				var toMins = UnityEngine.Mathf.FloorToInt(endTime / 60);
-				var toSecs = UnityEngine.Mathf.FloorToInt(endTime % 60);
-				var toMs = UnityEngine.Mathf.FloorToInt((endTime * 1000) % 1000);
+				var toMins = Mathf.FloorToInt(endTime / 60);
+				var toSecs = Mathf.FloorToInt(endTime % 60);
+				var toMs = Mathf.FloorToInt((endTime * 1000) % 1000);
 
-				return $"{GetLogPrefix(_watch != null)}{_duration}ms{EndColorTag()} ({StartColorTag("green")}{(DurationMs / totalMs):P1}{EndColorTag()}) @ ( {mins:N0}:{secs:D2}.{ms:D4} -> {toMins:N0}:{toSecs:D2}.{toMs:D4} [{_startTime} -> {endTime}] )";
+				return $"{GetLogPrefix(_watch != null)}{_duration}ms{EndColorTag()} ({$"{(DurationMs / totalMs):P1}".ToStringColored( Keyword )}) @ ( {mins:N0}:{secs:D2}.{ms:D4} -> {toMins:N0}:{toSecs:D2}.{toMs:D4} [{_startTime} -> {endTime}] )";
 			}
 
             private static string GetLogPrefix( bool running )
             {
                 if( _colored )
                 {
-                    if( running ) return $"{StartColorTag("red")}®{EndColorTag()}{StartColorTag("yellow")}";
-                    else return StartColorTag("cyan");
+                    if( running ) return $"{StartColorTag( Negation )}®{EndColorTag()}{StartColorTag( Names )}";
+                    else return StartColorTag( Numbers );
                 }
 
                 if( running ) return "®";
@@ -266,14 +269,14 @@ public class TimeLogging<T>
 
 			public override string ToString()
 			{
-				var mins = UnityEngine.Mathf.FloorToInt(_startTime / 60);
-				var secs = UnityEngine.Mathf.FloorToInt(_startTime % 60);
-				var ms = UnityEngine.Mathf.FloorToInt((_startTime * 1000) % 1000);
+				var mins = Mathf.FloorToInt(_startTime / 60);
+				var secs = Mathf.FloorToInt(_startTime % 60);
+				var ms = Mathf.FloorToInt((_startTime * 1000) % 1000);
 
 				var endTime = _startTime + (_duration / 1000);
-				var toMins = UnityEngine.Mathf.FloorToInt(endTime / 60);
-				var toSecs = UnityEngine.Mathf.FloorToInt(endTime % 60);
-				var toMs = UnityEngine.Mathf.FloorToInt((endTime * 1000) % 1000);
+				var toMins = Mathf.FloorToInt(endTime / 60);
+				var toSecs = Mathf.FloorToInt(endTime % 60);
+				var toMs = Mathf.FloorToInt((endTime * 1000) % 1000);
 
 				return $"{GetLogPrefix(_watch != null)}{_duration}ms{EndColorTag()}@( {mins:N0}:{secs:D2}.{ms:D4} -> {toMins:N0}:{toSecs:D2}.{toMs:D4} [{_startTime} -> {endTime}] )";
 			}
