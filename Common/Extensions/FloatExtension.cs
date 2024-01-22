@@ -1,5 +1,12 @@
 public static class FloatExtension
 {
+    public static int CompareToAbs( this float value, float otherValue )
+    {
+        if( otherValue < 0 ) otherValue = -otherValue;
+        if( value < 0 ) value = -value;
+        return value.CompareTo( otherValue );
+    }
+	
 	public static string ToPercentageString( this float percentage )
 	{
 		if( percentage > .05 ) return $" {100*percentage:N0}%";

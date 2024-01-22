@@ -2,6 +2,13 @@ using UnityEngine;
 
 public static class IntExtensions
 {
+    public static int CompareToAbs( this int value, int otherValue )
+    {
+        if( otherValue < 0 ) otherValue = -otherValue;
+        if( value < 0 ) value = -value;
+        return value.CompareTo( otherValue );
+    }
+
     public static int GetDigitsCount( this int value )
     {
         if( value == 0 ) return 1;
