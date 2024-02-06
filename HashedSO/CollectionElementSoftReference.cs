@@ -36,6 +36,14 @@ public static class HsoUtils
 		directRef = default(T);
 		return true;
 	}
+	
+	public static T TryGetRefOr<T>( this CollectionElementSoftReference<T> softRef, T directRef ) where T : UnityEngine.ScriptableObject, IHashedSO
+	{
+		if( softRef == null ) return directRef;
+		var softRefValue = softRef.GetReference();
+		if( softRefValue == null ) return directRef;
+		return softRefValue;
+	}
 }
 
 public static class CollectionElementSoftReferenceExtensions
