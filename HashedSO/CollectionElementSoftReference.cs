@@ -39,6 +39,7 @@ public static class HsoUtils
 	
 	public static T TryGetRefOr<T>( this CollectionElementSoftReference<T> softRef, T directRef ) where T : UnityEngine.ScriptableObject, IHashedSO
 	{
+		if( directRef == null ) directRef = null;
 		if( softRef == null ) return directRef;
 		var softRefValue = softRef.GetReference();
 		if( softRefValue == null ) return directRef;
@@ -268,8 +269,7 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 		{
 			var collection = GetCollection();
             if( collection == null ) return null;
-			var id = Mathf.Max( _id, 0 );
-			_assetRuntimeReference = (T)collection.GetElementBase( id );
+			_assetRuntimeReference = (T)collection.GetElementBase( _id );
 		}
 #if UNITY_EDITOR
 		_referenceState = _assetRuntimeReference != null ? EAssetReferenceState.Loaded : EAssetReferenceState.LoadedNull;
