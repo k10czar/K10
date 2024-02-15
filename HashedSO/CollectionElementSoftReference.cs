@@ -37,7 +37,7 @@ public static class HsoUtils
 		return true;
 	}
 	
-	public static T TryGetRefOr<T>( this CollectionElementSoftReference<T> softRef, T directRef ) where T : UnityEngine.ScriptableObject, IHashedSO
+	public static T TryGetRef<T>( this CollectionElementSoftReference<T> softRef, T directRef = null ) where T : UnityEngine.ScriptableObject, IHashedSO
 	{
 		if( directRef == null ) directRef = null;
 		if( softRef == null ) return directRef;
