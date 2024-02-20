@@ -12,6 +12,8 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
     const int STATE_WIDTH = 48;
 
     static Color RED_COLOR = Color.Lerp( Color.red, Color.white, .5f );
+
+    public virtual string DebugSuffix( SerializedProperty property ) => "";
     
     public void UpdateOldRef( SerializedProperty editorAssetRefGuid, SerializedProperty hardRef )
     {
@@ -93,8 +95,8 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
                 EditorGUI.EndDisabledGroup();
             }
             
-            if( specifiedRealRef != null ) EditorGUI.TextField( area, GUIContent.none, $"{specifiedRealRef.GetType().ToString()}[{id.intValue}] => {newRef.name}" );
-            else EditorGUI.TextField( area, GUIContent.none, $"NULL[{id.intValue}] => NULL" );
+            if( specifiedRealRef != null ) EditorGUI.TextField( area, GUIContent.none, $"{specifiedRealRef.GetType().ToString()}{DebugSuffix(property)}[{id.intValue}] => {newRef.name}" );
+            else EditorGUI.TextField( area, GUIContent.none, $"NULL{DebugSuffix(property)}[{id.intValue}] => NULL" );
         }
         
         GuiColorManager.Revert();
