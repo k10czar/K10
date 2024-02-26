@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 
 
 public class ListingPathAttribute : Attribute
@@ -8,5 +9,39 @@ public class ListingPathAttribute : Attribute
 	public ListingPathAttribute( string path )
 	{
 		Path = path;
+	}
+}
+
+
+public class OverridingIconAttribute : Attribute
+{
+	public string Path { get; }
+
+	public OverridingIconAttribute( string path )
+	{
+		Path = path;
+	}
+}
+
+
+public class OverridingColorAttribute : Attribute
+{
+	public UnityEngine.Color Color { get; }
+
+	public OverridingColorAttribute( UnityEngine.Color color )
+	{
+		Color = color;
+	}
+
+	public static UnityEngine.Color TryGetColorFrom( object obj, UnityEngine.Color defaultColor )
+	{
+		return TryGetColorFrom( obj?.GetType(), defaultColor );
+	}
+
+	public static UnityEngine.Color TryGetColorFrom( System.Type type, UnityEngine.Color defaultColor )
+	{
+		var att = type.GetCustomAttribute<OverridingColorAttribute>();
+		if( att == null ) return defaultColor;
+		return att.Color;
 	}
 }

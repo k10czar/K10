@@ -9,7 +9,7 @@ public class TypeListData<T>
     Type[] _newSkillEffectTypes = null;
     string[] _newSkillEffectNames = null;
     GUIContent[] _newSkillEffectGUI = null;
-
+    public GUIContent[] EDITOR_newSkillEffectGUI = null;
 
     public GUIContent[] GetGUIs()
     {
@@ -17,7 +17,10 @@ public class TypeListData<T>
 
         var effectNames = GetNames();
         _newSkillEffectGUI = new GUIContent[effectNames.Length];
-        for( int i = 0; i < effectNames.Length; i++ ) _newSkillEffectGUI[i] = new GUIContent( effectNames[i] );
+        for( int i = 0; i < effectNames.Length; i++ )
+        {
+            _newSkillEffectGUI[i] = new GUIContent( effectNames[i] );
+        } 
 
         return _newSkillEffectGUI;
     }

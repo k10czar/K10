@@ -8,6 +8,8 @@ using System.Linq;
 
 public static class SerializedPropertyExtensions
 {
+	private const float MAGIC_POPUP_SPACE = 15;
+
 	private static readonly Dictionary<string, IVoidable> _events = new Dictionary<string, IVoidable>();
 
 	public static object TriggerMethod( this SerializedProperty property, string name, params object[] parameters )
@@ -16,6 +18,179 @@ public static class SerializedPropertyExtensions
 		var method = objType.GetMethod( name );
 		return method.Invoke( obj, parameters );
 	}
+
+    public static void IterateThroughChildProps( this SerializedProperty prop, System.Action<SerializedProperty> Iteration )
+    {
+        string lastArray = null;
+
+        foreach (var innProp in prop)
+        {
+            if (innProp is SerializedProperty sp)
+            {
+                if (sp.isArray)
+                {
+                    lastArray = sp.propertyPath + ".Array.";
+                }
+                else if (lastArray != null)
+                {
+                    var isInnerArrayProp = sp.propertyPath.StartsWith(lastArray);
+                    if (!isInnerArrayProp) lastArray = null;
+                    else continue;
+                }
+				Iteration( sp );
+            }
+        }
+    }
+	
+    public static void DrawChildProps( this SerializedProperty prop, bool includeChildren = true, float spacing = 0 )
+	{
+		IterateThroughChildProps( prop, ( sp ) => DrawElementLayout( sp, includeChildren, spacing ) );
+	}
+	
+    public static void DrawChildProps( this SerializedProperty prop, Rect rect, bool includeChildren = true, float spacing = 0 )
+	{
+		IterateThroughChildProps( prop, ( sp ) => DrawElement( ref rect, sp, includeChildren, spacing ) );
+	}
+	
+    public static float CalcChildPropsHeight( this SerializedProperty prop, bool includeChildren = true, float spacing = 0 )
+	{
+		float h = 0;
+		IterateThroughChildProps( prop, ( sp ) => CalculateElement( ref h, sp, includeChildren, spacing ) );
+		return h;
+	}
+
+	private static void DrawElement( ref Rect rect, SerializedProperty sp, bool includeChildren = true, float spacing = 0 )
+	{
+		var h = EditorGUI.GetPropertyHeight( sp, includeChildren );
+		EditorGUI.PropertyField( rect.RequestTop( h ), sp, includeChildren );
+		rect = rect.CutTop( h + spacing );
+	}
+
+	private static void DrawElementLayout( SerializedProperty sp, bool includeChildren = true, float spacing = 0 )
+	{
+		EditorGUILayout.PropertyField( sp, includeChildren );
+		if( spacing > Mathf.Epsilon )EditorGUILayout.Space( spacing );
+	}
+
+	private static void CalculateElement( ref float h, SerializedProperty sp, bool includeChildren = true, float spacing = 0 )
+	{
+		h += EditorGUI.GetPropertyHeight( sp, includeChildren ) + spacing;
+	}
+
+	public static float CalcSerializedReferenceHeight( this SerializedProperty prop, bool includeChildren = true, float spacing = 0 )
+	{
+		return EditorGUIUtility.singleLineHeight + ( ( prop.isExpanded ) ? spacing + CalcChildPropsHeight( prop, includeChildren, spacing ) : 0 );
+	}
+
+	public static void DrawSerializedReferenceLayout<T>( this SerializedProperty prop, bool includeChildren = true, float spacing = 0 )
+	{
+        EditorGUILayout.BeginHorizontal();
+		var listingData = TypeListDataCache<T>.Data;
+		var refSize = TypeListDataCache<T>.MaxWidth;
+        var index = FindIndexOf( prop.managedReferenceValue, listingData );
+        var newIndex = EditorGUILayout.Popup( index, listingData.GetGUIsWithIcon(), GUILayout.Width( refSize ) );
+        CheckSelectionChange( prop, listingData, index, newIndex );
+        EditorGUILayout.Space( MAGIC_POPUP_SPACE, false );
+        var triggerSummary = prop.managedReferenceFullTypename;
+        prop.isExpanded = EditorGUILayout.BeginFoldoutHeaderGroup( prop.isExpanded, triggerSummary );
+        EditorGUILayout.EndFoldoutHeaderGroup();
+        EditorGUILayout.EndHorizontal();
+        if (!prop.isExpanded) return;
+		GuiLabelWidthManager.New( refSize );
+		prop.DrawChildProps( includeChildren, spacing );
+		GuiLabelWidthManager.Revert();
+	}
+
+	public static void DrawSerializedReference<T>( this SerializedProperty prop, Rect rect, bool includeChildren = true, float spacing = 0 )
+    {
+        var firstLine = rect.RequestTop(EditorGUIUtility.singleLineHeight);
+        rect = rect.CutTop(EditorGUIUtility.singleLineHeight + spacing);
+		var listingData = TypeListDataCache<T>.Data;
+		var popupWidth = TypeListDataCache<T>.MaxWidth;
+        var index = FindIndexOf( prop.managedReferenceValue, listingData );
+        var newIndex = EditorGUI.Popup(firstLine.RequestLeft(popupWidth), index, listingData.GetGUIsWithIcon());
+        CheckSelectionChange( prop, listingData, index, newIndex );
+        var triggerSummary = prop.managedReferenceFullTypename;
+        prop.isExpanded = EditorGUI.BeginFoldoutHeaderGroup( firstLine.CutLeft(popupWidth + MAGIC_POPUP_SPACE), prop.isExpanded, triggerSummary);
+        EditorGUI.EndFoldoutHeaderGroup();
+        if (!prop.isExpanded) return;
+		GuiLabelWidthManager.New(popupWidth);
+		prop.DrawChildProps(rect, includeChildren, spacing);
+		GuiLabelWidthManager.Revert();
+    }
+
+	private static int FindIndexOf<T>( object refField, TypeListData<T> listingData )
+	{
+        if( refField == null ) return -1;
+		var types = listingData.GetTypes();
+		var triggerRefType = refField.GetType();
+		for( int i = 0; i < types.Length; i++ )
+		{
+			if( types[i] == triggerRefType ) return i;
+		}
+		 return -1;
+	}
+
+    private static void CheckSelectionChange<T>( SerializedProperty prop, TypeListData<T> listingData, int oldIndex, int newIndex )
+    {
+        if( newIndex == oldIndex ) return;
+		var types = listingData.GetTypes();
+		var newType = (newIndex >= 0) ? types[newIndex] : null;
+		var newTypeName = newType?.FullName ?? "NULL";
+		var oldTypeName = ( oldIndex < 0 || oldIndex >= types.Length ) ? "MISSING" : types[oldIndex]?.FullName ?? "NULL";
+		Debug.Log($"Changed type from {oldTypeName}[{oldIndex}] to {newTypeName}[{newIndex}]");
+		prop.managedReferenceValue = (newType != null) ? System.Activator.CreateInstance(newType) : null;
+    }
+
+    // public static void DrawChildProps( this SerializedProperty prop, Rect rect, bool includeChildren = true, float spacing = 2 )
+    // {
+    //     string lastArray = null;
+
+    //     foreach (var innProp in prop)
+    //     {
+    //         if (innProp is SerializedProperty sp)
+    //         {
+    //             if (sp.isArray)
+    //             {
+    //                 lastArray = sp.propertyPath + ".Array.";
+    //             }
+    //             else if (lastArray != null)
+    //             {
+    //                 var isInnerArrayProp = sp.propertyPath.StartsWith(lastArray);
+    //                 if (!isInnerArrayProp) lastArray = null;
+    //                 else continue;
+    //             }
+	// 			var h = EditorGUI.GetPropertyHeight( sp, includeChildren );
+    //             EditorGUI.PropertyField( rect.RequestTop( h ), sp, includeChildren );
+	// 			rect = rect.CutTop( h + spacing );
+    //         }
+    //     }
+    // }
+
+    // public static float CalcChildPropsHeight( this SerializedProperty prop, bool includeChildren = true, float spacing = 2 )
+    // {
+    //     string lastArray = null;
+	// 	var h = 0f;
+
+    //     foreach (var innProp in prop)
+    //     {
+    //         if (innProp is SerializedProperty sp)
+    //         {
+    //             if (sp.isArray)
+    //             {
+    //                 lastArray = sp.propertyPath + ".Array.";
+    //             }
+    //             else if (lastArray != null)
+    //             {
+    //                 var isInnerArrayProp = sp.propertyPath.StartsWith(lastArray);
+    //                 if (!isInnerArrayProp) lastArray = null;
+    //                 else continue;
+    //             }
+	// 			h += EditorGUI.GetPropertyHeight( sp, includeChildren ) + spacing;
+    //         }
+    //     }
+	// 	return h;
+    // }
 
 	public static string ToFileName( this SerializedProperty prop )
 	{

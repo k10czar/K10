@@ -10,6 +10,11 @@ public static class Colors
 {
     private const float BYTE_TO_FLOAT = 1f / 255f;
     public static Color From( byte r, byte g, byte b ) => new Color( r * BYTE_TO_FLOAT, g * BYTE_TO_FLOAT, b * BYTE_TO_FLOAT );
+    
+#if UNITY_EDITOR
+    [UnityEditor.MenuItem("K10/Colors/Log")]
+#endif
+    private static void Log() { Debug.Log( Colors.DebugLogs()[0] ); }
 
     public static class Console
     {
