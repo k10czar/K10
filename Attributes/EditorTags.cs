@@ -1,6 +1,9 @@
 using System;
 using System.Reflection;
+using UnityEngine;
 
+
+public class ExtendedSerializeReferenceAttribute : PropertyAttribute { }
 
 public class ListingPathAttribute : Attribute
 {

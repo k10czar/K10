@@ -3,13 +3,18 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-public class TypeListData<T>
+public class TypeListData
 {
-    Type _baseType = typeof(T);
+    Type _baseType = null;
     Type[] _newSkillEffectTypes = null;
     string[] _newSkillEffectNames = null;
     GUIContent[] _newSkillEffectGUI = null;
     public GUIContent[] EDITOR_newSkillEffectGUI = null;
+
+    public TypeListData( System.Type type )
+    {
+        _baseType = type;
+    }
 
     public GUIContent[] GetGUIs()
     {
@@ -51,5 +56,27 @@ public class TypeListData<T>
                     .Where( p => _baseType.IsAssignableFrom(p) && !p.IsAbstract ).ToArray();
 
         return _newSkillEffectTypes;
+    }
+    
+    float _maxWidth = -1;
+    public float MaxWidth
+    {
+        get
+        {
+#if UNITY_EDITOR
+            if( _maxWidth > -Mathf.Epsilon ) return _maxWidth;
+
+            _maxWidth = 10;
+            foreach( var lab in GetGUIs() )
+            {
+                UnityEditor.EditorStyles.label.CalcMinMaxWidth( lab, out var minW, out var maxW );
+                maxW += 15;
+                if( _maxWidth < maxW ) _maxWidth = maxW;
+            }
+            return _maxWidth;
+#else
+            return 0;
+#endif
+        }
     }
 }

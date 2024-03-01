@@ -3,7 +3,7 @@ using UnityEngine;
 
 public static class TypeListDataExtension
 {
-    public static GUIContent[] GetGUIsWithIcon<T>( this TypeListData<T> list )
+    public static GUIContent[] GetGUIsWithIcon( this TypeListData list )
     {
         var guis = list.EDITOR_newSkillEffectGUI;
         if( guis != null ) return guis;

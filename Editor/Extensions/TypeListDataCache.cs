@@ -1,25 +1,24 @@
+using System.Collections.Generic;
 using UnityEngine;
 
-public class TypeListDataCache<T>
+public class TypeListDataCache
 {
-    static float _maxWidth = -1;
-    static TypeListData<T> _data = null;
+    static Dictionary<System.Type,TypeListData> _data = null;
 
-    public static TypeListData<T> Data => _data ??= new TypeListData<T>();
-    public static float MaxWidth
+    public static TypeListData GetFrom( System.Type type )
     {
-        get
+        if( _data == null ) _data = new Dictionary<System.Type, TypeListData>();
+        if( !_data.TryGetValue( type, out var typeListData ) )
         {
-            if( _maxWidth > -Mathf.Epsilon ) return _maxWidth;
-
-            _maxWidth = 10;
-            foreach( var lab in Data.GetGUIs() )
-            {
-                K10GuiStyles.basicStyle.CalcMinMaxWidth( lab, out var minW, out var maxW );
-                maxW += 15;
-                if( _maxWidth < maxW ) _maxWidth = maxW;
-            }
-            return _maxWidth;
+            typeListData = new TypeListData( type );
+            _data.Add( type, typeListData );
         }
+
+        return typeListData;
     }
+}
+
+public class TypeListData<T>
+{
+    public static TypeListData Data => TypeListDataCache.GetFrom( typeof(T) );
 }

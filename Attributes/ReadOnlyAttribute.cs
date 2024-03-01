@@ -24,3 +24,6 @@
  /// <seealso cref="BeginReadOnlyGroupAttribute"/>
  /// <seealso cref="ReadOnlyAttribute"/>
  public class EndReadOnlyGroupAttribute : PropertyAttribute { }
+
+ public class ExtendedSerializeReferenceAttribute : PropertyAttribute { }
+ 

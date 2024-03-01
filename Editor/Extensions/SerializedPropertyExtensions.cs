@@ -82,11 +82,17 @@ public static class SerializedPropertyExtensions
 		return EditorGUIUtility.singleLineHeight + ( ( prop.isExpanded ) ? spacing + CalcChildPropsHeight( prop, includeChildren, spacing ) : 0 );
 	}
 
-	public static void DrawSerializedReferenceLayout<T>( this SerializedProperty prop, bool includeChildren = true, float spacing = 0 )
+	public static void DrawSerializedReferenceLayout( this SerializedProperty prop, bool includeChildren = true, float spacing = 0 )
 	{
+		var type = prop.GetManagedType();
+		if( type == null )
+		{
+			EditorGUILayout.LabelField( $"Cannot find type: {prop.managedReferenceFieldTypename}" );
+			return;
+		}
         EditorGUILayout.BeginHorizontal();
-		var listingData = TypeListDataCache<T>.Data;
-		var refSize = TypeListDataCache<T>.MaxWidth;
+		var listingData = TypeListDataCache.GetFrom( type );
+		var refSize = listingData.MaxWidth;
         var index = FindIndexOf( prop.managedReferenceValue, listingData );
         var newIndex = EditorGUILayout.Popup( index, listingData.GetGUIsWithIcon(), GUILayout.Width( refSize ) );
         CheckSelectionChange( prop, listingData, index, newIndex );
@@ -100,18 +106,36 @@ public static class SerializedPropertyExtensions
 		prop.DrawChildProps( includeChildren, spacing );
 		GuiLabelWidthManager.Revert();
 	}
+	
+	public static System.Type GetManagedType( this SerializedProperty prop )
+	{
+		var assType = prop.managedReferenceFieldTypename;
+		var splited = assType.Split( ' ' );
+		if( splited.Length == 0 ) return null;
+		if( splited.Length == 1 ) return TypeFinder.WithName( splited[0] );
+		var typeName = splited[1];
+		var assemblyName = splited[0];
+		var type = TypeFinder.WithNameFromAssembly( typeName, assemblyName );
+		return type;
+	}
 
-	public static void DrawSerializedReference<T>( this SerializedProperty prop, Rect rect, bool includeChildren = true, float spacing = 0 )
+	public static void DrawSerializedReference( this SerializedProperty prop, Rect rect, bool includeChildren = true, float spacing = 0 )
     {
+		var type = prop.GetManagedType();
+		if( type == null )
+		{
+			EditorGUI.LabelField( rect, $"Cannot find type: {prop.managedReferenceFieldTypename}" );
+			return;
+		}
         var firstLine = rect.RequestTop(EditorGUIUtility.singleLineHeight);
         rect = rect.CutTop(EditorGUIUtility.singleLineHeight + spacing);
-		var listingData = TypeListDataCache<T>.Data;
-		var popupWidth = TypeListDataCache<T>.MaxWidth;
+		var listingData = TypeListDataCache.GetFrom( type );
+		var popupWidth = listingData.MaxWidth + MAGIC_POPUP_SPACE;
         var index = FindIndexOf( prop.managedReferenceValue, listingData );
         var newIndex = EditorGUI.Popup(firstLine.RequestLeft(popupWidth), index, listingData.GetGUIsWithIcon());
         CheckSelectionChange( prop, listingData, index, newIndex );
         var triggerSummary = prop.managedReferenceFullTypename;
-        prop.isExpanded = EditorGUI.BeginFoldoutHeaderGroup( firstLine.CutLeft(popupWidth + MAGIC_POPUP_SPACE), prop.isExpanded, triggerSummary);
+        prop.isExpanded = EditorGUI.BeginFoldoutHeaderGroup( firstLine.CutLeft(popupWidth), prop.isExpanded, triggerSummary);
         EditorGUI.EndFoldoutHeaderGroup();
         if (!prop.isExpanded) return;
 		GuiLabelWidthManager.New(popupWidth);
@@ -119,7 +143,7 @@ public static class SerializedPropertyExtensions
 		GuiLabelWidthManager.Revert();
     }
 
-	private static int FindIndexOf<T>( object refField, TypeListData<T> listingData )
+	private static int FindIndexOf( object refField, TypeListData listingData )
 	{
         if( refField == null ) return -1;
 		var types = listingData.GetTypes();
@@ -131,14 +155,14 @@ public static class SerializedPropertyExtensions
 		 return -1;
 	}
 
-    private static void CheckSelectionChange<T>( SerializedProperty prop, TypeListData<T> listingData, int oldIndex, int newIndex )
+    private static void CheckSelectionChange( SerializedProperty prop, TypeListData listingData, int oldIndex, int newIndex )
     {
         if( newIndex == oldIndex ) return;
 		var types = listingData.GetTypes();
 		var newType = (newIndex >= 0) ? types[newIndex] : null;
 		var newTypeName = newType?.FullName ?? "NULL";
 		var oldTypeName = ( oldIndex < 0 || oldIndex >= types.Length ) ? "MISSING" : types[oldIndex]?.FullName ?? "NULL";
-		Debug.Log($"Changed type from {oldTypeName}[{oldIndex}] to {newTypeName}[{newIndex}]");
+		Debug.Log($"{"Changed".Colorfy( Colors.Console.Verbs )} {"SerializedReference".Colorfy( Colors.Console.TypeName )} {prop.propertyPath.Colorfy( Colors.Console.Interfaces )} type from {$"{oldTypeName}[{oldIndex}]".Colorfy(Colors.Console.TypeName)} to {$"{newTypeName}[{newIndex}]".Colorfy(Colors.Console.Numbers)}");
 		prop.managedReferenceValue = (newType != null) ? System.Activator.CreateInstance(newType) : null;
     }
 
