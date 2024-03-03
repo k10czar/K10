@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 public static class TypeFinder
 {
@@ -9,7 +8,7 @@ public static class TypeFinder
 
     public static System.Type WithName( string typename, StringComparison comparison = StringComparison.Ordinal )
     {
-        if( _nameToTypeCache == null ) _nameToTypeCache = new Dictionary<string, Type>();
+        if( _nameToTypeCache == null ) _nameToTypeCache = new();
 
         if( _nameToTypeCache.TryGetValue( typename, out var type ) ) return type;
 

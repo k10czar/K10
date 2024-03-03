@@ -125,6 +125,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 
 	private readonly Dictionary<object, SemaphoreObject> _semaphores = new Dictionary<object, SemaphoreObject>();
 	public bool Free { get { return _semaphores.Count == 0; } }
+	public bool Locked { get { return _semaphores.Count != 0; } }
 
 	// TODO: LazyOptimization
 	private EventSlot _blockEvent;

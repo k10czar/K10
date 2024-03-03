@@ -31,6 +31,7 @@ public static class Colors
         public static readonly Color Fields = MediumSlateBlue;
         public static readonly Color EventName = DeepPink;
         public static readonly Color Punctuations = HotPink;
+        public static readonly Color Success = MintGreen;
 
         public static string[] DebugLogs( int batches = 1 )
         {

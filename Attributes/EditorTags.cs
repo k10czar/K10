@@ -3,7 +3,8 @@ using System.Reflection;
 using UnityEngine;
 
 
-public class ExtendedSerializeReferenceAttribute : PropertyAttribute { }
+public class ToStringAttribute : PropertyAttribute { }
+public class ExtendedDrawerAttribute : PropertyAttribute { }
 
 public class ListingPathAttribute : Attribute
 {

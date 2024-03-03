@@ -13,5 +13,6 @@ public static class TypeExtensions
         if( type == null ) return nullString;
         return type.GetType().Name;
     }
-    
+
+    public static object CreateInstance( this System.Type type ) => ( type != null ) ? System.Activator.CreateInstance( type ) : null;
 }

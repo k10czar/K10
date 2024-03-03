@@ -29,8 +29,10 @@ public static class K10GuiStyles
 	public static readonly GUIStyle basicStyle = new GUIStyle( EditorStyles.label ) { fontSize = NORMAL_FONT_SIZE };
 	public static readonly GUIStyle fieldStyle = new GUIStyle( EditorStyles.textField ) { fontSize = NORMAL_FONT_SIZE };
 	public static readonly GUIStyle boldStyle = new GUIStyle( EditorStyles.label ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold };
-	public static readonly GUIStyle buttonStyle = new GUIStyle( EditorStyles.miniButton ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold };
-	public static readonly GUIStyle bigbuttonStyle = new GUIStyle( EditorStyles.miniButton ) { fontSize = BIG_FONT_SIZE, fontStyle = FontStyle.Bold };
+	public static readonly GUIStyle buttonStyle = new GUIStyle( EditorStyles.miniButton ) { fontSize = SMALL_FONT_SIZE, /*fontStyle = FontStyle.Bold*/};
+	public static readonly GUIStyle midButtonStyle = new GUIStyle( EditorStyles.miniButton ) { fontSize = SMALL_FONT_SIZE, fontStyle = FontStyle.Bold, fixedHeight = 28 };
+	public static readonly GUIStyle midLeftButtonStyle = new GUIStyle( EditorStyles.miniButton ) { fontSize = SMALL_FONT_SIZE, alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Bold, fixedHeight = 28 };
+	public static readonly GUIStyle bigbuttonStyle = new GUIStyle( EditorStyles.miniButton ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold, fixedHeight = 40 };
 	public static readonly GUIStyle bigFoldStyle = new GUIStyle( EditorStyles.foldout ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold };
 	public static readonly GUIStyle textFieldStyle = new GUIStyle( EditorStyles.textField ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold };
 	public static readonly GUIStyle foldStyle = new GUIStyle( EditorStyles.foldout ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold };
@@ -40,7 +42,7 @@ public static class K10GuiStyles
 	public static readonly GUIStyle warningText = new GUIStyle( boldStyle ) { fontSize = NORMAL_FONT_SIZE, normal = new GUIStyleState() { textColor = Color.yellow } };
 	public static readonly GUIStyle errorText = new GUIStyle( boldStyle ) { fontSize = NORMAL_FONT_SIZE, normal = new GUIStyleState() { textColor = Color.red } };
 
-	public static readonly GUIStyle smallboldStyle = new GUIStyle( boldStyle ) { fontSize = SMALL_FONT_SIZE };
+	public static readonly GUIStyle smallboldStyle = new GUIStyle( boldStyle ) { fontSize = SMALL_FONT_SIZE, fontStyle = FontStyle.Bold };
 	public static readonly GUIStyle smallStyle = new GUIStyle( EditorStyles.label ) { fontSize = SMALL_FONT_SIZE };
 	public static readonly GUIStyle smallboldRightStyle = new GUIStyle( boldStyle ) { fontSize = SMALL_FONT_SIZE, alignment = TextAnchor.MiddleRight };
 	public static readonly GUIStyle smallRightStyle = new GUIStyle( smallStyle ) { alignment = TextAnchor.MiddleRight };
