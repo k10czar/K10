@@ -25,6 +25,16 @@ public interface ISemaphoreInterection
 
 public static class ISemaphoreInterectionExtentions
 {
+	public static bool IsFree( this ISemaphoreInfo semaphore )
+	{
+		return semaphore == null || semaphore.Free;
+	}
+
+	public static bool IsLocked( this ISemaphoreInfo semaphore )
+	{
+		return semaphore != null && !semaphore.Free;
+	}
+
 	public static void BlockOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> source ) 
 	{
 		source.Synchronize( semaphore.Validator.Validated<bool>( ( value ) => { if( value ) semaphore.Block( source ); else semaphore.Release( source ); } ) );
@@ -125,7 +135,6 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 
 	private readonly Dictionary<object, SemaphoreObject> _semaphores = new Dictionary<object, SemaphoreObject>();
 	public bool Free { get { return _semaphores.Count == 0; } }
-	public bool Locked { get { return _semaphores.Count != 0; } }
 
 	// TODO: LazyOptimization
 	private EventSlot _blockEvent;

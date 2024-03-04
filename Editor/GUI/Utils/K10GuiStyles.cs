@@ -42,7 +42,7 @@ public static class K10GuiStyles
 	public static readonly GUIStyle warningText = new GUIStyle( boldStyle ) { fontSize = NORMAL_FONT_SIZE, normal = new GUIStyleState() { textColor = Color.yellow } };
 	public static readonly GUIStyle errorText = new GUIStyle( boldStyle ) { fontSize = NORMAL_FONT_SIZE, normal = new GUIStyleState() { textColor = Color.red } };
 
-	public static readonly GUIStyle smallboldStyle = new GUIStyle( boldStyle ) { fontSize = SMALL_FONT_SIZE, fontStyle = FontStyle.Bold };
+	public static readonly GUIStyle smallboldStyle = new GUIStyle( boldStyle ) { fontSize = SMALL_FONT_SIZE, alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Bold };
 	public static readonly GUIStyle smallStyle = new GUIStyle( EditorStyles.label ) { fontSize = SMALL_FONT_SIZE };
 	public static readonly GUIStyle smallboldRightStyle = new GUIStyle( boldStyle ) { fontSize = SMALL_FONT_SIZE, alignment = TextAnchor.MiddleRight };
 	public static readonly GUIStyle smallRightStyle = new GUIStyle( smallStyle ) { alignment = TextAnchor.MiddleRight };

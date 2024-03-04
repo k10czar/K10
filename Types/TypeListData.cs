@@ -5,15 +5,15 @@ using UnityEngine;
 
 public class TypeListData
 {
-    Type _baseType = null;
+    Type[] _baseTypes = null;
     Type[] _newSkillEffectTypes = null;
     string[] _newSkillEffectNames = null;
     GUIContent[] _newSkillEffectGUI = null;
     public GUIContent[] EDITOR_newSkillEffectGUI = null;
 
-    public TypeListData( System.Type type )
+    public TypeListData( params System.Type[] types )
     {
-        _baseType = type;
+        _baseTypes = types;
     }
 
     public GUIContent[] GetGUIs()
@@ -41,7 +41,7 @@ public class TypeListData
             var t = effectTypes[i];
             var pathAtt = t.GetCustomAttribute<ListingPathAttribute>();
             if( pathAtt != null ) _newSkillEffectNames[i] = pathAtt.Path;
-            else _newSkillEffectNames[i] = t.FullName;
+            else _newSkillEffectNames[i] = t.Assembly.GetName().Name.Replace( ".", "/" ) + "/" + t.FullName.Replace( ".", "/" );
         }
 
         return _newSkillEffectNames;
@@ -53,9 +53,18 @@ public class TypeListData
 
         _newSkillEffectTypes = System.AppDomain.CurrentDomain.GetAssemblies()
                     .SelectMany( s => s.GetTypes() )
-                    .Where( p => _baseType.IsAssignableFrom(p) && !p.IsAbstract ).ToArray();
+                    .Where( p => IsAssignableFrom(p) && !p.IsAbstract ).ToArray();
 
         return _newSkillEffectTypes;
+    }
+
+    private bool IsAssignableFrom( Type t )
+    {
+        foreach( var bt in _baseTypes )
+        {
+            if( !bt.IsAssignableFrom( t ) ) return false;
+        }
+        return true;
     }
     
     float _maxWidth = -1;
@@ -79,4 +88,6 @@ public class TypeListData
 #endif
         }
     }
+
+    public object BaseTypesDebug => string.Join( ",", _baseTypes.ToList().ConvertAll( ( t ) => t.Name ).ToArray() );
 }
