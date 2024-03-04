@@ -17,17 +17,6 @@ public class ListingPathAttribute : Attribute
 }
 
 
-public class OverridingIconAttribute : Attribute
-{
-	public string Path { get; }
-
-	public OverridingIconAttribute( string path )
-	{
-		Path = path;
-	}
-}
-
-
 public class OverridingColorAttribute : Attribute
 {
 	public UnityEngine.Color Color { get; }

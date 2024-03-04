@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 
 public static class MonoScriptUtilities
 {
@@ -28,5 +29,12 @@ public static class MonoScriptUtilities
 
         _cachedScripts[type] = null;
         return null;
+    }
+
+    public static Texture EditorGetIcon( this System.Type type )
+    {
+        var script = EditorGetScript( type );
+        if( script == null ) return null;
+        return EditorGUIUtility.GetIconForObject( script );
     }
 }

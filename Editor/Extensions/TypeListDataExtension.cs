@@ -1,4 +1,5 @@
 using System.Reflection;
+using UnityEditor;
 using UnityEngine;
 
 public static class TypeListDataExtension
@@ -13,8 +14,9 @@ public static class TypeListDataExtension
         var effectTypes = list.GetTypes();
         for( int i = 0; i < effectNames.Length; i++ )
         {
-            var iconName = effectTypes[i].GetCustomAttribute<OverridingIconAttribute>()?.Path ?? null;
-            if( iconName != null ) guis[i] = new GUIContent( effectNames[i], IconCache.Get( iconName ).Texture );
+            var type = effectTypes[i];
+            var texture = type.EditorGetIcon();
+            if( texture != null ) guis[i] = new GUIContent( effectNames[i], texture );
             else guis[i] = new GUIContent( effectNames[i] );
         } 
 
