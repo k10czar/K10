@@ -170,6 +170,29 @@ public static class CollectionElementSoftReferenceExtensions
 		return modded;
 	}
 #endif
+
+#if UNITY_EDITOR
+	public static string EDITOR_NameOrNull<T>( UnityEditor.SerializedProperty prop ) where T : UnityEngine.Object
+	{
+		var hardRefProp = prop.FindPropertyRelative( "_assetHardReference" );
+		var idProp = prop.FindPropertyRelative( "_id" );
+		if( hardRefProp.objectReferenceValue != null ) return $"{hardRefProp.objectReferenceValue.name}[{idProp.intValue}]";
+		var guidProp = prop.FindPropertyRelative( "_editorAssetRefGuid" );
+		var guid = guidProp.stringValue;
+		if( !string.IsNullOrEmpty( guid ) ) 
+		{
+			var path = AssetDatabase.GUIDToAssetPath( guid );
+			if( !string.IsNullOrEmpty( path ) )
+			{
+				var asset = AssetDatabase.LoadAssetAtPath<T>( path );
+				if( asset != null ) return $"{hardRefProp.objectReferenceValue.NameOrNull()}[{idProp.intValue}]";
+				return $"NR[{idProp.intValue}]";
+			}
+			return $"NF[{idProp.intValue}]";
+		}
+		return $"{guid.ToStringOrNull()}[{idProp.intValue}]";
+	}
+#endif
 }
 
 [System.Serializable]
@@ -227,7 +250,11 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 	
     public bool RefreshUsedRef()
     {
+#if UNITY_EDITOR
+        return SetReference( EDITOR_GetAsset() );
+#else
         return SetReference( GetReference() );
+#endif //UNITY_EDITOR
     }
 
 #if UNITY_EDITOR
@@ -256,6 +283,9 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 
 	public T GetReference()
 	{
+#if UNITY_EDITOR
+
+#endif //UNITY_EDITOR
 		if( _id >= 0 && _assetRuntimeReference == null ) 
 		{
 			var collection = GetCollection();
