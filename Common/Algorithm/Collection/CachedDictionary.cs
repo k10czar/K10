@@ -176,14 +176,14 @@ public class CachedDictionary<K,T> : ICachedDictionaryObserver<K,T>, ICustomDisp
         return true;
 	}
 
-    public void Remove( K key, T value )
+    public bool Remove( K key, T value )
     {
         List<T> list;
-        if( !_dictionary.TryGetValue( key, out list ) ) return;
+        if( !_dictionary.TryGetValue( key, out list ) ) return false;
 
         var deleted = list.Remove( value );
 
-        if (!deleted) return;
+        if (!deleted) return false;
 
         var count = list.Count;
         GetEventDrivenCountEditor( key ).Setter( count );
@@ -196,6 +196,7 @@ public class CachedDictionary<K,T> : ICachedDictionaryObserver<K,T>, ICustomDisp
         _onElementRemoved.Trigger( value );
 		_onChange.Trigger();
 		// if( value != null )_ onNotNullElementRemoved.Trigger( value );
+        return true;
 	}
 
     public bool RemoveAllOf( K key )
