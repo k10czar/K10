@@ -107,7 +107,7 @@ public static class SerializedPropertyExtensions
         if (!_logged.Contains(key))
         {
             _logged.Add(key);
-            Debug.LogError($"Called GetCalculatedElementHeightCached on a non-cached property: {key}");
+            // Debug.LogError($"Called GetCalculatedElementHeightCached on a non-cached property: {key}");
         }
         return EditorGUIUtility.singleLineHeight;
     }
@@ -189,7 +189,8 @@ public static class SerializedPropertyExtensions
         var index = FindIndexOf( prop.managedReferenceValue, listingData );
         var newIndex = EditorGUI.Popup(firstLine.RequestLeft(popupWidth), index, listingData.GetGUIsWithIcon());
         CheckSelectionChange( prop, listingData, index, newIndex );
-        var triggerSummary = prop.managedReferenceFullTypename.Split( " " )[1];
+		var triggerSummarys = prop.managedReferenceFullTypename.Split( " " );
+        var triggerSummary = triggerSummarys.LastOrDefault().ToStringOrNull();
         prop.isExpanded = EditorGUI.BeginFoldoutHeaderGroup( firstLine.CutLeft(popupWidth + MAGIC_POPUP_SPACE), prop.isExpanded, triggerSummary);
         EditorGUI.EndFoldoutHeaderGroup();
         if (!prop.isExpanded) return;
