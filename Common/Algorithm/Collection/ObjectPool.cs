@@ -21,6 +21,7 @@ public static class ObjectPool<T> where T : new()
 
 	public static void Return( T t ) 
 	{
+		if( t == null ) return;
 		if( t is System.Collections.IList list ) list.Clear();
 		var thread = System.Threading.Thread.CurrentThread;
 		if( !_pools.TryGetValue( thread, out var pool ) )
