@@ -18,14 +18,19 @@ public static class SerializedPropertyExtensions
 		return method.Invoke( obj, parameters );
 	}
 
+
     public static void IterateThroughChildProps( this SerializedProperty prop, System.Action<SerializedProperty> Iteration )
     {
         string lastArray = null;
+
+		string notExpanded = "***";
+		string iteratedProp = prop.propertyPath;
 
         foreach (var innProp in prop)
         {
             if (innProp is SerializedProperty sp)
             {
+
                 if (sp.isArray)
                 {
                     lastArray = sp.propertyPath + ".Array.";
@@ -36,7 +41,21 @@ public static class SerializedPropertyExtensions
                     if (!isInnerArrayProp) lastArray = null;
                     else continue;
                 }
+				
+				var path = sp.propertyPath;
+				var propLevel = 0;
+				for( int i = iteratedProp.Length; i < path.Length; i++ ) if( path[i] == '.' ) propLevel++;
+
+				if( propLevel > 1 ) continue;
+
+				if( sp.propertyPath.StartsWith( notExpanded ) ) continue;
+				else notExpanded = "***";
+
+				// Debug.Log( $"{iteratedProp} reach {sp.propertyPath} level {propLevel}" );
+
 				Iteration( sp );
+
+				if( !sp.isExpanded ) notExpanded = sp.propertyPath;
             }
         }
     }
@@ -77,8 +96,11 @@ public static class SerializedPropertyExtensions
 		var drawer = PropDrawerCache.From( type );
 		var h = GetCalculatedElementHeightCached( sp, includeChildren );
 		var drawRect = rect.RequestTop( h );
-		if( drawer != null ) drawer.OnGUI( drawRect, sp, new GUIContent( sp.displayName ) );
-		else EditorGUI.PropertyField( drawRect, sp, includeChildren );
+		if( drawer == null ) EditorGUI.PropertyField( drawRect, sp, includeChildren );
+		else drawer.OnGUI( drawRect, sp, new GUIContent( sp.displayName ) );
+		// Debug.Log( $"DrawElement {sp.propertyPath} {(sp.isExpanded?"expanded":"collapsed")} {(includeChildren?"includeChildren":"noChildren")} {(drawer== null?"NO Drawer":drawer.TypeNameOrNull())}" );
+		// if( drawer == null ) GUI.Label( drawRect.MoveRight(250).RequestTop( EditorGUIUtility.singleLineHeight ), "PropertyField.DrawElement" );
+		// else GUI.Label( drawRect.MoveRight(250).RequestTop( EditorGUIUtility.singleLineHeight ), "drawer.DrawElement" );
 		rect = rect.CutTop( h + spacing );
 	}
 
@@ -119,22 +141,25 @@ public static class SerializedPropertyExtensions
 
     private static float CalculateElementHeight( SerializedProperty sp, bool includeChildren = true )
 	{
+		var childs = sp.isExpanded && includeChildren;
 		var type = sp.GetSerializedPropertyType();
 		var drawer = PropDrawerCache.From( type );
-		var h = ( drawer != null ) ? drawer.GetPropertyHeight( sp, new GUIContent( sp.displayName ) ) : EditorGUI.GetPropertyHeight( sp, includeChildren );
-        var cache = GetHeightCached( includeChildren );
+		var h = ( drawer != null ) ? drawer.GetPropertyHeight( sp, new GUIContent( sp.displayName ) ) : EditorGUI.GetPropertyHeight( sp, childs );
+        var cache = GetHeightCached( childs );
 		cache[sp.CompletePath()] = h;
 		return h;
 	}
 
 	private static void SumElementHeight( ref float h, SerializedProperty sp, bool includeChildren = true, float spacing = 0 )
 	{
-		h += CalculateElementHeight( sp, includeChildren ) + spacing;
+		var childs = sp.isExpanded && includeChildren;
+		h += CalculateElementHeight( sp, childs ) + spacing;
 	}
 
 	public static float CalcSerializedReferenceHeight( this SerializedProperty prop, bool includeChildren = true, float spacing = 0 )
 	{
-		return EditorGUIUtility.singleLineHeight + ( ( prop.isExpanded ) ? spacing + CalcChildPropsHeight( prop, includeChildren, spacing ) : 0 );
+		var childs = prop.isExpanded && includeChildren;
+		return EditorGUIUtility.singleLineHeight + ( ( childs ) ? spacing + CalcChildPropsHeight( prop, includeChildren, spacing ) : 0 );
 	}
 
 	public static void DrawSerializedReferenceLayout( this SerializedProperty prop, bool includeChildren = true, float spacing = 0 )

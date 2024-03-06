@@ -36,12 +36,39 @@ public class TypeListData
 
         var effectTypes = GetTypes();
         _newSkillEffectNames = new string[effectTypes.Length];
-        for( int i = 0; i < _newSkillEffectNames.Length; i++ ) 
+        string commonPart = null;
+        for( int i = 0; i < _newSkillEffectNames.Length; i++ )
         {
             var t = effectTypes[i];
             var pathAtt = t.GetCustomAttribute<ListingPathAttribute>();
             if( pathAtt != null ) _newSkillEffectNames[i] = pathAtt.Path;
             else _newSkillEffectNames[i] = t.Assembly.GetName().Name.Replace( ".", "/" ) + "/" + t.FullName.Replace( ".", "/" );
+            
+            var str = _newSkillEffectNames[i];
+            if( commonPart == null ) 
+            {
+                int id = -1;
+                for( int si = str.Length - 1; si >= 0; si-- ) if( str[si] == '/' ) { id = si; break; }
+                if( id == -1 ) commonPart = string.Empty;
+                else commonPart = str.Substring( 0, id + 1 );
+            }
+            else
+            {
+                int id = -1;
+                for( int si = 0; si < str.Length && si < commonPart.Length; si++ ) if( commonPart[si] == str[si] ) { id = si; } else break;
+                if( id == -1 ) commonPart = string.Empty;
+                else commonPart = str.Substring( 0, id + 1 );
+            }
+        }
+
+        if( !string.IsNullOrEmpty( commonPart ) )
+        {
+            var cutLength = commonPart.Length;
+            for( int i = 0; i < _newSkillEffectNames.Length; i++ )
+            {
+                var str = _newSkillEffectNames[i];
+                _newSkillEffectNames[i] = str.Substring( cutLength, str.Length - cutLength );
+            }
         }
 
         return _newSkillEffectNames;

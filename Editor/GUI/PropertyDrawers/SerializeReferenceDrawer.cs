@@ -14,6 +14,6 @@ public sealed class SerializeReferenceDrawer : PropertyDrawer
     public override void OnGUI( Rect rect, SerializedProperty property, GUIContent label )
     {
         property.DrawSerializedReference( rect );
-        // GUI.Label( rect, "SerializeReferenceDrawer" );
+        GUI.Label( rect.RequestTop( EditorGUIUtility.singleLineHeight ), "SerializeReferenceDrawer", K10GuiStyles.midLeftButtonStyle );
     }
 }

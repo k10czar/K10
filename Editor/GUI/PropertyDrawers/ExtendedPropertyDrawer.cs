@@ -9,7 +9,7 @@ public sealed class ExtendedPropertyDrawer : PropertyDrawer
         // var h = EditorGUIUtility.singleLineHeight;
         var h = 0f;
         if( property.isArray ) h += EditorGUIUtility.singleLineHeight;
-        else h += property.CalcSerializedReferenceHeight();
+        else h += property.CalcSerializedReferenceHeight( true );
         return h;
     }
 
@@ -18,6 +18,6 @@ public sealed class ExtendedPropertyDrawer : PropertyDrawer
         // GUI.Label( rect.RequestTop( EditorGUIUtility.singleLineHeight ), "ExtendedSerializeReferenceDrawer" );
         // rect = rect.CutTop( EditorGUIUtility.singleLineHeight );
         if( property.isArray ) GUI.Label( rect, "Array not implemented" );
-        if( !property.isArray ) property.DrawSerializedReference( rect );
+        if( !property.isArray ) property.DrawSerializedReference( rect, true );
     }
 }
