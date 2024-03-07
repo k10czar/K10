@@ -99,8 +99,8 @@ public static class SerializedPropertyExtensions
 		if( drawer == null ) EditorGUI.PropertyField( drawRect, sp, includeChildren );
 		else drawer.OnGUI( drawRect, sp, new GUIContent( sp.displayName ) );
 		// Debug.Log( $"DrawElement {sp.propertyPath} {(sp.isExpanded?"expanded":"collapsed")} {(includeChildren?"includeChildren":"noChildren")} {(drawer== null?"NO Drawer":drawer.TypeNameOrNull())}" );
-		// if( drawer == null ) GUI.Label( drawRect.MoveRight(250).RequestTop( EditorGUIUtility.singleLineHeight ), "PropertyField.DrawElement" );
-		// else GUI.Label( drawRect.MoveRight(250).RequestTop( EditorGUIUtility.singleLineHeight ), "drawer.DrawElement" );
+		// if( drawer == null ) GUI.Label( drawRect.RequestTop( EditorGUIUtility.singleLineHeight ), sp.propertyPath + $" {( drawer != null ? "Has Drawer" : "NO Drawer" )}" );
+		// else GUI.Label( drawRect.RequestTop( EditorGUIUtility.singleLineHeight ), sp.propertyPath + $" {( drawer != null ? "Has Drawer" : "NO Drawer" )}" );
 		rect = rect.CutTop( h + spacing );
 	}
 

@@ -1,12 +1,14 @@
+using System.Collections.Generic;
+
 public static class ArrayExtensions
 {
-    public static T[] With<T>( this T[] terms, T newElement )
+    public static T[] With<T>( this T[] terms, params T[] newElements )
     {
         var len = terms?.Length ?? 0;
-        var newArray = new T[len+1];
+        var addedLen = newElements?.Length ?? 0;
+        var newArray = new T[len+addedLen];
         for( int i = 0; i < len; i++ ) newArray[i] = terms[i];
-        
-        newArray[len] = newElement;
+        for( int i = 0; i < addedLen; i++ ) newArray[len+i] = newElements[i];
         return newArray;
     }
 }
