@@ -5,7 +5,10 @@ using UnityEngine;
 
 public class TypeListData
 {
+    static readonly string[] IGNORED_ASSEMBLY_NAMES = new string[] { "Assembly-CSharp-", "Assembly-CSharp" };
+
     Type[] _baseTypes = null;
+    Type[] _notTypes = null;
     Type[] _newSkillEffectTypes = null;
     string[] _newSkillEffectNames = null;
     GUIContent[] _newSkillEffectGUI = null;
@@ -14,6 +17,14 @@ public class TypeListData
     public TypeListData( params System.Type[] types )
     {
         _baseTypes = types;
+        var uObj = typeof(UnityEngine.Object);
+        _notTypes = new Type[]{ uObj };
+        foreach( var t in types )
+        {
+            if( !uObj.IsAssignableFrom( t ) ) continue;
+            _notTypes = null;
+            break;
+        }
     }
 
     public GUIContent[] GetGUIs()
@@ -42,7 +53,15 @@ public class TypeListData
             var t = effectTypes[i];
             var pathAtt = t.GetCustomAttribute<ListingPathAttribute>();
             if( pathAtt != null ) _newSkillEffectNames[i] = pathAtt.Path;
-            else _newSkillEffectNames[i] = t.Assembly.GetName().Name.Replace( ".", "/" ) + "/" + t.FullName.Replace( ".", "/" );
+            else 
+            {
+                var assemblyName = t.Assembly.GetName().Name;
+                foreach( var ignore in IGNORED_ASSEMBLY_NAMES ) 
+                    if( assemblyName.StartsWith( ignore ) ) 
+                        assemblyName = assemblyName.Substring( ignore.Length );
+                if( string.IsNullOrEmpty( assemblyName ) ) _newSkillEffectNames[i] = t.FullName.Replace( ".", "/" );
+                else _newSkillEffectNames[i] = assemblyName.Replace( ".", "/" ) + "/" + t.FullName.Replace( ".", "/" );
+            }
             
             var str = _newSkillEffectNames[i];
             if( commonPart == null ) 
@@ -56,6 +75,7 @@ public class TypeListData
             {
                 int id = -1;
                 for( int si = 0; si < str.Length && si < commonPart.Length; si++ ) if( commonPart[si] == str[si] ) { id = si; } else break;
+                for( ; id >= 0; id-- ) if( commonPart[id] == '/' ) break;
                 if( id == -1 ) commonPart = string.Empty;
                 else commonPart = str.Substring( 0, id + 1 );
             }
@@ -80,7 +100,7 @@ public class TypeListData
 
         _newSkillEffectTypes = System.AppDomain.CurrentDomain.GetAssemblies()
                     .SelectMany( s => s.GetTypes() )
-                    .Where( p => IsAssignableFrom(p) && !p.IsAbstract ).ToArray();
+                    .Where( p => IsAssignableFrom(p) && !p.IsAbstract && IsNotAssignableFrom( p ) ).ToArray();
 
         return _newSkillEffectTypes;
     }
@@ -90,6 +110,16 @@ public class TypeListData
         foreach( var bt in _baseTypes )
         {
             if( !bt.IsAssignableFrom( t ) ) return false;
+        }
+        return true;
+    }
+
+    private bool IsNotAssignableFrom( Type t )
+    {
+        if( _notTypes == null ) return true;
+        foreach( var nt in _notTypes )
+        {
+            if( nt.IsAssignableFrom( t ) ) return false;
         }
         return true;
     }

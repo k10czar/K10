@@ -29,7 +29,7 @@ public static class TypeFinder
 
 		type = System.Type.GetType( typename ) ?? System.AppDomain.CurrentDomain.GetAssemblies()
                                                     .FirstOrDefault( a => string.Equals( assemblyName, a.GetName().Name, comparison ) )?
-                                                    .GetTypes().FirstOrDefault( t => string.Equals( typename, t.Name, comparison ) );
+                                                    .GetTypes().FirstOrDefault( t => string.Equals( typename, t.FullName, comparison ) );
 
         _nameToTypeCache.Add( typename, type );
 

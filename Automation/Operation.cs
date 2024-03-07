@@ -1,22 +1,34 @@
 using System.Collections;
 using UnityEngine;
 
-namespace K10.Automation
+namespace Automation
 {
-	public abstract class Operation : ScriptableObject
+	public interface IOperation
 	{
-		public abstract IEnumerator ExecutionCoroutine();
-		public override string ToString() => $"{GetType()} => {name}";
+		IEnumerator ExecutionCoroutine();
+		string GetSummaryColored();
 	}
-}
 
-public static class OperationExtensions
-{
-	public static Coroutine Execute( this K10.Automation.Operation op )
+	public static class OperationExtensions
 	{
-		Debug.Log( $"Start automation {op.NameOrNull()}" );
-		if( op == null ) return null;
-		var coroutine = ExternalCoroutine.StartCoroutine( op.ExecutionCoroutine() );
-		return coroutine;
+		public static Coroutine ExecuteOn( this IOperation op, MonoBehaviour behaviour = null, bool log = true )
+		{
+			if( op == null ) 
+			{
+				if( log ) Debug.Log( $"{"CANNOT".Colorfy( Colors.Console.Warning )} start {"NULL".Colorfy( Colors.Console.Danger )} operation" );
+				return null;
+			}
+			if( log ) Debug.Log( $"{"Started".Colorfy( Colors.Console.Verbs )} {op.GetSummaryColored()}" );
+			if( behaviour != null ) return behaviour.StartCoroutine( op.ExecutionCoroutine( log ) );
+			return ExternalCoroutine.StartCoroutine( op.ExecutionCoroutine( log ) );
+		}
+
+        public static IEnumerator ExecutionCoroutine(this IOperation op, bool log )
+        {
+			if( log ) Debug.Log( $"🤖 Automation{"Executing".Colorfy( Colors.Console.Verbs )} {op.GetSummaryColored()}" );
+            return op.ExecutionCoroutine();
+        }
+
+        public static string GetSummary( this IOperation op ) => op.TypeNameOrNull();
 	}
 }

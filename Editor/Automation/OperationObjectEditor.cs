@@ -1,19 +1,18 @@
 using UnityEditor;
 using UnityEngine;
 using K10.EditorGUIExtention;
+using Automation;
 
-[UnityEditor.CustomEditor( typeof( K10.Automation.Loop ) )]
-public class LoopEditor : UnityEditor.Editor
+[CustomEditor( typeof( OperationObject ) )]
+public class OperationObjectEditor : Editor
 {
-	private SerializedProperty _repetitions;
-	private SerializedProperty _actions;
+	private SerializedProperty _operation;
 
-	private ReorderableListCollection _lists;
+	// private ReorderableListCollection _lists;
 
 	void OnEnable()
 	{
-		_repetitions = serializedObject.FindProperty( "_repetitions" );
-		_actions = serializedObject.FindProperty( "_actions" );
+		_operation = serializedObject.FindProperty( "_operation" );
 	}
 
 	public override void OnInspectorGUI()
@@ -21,23 +20,19 @@ public class LoopEditor : UnityEditor.Editor
 		serializedObject.Update();
 		SeparationLine.Horizontal();
 		EditorGUILayout.BeginHorizontal();
-		UnityEditor.EditorGUILayout.LabelField( target.name, K10GuiStyles.bigBoldCenterStyle, GUILayout.Height( 28 ) );
-		if( IconButton.Layout( "playButton", 24, 'E', "Play loop", Color.blue ) ) ( target as K10.Automation.Loop )?.Execute();
+		EditorGUILayout.LabelField( target.name, K10GuiStyles.bigBoldCenterStyle, GUILayout.Height( 28 ) );
+		if( IconButton.Layout( "playButton", 24, 'E', "Play loop", Color.blue ) ) ( target as OperationObject ).ExecuteOn();
 		EditorGUILayout.EndHorizontal();
 		SeparationLine.Horizontal();
 
 		// var height = GetPropertyHeight(  );
 		// EditorGUILayout.GetControlRect( GUILayout.Height(  ) )
 
-		GuiLabelWidthManager.New( 70 );
-		EditorGUILayout.PropertyField( _repetitions );
-		GuiLabelWidthManager.Revert();
-
 		//TO DO Better lists recursion
 
 		// _lists.Request()
 
-		EditorGUILayout.PropertyField( _actions );
+		EditorGUILayout.PropertyField( _operation );
 
 
 		// EditorGUILayout.PropertyField( _alsoLogToConsole );
@@ -76,17 +71,4 @@ public class LoopEditor : UnityEditor.Editor
 
 		// GetPropertyHeight(  )
 	}
-
-	public float GetPropertyHeight( UnityEditor.SerializedProperty property, GUIContent label )
-	{
-		return UnityEditor.EditorGUI.GetPropertyHeight( property, label, true );
-	}
-
-	public void OnGUI()
-	{
-        GuiLabelWidthManager.New( 70 );
-        EditorGUILayout.PropertyField( _repetitions );
-        GuiLabelWidthManager.Revert();
-        GUILayout.Box( "Test" );
-    }
 }

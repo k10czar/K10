@@ -1,9 +1,9 @@
 using System.Collections;
 using UnityEngine;
 
-namespace Unity.Automation
+namespace Automation.Unity
 {
-	public class InstantiateOperation : K10.Automation.Operation
+	public class InstantiateOperation : Automation.IOperation
 	{
 		[SerializeField] int _instances = 1;
 		[SerializeField] GameObject _prefab;
@@ -12,7 +12,7 @@ namespace Unity.Automation
 		[SerializeField] bool _dontDestroyOnLoad;
 		[SerializeField] int _elementsPerFrame = 0;
 
-		public override IEnumerator ExecutionCoroutine()
+		public IEnumerator ExecutionCoroutine() 
 		{
 			if( _prefab != null )
 			{
@@ -29,10 +29,12 @@ namespace Unity.Automation
 					}
 				}
 			}
-			else
-			{
-				Debug.LogError( "Cannot instantiate null prefab" );
-			}
+			// else
+			// {
+			// 	Debug.LogError( "Cannot instantiate null prefab" );
+			// }
 		}
+
+		public string GetSummaryColored() => $"👶 {"InstantiateOperation".Colorfy( Colors.Console.Verbs )} {_instances.ToStringColored( Colors.Console.Numbers ) } {(_dontDestroyOnLoad?"eternal ":"")}{_prefab.ToStringOrNullColored(Colors.Console.TypeName)} at {_position} with {_rotation}{(_elementsPerFrame > 0?$" and {_elementsPerFrame} per frame":"")}";
 	}
 }
