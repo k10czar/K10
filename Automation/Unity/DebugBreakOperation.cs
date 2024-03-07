@@ -1,14 +1,16 @@
 using System.Collections;
 using UnityEngine;
 
-namespace Unity.Automation
+namespace Automation.Unity
 {
-	public class DebugBreakOperation : K10.Automation.Operation
+	public class DebugBreakOperation : Automation.IOperation
 	{
-		public override IEnumerator ExecutionCoroutine()
+		public System.Collections.IEnumerator ExecutionCoroutine()  
 		{
 			Debug.Break();
 			if( false ) yield return null;
 		}
+
+		public string GetSummaryColored() => $"💥 {"DebugBreakOperation".Colorfy( Colors.Console.Verbs )}";
 	}
 }

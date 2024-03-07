@@ -1,14 +1,17 @@
 using System.Collections;
 using System;
+using UnityEngine;
 
-namespace Unity.Automation
+namespace Automation.Unity
 {
-	public class GcCollectOperation : K10.Automation.Operation
+	public class GcCollectOperation : Automation.IOperation
 	{
-		public override IEnumerator ExecutionCoroutine() 
+		public IEnumerator ExecutionCoroutine() 
 		{
 			GC.Collect();
 			yield return null;
 		}
+
+		public string GetSummaryColored() => $"🗑 {"GcCollectOperation".Colorfy( Colors.Console.Verbs )}";
 	}
 }

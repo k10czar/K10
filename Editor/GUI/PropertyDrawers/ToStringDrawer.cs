@@ -30,7 +30,7 @@ public sealed class ToStringDrawer : PropertyDrawer
             // case SerializedPropertyType.Character: return property..ToStringOrNull();
             case SerializedPropertyType.AnimationCurve: return property.animationCurveValue.ToStringOrNull();
             case SerializedPropertyType.Bounds: return property.boundsValue.ToStringOrNull();
-            case SerializedPropertyType.Gradient: return property.gradientValue.ToStringOrNull();
+            // case SerializedPropertyType.Gradient: return property.gradientValue.ToStringOrNull();
             case SerializedPropertyType.Quaternion: return property.quaternionValue.ToStringOrNull();
             case SerializedPropertyType.ExposedReference: return property.exposedReferenceValue.ToStringOrNull();
             case SerializedPropertyType.FixedBufferSize: return property.fixedBufferSize.ToStringOrNull();
