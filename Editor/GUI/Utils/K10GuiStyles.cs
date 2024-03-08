@@ -50,7 +50,7 @@ public static class K10GuiStyles
 	public static readonly GUIStyle smalltextFieldStyle = new GUIStyle( textFieldStyle ) { fontSize = SMALL_FONT_SIZE };
 	public static readonly GUIStyle smallBoldCenterStyle = new GUIStyle( EditorStyles.boldLabel ) { alignment = TextAnchor.MiddleCenter };
 
-	public static readonly GUIStyle leftFieldStyle = new GUIStyle( EditorStyles.textField ) { alignment = TextAnchor.MiddleRight };
+	public static readonly GUIStyle leftFieldStyle = new GUIStyle( EditorStyles.textField ) { alignment = TextAnchor.MiddleLeft };
 
 	public static readonly GUIStyle boxStyle = new GUIStyle( "CN Box" ) { padding = new RectOffset( 5, 5, 5, 5 ) };
 	public static readonly GUIStyle tabTitleStyle = new GUIStyle( "HelpBox" ) { alignment = TextAnchor.MiddleCenter };

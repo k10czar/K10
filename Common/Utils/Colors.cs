@@ -34,6 +34,7 @@ public static class Colors
         public static readonly Color Success = MintGreen;
         public static readonly Color Warning = Orange;
         public static readonly Color LightDanger = LightCoral;
+        public static readonly Color GrayOut = LightGray;
 
         public static string[] DebugLogs( int batches = 1 )
         {
