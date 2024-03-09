@@ -5,6 +5,29 @@ public static class StringExtension
 {
     static readonly HashSet<char> INVALID_FILENAME_CHARS = new HashSet<char>( System.IO.Path.GetInvalidFileNameChars() );
     static readonly HashSet<char> INVALID_PATH_CHARS = new HashSet<char>( System.IO.Path.GetInvalidPathChars() );
+
+    public enum ELogType
+    {
+        Basic,
+        Warning,
+        Error
+    }
+    
+    public static void Log( this string[] log, ELogType logType = ELogType.Basic )
+    {
+        if( log == null ) return;
+        for( int i = 0; i < log.Length; i++ ) log[i].Log( logType );
+    }
+
+    public static void Log( this string log, ELogType logType = ELogType.Basic )
+    {
+        switch( logType )
+        {
+            case ELogType.Basic: UnityEngine.Debug.Log( log ); break;
+            case ELogType.Warning: UnityEngine.Debug.LogWarning( log ); break;
+            case ELogType.Error: UnityEngine.Debug.LogError( log ); break;
+        }
+    }
     
     public static string SanitizeFileName( this string fileName ) => RemoveChars( fileName, INVALID_FILENAME_CHARS );
     public static string SanitizePathName( this string fileName ) => RemoveChars( fileName, INVALID_PATH_CHARS );

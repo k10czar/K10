@@ -1,10 +1,11 @@
 #if UNITY_EDITOR
-using System.Linq;
-using System.Reflection;
+using K10.Reflection.Extensions;
 #endif
 using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
+
 
 public static class Colors
 {
@@ -13,8 +14,29 @@ public static class Colors
     
 #if UNITY_EDITOR
     [UnityEditor.MenuItem("K10/Colors/Log")]
+    private static void EDITOR_Log()
+    {
+        Debug.Log( "A" );
+        var binding = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
+        typeof(Color).ReflectListMembers<Color>( EDITOR_DebugColor, binding, 0 ).Log();
+        typeof(Colors).ReflectListMembers<Color>( EDITOR_DebugColor, binding, 0 ).Log();
+        typeof(Console).ReflectListMembers<Color>( EDITOR_DebugColor, binding, 0 ).Log();
+    }
+
+    [UnityEditor.MenuItem("K10/Colors/Log Codes")]
+    private static void EDITOR_LogCodes()
+    {
+        Debug.Log( "A" );
+        var binding = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
+        typeof(Color).ReflectListMembers<Color>( EDITOR_DebugColorCode, binding, 0 ).Log();
+        typeof(Colors).ReflectListMembers<Color>( EDITOR_DebugColorCode, binding, 0 ).Log();
+        typeof(Console).ReflectListMembers<Color>( EDITOR_DebugColorCode, binding, 0 ).Log();
+    }
+
+    private static string EDITOR_DebugColor( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{name}</color>";
+    private static string EDITOR_DebugColorCode( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>#{ColorUtility.ToHtmlStringRGB(color)}</color>";
 #endif
-    private static void Log() { Debug.Log( Colors.DebugLogs()[0] ); }
+    
 
     public static class Console
     {
@@ -35,68 +57,6 @@ public static class Colors
         public static readonly Color Warning = Orange;
         public static readonly Color LightDanger = LightCoral;
         public static readonly Color GrayOut = LightGray;
-
-        public static string[] DebugLogs( int batches = 1 )
-        {
-            #if UNITY_EDITOR
-            var allColors = typeof(Console).GetFields( BindingFlags.Public | BindingFlags.Static );
-            List<int> batchesDirector = new List<int>();
-            var count = allColors.Count();
-            for( int i = 1; i < batches; i++ ) batchesDirector.Add( count * i / batches );
-            batchesDirector.Add( count );
-
-            var debugs = new string[batchesDirector.Count];
-            var it = 0;
-            var SB = new StringBuilder();
-            for( int bi = 0; bi < batchesDirector.Count; bi++ )
-            {
-                var stopAt = batchesDirector[bi];
-                for( ; it < stopAt; it++ )
-                {
-                    var field = allColors[it];
-                    var value = field.GetValue( null );
-                    if( value is Color color ) SB.Append( $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{field.Name}</color> " );
-                }
-                debugs[bi] = SB.ToString();
-                SB.Clear();
-            }
-            
-            return debugs;
-            #else
-            return new string[]{ "!!!NOT IMPLEMENTED OUT OF EDITOR!!!" };
-            #endif
-        }
-    }
-
-    public static string[] DebugLogs( int batches = 1 )
-    {
-        #if UNITY_EDITOR
-        var allColors = typeof(Colors).GetFields( BindingFlags.Public | BindingFlags.Static );
-        List<int> batchesDirector = new List<int>();
-        var count = allColors.Count();
-        for( int i = 1; i < batches; i++ ) batchesDirector.Add( count * i / batches );
-        batchesDirector.Add( count );
-
-        var debugs = new string[batchesDirector.Count];
-        var it = 0;
-        var SB = new StringBuilder();
-        for( int bi = 0; bi < batchesDirector.Count; bi++ )
-        {
-            var stopAt = batchesDirector[bi];
-            for( ; it < stopAt; it++ )
-            {
-                var field = allColors[it];
-                var value = field.GetValue( null );
-                if( value is Color color ) SB.Append( $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{field.Name}</color> " );
-            }
-            debugs[bi] = SB.ToString();
-            SB.Clear();
-        }
-         
-        return debugs;
-        #else
-        return new string[]{ "!!!NOT IMPLEMENTED OUT OF EDITOR!!!" };
-        #endif
     }
     
     //Red colors
