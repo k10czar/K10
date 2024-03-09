@@ -63,7 +63,13 @@ public static class ScriptableObjectUtils
 		throw new System.NotImplementedException();
 	}
 
-	public static void CreationObjectAndFile( System.Type type, string newPath, bool focus, System.Action<ScriptableObject> OnObjectCreated = null )
+	public static void CreationObjectAndFile( System.Type type, string newPath, bool focus, System.Action<ScriptableObject> OnObjectCreated )
+	{
+		var assetRef = CreationObjectAndFile( type, newPath, focus );
+		if (OnObjectCreated != null) OnObjectCreated( assetRef );
+	}
+
+	public static ScriptableObject CreationObjectAndFile( System.Type type, string newPath, bool focus )
 	{
 		ScriptableObject asset = ScriptableObject.CreateInstance( type );
 
@@ -74,8 +80,7 @@ public static class ScriptableObjectUtils
 			newPath = newPath + id;
 		}
 
-		var assetRef = SetSO( ref newPath, focus, asset );
-		if (OnObjectCreated != null) OnObjectCreated(assetRef);
+		return SetSO( ref newPath, focus, asset );
 	}
 
 	public static ScriptableObject Create( string newPath, System.Type type, bool focus = false, bool saveAndRefresh = true )

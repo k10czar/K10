@@ -119,6 +119,27 @@ namespace K10.EditorGUIExtention
 	{
 		const string FALLBACK_CREATION_FOLDER = "Assets/Database/SO/";
 
+		public static Object Draw( Rect r, string label, Object obj, System.Type type, string path = null, bool ignoreIdentation = true, bool focus = false )
+		{
+			if( obj == null )
+			{
+				var iconSize = 18;
+				var create = IconButton.Draw( new Rect( r.x, r.y + ( r.height - iconSize ) / 2, iconSize, iconSize ), "match", 'C' );
+				if( create )
+				{
+					var selectedAssetPath = path;
+					if( string.IsNullOrEmpty( selectedAssetPath ) ) selectedAssetPath = FALLBACK_CREATION_FOLDER + type.ToString();
+					obj = ScriptableObjectUtils.CreationObjectAndFile( type, selectedAssetPath, focus );
+				}
+				r = r.CutLeft( iconSize + 2 );
+			}
+			if( ignoreIdentation ) EditorGuiIndentManager.New( 0 );
+			obj = EditorGUI.ObjectField( r, label, obj, type, false );
+			if( ignoreIdentation ) EditorGuiIndentManager.Revert();
+
+			return obj;
+		}
+
 		public static bool Draw( Rect r, SerializedProperty prop, System.Type type, string path = null, bool ignoreIdentation = true )
 		{
 			var createdNewSO = false;
