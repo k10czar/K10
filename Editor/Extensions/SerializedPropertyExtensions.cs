@@ -204,9 +204,11 @@ public static class SerializedPropertyExtensions
 		if( isInactive ) GuiColorManager.New( Colors.Console.GrayOut );
 
 		var listingData = TypeListDataCache.GetFrom( type );
+
 		var refSize = listingData.MaxWidth;
+		var refSizeLimited = Mathf.Min( EditorGUILayout.GetControlRect().width / 2, refSize );
         var index = FindIndexOf( prop.managedReferenceValue, listingData );
-        var newIndex = EditorGUILayout.Popup( index, listingData.GetGUIsWithIcon(), GUILayout.Width( refSize ) );
+        var newIndex = EditorGUILayout.Popup( index, listingData.GetGUIsWithIcon(), GUILayout.Width(refSizeLimited) );
         CheckSelectionChange( prop, listingData, index, newIndex );
         EditorGUILayout.Space( MAGIC_POPUP_SPACE, false );
         var triggerSummary = prop.managedReferenceFullTypename;
@@ -287,7 +289,7 @@ public static class SerializedPropertyExtensions
 
         rect = rect.CutTop(EditorGUIUtility.singleLineHeight + spacing);
 		var listingData = TypeListDataCache.GetFrom( type );
-		var popupWidth = listingData.MaxWidth + MAGIC_POPUP_SPACE;
+		var popupWidth = Mathf.Min( rect.width / 2, listingData.MaxWidth + MAGIC_POPUP_SPACE );
         var index = FindIndexOf( prop.managedReferenceValue, listingData );
         var newIndex = EditorGUI.Popup(firstLine.RequestLeft(popupWidth), index, listingData.GetGUIsWithIcon());
         CheckSelectionChange( prop, listingData, index, newIndex );

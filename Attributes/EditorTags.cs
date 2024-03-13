@@ -5,6 +5,17 @@ using UnityEngine;
 
 public class ToStringAttribute : PropertyAttribute { }
 public class ExtendedDrawerAttribute : PropertyAttribute { }
+public class RandomizeButtonAttribute : PropertyAttribute 
+{
+	// public readonly object min = null;
+	// public readonly object max = null;
+
+	// public RandomizeButtonAttribute( object min = null, object max = null )
+	// {
+	// 	this.min = min;
+	// 	this.max = max;
+	// }
+}
 
 public class ListingPathAttribute : Attribute
 {

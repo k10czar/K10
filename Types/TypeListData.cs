@@ -59,8 +59,20 @@ public class TypeListData
                 foreach( var ignore in IGNORED_ASSEMBLY_NAMES ) 
                     if( assemblyName.StartsWith( ignore ) ) 
                         assemblyName = assemblyName.Substring( ignore.Length );
-                if( string.IsNullOrEmpty( assemblyName ) ) _newSkillEffectNames[i] = t.FullName.Replace( ".", "/" );
-                else _newSkillEffectNames[i] = assemblyName.Replace( ".", "/" ) + "/" + t.FullName.Replace( ".", "/" );
+				if (string.IsNullOrEmpty(assemblyName)) _newSkillEffectNames[i] = t.FullName.Replace(".", "/");
+				else
+				{
+					var assemblyNameParsed = assemblyName.Replace(".", "/");
+					var nameParsed = t.FullName.Replace(".", "/");
+					var equalId = 0;
+					for( ; equalId < assemblyNameParsed.Length && equalId < nameParsed.Length; equalId++ )
+					{
+						if (assemblyNameParsed[equalId] != nameParsed[equalId]) break;
+					}
+					assemblyNameParsed = assemblyNameParsed.Substring(0, equalId);
+					if ( string.IsNullOrEmpty(assemblyNameParsed) ) _newSkillEffectNames[i] = nameParsed;
+					else _newSkillEffectNames[i] = assemblyNameParsed + "/" + nameParsed;
+				}
             }
             
             var str = _newSkillEffectNames[i];
