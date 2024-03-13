@@ -1,17 +1,17 @@
 using System.Collections.Generic;
 using System.Linq;
 
+public enum ELogType
+{
+    Basic,
+    Warning,
+    Error
+}
+
 public static class StringExtension
 {
     static readonly HashSet<char> INVALID_FILENAME_CHARS = new HashSet<char>( System.IO.Path.GetInvalidFileNameChars() );
     static readonly HashSet<char> INVALID_PATH_CHARS = new HashSet<char>( System.IO.Path.GetInvalidPathChars() );
-
-    public enum ELogType
-    {
-        Basic,
-        Warning,
-        Error
-    }
     
     public static void Log( this string[] log, ELogType logType = ELogType.Basic )
     {

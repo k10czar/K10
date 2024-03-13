@@ -100,7 +100,7 @@ public class TypeListData
 
         _newSkillEffectTypes = System.AppDomain.CurrentDomain.GetAssemblies()
                     .SelectMany( s => s.GetTypes() )
-                    .Where( p => IsAssignableFrom(p) && !p.IsAbstract && IsNotAssignableFrom( p ) ).ToArray();
+                    .Where( p => p.IsPublic && IsAssignableFrom(p) && !p.IsAbstract && IsNotAssignableFrom( p ) ).ToArray();
 
         return _newSkillEffectTypes;
     }
