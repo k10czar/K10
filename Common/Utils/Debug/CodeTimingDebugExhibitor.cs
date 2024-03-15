@@ -2,6 +2,9 @@ using UnityEngine;
 
 public abstract class CodeTimingDebugExhibitor : MonoBehaviour
 {
+	protected float timer;
+	[SerializeField] protected float tickRate = 0.5f;
+
 	protected abstract void SetLog( string log );
 	protected abstract void OnEnableChange( bool enabled );
 
@@ -17,7 +20,14 @@ public abstract class CodeTimingDebugExhibitor : MonoBehaviour
 
 	void OnPostRender()
 	{
-		SetLog( CodeTimingDebug.GetLog() );
-		CodeTimingDebug.Clear();
+		var log = CodeTimingDebug.GetLog();
+		timer += Time.unscaledDeltaTime;
+		if (timer > tickRate)
+			timer %= tickRate;
+		else
+			return;
+
+		SetLog(log);
+		CodeTimingDebug.ClearUnusedData();
 	}
 }
