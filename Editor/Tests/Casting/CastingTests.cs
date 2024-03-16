@@ -3,12 +3,12 @@ using NUnit.Framework;
 
 public class CastingTests 
 {
-    private static readonly string FIRST_STR = "INITED";
-    private static readonly string NEW_STR = "RESETED";
-    private static readonly long FIRST_LONG = 98216579;
-    private static readonly long NEW_LONG = 8798789095848;
-    private static readonly string NEW_LONGSTR = NEW_LONG.ToString();
-    private static readonly bool LOG_FAIL = false;
+    private const string FIRST_STR = "INITED";
+    private const string NEW_STR = "RESETED";
+    private const long FIRST_LONG = 98216579;
+    private const long NEW_LONG = 8798789095848;
+    [ConstLike] private static readonly string NEW_LONGSTR = NEW_LONG.ToString();
+    private const bool LOG_FAIL = false;
 
 
     [Test] public void TrySetStringOnString()

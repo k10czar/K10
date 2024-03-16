@@ -34,7 +34,7 @@ public class CameraShakeInfo
 
 public class CameraShake : MonoBehaviour
 {
-	public static float AmplitudeMultiplier = 1.0f;
+	public const float AmplitudeMultiplier = 1.0f;
 	[SerializeField] CameraShakeInfo _test;
 
 	class CameraShakeInstance

@@ -50,7 +50,6 @@ public struct FastFloatAnimator
         else _desiredValue = desired;
     }
 
-	public static bool FORCE_DEBUG = false;
     public bool Update( float deltaTime )
     {
 		if( deltaTime < float.Epsilon ) return false;

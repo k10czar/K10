@@ -11,7 +11,7 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
     const int GET_REFERENCE_WIDTH = 95;
     const int STATE_WIDTH = 48;
 
-    static Color RED_COLOR = Color.Lerp( Color.red, Color.white, .5f );
+    [ConstLike] static readonly Color RED_COLOR = Color.Lerp( Color.red, Color.white, .5f );
 
     public virtual string DebugSuffix( SerializedProperty property ) => "";
     

@@ -17,9 +17,9 @@ public static class ReflectionExtensions
 public class TestCustomSerializedMessages : EditorWindow
 {
 	private static float DEFAULT_FIELD_WIDTH => 150;
-	private static GUILayoutOption FIELD_WIDTH_PROP = GUILayout.Width( DEFAULT_FIELD_WIDTH );
-	private static GUILayoutOption DOUBLE_FIELD_WIDTH_PROP = GUILayout.Width( 2 * DEFAULT_FIELD_WIDTH + 5 );
-	private static GUILayoutOption BITMASK_WIDTH_PROP = GUILayout.Width( 70 );
+	[ConstLike] private static readonly GUILayoutOption FIELD_WIDTH_PROP = GUILayout.Width( DEFAULT_FIELD_WIDTH );
+	[ConstLike] private static readonly GUILayoutOption DOUBLE_FIELD_WIDTH_PROP = GUILayout.Width( 2 * DEFAULT_FIELD_WIDTH + 5 );
+	[ConstLike] private static readonly GUILayoutOption BITMASK_WIDTH_PROP = GUILayout.Width( 70 );
 
 	public class ConstructorData
 	{
