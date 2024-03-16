@@ -44,13 +44,16 @@ public static class MonoScriptUtilities
 				if( staticFields.Length == 0 ) continue;
                 var onlyReadonly = true;
                 sb.Clear();
+                var fieldsCount = 0;
 			    foreach (var field in staticFields) 
                 {
                     var isConst = field.IsLiteral;
                     var constLike = field.GetCustomAttribute<ConstLikeAttribute>() != null;
                     var isReadonly = isConst || constLike;
                     onlyReadonly &= isReadonly;
-                    if( !isReadonly ) sb.AppendLine( $"  -{field.FieldType.Name.Colorfy(TypeName)} {field.Name.Colorfy(Names)}" );
+                    if( isReadonly ) continue;
+                    sb.AppendLine( $"  -{field.FieldType.Name.Colorfy(TypeName)} {field.Name.Colorfy(Names)}" );
+                    fieldsCount++;
                 }
                 if( onlyReadonly ) continue;
 				var script = type.EditorGetScript();
@@ -58,14 +61,31 @@ public static class MonoScriptUtilities
                 if( script != null )
                 {
                     var path = AssetDatabase.GetAssetPath(script);
-                    if( !string.IsNullOrEmpty( path ) ) link = $"<a href=\"{path}\" line=\"2\">{link}</a>";
+                    if( !string.IsNullOrEmpty( path ) ) link = $"<a href=\"{path}\" line=\"{script.text.FindLineOfFirstOccurrence( type.Name )}\">{link}</a>";
                 }
                 logs++;
-				Debug.Log( $"{assName.Colorfy(Abstraction)}.{link} has {staticFields.Length.ToStringColored( Numbers )} static fields:\n{sb}" );
+				Debug.Log( $"{assName.Colorfy(Abstraction)}.{link} has {fieldsCount.ToStringColored( Numbers )} static fields:\n{sb}" );
 			}
 		}
         if( logs == 0 ) Debug.Log( $"No {"statics".Colorfy(TypeName)} {"detected".Colorfy(Verbs)} as possible {"Reload Domain".Colorfy(Keyword)} Leak" );
         else Debug.Log( $"{logs.ToStringColored(Numbers)} class(es) with {"static".Colorfy(TypeName)} {"detected".Colorfy(Verbs)} review for a possible {"Reload Domain".Colorfy(Keyword)} Leak" );
+    }
+
+    public static int FindLineOfFirstOccurrence( this string text, string value )
+    {
+        var len = text.Length;
+        var slen = value.Length;
+        var si = 0;
+        var lines = 1;
+        for( int i = 0; i < len; i++ )
+        {
+            var c = text[i];
+            if( value[si] == c ) si++;
+            else si = 0;
+            if( si >= slen ) return lines;
+            if( c == '\n' ) lines++;
+        }
+        return -1;
     }
 
     public static MonoScript EditorGetScript( this System.Type type )
