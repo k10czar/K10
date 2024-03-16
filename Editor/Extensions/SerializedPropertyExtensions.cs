@@ -240,6 +240,9 @@ public static class SerializedPropertyExtensions
         var triggerSummary = prop.managedReferenceFullTypename;
         prop.isExpanded = EditorGUILayout.BeginFoldoutHeaderGroup( prop.isExpanded, triggerSummary );
         EditorGUILayout.EndFoldoutHeaderGroup();
+		var refType = prop?.managedReferenceValue.GetType() ?? null;
+		var script = refType?.EditorGetScript() ?? null;
+		if( script != null && IconButton.Layout( "script", 's', Colors.Celeste ) ) AssetDatabase.OpenAsset( script );
         EditorGUILayout.EndHorizontal();
         if (!prop.isExpanded) return;
 		GuiLabelWidthManager.New( refSize );
@@ -315,9 +318,11 @@ public static class SerializedPropertyExtensions
 		var type = prop.GetManagedType();
 		if( type == null )
 		{
-			EditorGUI.LabelField( rect, $"Cannot find type: {prop.managedReferenceFieldTypename}" );
+			GUI.Label( rect, $"Cannot find type: {prop.managedReferenceFieldTypename}" );
 			return;
 		}
+
+		EditorGuiIndentManager.New( 0 );
         var firstLine = rect.RequestTop(EditorGUIUtility.singleLineHeight);
 
 		var isActiveProp = prop.FindPropertyRelative( "_isActive" );
@@ -335,6 +340,16 @@ public static class SerializedPropertyExtensions
 		var triggerSummarys = prop.managedReferenceFullTypename.Split( " " );
         var triggerSummary = triggerSummarys.LastOrDefault().ToStringOrNull();
 		var triggerSummaryRect = firstLine.CutLeft(popupWidth + MAGIC_POPUP_SPACE);
+
+		var refType = prop?.managedReferenceValue.GetType() ?? null;
+		var script = refType?.EditorGetScript() ?? null;
+		if( script != null )
+		{ 
+			var size = 18f;
+			if( IconButton.Draw( triggerSummaryRect.RequestRight( size ), "script", 's', null, Colors.Celeste ) ) AssetDatabase.OpenAsset( script );
+			triggerSummaryRect = triggerSummaryRect.CutRight( size );
+		}
+
         prop.isExpanded = EditorGUI.BeginFoldoutHeaderGroup( triggerSummaryRect, prop.isExpanded, triggerSummary);
         EditorGUI.EndFoldoutHeaderGroup();
         if( prop.isExpanded )
@@ -345,6 +360,7 @@ public static class SerializedPropertyExtensions
 		}
 		
 		if( isInactive ) GuiColorManager.Revert();
+		EditorGuiIndentManager.Revert();
     }
 
 	private static int FindIndexOf( object refField, TypeListData listingData )
