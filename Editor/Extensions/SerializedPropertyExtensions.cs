@@ -30,33 +30,33 @@ public static class SerializedPropertyExtensions
         {
             if (innProp is SerializedProperty sp)
             {
-				if( ignoreProp != null && sp.propertyPath == ignoreProp.propertyPath ) continue;
+				var path = sp.propertyPath;
+				if( ignoreProp != null && path == ignoreProp.propertyPath ) continue;
 
                 if (sp.isArray)
                 {
-                    lastArray = sp.propertyPath + ".Array.";
+                    lastArray = path + ".Array.";
                 }
                 else if (lastArray != null)
                 {
-                    var isInnerArrayProp = sp.propertyPath.StartsWith(lastArray);
+                    var isInnerArrayProp = path.StartsWith(lastArray);
                     if (!isInnerArrayProp) lastArray = null;
                     else continue;
                 }
 				
-				var path = sp.propertyPath;
 				var propLevel = 0;
 				for( int i = iteratedProp.Length; i < path.Length; i++ ) if( path[i] == '.' ) propLevel++;
 
 				if( propLevel > 1 ) continue;
 
-				if( sp.propertyPath.StartsWith( notExpanded ) ) continue;
+				if( path.StartsWith( notExpanded ) && ( path.Length <= notExpanded.Length || path[notExpanded.Length] == '.' ) ) continue;
 				else notExpanded = "***";
 
-				// Debug.Log( $"{iteratedProp} reach {sp.propertyPath} level {propLevel}" );
+				// Debug.Log( $"{iteratedProp} reach {path} level {propLevel}" );
 
 				Iteration( sp );
 
-				if( !sp.isExpanded ) notExpanded = sp.propertyPath;
+				if( !sp.isExpanded ) notExpanded = path;
             }
         }
     }
@@ -88,7 +88,8 @@ public static class SerializedPropertyExtensions
 	{
 		if( prop == null ) return 0;
 		float h = 0;
-		IterateThroughChildProps( prop, ( sp ) => SumElementHeight( ref h, sp, includeChildren, spacing ), prop.FindPropertyRelative( "_isActive" ) );
+		if( includeChildren && prop.isExpanded ) IterateThroughChildProps( prop, ( sp ) => SumElementHeight( ref h, sp, includeChildren, spacing ), prop.FindPropertyRelative( "_isActive" ) );
+		CacheHeightFor( prop, h, includeChildren );
 		return h;
 	}
 
@@ -96,10 +97,13 @@ public static class SerializedPropertyExtensions
 	{
 		var type = sp.GetSerializedPropertyType();
 		var drawer = PropDrawerCache.From( type );
-		var h = GetCalculatedElementHeightCached( sp, includeChildren );
+		var willDrawChildren = includeChildren && sp.isExpanded;
+		var h = GetCalculatedElementHeightCached( sp, willDrawChildren );
 		var drawRect = rect.RequestTop( h );
 		if( drawer == null ) EditorGUI.PropertyField( drawRect, sp, includeChildren );
 		else drawer.OnGUI( drawRect, sp, new GUIContent( sp.displayName ) );
+
+		// EditorGUI.LabelField( drawRect.RequestRight( 400 ).RequestTop( EditorGUIUtility.singleLineHeight ), $"{sp.propertyPath} : {GetHeightCacheTime(sp,includeChildren)} : {h} : {inc}" );
 		// Debug.Log( $"DrawElement {sp.propertyPath} {(sp.isExpanded?"expanded":"collapsed")} {(includeChildren?"includeChildren":"noChildren")} {(drawer== null?"NO Drawer":drawer.TypeNameOrNull())}" );
 		// if( drawer == null ) GUI.Label( drawRect.RequestTop( EditorGUIUtility.singleLineHeight ), sp.propertyPath + $" {( drawer != null ? "Has Drawer" : "NO Drawer" )}" );
 		// else GUI.Label( drawRect.RequestTop( EditorGUIUtility.singleLineHeight ), sp.propertyPath + $" {( drawer != null ? "Has Drawer" : "NO Drawer" )}" );
@@ -115,7 +119,9 @@ public static class SerializedPropertyExtensions
 
 	static Dictionary<string,float> _heightCache = null;
 	static Dictionary<string,float> _includedChildrenHeightCache = null;
-	static HashSet<string> _logged = null;
+
+	static Dictionary<string,long> _cacheTime = null;
+	static Dictionary<string,long> _includedChildrenCacheTime = null;
 	
 	private static string CompletePath( this SerializedProperty sp )
 	{
@@ -124,22 +130,40 @@ public static class SerializedPropertyExtensions
 
 	private static float GetCalculatedElementHeightCached( SerializedProperty sp, bool includeChildren = true )
     {
-        var cache = GetHeightCached( includeChildren );
+        var cache = GetHeightCacheDictionary( includeChildren );
 		var key = sp.CompletePath();
         if (cache.TryGetValue(key, out var height)) return height;
-        if (_logged == null) _logged = new();
-        if (!_logged.Contains(key))
-        {
-            _logged.Add(key);
-            // Debug.LogError($"Called GetCalculatedElementHeightCached on a non-cached property: {key}");
-        }
         return EditorGUIUtility.singleLineHeight;
     }
 
-    private static Dictionary<string, float> GetHeightCached(bool includeChildren)
+    private static Dictionary<string, float> GetHeightCacheDictionary(bool includeChildren)
     {
         return includeChildren ? (_includedChildrenHeightCache ??= new()) : (_heightCache ??= new());
     }
+
+    private static long GetHeightCacheTime( SerializedProperty prop, bool includeChildren )
+    {
+        var timing = includeChildren ? (_includedChildrenCacheTime ??= new()) : (_cacheTime ??= new());
+		var path = prop.CompletePath();
+        if (timing.TryGetValue(path, out var time)) return time;
+		return 0;
+    }
+
+	private static void CacheHeightFor( SerializedProperty prop, float h, bool includeChildren )
+	{
+		var cache = GetHeightCacheDictionary( includeChildren );
+		var path = prop.CompletePath();
+		cache[path] = h;
+        var timing = includeChildren ? (_includedChildrenCacheTime ??= new()) : (_cacheTime ??= new());
+		timing[path] = System.DateTime.Now.Millisecond + 1000 * System.DateTime.Now.Second;
+		// if( prop.propertyPath == "_komponents.Array.data[1]._values" ) Debug.Log( $"Caching {path} {h} {timing[path]} {includeChildren}" );
+	}
+
+	private static float GetCachedHeightFor( SerializedProperty prop, float h, bool includeChildren )
+	{
+		var cache = GetHeightCacheDictionary( includeChildren );
+		return cache[prop.CompletePath()];
+	}
 
     private static float CalculateElementHeight( SerializedProperty sp, bool includeChildren = true )
 	{
@@ -147,8 +171,7 @@ public static class SerializedPropertyExtensions
 		var type = sp.GetSerializedPropertyType();
 		var drawer = PropDrawerCache.From( type );
 		var h = ( drawer != null ) ? drawer.GetPropertyHeight( sp, new GUIContent( sp.displayName ) ) : EditorGUI.GetPropertyHeight( sp, childs );
-        var cache = GetHeightCached( childs );
-		cache[sp.CompletePath()] = h;
+		CacheHeightFor( sp, h, includeChildren );
 		return h;
 	}
 
@@ -160,8 +183,11 @@ public static class SerializedPropertyExtensions
 
 	public static float CalcSerializedReferenceHeight( this SerializedProperty prop, bool includeChildren = true, float spacing = 0 )
 	{
-		var childs = prop.isExpanded && includeChildren;
-		return EditorGUIUtility.singleLineHeight + ( ( childs ) ? spacing + CalcChildPropsHeight( prop, includeChildren, spacing ) : 0 );
+		var calcChildsHeight = CalcChildPropsHeight( prop, includeChildren, spacing );
+		var h = EditorGUIUtility.singleLineHeight;
+		if( calcChildsHeight > Mathf.Epsilon ) h += spacing + calcChildsHeight;
+		CacheHeightFor( prop, h, includeChildren );
+		return h;
 	}
 
 	public static void TryDrawIsActiveLayout( this SerializedProperty prop, float size = 18f )
@@ -227,10 +253,23 @@ public static class SerializedPropertyExtensions
 	{
 		var assType = prop.managedReferenceFieldTypename;
 		var splited = assType.Split( ' ' );
-		if( splited.Length == 0 ) return null;
+		if( splited.Length <= 0 ) return null;
 		if( splited.Length == 1 ) return TypeFinder.WithName( splited[0] );
-		var typeName = splited[1];
+		
 		var assemblyName = splited[0];
+		if ( splited.Length > 2 )
+		{
+			var cut = splited[0].Length + 1;
+			var fullTypeName = assType.Substring( splited[0].Length + 1, assType.Length - cut );
+
+			var name = typeof(IEventRegister<Vector2>).FullName.Replace( "IEventRegister", "ITriggerValue" );
+			// Debug.Log( $"\"{fullTypeName}\" == \"{name}\" {name==fullTypeName}" );
+
+			// Debug.Log( $"({assemblyName}) {fullTypeName} 1{System.Type.GetType(fullTypeName).ToStringOrNull()} 2{TypeFinder.WithName(fullTypeName).ToStringOrNull()} 3{TypeFinder.WithNameFromAssembly( fullTypeName, assemblyName ).ToStringOrNull()}" );
+			return TypeFinder.WithNameFromAssembly( fullTypeName, assemblyName );
+			// TypeFinder.WithName( fullTypeName );
+		}
+		var typeName = splited[1];
 		var type = TypeFinder.WithNameFromAssembly( typeName, assemblyName );
 		return type;
 	}

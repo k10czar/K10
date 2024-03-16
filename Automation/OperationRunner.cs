@@ -1,8 +1,9 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Automation
 {
-	public class OperationRunner : MonoBehaviour
+	public class OperationRunner : KomposedDebugableMonoBehavior
 	{
 		[SerializeField] bool _log = true;
 		[ExtendedDrawer, SerializeReference] IOperation _operation;
@@ -10,6 +11,12 @@ namespace Automation
 		public void Start()
 		{
 			_operation.ExecuteOn( this, _log );
+		}
+		
+    
+		protected override IEnumerable<object> GetKomposedDebugableObjects()
+		{
+			yield return _operation;
 		}
 	}
 }

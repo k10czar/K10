@@ -16,7 +16,6 @@ public static class Colors
     [UnityEditor.MenuItem("K10/Colors/Log")]
     private static void EDITOR_Log()
     {
-        Debug.Log( "A" );
         var binding = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
         typeof(Color).ReflectListMembers<Color>( EDITOR_DebugColor, binding, 0 ).Log();
         typeof(Colors).ReflectListMembers<Color>( EDITOR_DebugColor, binding, 0 ).Log();
@@ -26,7 +25,6 @@ public static class Colors
     [UnityEditor.MenuItem("K10/Colors/Log Codes")]
     private static void EDITOR_LogCodes()
     {
-        Debug.Log( "A" );
         var binding = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
         typeof(Color).ReflectListMembers<Color>( EDITOR_DebugColorCode, binding, 0 ).Log();
         typeof(Colors).ReflectListMembers<Color>( EDITOR_DebugColorCode, binding, 0 ).Log();

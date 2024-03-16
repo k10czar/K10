@@ -6,6 +6,7 @@ using System.Collections.Generic;
 namespace Automation
 {
     public class Loop : IOperation
+						, IDrawGizmos, IDrawGizmosOnSelected
 	{
 		[SerializeField] int _repetitions = 1;
 		[ExtendedDrawer,SerializeReference] List<IOperation> _actions;
@@ -30,5 +31,17 @@ namespace Automation
 		}
 
 		public string GetSummaryColored() => $"🗃 {"Loop".Colorfy( Colors.Console.Fields )} {_repetitions.ToStringColored(Colors.Console.Numbers)}x";
+
+#if UNITY_EDITOR
+		public void OnDrawGizmos()
+		{
+			foreach( var act in _actions ) if( act is IDrawGizmos dg ) dg.OnDrawGizmos();
+		}
+
+		public void OnDrawGizmosSelected()
+		{
+			foreach( var act in _actions ) if( act is IDrawGizmosOnSelected dgs ) dgs.OnDrawGizmosSelected();
+		}
+#endif
 	}
 }

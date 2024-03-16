@@ -5,3 +5,12 @@ public interface ICustomDisposableKill
 {
 	void Kill();
 }
+
+public static class ICustomDisposableKillExtensions
+{
+	public static void TryKill( this ICustomDisposableKill self )
+	{
+		if( self == null ) return;
+		self.Kill();
+	}
+}
