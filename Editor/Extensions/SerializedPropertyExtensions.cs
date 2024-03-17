@@ -341,7 +341,7 @@ public static class SerializedPropertyExtensions
         var triggerSummary = triggerSummarys.LastOrDefault().ToStringOrNull();
 		var triggerSummaryRect = firstLine.CutLeft(popupWidth + MAGIC_POPUP_SPACE);
 
-		var refType = prop?.managedReferenceValue.GetType() ?? null;
+		var refType = prop?.managedReferenceValue?.GetType() ?? null;
 		var script = refType?.EditorGetScript() ?? null;
 		if( script != null )
 		{ 
