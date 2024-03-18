@@ -1,8 +1,9 @@
 using UnityEngine;
 
+[System.Serializable]
 public struct FastCircularFloatAnimator
 {
-    private FastFloatAnimator _animator;
+    [SerializeField] private FastFloatAnimator _animator;
     float _realRangeDelta;
     public float _currentValue;
 
