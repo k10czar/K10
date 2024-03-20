@@ -25,7 +25,7 @@ public class ErrorSemaphore : ISemaphore
 
 	public void Interact( object obj, bool block ) => Debug.LogError( $"{obj} Interact a ERROR Semaphore" );
 	public void Release( object obj ) => Debug.LogError( $"{obj} Release a ERROR Semaphore" );
-	public bool Block( object obj, bool increaseBlock = true ) { Debug.LogError( $"{obj} Blocking {increaseBlock} a ERROR Semaphore" ); return false; }
+	public bool Block( object obj, bool increaseBlock = true, string nameDebug = "") { Debug.LogError( $"{obj} Blocking {increaseBlock} a ERROR Semaphore" ); return false; }
 
 	public int GetBlockCount(object key) => Free ? 0 : 1;
 
