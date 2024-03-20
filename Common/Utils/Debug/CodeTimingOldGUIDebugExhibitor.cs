@@ -1,5 +1,7 @@
 using UnityEngine;
+using System.Text.RegularExpressions;
 
+[DefaultExecutionOrder(CodeTimingDebugExhibitor.EXECUTION_ORDER)]
 public sealed class CodeTimingOldGUIDebugExhibitor : CodeTimingDebugExhibitor
 {
 	[SerializeField] Rect _rect = new Rect( 0, 0, 400, 600 );
@@ -15,8 +17,13 @@ public sealed class CodeTimingOldGUIDebugExhibitor : CodeTimingDebugExhibitor
 	{
 		var color = _style.normal.textColor;
 		_style.normal.textColor = _shadowColor;
-		GUI.Label( _rect.Move( _shadowOffset ), log, _style );
+		GUI.Label( _rect.Move( _shadowOffset ), RemoveRichTextTags(log), _style );
 		_style.normal.textColor = color;
 		GUI.Label( _rect, log, _style );
+	}
+
+	public static string RemoveRichTextTags(string input)
+	{
+		return Regex.Replace(input, "<.*?>", string.Empty);
 	}
 }
