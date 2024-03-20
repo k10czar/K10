@@ -17,7 +17,7 @@ public interface ISemaphoreInfo : IBoolStateObserver
 public interface ISemaphoreInterection
 {
 	void Interact( object key, bool block );
-	bool Block( object obj, bool increaseBlock = true , string nameGameObjectToDebug = "");
+	bool Block( object obj, bool increaseBlock = true , string nameGameObjectToDebug = null);
 	bool BlockButDoNotIncrease( object obj );
 	void Release( object obj );
 	IEventValidator Validator { get; }
