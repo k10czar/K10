@@ -17,7 +17,7 @@ public interface ISemaphoreInfo : IBoolStateObserver
 public interface ISemaphoreInterection
 {
 	void Interact( object key, bool block );
-	bool Block( object obj, bool increaseBlock = true , string nameGameObjectToDebug = "");
+	bool Block( object obj, bool increaseBlock = true , string nameGameObjectToDebug = null);
 	bool BlockButDoNotIncrease( object obj );
 	void Release( object obj );
 	IEventValidator Validator { get; }
@@ -310,7 +310,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 		var freeStr = ( Free ? "Free" : "Blocked" );
 		if( _toStringCount > 0 ) return $"**InfinityLoopCondition_{freeStr}Semaphore({this.GetHashCode()})**";
 		_toStringCount++;
-		var elementsStrings = _semaphores.ToList().ConvertAll( ( obj ) => $"{obj.Value.NameDebug}{KeyName( obj.Key.ToStringOrNull() )}({obj.Value.Value})" );
+		var elementsStrings = _semaphores.ToList().ConvertAll( ( obj ) => $"{obj.Value.NameDebug} {KeyName( obj.Key.ToStringOrNull() )}({obj.Value.Value})" );
 		var elements = String.Join( ", \n", elementsStrings );
 		_toStringCount--;
 		return $"( [{freeStr} Semaphore({this.GetHashCode()}) => {{ {elements} }}] )";
