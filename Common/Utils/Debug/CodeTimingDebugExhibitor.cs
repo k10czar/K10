@@ -1,7 +1,14 @@
 using UnityEngine;
 
+[DefaultExecutionOrder(CodeTimingDebugExhibitor.EXECUTION_ORDER)]
 public abstract class CodeTimingDebugExhibitor : MonoBehaviour
 {
+	public const int EXECUTION_ORDER = 20000;
+
+	protected float timer;
+
+	[SerializeField] protected float tickRate = 0.0f;
+
 	protected abstract void SetLog( string log );
 	protected abstract void OnEnableChange( bool enabled );
 
@@ -17,7 +24,18 @@ public abstract class CodeTimingDebugExhibitor : MonoBehaviour
 
 	void OnPostRender()
 	{
-		SetLog( CodeTimingDebug.GetLog() );
-		CodeTimingDebug.Clear();
+		var log = CodeTimingDebug.GetLog();
+		
+		if (tickRate > Mathf.Epsilon)
+		{
+			timer += Time.unscaledDeltaTime;
+			if (timer > tickRate)
+				timer %= tickRate;
+			else
+				return;
+		}
+
+		SetLog(log);
+		CodeTimingDebug.ClearUnusedData();
 	}
 }
