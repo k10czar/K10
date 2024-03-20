@@ -17,7 +17,7 @@ public interface ISemaphoreInfo : IBoolStateObserver
 public interface ISemaphoreInterection
 {
 	void Interact( object key, bool block );
-	bool Block( object obj, bool increaseBlock = true );
+	bool Block( object obj, bool increaseBlock = true , string nameGameObjectToDebug = "");
 	bool BlockButDoNotIncrease( object obj );
 	void Release( object obj );
 	IEventValidator Validator { get; }
@@ -58,6 +58,15 @@ public static class ISemaphoreInterectionExtentions
 		source.RegisterOnFalse( semaphore.Validator.Validated( releaseAction, eventValidation ) );
 
 		eventValidation.OnVoid.Register( new CallOnce( releaseAction ) );
+	}
+
+	public static void BlockOn(this ISemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation, string nameGameObjectToDebug)
+	{
+		Action releaseAction = () => semaphore.Release(source);
+		source.RegisterOnTrue(semaphore.Validator.Validated(() => semaphore.Block(source, true, nameGameObjectToDebug), eventValidation));
+		source.RegisterOnFalse(semaphore.Validator.Validated(releaseAction, eventValidation));
+
+		eventValidation.OnVoid.Register(new CallOnce(releaseAction));
 	}
 
 	// public static void BlockOn( this ISemaphoreInterection semaphore, IBoolStateObserver source, Func<bool> eventValidation )
@@ -121,7 +130,11 @@ public interface ISemaphore : ISemaphoreInfo, ISemaphoreInterection
 
 public class Semaphore : ISemaphore, ICustomDisposableKill
 {
-	public class SemaphoreObject { public int Value { get; set; } public override string ToString() => Value.ToString(); }
+	public class SemaphoreObject { 
+		public int Value { get; set; }
+		public override string ToString() => Value.ToString();
+		public string NameDebug { get; set; }
+	}
 
 	private readonly Dictionary<object, SemaphoreObject> _semaphores = new Dictionary<object, SemaphoreObject>();
 	public bool Free { get { return _semaphores.Count == 0; } }
@@ -208,7 +221,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 	}
 
 	public bool BlockButDoNotIncrease( object obj ) => Block( obj, false );
-	public bool Block( object obj, bool increaseBlock = true )
+	public bool Block( object obj, bool increaseBlock = true, string nameDebug = "")
 	{
 		if( obj == null )
 			return false;
@@ -222,6 +235,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 			if( newKey )
 			{
 				s = new SemaphoreObject();
+				s.NameDebug = nameDebug;
 				_semaphores.Add( obj, s );
 			}
 			s.Value++;
@@ -296,8 +310,8 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 		var freeStr = ( Free ? "Free" : "Blocked" );
 		if( _toStringCount > 0 ) return $"**InfinityLoopCondition_{freeStr}Semaphore({this.GetHashCode()})**";
 		_toStringCount++;
-		var elementsStrings = _semaphores.ToList().ConvertAll( ( obj ) => $"{KeyName( obj.Key.ToStringOrNull() )}({obj.Value.Value})" );
-		var elements = String.Join( ", ", elementsStrings );
+		var elementsStrings = _semaphores.ToList().ConvertAll( ( obj ) => $"{obj.Value.NameDebug}{KeyName( obj.Key.ToStringOrNull() )}({obj.Value.Value})" );
+		var elements = String.Join( ", \n", elementsStrings );
 		_toStringCount--;
 		return $"( [{freeStr} Semaphore({this.GetHashCode()}) => {{ {elements} }}] )";
 	}
