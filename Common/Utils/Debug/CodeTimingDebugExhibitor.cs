@@ -7,7 +7,7 @@ public abstract class CodeTimingDebugExhibitor : MonoBehaviour
 
 	protected float timer;
 
-	[SerializeField] protected float tickRate = 0.0f;
+	[SerializeField] protected float tickInterval = 0.0f;
 
 	protected abstract void SetLog( string log );
 	protected abstract void OnEnableChange( bool enabled );
@@ -26,11 +26,11 @@ public abstract class CodeTimingDebugExhibitor : MonoBehaviour
 	{
 		var log = CodeTimingDebug.GetLog();
 		
-		if (tickRate > Mathf.Epsilon)
+		if (tickInterval > Mathf.Epsilon)
 		{
 			timer += Time.unscaledDeltaTime;
-			if (timer > tickRate)
-				timer %= tickRate;
+			if (timer > tickInterval)
+				timer %= tickInterval;
 			else
 				return;
 		}

@@ -15,6 +15,7 @@ public sealed class CodeTimingOldGUIDebugExhibitor : CodeTimingDebugExhibitor
 
 	public void OnGUI()
 	{
+		_style.richText = true;
 		var color = _style.normal.textColor;
 		_style.normal.textColor = _shadowColor;
 		GUI.Label( _rect.Move( _shadowOffset ), RemoveRichTextTags(log), _style );
