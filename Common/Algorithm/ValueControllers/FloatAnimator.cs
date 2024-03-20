@@ -198,13 +198,12 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 
 		if( step > float.Epsilon ) // Not 0 == !Mathf.Approximately( step, 0 )
 		{
-			if( step + float.Epsilon > diff )
+			if( diffSign > 0 && ( diff - step ) < float.Epsilon )
 	        {
 	            _current = _desired;
 				_onValueUpdate.Trigger( _current );
-				_isOnDesired.Value = true;
-
 	            _velocity = 0;
+				_isOnDesired.Value = true;
 	        }
 	        else
 	        {
@@ -215,20 +214,19 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 				if( currDiff < float.Epsilon && currDiff > FloatHelper.NegativeEpsilon ) //if( Mathf.Approximately( _current, _desired ) )
 				{
 					_current = _desired;
-					_isOnDesired.Value = true;
 					_velocity = 0;
+					_isOnDesired.Value = true;
 	            }
 	        }
 		}
 		else if( step < FloatHelper.NegativeEpsilon )
 		{
-			if( step - float.Epsilon < diff )
+			if( diffSign < 0 && ( step - diff ) < float.Epsilon )
 	        {
 	            _current = _desired;
 				_onValueUpdate.Trigger( _current );
-				_isOnDesired.Value = true;
-
 	            _velocity = 0;
+				_isOnDesired.Value = true;
 	        }
 	        else
 	        {
@@ -239,10 +237,16 @@ public class FloatAnimator : IValueState<float>, IUpdatableOnDemand, ICustomDisp
 				if( currDiff < float.Epsilon && currDiff > FloatHelper.NegativeEpsilon ) //if( Mathf.Approximately( _current, _desired ) )
 				{
 					_current = _desired;
-					_isOnDesired.Value = true;
 					_velocity = 0;
+					_isOnDesired.Value = true;
 	            }
 	        }
+		}
+		else
+		{
+			_current = _desired;
+			_velocity = 0;
+			_isOnDesired.Value = true;
 		}
 
 		// if( float.IsNaN( _current ) ) Debug.LogError( string.Format( "NaN on float animator | _velocity:{0} _maxVelocity:{1} deltaTime:{2} _desired:{3} _current:{4} diff:{5} aVel:{6} dVel:{7} vel:{8} step:{9}", _velocity, _maxVelocity, deltaTime, _desired, _current, diff, aVel, dVel, vel, step ) );

@@ -8,7 +8,7 @@ namespace K10
 	{
 		public class GuiLabelWidthManager
 		{
-			static List<float> _widths = new List<float>();
+			[Blackboard] static List<float> _widths = new List<float>();
 
 			public static void New( float width )
 			{

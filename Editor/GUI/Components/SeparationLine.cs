@@ -8,7 +8,7 @@ namespace K10.EditorGUIExtention
 	{
 		public const int HEIGHT = 3;
 		public const int WIDTH = 4;
-		static readonly Texture NULL_TEXTURE = null;
+		[ConstLike] static readonly Texture NULL_TEXTURE = null;
 
 		public static void Horizontal() { GUILayout.Box( NULL_TEXTURE, GUILayout.ExpandWidth( true ), GUILayout.Height( HEIGHT ) ); }
 		public static void Vertical() { GUILayout.Box( NULL_TEXTURE, GUILayout.ExpandHeight( true ), GUILayout.Width( WIDTH ) ); }

@@ -1,9 +1,15 @@
+using System.Collections;
+using UnityEngine;
 
-
-namespace Unity.Automation
+namespace Automation.Unity
 {
-	public class WaitForEndOfFrameOperation : K10.Automation.Operation
+	public class WaitForEndOfFrameOperation : Automation.IOperation
 	{
-		public override System.Collections.IEnumerator ExecutionCoroutine() { yield return new UnityEngine.WaitForEndOfFrame(); }
+		public IEnumerator ExecutionCoroutine() 
+		{ 
+			yield return new UnityEngine.WaitForEndOfFrame(); 
+		}
+
+		public string GetSummaryColored() => $"🖼 {"WaitForEndOfFrameOperation".Colorfy( Colors.Console.Verbs )}";
 	}
 }

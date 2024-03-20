@@ -40,6 +40,6 @@ public class ErrorSemaphore : ISemaphore
 
 	private ErrorSemaphore() { }
 
-	private static readonly ErrorSemaphore _instance = new ErrorSemaphore();
+	[ConstLike] private static readonly ErrorSemaphore _instance = new ErrorSemaphore();
 	public static ISemaphore Ref => _instance;
 }

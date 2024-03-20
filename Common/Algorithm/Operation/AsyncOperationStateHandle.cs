@@ -44,6 +44,6 @@ public class AlreadyDoneOperationStateHandle : IAsyncOperationObserver
 
     private AlreadyDoneOperationStateHandle() {}
 
-    public static AlreadyDoneOperationStateHandle _instance;
+    [LazyConst] public static AlreadyDoneOperationStateHandle _instance;
     public static AlreadyDoneOperationStateHandle Instance => _instance ?? ( _instance = new AlreadyDoneOperationStateHandle() );
 }

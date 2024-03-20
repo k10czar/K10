@@ -11,6 +11,21 @@ public class FakeEvent : IEventRegister
 	private FakeEvent() { }
 }
 
+public class FakeAction
+{
+	private static System.Action _instance;
+	public static System.Action Instance => _instance ??= ActionFakeCall;
+
+	public static void ActionFakeCall() { }
+}
+
+public class FakeAction<T>
+{
+	private static System.Action<T> _instance;
+	public static System.Action<T> Instance => _instance ??= ActionFakeCall;
+	public static void ActionFakeCall( T parameter ) { }
+}
+
 
 public class FakeEvent<T> : IEventRegister<T>
 {

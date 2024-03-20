@@ -12,11 +12,10 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
     const int DEEP_LINES = 1;
     const int EXECUTION_LINES = 1;
 
-
-    static Color ORANGE_COLOR = Color.Lerp( new Color( 1, .6f, 0 ), Color.white, .5f );
-    static Color RED_COLOR = Color.Lerp( Color.red, Color.white, .5f );
-    static Color YELLOW_COLOR = Color.Lerp( Color.yellow, Color.white, .5f );
-    static Color GREEN_COLOR = Color.Lerp( Color.green, Color.white, .8f );
+    [ConstLike] static readonly Color ORANGE_COLOR = Color.Lerp( new Color( 1, .6f, 0 ), Color.white, .5f );
+    [ConstLike] static readonly Color RED_COLOR = Color.Lerp( Color.red, Color.white, .5f );
+    [ConstLike] static readonly Color YELLOW_COLOR = Color.Lerp( Color.yellow, Color.white, .5f );
+    [ConstLike] static readonly Color GREEN_COLOR = Color.Lerp( Color.green, Color.white, .8f );
 
     void ResetData( SerializedProperty editorAssetRefGuid, SerializedProperty refType, SerializedProperty assetDirectRef, SerializedProperty guid, SerializedProperty resourcesPath )
     {

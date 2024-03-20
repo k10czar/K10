@@ -3,10 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 
 [System.Serializable]
-public class Weighted
+public abstract class Weighted
 {
 	[SerializeField] protected float _weight = 1;
 	public float Weight { get { return _weight; } }
+
+    public void SetWeight(float weight) { _weight = weight; }
 
 	public static float Total( IList list ) 
 	{
@@ -60,6 +62,25 @@ public class Weighted
 			w += element._weight;
 		}
 		return w;
+	}
+
+	public static readonly AscendingComparer Ascending = new AscendingComparer();
+	public static readonly DescendingComparer Descending = new DescendingComparer();
+
+	public sealed class AscendingComparer : IComparer<Weighted> 
+	{
+		public int Compare( Weighted x, Weighted y ) 
+		{
+			return x.Weight.CompareTo( y.Weight );
+		}
+	}
+
+	public sealed class DescendingComparer : IComparer<Weighted> 
+	{
+		public int Compare( Weighted x, Weighted y ) 
+		{
+			return y.Weight.CompareTo( x.Weight );
+		}
 	}
 }
 

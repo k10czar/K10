@@ -1,16 +1,18 @@
 using System.Collections;
 using UnityEngine;
 
-namespace Unity.Automation
+namespace Automation.Unity
 {
-	public class ChangeSceneOperation : K10.Automation.Operation
+	public class ChangeSceneOperation : Automation.IOperation
 	{
 		[SerializeField, K10Attributes.SceneSelector] string _scene;
 
-		public override IEnumerator ExecutionCoroutine()
+		public IEnumerator ExecutionCoroutine() 
 		{
 			var op = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync( _scene );
 			while( !op.isDone ) yield return null;
 		}
+
+		public string GetSummaryColored() => $"🎥 {"ChangeSceneOperation".Colorfy( Colors.Console.Verbs )} to {_scene.Colorfy( Colors.Console.Fields )}";
 	}
 }

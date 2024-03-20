@@ -15,7 +15,7 @@ public abstract class CodeTimingDebugExhibitor : MonoBehaviour
 		CodeTimingDebug.Disable();
 	}
 
-	void LateUpdate()
+	void OnPostRender()
 	{
 		SetLog( CodeTimingDebug.GetLog() );
 		CodeTimingDebug.Clear();

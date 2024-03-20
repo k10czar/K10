@@ -8,8 +8,9 @@ public interface IIconCache
 	Texture2D Texture { get; }
 
 	void Layout();
-	void Layout( int size );
-	void Layout( int w, int h );
+	void Layout( float size );
+	void Layout( float w, float h );
+	float LayoutWithHeight( float height );
 
 	void Draw( Rect r );
 	void Draw( Rect r, SpriteAlignment align );
@@ -42,8 +43,9 @@ public class IconCache : IIconCache
 	public void Reset() { ReadIcon(); }
 
 	public void Layout() { if( _icon != null ) GUILayout.Label( _icon, GUILayout.Width( _icon.width ), GUILayout.Height( _icon.height ) ); }
-	public void Layout( int size ) { Layout( size, size ); }
-	public void Layout( int w, int h ) { if( _icon != null ) GUILayout.Label( _icon, GUILayout.Width( w ), GUILayout.Height( h ) ); else GUILayout.Label( "", GUILayout.Width( w ), GUILayout.Height( h ) ); }
+	public void Layout( float size ) { Layout( size, size ); }
+	public float LayoutWithHeight( float height ) { var w = _icon.width * height / _icon.height; Layout( w, height ); return w; }
+	public void Layout( float w, float h ) { if( _icon != null ) GUILayout.Label( _icon, GUILayout.Width( w ), GUILayout.Height( h ) ); else GUILayout.Label( "", GUILayout.Width( w ), GUILayout.Height( h ) ); }
 
 	public void Draw( Vector2 pos ) { Draw( pos, SpriteAlignment.Center ); }
 	public void Draw( Vector2 pos, SpriteAlignment align ) { Draw( new Rect( pos.x, pos.y, 0, 0 ), align ); }

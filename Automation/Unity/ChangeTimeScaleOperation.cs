@@ -1,11 +1,16 @@
+using UnityEngine;
 
-
-namespace Unity.Automation
+namespace Automation.Unity
 {
-	public class ChangeTimeScaleOperation : K10.Automation.Operation
+	public class ChangeTimeScaleOperation : Automation.IOperation
 	{
 		[UnityEngine.SerializeField] float _timeScale = 1;
 
-		public override System.Collections.IEnumerator ExecutionCoroutine() { UnityEngine.Time.timeScale = _timeScale; yield return null; }
+		public System.Collections.IEnumerator ExecutionCoroutine()  
+		{
+			Time.timeScale = _timeScale; yield return null;
+		}
+
+		public string GetSummaryColored() => $"⏳ {"ChangeTimeScaleOperation".Colorfy( Colors.Console.Verbs )} to {_timeScale.ToStringColored( Colors.Console.Numbers )}";
 	}
 }

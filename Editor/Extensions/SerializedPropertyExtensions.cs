@@ -1,13 +1,14 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using K10.EditorGUIExtention;
 using UnityEditor;
 using UnityEngine;
 
-using System.Linq;
-
 public static class SerializedPropertyExtensions
 {
+	private const float MAGIC_POPUP_SPACE = 15;
+
 	private static readonly Dictionary<string, IVoidable> _events = new Dictionary<string, IVoidable>();
 
 	public static object TriggerMethod( this SerializedProperty property, string name, params object[] parameters )
@@ -17,10 +18,393 @@ public static class SerializedPropertyExtensions
 		return method.Invoke( obj, parameters );
 	}
 
+
+    public static void IterateThroughChildProps( this SerializedProperty prop, System.Action<SerializedProperty> Iteration, SerializedProperty ignoreProp = null )
+    {
+        string lastArray = null;
+
+		string notExpanded = "***";
+		string iteratedProp = prop.propertyPath;
+
+        foreach (var innProp in prop)
+        {
+            if (innProp is SerializedProperty sp)
+            {
+				var path = sp.propertyPath;
+				if( ignoreProp != null && path == ignoreProp.propertyPath ) continue;
+
+                if (sp.isArray)
+                {
+                    lastArray = path + ".Array.";
+                }
+                else if (lastArray != null)
+                {
+                    var isInnerArrayProp = path.StartsWith(lastArray);
+                    if (!isInnerArrayProp) lastArray = null;
+                    else continue;
+                }
+				
+				var propLevel = 0;
+				for( int i = iteratedProp.Length; i < path.Length; i++ ) if( path[i] == '.' ) propLevel++;
+
+				if( propLevel > 1 ) continue;
+
+				if( path.StartsWith( notExpanded ) && ( path.Length <= notExpanded.Length || path[notExpanded.Length] == '.' ) ) continue;
+				else notExpanded = "***";
+
+				// Debug.Log( $"{iteratedProp} reach {path} level {propLevel}" );
+
+				Iteration( sp );
+
+				if( !sp.isExpanded ) notExpanded = path;
+            }
+        }
+    }
+	
+    public static System.Type GetSerializedPropertyType(this SerializedProperty property)
+    {
+        object targetObject = property.serializedObject.targetObject;
+		var objectType = targetObject.GetType();
+        FieldInfo field = objectType.GetField(property.propertyPath, 
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (field != null)
+        {
+            return field.FieldType;
+        }
+        return null; // Or handle the case where the type is not found
+    }
+	
+    public static void DrawChildProps( this SerializedProperty prop, bool includeChildren = true, float spacing = 0, SerializedProperty ignoreProp = null )
+	{
+		IterateThroughChildProps( prop, ( sp ) => DrawElementLayout( sp, includeChildren, spacing ), ignoreProp );
+	}
+	
+    public static void DrawChildProps( this SerializedProperty prop, Rect rect, bool includeChildren = true, float spacing = 0, SerializedProperty ignoreProp = null )
+	{
+		IterateThroughChildProps( prop, ( sp ) => DrawElement( ref rect, sp, includeChildren, spacing ), ignoreProp );
+	}
+	
+    public static float CalcChildPropsHeight( this SerializedProperty prop, bool includeChildren = true, float spacing = 0 )
+	{
+		if( prop == null ) return 0;
+		float h = 0;
+		if( includeChildren && prop.isExpanded ) IterateThroughChildProps( prop, ( sp ) => SumElementHeight( ref h, sp, includeChildren, spacing ), prop.FindPropertyRelative( "_isActive" ) );
+		CacheHeightFor( prop, h, includeChildren );
+		return h;
+	}
+
+	private static void DrawElement( ref Rect rect, SerializedProperty sp, bool includeChildren = true, float spacing = 0 )
+	{
+		var type = sp.GetSerializedPropertyType();
+		var drawer = PropDrawerCache.From( type );
+		var willDrawChildren = includeChildren && sp.isExpanded;
+		var h = GetCalculatedElementHeightCached( sp, willDrawChildren );
+		var drawRect = rect.RequestTop( h );
+		if( drawer == null ) EditorGUI.PropertyField( drawRect, sp, includeChildren );
+		else drawer.OnGUI( drawRect, sp, new GUIContent( sp.displayName ) );
+
+		// EditorGUI.LabelField( drawRect.RequestRight( 400 ).RequestTop( EditorGUIUtility.singleLineHeight ), $"{sp.propertyPath} : {GetHeightCacheTime(sp,includeChildren)} : {h} : {inc}" );
+		// Debug.Log( $"DrawElement {sp.propertyPath} {(sp.isExpanded?"expanded":"collapsed")} {(includeChildren?"includeChildren":"noChildren")} {(drawer== null?"NO Drawer":drawer.TypeNameOrNull())}" );
+		// if( drawer == null ) GUI.Label( drawRect.RequestTop( EditorGUIUtility.singleLineHeight ), sp.propertyPath + $" {( drawer != null ? "Has Drawer" : "NO Drawer" )}" );
+		// else GUI.Label( drawRect.RequestTop( EditorGUIUtility.singleLineHeight ), sp.propertyPath + $" {( drawer != null ? "Has Drawer" : "NO Drawer" )}" );
+		rect = rect.CutTop( h + spacing );
+	}
+
+	private static void DrawElementLayout( SerializedProperty sp, bool includeChildren = true, float spacing = 0 )
+	{
+		var height = CalcChildPropsHeight( sp, includeChildren, spacing );
+		Rect rect = GUILayoutUtility.GetRect( GUIContent.none, GUIStyle.none, GUILayout.Height(height) );
+		DrawElement( ref rect, sp, includeChildren, spacing );
+	}
+
+	static Dictionary<string,float> _heightCache = null;
+	static Dictionary<string,float> _includedChildrenHeightCache = null;
+
+	static Dictionary<string,long> _cacheTime = null;
+	static Dictionary<string,long> _includedChildrenCacheTime = null;
+	
+	private static string CompletePath( this SerializedProperty sp )
+	{
+		return $"{{{string.Join(",",sp.serializedObject.targetObjects.Select( o => o.GetInstanceID()))}}}.{sp.propertyPath}";
+	}
+
+	private static float GetCalculatedElementHeightCached( SerializedProperty sp, bool includeChildren = true )
+    {
+        var cache = GetHeightCacheDictionary( includeChildren );
+		var key = sp.CompletePath();
+        if (cache.TryGetValue(key, out var height)) return height;
+        return EditorGUIUtility.singleLineHeight;
+    }
+
+    private static Dictionary<string, float> GetHeightCacheDictionary(bool includeChildren)
+    {
+        return includeChildren ? (_includedChildrenHeightCache ??= new()) : (_heightCache ??= new());
+    }
+
+    private static long GetHeightCacheTime( SerializedProperty prop, bool includeChildren )
+    {
+        var timing = includeChildren ? (_includedChildrenCacheTime ??= new()) : (_cacheTime ??= new());
+		var path = prop.CompletePath();
+        if (timing.TryGetValue(path, out var time)) return time;
+		return 0;
+    }
+
+	private static void CacheHeightFor( SerializedProperty prop, float h, bool includeChildren )
+	{
+		var cache = GetHeightCacheDictionary( includeChildren );
+		var path = prop.CompletePath();
+		cache[path] = h;
+        var timing = includeChildren ? (_includedChildrenCacheTime ??= new()) : (_cacheTime ??= new());
+		timing[path] = System.DateTime.Now.Millisecond + 1000 * System.DateTime.Now.Second;
+		// if( prop.propertyPath == "_komponents.Array.data[1]._values" ) Debug.Log( $"Caching {path} {h} {timing[path]} {includeChildren}" );
+	}
+
+	private static float GetCachedHeightFor( SerializedProperty prop, float h, bool includeChildren )
+	{
+		var cache = GetHeightCacheDictionary( includeChildren );
+		return cache[prop.CompletePath()];
+	}
+
+    private static float CalculateElementHeight( SerializedProperty sp, bool includeChildren = true )
+	{
+		var childs = sp.isExpanded && includeChildren;
+		var type = sp.GetSerializedPropertyType();
+		var drawer = PropDrawerCache.From( type );
+		var h = ( drawer != null ) ? drawer.GetPropertyHeight( sp, new GUIContent( sp.displayName ) ) : EditorGUI.GetPropertyHeight( sp, childs );
+		CacheHeightFor( sp, h, includeChildren );
+		return h;
+	}
+
+	private static void SumElementHeight( ref float h, SerializedProperty sp, bool includeChildren = true, float spacing = 0 )
+	{
+		var childs = sp.isExpanded && includeChildren;
+		h += CalculateElementHeight( sp, childs ) + spacing;
+	}
+
+	public static float CalcSerializedReferenceHeight( this SerializedProperty prop, bool includeChildren = true, float spacing = 0 )
+	{
+		var calcChildsHeight = CalcChildPropsHeight( prop, includeChildren, spacing );
+		var h = EditorGUIUtility.singleLineHeight;
+		if( calcChildsHeight > Mathf.Epsilon ) h += spacing + calcChildsHeight;
+		CacheHeightFor( prop, h, includeChildren );
+		return h;
+	}
+
+	public static void TryDrawIsActiveLayout( this SerializedProperty prop, float size = 18f )
+	{
+		if( prop == null ) return;
+		if( !prop.name.Contains( "isActive", System.StringComparison.OrdinalIgnoreCase ) ) return;
+		if( prop.propertyType == SerializedPropertyType.Boolean )
+		{
+			if( ChangeActiveButton( prop.boolValue, size ) ) 
+				prop.boolValue = !prop.boolValue;
+		}
+		else if( prop.propertyType == SerializedPropertyType.ObjectReference )
+		{
+			var valueProp = prop.FindPropertyRelative( "_value" );
+			if( ChangeActiveButton( valueProp.boolValue, size ) ) SetValueProp( prop, !valueProp.boolValue, valueProp );
+		}
+	}
+
+	public static bool ChangeActiveButton( bool isActive, float size = 18f ) 
+		=> IconButton.Layout( isActive ? "on" : "off", 
+								size,
+								isActive ? 'O' : '-',
+								isActive ? "Active" : "Inactive",
+								isActive ? Color.green : Color.red );
+
+	public static void DrawSerializedReferenceLayout( this SerializedProperty prop, bool includeChildren = true, float spacing = 0 )
+	{
+		var type = prop.GetManagedType();
+		if( type == null )
+		{
+			EditorGUILayout.LabelField( $"Cannot find type: {prop.managedReferenceFieldTypename}" );
+			return;
+		}
+        EditorGUILayout.BeginHorizontal();
+
+		var isActiveProp = prop.FindPropertyRelative( "_isActive" );
+		isActiveProp.TryDrawIsActiveLayout( EditorGUIUtility.singleLineHeight );
+
+		var isInactive = IsInactive( isActiveProp );
+		if( isInactive ) GuiColorManager.New( Colors.Console.GrayOut );
+
+		var listingData = TypeListDataCache.GetFrom( type );
+
+		var refSize = listingData.MaxWidth;
+		var refSizeLimited = Mathf.Min( EditorGUILayout.GetControlRect().width / 2, refSize );
+        var index = FindIndexOf( prop.managedReferenceValue, listingData );
+        var newIndex = EditorGUILayout.Popup( index, listingData.GetGUIsWithIcon(), GUILayout.Width(refSizeLimited) );
+        CheckSelectionChange( prop, listingData, index, newIndex );
+        EditorGUILayout.Space( MAGIC_POPUP_SPACE, false );
+        var triggerSummary = prop.managedReferenceFullTypename;
+        prop.isExpanded = EditorGUILayout.BeginFoldoutHeaderGroup( prop.isExpanded, triggerSummary );
+        EditorGUILayout.EndFoldoutHeaderGroup();
+		var refType = prop?.managedReferenceValue.GetType() ?? null;
+		var script = refType?.EditorGetScript() ?? null;
+		if( script != null && IconButton.Layout( "script", 's', Colors.Celeste ) ) AssetDatabase.OpenAsset( script );
+        EditorGUILayout.EndHorizontal();
+        if (!prop.isExpanded) return;
+		GuiLabelWidthManager.New( refSize );
+		prop.DrawChildProps( includeChildren, spacing );
+		GuiLabelWidthManager.Revert();
+		
+		if( isInactive ) GuiColorManager.Revert();
+	}
+	
+	public static System.Type GetManagedType( this SerializedProperty prop )
+	{
+		var assType = prop.managedReferenceFieldTypename;
+		var splited = assType.Split( ' ' );
+		if( splited.Length <= 0 ) return null;
+		if( splited.Length == 1 ) return TypeFinder.WithName( splited[0] );
+		
+		var assemblyName = splited[0];
+		if ( splited.Length > 2 )
+		{
+			var cut = splited[0].Length + 1;
+			var fullTypeName = assType.Substring( splited[0].Length + 1, assType.Length - cut );
+
+			var name = typeof(IEventRegister<Vector2>).FullName.Replace( "IEventRegister", "ITriggerValue" );
+			// Debug.Log( $"\"{fullTypeName}\" == \"{name}\" {name==fullTypeName}" );
+
+			// Debug.Log( $"({assemblyName}) {fullTypeName} 1{System.Type.GetType(fullTypeName).ToStringOrNull()} 2{TypeFinder.WithName(fullTypeName).ToStringOrNull()} 3{TypeFinder.WithNameFromAssembly( fullTypeName, assemblyName ).ToStringOrNull()}" );
+			return TypeFinder.WithNameFromAssembly( fullTypeName, assemblyName );
+			// TypeFinder.WithName( fullTypeName );
+		}
+		var typeName = splited[1];
+		var type = TypeFinder.WithNameFromAssembly( typeName, assemblyName );
+		return type;
+	}
+
+	public static void TryDrawIsActive( this SerializedProperty prop, ref Rect rect, float size = 18f )
+	{
+		if( prop == null ) return;
+		if( !prop.name.Contains( "isActive", System.StringComparison.OrdinalIgnoreCase ) ) return;
+			// Debug.Log( prop.propertyPath + " " + prop.propertyType );
+		if( prop.propertyType == SerializedPropertyType.Boolean )
+		{
+			if( ChangeActiveButton( rect.RequestLeft( size ), prop.boolValue ) ) 
+				prop.boolValue = !prop.boolValue;
+		}
+		else if( prop.propertyType == SerializedPropertyType.Generic )
+		{
+			var valueProp = prop.FindPropertyRelative( "_value" );
+			var iconRect = rect.RequestLeft( size );
+			if( ChangeActiveButton( iconRect, valueProp.boolValue ) ) SetValueProp( prop, !valueProp.boolValue, valueProp );
+		}
+		else return;
+		rect = rect.CutLeft( size );
+	}
+
+	public static bool IsInactive( this SerializedProperty prop ) 
+	{
+		if( prop == null ) return false;
+		if( !prop.name.Contains( "isActive", System.StringComparison.OrdinalIgnoreCase ) ) 
+		{
+			prop = prop.FindPropertyRelative( "_isActive" );
+			if( prop == null ) return false;
+			if( !prop.name.Contains( "isActive", System.StringComparison.OrdinalIgnoreCase ) ) return false;
+		}
+		if( prop.propertyType == SerializedPropertyType.Boolean ) return !prop.boolValue;
+		if( prop.propertyType == SerializedPropertyType.Generic ) return !( prop.FindPropertyRelative( "_value" )?.boolValue ?? true );
+		 return false;
+	} 
+
+	public static bool ChangeActiveButton( Rect rect, bool isActive ) => IconButton.Draw( rect, isActive ? "on" : "off", isActive ? 'O' : '-' );
+
+	public static void DrawSerializedReference( this SerializedProperty prop, Rect rect, bool includeChildren = true, float spacing = 0 )
+    {
+		var type = prop.GetManagedType();
+		if( type == null )
+		{
+			GUI.Label( rect, $"Cannot find type: {prop.managedReferenceFieldTypename}" );
+			return;
+		}
+
+		EditorGuiIndentManager.New( 0 );
+        var firstLine = rect.RequestTop(EditorGUIUtility.singleLineHeight);
+
+		var isActiveProp = prop.FindPropertyRelative( "_isActive" );
+		isActiveProp.TryDrawIsActive( ref firstLine, EditorGUIUtility.singleLineHeight );
+
+		var isInactive = IsInactive( isActiveProp );
+		if( isInactive ) GuiColorManager.New( Colors.Console.GrayOut );
+
+        rect = rect.CutTop(EditorGUIUtility.singleLineHeight + spacing);
+		var listingData = TypeListDataCache.GetFrom( type );
+		var popupWidth = Mathf.Min( rect.width / 2, listingData.MaxWidth + MAGIC_POPUP_SPACE );
+        var index = FindIndexOf( prop.managedReferenceValue, listingData );
+        var newIndex = EditorGUI.Popup(firstLine.RequestLeft(popupWidth), index, listingData.GetGUIsWithIcon());
+        CheckSelectionChange( prop, listingData, index, newIndex );
+		var triggerSummarys = prop.managedReferenceFullTypename.Split( " " );
+        var triggerSummary = triggerSummarys.LastOrDefault().ToStringOrNull();
+		var triggerSummaryRect = firstLine.CutLeft(popupWidth + MAGIC_POPUP_SPACE);
+
+		var refType = prop?.managedReferenceValue?.GetType() ?? null;
+		var script = refType?.EditorGetScript() ?? null;
+		if( script != null )
+		{ 
+			var size = 18f;
+			if( IconButton.Draw( triggerSummaryRect.RequestRight( size ), "script", 's', null, Colors.Celeste ) ) AssetDatabase.OpenAsset( script );
+			triggerSummaryRect = triggerSummaryRect.CutRight( size );
+		}
+
+        prop.isExpanded = EditorGUI.BeginFoldoutHeaderGroup( triggerSummaryRect, prop.isExpanded, triggerSummary);
+        EditorGUI.EndFoldoutHeaderGroup();
+        if( prop.isExpanded )
+		{
+			GuiLabelWidthManager.New(rect.width - ( triggerSummaryRect.width + MAGIC_POPUP_SPACE ) );
+			prop.DrawChildProps( rect, includeChildren, spacing, isActiveProp );
+			GuiLabelWidthManager.Revert();
+		}
+		
+		if( isInactive ) GuiColorManager.Revert();
+		EditorGuiIndentManager.Revert();
+    }
+
+	private static int FindIndexOf( object refField, TypeListData listingData )
+	{
+        if( refField == null ) return -1;
+		var types = listingData.GetTypes();
+		var triggerRefType = refField.GetType();
+		for( int i = 0; i < types.Length; i++ )
+		{
+			if( types[i] == triggerRefType ) return i;
+		}
+		 return -1;
+	}
+
+    private static void CheckSelectionChange( SerializedProperty prop, TypeListData listingData, int oldIndex, int newIndex )
+    {
+        if( newIndex == oldIndex ) return;
+		var types = listingData.GetTypes();
+		var newType = (newIndex >= 0) ? types[newIndex] : null;
+		var newTypeName = newType?.FullName ?? "NULL";
+		var oldTypeName = ( oldIndex < 0 || oldIndex >= types.Length ) ? "MISSING" : types[oldIndex]?.FullName ?? "NULL";
+		Debug.Log($"{"Changed".Colorfy( Colors.Console.Verbs )} {"SerializedReference".Colorfy( Colors.Console.TypeName )} {prop.propertyPath.Colorfy( Colors.Console.Interfaces )} type from {$"{oldTypeName}[{oldIndex}]".Colorfy(Colors.Console.TypeName)} to {$"{newTypeName}[{newIndex}]".Colorfy(Colors.Console.Numbers)}");
+		prop.managedReferenceValue = newType.CreateInstance();
+    }
+
 	public static string ToFileName( this SerializedProperty prop )
 	{
 		return prop.serializedObject.targetObject.GetType() + "_" + PropPathParsed( prop );
 	}
+
+    public static string GetParentArrayPropPath( this SerializedProperty property )
+    {
+        var path = property.propertyPath;
+        var pLen = path.Length;
+        var it = 1;
+        while( path[pLen-it] != '[' && it < path.Length ) it++;
+        return path.Substring( 0, Mathf.Max( pLen - ( ".Array.data".Length + it ), 0 ) );
+    }
+
+    public static SerializedProperty GetParentArrayProp( this SerializedProperty property )
+    {
+        var parentPath = GetParentArrayPropPath( property );
+        return property.serializedObject.FindProperty( parentPath );
+    }
 
 	public static string PropPathParsed( this SerializedProperty prop )
 	{
@@ -48,24 +432,49 @@ public static class SerializedPropertyExtensions
 		for( int i = 0; i < path.Length; i++ )
 		{
 			var element = path[i];
+			// Debug.Log( $"Iterating {i} on {element}" );
 			if (element.StartsWith("["))
 			{
 				var index = System.Convert.ToInt32(element.Substring(0).Replace("[", "").Replace("]", ""));
 				var enumerable = obj as System.Collections.IEnumerable;
             	var enm = enumerable.GetEnumerator();
 				for (int eId = 0; eId <= index; eId++) if( !enm.MoveNext() ) return null;
-				obj =  enm.Current;
+				obj = enm.Current;
 				objType = obj.GetType();
 			}
 			else
 			{
-				var field = objType.GetField( element, flags );
-				obj = field.GetValue( obj );
-				objType = field.FieldType;
+				obj = objType.GetFieldValue( obj, element, flags );
+				if( obj == null ) return null;
+				objType = obj.GetType();
 			}
 		}
 
 		return obj;
+	}
+
+	public static object GetFieldValue( this System.Type type, object obj, string fieldName, BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance )
+	{
+		// Debug.Log( $"Iterating {i} on {element} {objType.ToStringOrNull()}" );
+		var firstTime = type;
+		while( type != null )
+		{
+			try
+			{
+				var field = type.GetField( fieldName, flags );
+				var fieldObj = field.GetValue( obj );
+				// Debug.Log( $"Succeded to get {(objType?.Name ?? "NULL")}.GetField( {element.ToStringOrNull()} ) on {property.propertyPath}" );
+				return fieldObj;
+			}
+			catch( System.Exception ex )
+			{
+				// Debug.LogError( $"Failed to get {(objType?.Name ?? "NULL")}.GetField( element[{i}]:{element.ToStringOrNull()} ) on {property.propertyPath}" );
+				type = type.BaseType;
+			}
+		}
+		Debug.LogError( $"{"Failed".Colorfy( Colors.Console.Verbs )} to get {(firstTime?.Name ?? "NULL")}.GetField( {fieldName.ToStringOrNull()} )" );
+		// for( int j = 0; j < path.Length; j++ ) Debug.LogError( $"element[{j}]:{path[j].ToStringOrNull()}" );
+		return null;
 	}
 
 	public static string GetKey( this SerializedProperty property ) => $"({property.serializedObject.targetObject.NameOrNull()}).{property.propertyPath}";
@@ -97,7 +506,7 @@ public static class SerializedPropertyExtensions
 	public static void DebugWatcherField<T>( string key, object obj, System.Type objType, Rect rect )
 	{
 		var debug = _events.TryGetValue( key, out var evnt );
-		var newDebug = K10.EditorGUIExtention.IconButton.Toggle.Draw( rect, debug, "DebugOn", "DebugOff" );
+		var newDebug = IconButton.Toggle.Draw( rect, debug, "DebugOn", "DebugOff" );
 		if( newDebug != debug )
 		{
 			if( newDebug )
@@ -122,14 +531,18 @@ public static class SerializedPropertyExtensions
 		var indentedArea = FakeIndentManager.New( area, -24 );
 		var newVal = valueProp.FieldReturnDoNotSet<T>( label, indentedArea.CutLeft( 24 ) );
 		var changed = valueProp.CheckIfChanged( newVal );
-		if( changed )
-		{
-			property.TriggerMethod( BoolState.SET_METHOD_NAME, newVal );
-			valueProp.Set( newVal );
-		}
+		if( changed ) SetValueProp( property, newVal, valueProp );
 		property.DebugWatcherField<T>( indentedArea.RequestLeft( 20 ) );
 		FakeIndentManager.Revert();
 		return changed;
+	}
+
+	public static void SetValueProp<T>( this SerializedProperty property, T value, SerializedProperty valueProp = null )
+	{
+		if( valueProp == null ) valueProp = property.FindPropertyRelative( "_value" );
+		property.TriggerMethod( BoolState.SET_METHOD_NAME, value );
+		if( valueProp == null ) return;
+		valueProp.Set( value );
 	}
 
 	public static void Set<T>( this SerializedProperty property, T value )

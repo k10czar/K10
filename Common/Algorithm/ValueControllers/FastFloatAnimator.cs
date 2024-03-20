@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 
+[System.Serializable]
 public struct FastFloatAnimator
 {
 	public float _min;
@@ -75,7 +76,7 @@ public struct FastFloatAnimator
 
 		if( step > float.Epsilon ) // Not 0 == !Mathf.Approximately( step, 0 )
 		{
-			if( step + float.Epsilon > diff )
+			if( diffSign > 0 && ( diff - step ) < float.Epsilon )
 	        {
 	            _currentValue = _desiredValue;
 	            _currentSpeed = 0;
@@ -94,10 +95,11 @@ public struct FastFloatAnimator
 		}
 		else if( step < FloatHelper.NegativeEpsilon )
 		{
-			if( step - float.Epsilon < diff )
+			if( diffSign < 0 && ( step - diff ) < float.Epsilon )
 	        {
 	            _currentValue = _desiredValue;
 	            _currentSpeed = 0;
+
 	        }
 	        else
 	        {
@@ -111,7 +113,14 @@ public struct FastFloatAnimator
 	            }
 	        }
 		}
+		else
+		{
+			_currentValue = _desiredValue;
+			_currentSpeed = 0;
+		}
 
 		return true;
     }
+
+    public override string ToString() => $"[(FastFloatAnimator) _min:{_min} _max:{_max} _acceleration:{_acceleration} _deacceleration:{_deacceleration} _currentValue:{_currentValue} _desiredValue:{_desiredValue} _currentSpeed:{_currentSpeed} _maximumSpeed:{_maximumSpeed}]";
 }

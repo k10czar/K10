@@ -24,6 +24,8 @@ public static class ReferenceHolderExtentions
 {
 	static bool SafeNotDefault<T>( T a ) { return ( a != null ) && !a.Equals( default(T) ); }
 
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, IReferenceSetter<T> referenceObserver ) { Synchronize( referenceHolder, referenceObserver.ChangeReference ); }
+	
 	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action evnt, bool evenDefault ) { Synchronize( referenceHolder, new ActionEventCapsule( evnt ), evenDefault ); }
 	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action evnt ) { Synchronize( referenceHolder, new ActionEventCapsule( evnt ) ); }
 	// public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action evnt, System.Func<bool> validation ) { Synchronize( referenceHolder, new ConditionalEventListener( evnt, () => validation() ) ); }

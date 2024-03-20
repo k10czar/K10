@@ -2,21 +2,23 @@ using UnityEditor;
 using System.Collections.Generic;
 using UnityEditorInternal;
 
-public sealed class ReorderableListCollection
+public class ReorderableListCache<Key>
 {
-    readonly Dictionary<string, ReorderableList> _dict = new Dictionary<string, ReorderableList>();
+    readonly Dictionary<Key, ReorderableList> _dict = new Dictionary<Key, ReorderableList>();
 
-    public ReorderableList Request( SerializedProperty prop, System.Func<SerializedProperty, ReorderableList> listCreator )
+    public ReorderableList Request( Key key, System.Func<Key, ReorderableList> listCreator )
     {
-        var key = prop.propertyPath;
         ReorderableList list;
-
         if( !_dict.TryGetValue( key, out list ) )
         {
-            list = listCreator( prop );
+            list = listCreator( key );
             _dict[key] = list;
         }
 
         return list;
     }
+}
+
+public sealed class ReorderableListCollection : ReorderableListCache<SerializedProperty>
+{
 }

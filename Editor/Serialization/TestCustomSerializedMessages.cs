@@ -9,7 +9,7 @@ public static class ReflectionExtensions
 {
 	public static object GetDefaultValue( this System.Type type )
 	{
-		if( type.IsValueType ) return System.Activator.CreateInstance( type );
+		if( type.IsValueType ) return type.CreateInstance();
 		return null;
 	}
 }

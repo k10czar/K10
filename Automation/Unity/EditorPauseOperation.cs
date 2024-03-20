@@ -1,16 +1,18 @@
 using System.Collections;
+using UnityEngine;
 
-
-namespace Unity.Automation
+namespace Automation.Unity
 {
-	public class EditorPauseOperation : K10.Automation.Operation
+	public class EditorPauseOperation : Automation.IOperation
 	{
-		public override IEnumerator ExecutionCoroutine()
+		public IEnumerator ExecutionCoroutine() 
 		{
-#if UNITY_EDITOR
+	#if UNITY_EDITOR
 			UnityEditor.EditorApplication.isPaused = true;
-#endif //UNITY_EDITOR
+	#endif //UNITY_EDITOR
 			if( false ) yield return null;
 		}
+
+		public string GetSummaryColored() => $"✋ {"EditorPauseOperation".Colorfy( Colors.Console.Verbs )}";
 	}
 }

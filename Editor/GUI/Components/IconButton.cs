@@ -8,7 +8,7 @@ namespace K10.EditorGUIExtention
 	{
 		const char DEFAULT_CHAR = ' ';
 		const string DEFAULT_TOOLTIP = null;
-		static Color DEFAULT_FAIL_COLOR = Color.white;
+		[ConstLike] static readonly Color DEFAULT_FAIL_COLOR = Color.white;
 
 		public static bool Layout( string iconName, char failLetter = ' ', string tooltip = "" ) { return Layout( iconName, EditorGUIUtility.singleLineHeight, failLetter, tooltip, DEFAULT_FAIL_COLOR ); }
 		public static bool Layout( float iconSize, string iconName ) { return Layout( iconName, iconSize, DEFAULT_CHAR, DEFAULT_TOOLTIP, DEFAULT_FAIL_COLOR ); }

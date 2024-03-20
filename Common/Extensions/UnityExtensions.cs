@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Linq;
+using UnityEngine.SceneManagement;
+
 
 
 public static class K10UnityExtensions
@@ -168,7 +170,7 @@ public static class K10UnityExtensions
 			t = t.parent;
 		}
 
-		return name;
+		return SceneManager.GetActiveScene().name + ":" + name;
 	}
 
 	[MethodImpl( AggrInline )] public static IEventTrigger<T, K, J> UntilLifeTime<T, K, J>( this Component c, IEventTrigger<T, K, J> t ) { return UntilValidator<T, K, J>( c, t ); }
@@ -482,9 +484,13 @@ public static class K10UnityExtensions
 	#endregion Colliders
 
 	const string NULL_STRING = "NULL";
-	[MethodImpl( AggrInline )] public static string NameOrNull( this Object obj, string nullString = NULL_STRING ) { return obj != null ? obj.name : nullString; }
-	[MethodImpl( AggrInline )] public static string ToStringOrNull( this object obj, string nullString = NULL_STRING ) { return obj != null ? obj.ToString() : nullString; }
-	[MethodImpl( AggrInline )] public static string HierarchyNameOrNull( this GameObject obj, string nullString = NULL_STRING ) { return obj != null ? obj.HierarchyName() : NULL_STRING; }
-	[MethodImpl( AggrInline )] public static string HierarchyNameOrNull( this Transform obj, string nullString = NULL_STRING ) { return obj != null ? obj.HierarchyName() : NULL_STRING; }
-	[MethodImpl( AggrInline )] public static string HierarchyNameOrNull( this Component obj, string nullString = NULL_STRING ) { return ( obj != null ? ( obj.transform.HierarchyName() + $"<{( obj != null ? obj.GetType().ToString() : NULL_STRING )}>" ) : NULL_STRING ); }
+	[MethodImpl( AggrInline )] public static string NameOrNull( this Object obj, string nullString = NULL_STRING ) => obj != null ? obj.name : nullString;
+	[MethodImpl( AggrInline )] public static string ToStringColored( this bool boolValue ) => boolValue.ToString().Colorfy( boolValue ? Colors.Console.Numbers : Colors.Console.Negation );
+	[MethodImpl( AggrInline )] public static string ToStringColored( this object obj, Color valueColor ) => obj.ToString().Colorfy(valueColor);
+	[MethodImpl( AggrInline )] public static string ToStringOrNull( this object obj, string nullString = NULL_STRING ) => obj != null ? obj.ToString() : nullString;
+	[MethodImpl( AggrInline )] public static string ToStringOrNullColored( this object obj, Color valueColor, string nullString = NULL_STRING ) => obj != null ? obj.ToString().Colorfy(valueColor) : nullString.Colorfy(Colors.Console.Negation);
+	[MethodImpl( AggrInline )] public static string ToStringOrNullColored( this object obj, Color valueColor, Color nullColor, string nullString = NULL_STRING ) => obj != null ? obj.ToString().Colorfy(valueColor) : nullString.Colorfy(nullColor);
+	[MethodImpl( AggrInline )] public static string HierarchyNameOrNull( this GameObject obj, string nullString = NULL_STRING ) => obj != null ? obj.HierarchyName() : NULL_STRING;
+	[MethodImpl( AggrInline )] public static string HierarchyNameOrNull( this Transform obj, string nullString = NULL_STRING ) => obj != null ? obj.HierarchyName() : NULL_STRING;
+	[MethodImpl( AggrInline )] public static string HierarchyNameOrNull( this Component obj, string nullString = NULL_STRING ) => ( obj != null ? ( obj.transform.HierarchyName() + $"<{( obj != null ? obj.GetType().ToString() : NULL_STRING )}>" ) : NULL_STRING );
 }
