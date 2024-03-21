@@ -25,7 +25,7 @@ namespace Automation
 
         public static IEnumerator ExecutionCoroutine(this IOperation op, bool log )
         {
-			if( log ) Debug.Log( $"🤖 Automation{"Executing".Colorfy( Colors.Console.Verbs )} {op.GetSummaryColored()}" );
+			if( log ) Debug.Log( $"🤖 Automation {"Executing".Colorfy( Colors.Console.Verbs )} {op.GetSummaryColored()}" );
             return op.ExecutionCoroutine();
         }
 
