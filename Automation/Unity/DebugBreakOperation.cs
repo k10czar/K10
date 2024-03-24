@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace Automation.Unity
 {
-	public class DebugBreakOperation : Automation.IOperation
+    public class DebugBreakOperation : Automation.IOperation
 	{
-		public System.Collections.IEnumerator ExecutionCoroutine()  
+		public IEnumerator ExecutionCoroutine()  
 		{
 			Debug.Break();
 			if( false ) yield return null;

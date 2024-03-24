@@ -4,12 +4,12 @@ using UnityEngine;
 [System.Serializable]
 public struct FastFloatAnimator
 {
+    public float _currentValue;
+    public float _desiredValue;
 	public float _min;
     public float _max;
     public float _acceleration;
     public float _deacceleration;
-    public float _currentValue;
-    public float _desiredValue;
     public float _currentSpeed;
     public float _maximumSpeed;
     

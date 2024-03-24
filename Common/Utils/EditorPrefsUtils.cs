@@ -1,6 +1,6 @@
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
-using K10.EditorGUIExtention;
 
 public static class EditorPrefsUtils
 {
@@ -17,3 +17,4 @@ public static class EditorPrefsUtils
 		return t;
 	}
 }
+#endif
