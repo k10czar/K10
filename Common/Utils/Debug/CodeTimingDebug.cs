@@ -27,6 +27,8 @@ public static class CodeTimingDebug
 	private static readonly Dictionary<string,double> _accTimmings = new Dictionary<string,double>();
 	private static readonly Dictionary<string,int> _calls = new Dictionary<string,int>();
 
+
+
 	private static Stopwatch _logStopwatch = new Stopwatch();
 
 	public static void LogStart( string tag )
@@ -35,8 +37,8 @@ public static class CodeTimingDebug
 		LogEnd( tag );
 
 		var sw = new Stopwatch();
-		sw.Start();
 		_watches[tag] = sw;
+		sw.Start();
 	}
 
 	public static double LogEnd( string tag )
@@ -44,9 +46,9 @@ public static class CodeTimingDebug
 		if( !enabled ) return 0;
 
 		if( !_watches.TryGetValue( tag, out var osw ) ) return 0;
+		if( osw.IsRunning ) osw.Stop();
 		_watches.Remove( tag );
 		
-		if( osw.IsRunning ) osw.Stop();
 
 		var elapsed = osw.Elapsed.TotalMilliseconds;
 		var ms = elapsed;

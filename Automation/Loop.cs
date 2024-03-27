@@ -1,32 +1,34 @@
 using System.Collections;
 using UnityEngine;
+using Automation;
+using System.Collections.Generic;
 
-// using K10.Automation;
-namespace K10.Automation
+namespace Automation
 {
-[CreateAssetMenu( fileName = "AutomationLoop", menuName = "Automation/Loop", order = 1 )]
-	public class Loop : Operation
+    public class Loop : IOperation
 	{
 		[SerializeField] int _repetitions = 1;
-		[SerializeField, InlineProperties] System.Collections.Generic.List<Operation> _actions;
+		[ExtendedDrawer,SerializeReference] List<IOperation> _actions;
 
-		public override IEnumerator ExecutionCoroutine()
+		public IEnumerator ExecutionCoroutine() 
 		{
 			for( int l = 0; l < _repetitions; l++ )
 			{
-				Debug.Log( $"Loop[{l}] in " + this.ToStringOrNull() );
+				// if( log ) Debug.Log( $"♻ {"Loop".Colorfy( Colors.Console.Fields )}[{l.ToStringColored(Colors.Console.Numbers)}] in {this.GetSummary()}" );
 				for( int i = 0; i < _actions.Count; i++ )
 				{
 					var act = _actions[i];
 					if( act == null ) 
 					{
-						Debug.LogError( "Cannot play null Operation" );
+						// if( log ) Debug.LogError( $"{"Cannot".Colorfy( Colors.Console.Warning )} {"play".Colorfy( Colors.Console.Verbs )} null {"Operation".Colorfy( Colors.Console.TypeName )}" );
 						continue;
 					}
-					Debug.Log( "Start operation " + act.ToStringOrNull() );
+					// if( log ) Debug.Log( $"{"Start".Colorfy( Colors.Console.Verbs )} operation {act.GetSummary().Colorfy( Colors.Console.TypeName )}" );
 					yield return act.ExecutionCoroutine();
 				}
 			}
 		}
+
+		public string GetSummaryColored() => $"🗃 {"Loop".Colorfy( Colors.Console.Fields )} {_repetitions.ToStringColored(Colors.Console.Numbers)}x";
 	}
 }

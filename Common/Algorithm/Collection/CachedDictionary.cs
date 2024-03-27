@@ -137,14 +137,53 @@ public class CachedDictionary<K,T> : ICachedDictionaryObserver<K,T>, ICustomDisp
 		return contains;
 	}
 
-    public void Remove( K key, T value )
+    public bool TryRemoveFromAllList( T value )
+    {
+        var listsToRomove = ObjectPool<List<KeyValuePair<K,List<T>>>>.Request();
+
+        foreach( var kvp in _dictionary )
+        {
+            var list = kvp.Value;
+            if( !list.Contains( value ) ) continue;
+            listsToRomove.Add( kvp );
+        }
+
+        if( listsToRomove.Count == 0 )
+        {
+            ObjectPool<List<KeyValuePair<K,List<T>>>>.Return( listsToRomove );
+            return false;
+        }
+
+        foreach( var kvp in listsToRomove )
+        {
+            var list = kvp.Value;
+            list.Remove( value );
+            var key = kvp.Key;
+            var count = list.Count;
+            GetEventDrivenCountEditor( key ).Setter( count );
+            if( count == 0 )
+            {
+                _dictionary.Remove( key );
+                GetEventDrivenContainsEditor( key ).SetFalse();
+            }
+        }
+        ObjectPool<List<KeyValuePair<K,List<T>>>>.Return( listsToRomove );
+
+        _onElementRemoved.Trigger( value );
+		_onChange.Trigger();
+		// if( value != null )_ onNotNullElementRemoved.Trigger( value );
+        
+        return true;
+	}
+
+    public bool Remove( K key, T value )
     {
         List<T> list;
-        if( !_dictionary.TryGetValue( key, out list ) ) return;
+        if( !_dictionary.TryGetValue( key, out list ) ) return false;
 
         var deleted = list.Remove( value );
 
-        if (!deleted) return;
+        if (!deleted) return false;
 
         var count = list.Count;
         GetEventDrivenCountEditor( key ).Setter( count );
@@ -157,9 +196,10 @@ public class CachedDictionary<K,T> : ICachedDictionaryObserver<K,T>, ICustomDisp
         _onElementRemoved.Trigger( value );
 		_onChange.Trigger();
 		// if( value != null )_ onNotNullElementRemoved.Trigger( value );
+        return true;
 	}
 
-    public bool Remove( K key )
+    public bool RemoveAllOf( K key )
     {
         if( !_dictionary.TryGetValue( key, out var list ) ) return false;
 
