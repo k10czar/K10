@@ -25,6 +25,8 @@ public struct FastFloatAnimator
         _max = max;
     }
 
+	public bool IsOnDesired() { return Mathf.Approximately( _currentValue, _desiredValue ); }
+
 	public void Reset( float value )
 	{
         if( value > _max ) value = _max;
