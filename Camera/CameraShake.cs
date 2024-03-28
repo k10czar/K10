@@ -34,8 +34,17 @@ public class CameraShakeInfo
 
 public class CameraShake : MonoBehaviour
 {
-	public const float AmplitudeMultiplier = 1.0f;
+	public const float DefaultAmplitudeMultiplier = 1.0f;
+	public static float AmplitudeMultiplier = DefaultAmplitudeMultiplier;
+
 	[SerializeField] CameraShakeInfo _test;
+	
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    public static void StaticClear()
+    {
+		AmplitudeMultiplier = DefaultAmplitudeMultiplier;
+    }
 
 	class CameraShakeInstance
 	{
