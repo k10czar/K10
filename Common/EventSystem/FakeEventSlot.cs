@@ -14,7 +14,13 @@ public class FakeEvent : IEventRegister
 public class FakeAction
 {
 	private static System.Action _instance;
-	public static System.Action Instance => _instance ??= ActionFakeCall;
+	public static System.Action Instance {
+        get
+        {
+			if(_instance == null) _instance = ActionFakeCall;
+			return _instance;
+        }
+	}
 
 	public static void ActionFakeCall() { }
 }
@@ -22,7 +28,15 @@ public class FakeAction
 public class FakeAction<T>
 {
 	private static System.Action<T> _instance;
-	public static System.Action<T> Instance => _instance ??= ActionFakeCall;
+	public static System.Action<T> Instance
+	{
+		get
+		{
+			if (_instance == null) _instance = ActionFakeCall;
+			return _instance;
+		}
+	}
+
 	public static void ActionFakeCall( T parameter ) { }
 }
 

@@ -171,7 +171,7 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
             EditorGUI.TextField( line.CutLeft( 100 ), GUIContent.none, ( refType.enumValueIndex == (int)EAssetReferenceType.Resources ) ? resourcesPath.stringValue : guid.stringValue );
         }
 
-        if( path.Contains( "editor/", System.StringComparison.OrdinalIgnoreCase ) )
+        if( path.Contains( "editor/") )
         {
             var msg = $"Cannot point to an asset on *Editor* Folder!\n!detected! editor folder on the following path:\n{path}";
             Debug.LogError( msg );

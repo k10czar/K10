@@ -50,6 +50,6 @@ public class OffsetRectTransformPosition : MonoBehaviour, IAnimatable
         var rectT = (RectTransform)transform;
         var offsetPos = _snapshotLocalPos + _direction.GetHasPolynomialResult( _offset );
         var offsetRot = _snapshotLocalRot * Quaternion.Euler( _rotation.GetHasPolynomialResult( _offset ) );
-        rectT.SetLocalPositionAndRotation( offsetPos, offsetRot );
+        rectT.SetPositionAndRotation( offsetPos, offsetRot );
     }
 }

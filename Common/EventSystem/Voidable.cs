@@ -68,10 +68,16 @@ public class CallOnce<T> : IEventTrigger<T>, IVoidable
 
 public class Voidable : IEventTrigger, IVoidable
 {
-    private IEventTrigger _callback;
+	private IEventTrigger _callback;
 
 	private EventSlot _onVoid;
-	public IEventRegister OnVoid => _onVoid ??= new EventSlot();
+	public IEventRegister OnVoid {
+        get
+        {
+			if(_onVoid == null) _onVoid = new EventSlot();
+			return _onVoid;
+        }
+	}
 
 	public Voidable( IEventTrigger callback ) { _callback = callback; _onVoid = null; }
 	public Voidable( System.Action act ) { _callback = new ActionEventCapsule( act ); _onVoid = null; }
@@ -86,9 +92,16 @@ public class Voidable<T> : IEventTrigger<T>, IVoidable
 	private IEventTrigger<T> _callback;
 
 	private EventSlot _onVoid;
-	public IEventRegister OnVoid => _onVoid ??= new EventSlot();
+	public IEventRegister OnVoid
+	{
+		get
+		{
+			if (_onVoid == null) _onVoid = new EventSlot();
+			return _onVoid;
+		}
+	}
 
-    public Voidable( IEventTrigger<T> callback ) { _callback = callback; _onVoid = null; }
+	public Voidable( IEventTrigger<T> callback ) { _callback = callback; _onVoid = null; }
 	public Voidable( System.Action<T> act ) { _callback = new ActionEventCapsule<T>( act ); _onVoid = null; }
 
     public void Trigger( T t ) { if( !IsValid ) return; _callback.Trigger( t ); }

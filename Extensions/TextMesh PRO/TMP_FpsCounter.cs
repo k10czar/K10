@@ -36,14 +36,14 @@ public sealed class TMP_FpsCounter : MonoBehaviour
 
     void Update()
     {
-        var sampleTime = ( Time.timeAsDouble - _sampleSecond );
+        var sampleTime = ( Time.time - _sampleSecond );
         while( _frame.Count > 1 && _frame[0] < sampleTime ) _frame.RemoveAt( 0 );
 
         // _timeleft -= Time.deltaTime;
         // _accum += Time.timeScale / Time.deltaTime;
         // ++_frames;
 
-        var currTime = Time.timeAsDouble;
+        var currTime = Time.time;
 
         var sample = 1.0;
         if( _frame.Count > 0 ) sample = currTime - _frame[0];
@@ -55,6 +55,6 @@ public sealed class TMP_FpsCounter : MonoBehaviour
             _lastFpsValue = fps;
         }
 
-        _frame.Add( Time.timeAsDouble );
+        _frame.Add( Time.time );
     }
 }

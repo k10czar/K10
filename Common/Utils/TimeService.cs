@@ -18,14 +18,14 @@ public static class TimeService
 	public static void SetUtcTimeReference( string str )
 	{
 		_timeServerTimeOnAuth = DateTime.Parse( str ).ToUniversalTime();
-		_timeSetted = Time.unscaledTimeAsDouble;
+		_timeSetted = Time.unscaledDeltaTime;
 		_dateTimeSetted = DateTime.UtcNow;
 		// Debug.Log( $"TimeService.Sync( {_timeServerTimeOnAuth} )" );
 	}
 
 	public static DateTime GetUtcNow()
 	{
-		var secsDiff = Time.unscaledTimeAsDouble - _timeSetted;
+		var secsDiff = Time.unscaledDeltaTime - _timeSetted;
 		var timeSpan = DateTime.UtcNow.Subtract( _dateTimeSetted );
 		var timeSpanSeconds = timeSpan.TotalSeconds;
         // Debug.Log( $"secsDiff:{secsDiff} timeSpanSeconds:{timeSpanSeconds} timeSpan:{timeSpan}" );

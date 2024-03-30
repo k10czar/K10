@@ -470,7 +470,7 @@ public class SearchForComponents : EditorWindow {
                     else listResult.RemoveAt(i);
                 }
                 else listResult.RemoveAt(i);
-                AssetDatabase.SaveAssetIfDirty(go);
+                //AssetDatabase.SaveAssetIfDirty(go);
             }
         }
         sw.Stop();
