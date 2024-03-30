@@ -6,7 +6,7 @@ namespace K10
 	{
 		public class EditorGuiIndentManager
 		{
-			static List<int> _widths = new List<int>();
+			[Blackboard] static List<int> _widths = new List<int>();
 
 			public static void New( int indent )
 			{
@@ -26,7 +26,7 @@ namespace K10
 
 		public class FakeIndentManager
 		{
-			static List<int> _widths = new List<int>();
+			[Blackboard] static List<int> _widths = new List<int>();
 
 			public static UnityEngine.Rect New( UnityEngine.Rect area, float widthOffset = 0 )
 			{

@@ -1,6 +1,6 @@
 public class NamesOf<T> where T : IHashedSO, new()
 {
-	private static string[] _array;
+	[ConstLike] private static string[] _array;
 
 	public static string[] Array
 	{
