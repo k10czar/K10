@@ -22,6 +22,7 @@ public interface IStateRequesterInteraction
 	void RequestOn( IBoolStateObserver source );
 	void IgnoreOn( IBoolStateObserver source );
 	void RequestOn( IBoolStateObserver source, IEventValidator validator );
+	void RequestOn(IBoolStateObserver source, IEventValidator validator, string nameGameObjectDebug);
 	void IgnoreOn( IBoolStateObserver source, IEventValidator validator );
 	void RequestOn( GameObject gameObject, IBoolStateObserver additionalCondition = null );
 	void IgnoreOn( GameObject gameObject, IBoolStateObserver additionalCondition = null );
@@ -82,6 +83,8 @@ public class StateRequester : IStateRequester, ICustomDisposableKill
 	public void IgnoreOn( GameObject gameObject, IBoolStateObserver additionalCondition = null ) { SemaphoreToInvert.ReleaseOn( gameObject, additionalCondition ); }
 
 	public void RequestOn( IBoolStateObserver source, IEventValidator validator ) { SemaphoreToInvert.BlockOn( source, validator ); }
+
+	public void RequestOn(IBoolStateObserver source, IEventValidator validator, string nameGameObjctToDebug) { SemaphoreToInvert.BlockOn(source, validator, nameGameObjctToDebug); }
 	public void IgnoreOn( IBoolStateObserver source, IEventValidator validator ) { SemaphoreToInvert.ReleaseOn( source, validator ); }
 
 	void InvertedStateChangeRelay( bool free ) { _invertedSemaphoreStateChange?.Trigger( !free ); }

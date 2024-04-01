@@ -17,7 +17,7 @@ Still evolving...
 
 ## Add as submodule on your Unity project repository
 
-``git submodule add https://github.com/k10czar/K10.git "Assets/Plugins/K10"``
+``git submodule add https://github.com/k10czar/K10.git "Assets/Plugins/K10/Core"``
 
 ## Samples
 //TO DO
@@ -40,15 +40,15 @@ Still evolving...
 
 1.  Delete from the  _.gitmodules_  file:
 
-	`[submodule "Assets/Plugins/K10"]`
+	`[submodule "Assets/Plugins/K10/Core"]`
 	
-	`path = Assets/Plugins/K10`
+	`path = Assets/Plugins/K10/Core`
 	
 	`url = https://github.com/k10czar/K10.git`
 	
 2.  Delete from  _.git/config_:
 
-	`[submodule "Assets/Plugins/K10"]`
+	`[submodule "Assets/Plugins/K10/Core"]`
 	
 	`url = https://github.com/k10czar/K10.git`
 	
@@ -56,7 +56,7 @@ Still evolving...
 	
 3.  Run:
 
-	`git rm --cached "Assets/Plugins/K10"`
+	`git rm --cached "Assets/Plugins/K10/Core"`
 
 4.  Commit the superproject.
 

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 
 
 public class EventSlot : IEvent, ICustomDisposableKill
@@ -12,6 +13,7 @@ public class EventSlot : IEvent, ICustomDisposableKill
 
 	public bool IsValid => !_killed;
 	public int EventsCount => _listeners?.Count ?? 0;
+	public int CountValidEvents => _listeners.Count( ( et ) => et.IsValid );
 	public bool HasListeners => EventsCount > 0;
 
 	public void Trigger()
@@ -30,13 +32,20 @@ public class EventSlot : IEvent, ICustomDisposableKill
 		var count = listenersToTrigger.Count;
 		for( int i = 0; i < count; i++ )
 		{
-			var listener = listenersToTrigger[i];
-			if( listener.IsValid ) listener.Trigger();
-			//NOT else Trigger can invalidate listener
-			if( !listener.IsValid )
+			try
 			{
-				_listeners?.Remove( listener );
-				TryClearFullSignatureList();
+				var listener = listenersToTrigger[i];
+				if (listener.IsValid) listener.Trigger();
+				//NOT else Trigger can invalidate listener
+				if (!listener.IsValid)
+				{
+					_listeners?.Remove(listener);
+					TryClearFullSignatureList();
+				}
+			}
+			catch (Exception exception)
+			{
+				Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
 			}
 		}
 
@@ -46,11 +55,11 @@ public class EventSlot : IEvent, ICustomDisposableKill
 	public void Kill()
 	{
 		_killed = true;
-		ClearListeners();
+		Clear();
 		_listeners = null;
 	}
 
-	public void ClearListeners() => _listeners?.Clear();
+	public void Clear() => _listeners?.Clear();
 
 	private void TryClearFullSignatureList()
 	{
@@ -85,6 +94,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 
 	public bool IsValid => !_killed;
 	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
+	public int CountValidEvents => ( _generic?.CountValidEvents ?? 0 ) + _listeners.Count( ( et ) => et.IsValid );
 	public bool HasListeners => EventsCount > 0;
 	
 	public static implicit operator EventSlot( EventSlot<T> v ) => Lazy.Request( ref v._generic );
@@ -105,13 +115,20 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 			var count = listenersToTrigger.Count;
 			for( int i = 0; i < count; i++ )
 			{
-				var listener = listenersToTrigger[i];
-				if( listener.IsValid ) listener.Trigger( t );
-				//NOT else Trigger can invalidate listener
-				if( !listener.IsValid )
+				try
 				{
-					_listeners?.Remove( listener );
-					TryClearFullSignatureList();
+					var listener = listenersToTrigger[i];
+					if (listener.IsValid) listener.Trigger(t);
+					//NOT else Trigger can invalidate listener
+					if (!listener.IsValid)
+					{
+						_listeners?.Remove(listener);
+						TryClearFullSignatureList();
+					}
+				}
+				catch (Exception exception)
+				{
+					Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
 				}
 			}
 			ObjectPool<List<IEventTrigger<T>>>.Return( listenersToTrigger );
@@ -133,10 +150,10 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 		_generic = null;
 	}
 
-	public void ClearListeners()
+	public void Clear()
 	{
+		_generic.Clear();
 		_listeners?.Clear();
-		_generic.ClearListeners();
 	}
 
 	private void TryClearGeneric()
@@ -193,6 +210,7 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 
 	public bool IsValid => !_killed;
 	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
+	public int CountValidEvents => ( _generic?.CountValidEvents ?? 0 ) + _listeners.Count( ( et ) => et.IsValid );
 	public bool HasListeners => EventsCount > 0;
 
 	public static implicit operator EventSlot<T>( EventSlot<T, K> v ) => Lazy.Request( ref v._generic );
@@ -213,13 +231,20 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 			var count = listenersToTrigger.Count;
 			for( int i = 0; i < count; i++ )
 			{
-				var listener = listenersToTrigger[i];
-				if( listener.IsValid ) listener.Trigger( t, k );
-				//NOT else Trigger can invalidate listener
-				if( !listener.IsValid )
+				try
 				{
-					_listeners?.Remove( listener );
-					TryClearFullSignatureList();
+					var listener = listenersToTrigger[i];
+					if (listener.IsValid) listener.Trigger(t, k);
+					//NOT else Trigger can invalidate listener
+					if (!listener.IsValid)
+					{
+						_listeners?.Remove(listener);
+						TryClearFullSignatureList();
+					}
+				}
+				catch (Exception exception)
+				{
+					Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
 				}
 			}
 			ObjectPool<List<IEventTrigger<T,K>>>.Return( listenersToTrigger );
@@ -252,10 +277,10 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 		_generic = null;
 	}
 
-	public void ClearListeners()
+	public void Clear()
 	{
+		_generic.Clear();
 		_listeners?.Clear();
-		_generic.ClearListeners();
 	}
 
 	public void Register( IEventTrigger<T, K> listener )
@@ -314,6 +339,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 
 	public bool IsValid => !_killed;
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
+	public int CountValidEvents => ( _generic?.CountValidEvents ?? 0 ) + _listeners.Count( ( et ) => et.IsValid );
 	public bool HasListeners => EventsCount > 0;
 	
 	public static implicit operator EventSlot<T, K>( EventSlot<T, K, L> v ) => Lazy.Request( ref v._generic );
@@ -334,13 +360,20 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 			var count = listenersToTrigger.Count;
 			for( int i = 0; i < count; i++ )
 			{
-				var listener = listenersToTrigger[i];
-				if( listener.IsValid ) listener.Trigger( t, k, l );
-				//NOT else Trigger can invalidate listener
-				if( !listener.IsValid )
+				try
 				{
-					_listeners?.Remove( listener );
-					TryClearFullSignatureList();
+					var listener = listenersToTrigger[i];
+					if (listener.IsValid) listener.Trigger(t, k, l);
+					//NOT else Trigger can invalidate listener
+					if (!listener.IsValid)
+					{
+						_listeners?.Remove(listener);
+						TryClearFullSignatureList();
+					}
+				}
+				catch (Exception exception)
+				{
+					Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
 				}
 			}
 			ObjectPool<List<IEventTrigger<T, K, L>>>.Return( listenersToTrigger );
@@ -372,10 +405,10 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 		_generic = null;
 	}
 
-	public void ClearListeners()
+	public void Clear()
 	{
+		_generic.Clear();
 		_listeners?.Clear();
-		_generic.ClearListeners();
 	}
 
 	public void Register( IEventTrigger<T, K, L> listener )

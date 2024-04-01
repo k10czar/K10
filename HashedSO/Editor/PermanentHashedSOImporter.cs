@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 
+using static Colors.Console;
+
 public sealed class PermanentHashedSOImporter : AssetPostprocessor
 {
 	// static void OnPostprocessAllAssets( string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths )
@@ -57,10 +59,17 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 		}
 
 		sw.Stop();
-		Debug.Log($"PermanentHashedSOImporter.OnPostprocessAllAssets took {sw.ElapsedMilliseconds}ms"
-		          + $"\nimportedAssets({importedAssets.Length}):\n\t-{importedAssets.Length > 0}{string.Join(",\n\t-", importedAssets)}"
-		          + $"\ndeletedAssets({deletedAssets.Length}):\n\t-{string.Join(",\n\t-", deletedAssets)}"
-		          + $"\nmovedAssets({movedAssets.Length}):\n\t-{string.Join(",\n\t-", movedAssets)}"
-		          + $"\nmovedFromAssetPaths({movedFromAssetPaths.Length}):\n\t-{string.Join(",\n\t-", movedFromAssetPaths)}");
+
+		var hasElements = importedAssets.Length > 0 || deletedAssets.Length > 0 || movedAssets.Length > 0 || movedFromAssetPaths.Length > 0;
+		if( !hasElements && sw.ElapsedMilliseconds < 10 ) return;
+
+		var afterLine = $"\n{Colorfy.OpenTag( Names )}   -";
+		var log = $"{"PermanentHashedSOImporter".Colorfy( TypeName )}.{"OnPostprocessAllAssets".Colorfy( Verbs )} took {$"{sw.ElapsedMilliseconds}ms".Colorfy( Numbers )}";
+		if( importedAssets.Length > 0 ) log += $"\n{$"{importedAssets.Length.ToString().Colorfy( Numbers )} imported assets:".Colorfy( Verbs )}{afterLine}{string.Join( ",\n   -", importedAssets ).Colorfy( Names )}{Colorfy.CloseTag()}";
+		if( deletedAssets.Length > 0 ) log += $"\n{$"{deletedAssets.Length.ToString().Colorfy( Numbers )} deleted assets:".Colorfy( Negation )}{afterLine}{string.Join( ",\n   -", deletedAssets ).Colorfy( Names )}{Colorfy.CloseTag()}";
+		if( movedAssets.Length > 0 ) log += $"\n{$"{movedAssets.Length.ToString().Colorfy( Numbers )} moved assets:".Colorfy( TypeName )}{afterLine}{string.Join( ",\n   -", movedAssets ).Colorfy( Names )}{Colorfy.CloseTag()}";
+		if( movedFromAssetPaths.Length > 0 ) log += $"\n{$"{movedFromAssetPaths.Length.ToString().Colorfy( Numbers )} moved from asset paths:".Colorfy( Interfaces )}{afterLine}{string.Join( ",\n   -", movedFromAssetPaths ).Colorfy( Names )}{Colorfy.CloseTag()}";
+
+		Debug.Log( log );
 	}
 }

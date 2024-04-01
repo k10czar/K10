@@ -37,6 +37,6 @@ public class InitializationEvent : ICustomDisposableKill
     public void Clear()
     {
         isInitialized = false;
-        initialized.ClearListeners();
+        initialized.Clear();
     }
 }

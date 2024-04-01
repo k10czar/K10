@@ -21,6 +21,11 @@ public class BaseHashedSOCollectionEditor : Editor
 	public override void OnInspectorGUI()
 	{
 		var collection = (BaseHashedSOCollection)target;
+		if( GUILayout.Button( "GenerateSoftReference" ) )
+		{
+			collection.GenerateSoftReference();
+		}
+
 		int size = collection.Count;
 
 		var count = 0;
