@@ -12,7 +12,7 @@ namespace Automation.Unity
 		[SerializeField] bool _dontDestroyOnLoad;
 		[SerializeField] int _elementsPerFrame = 0;
 
-		public IEnumerator ExecutionCoroutine() 
+		public IEnumerator ExecutionCoroutine( bool log = false ) 
 		{
 			if( _prefab != null )
 			{
@@ -35,6 +35,6 @@ namespace Automation.Unity
 			// }
 		}
 
-		public string GetSummaryColored() => $"👶 {"InstantiateOperation".Colorfy( Colors.Console.Verbs )} {_instances.ToStringColored( Colors.Console.Numbers ) } {(_dontDestroyOnLoad?"eternal ":"")}{_prefab.ToStringOrNullColored(Colors.Console.TypeName)} at {_position} with {_rotation}{(_elementsPerFrame > 0?$" and {_elementsPerFrame} per frame":"")}";
+		public override string ToString() => $"👶 {"InstantiateOperation".Colorfy( Colors.Console.Verbs )} {_instances.ToStringColored( Colors.Console.Numbers ) } {(_dontDestroyOnLoad?"eternal ":"")}{_prefab.ToStringOrNullColored(Colors.Console.TypeName)} at {_position} with {_rotation}{(_elementsPerFrame > 0?$" and {_elementsPerFrame} per frame":"")}";
 	}
 }

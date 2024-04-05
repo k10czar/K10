@@ -9,7 +9,7 @@ namespace Automation.Unity
 		[SerializeField] ELogType _logType = ELogType.Basic;
 		[ExtendedDrawer,SerializeReference] IStringProcessor _processor;
 
-		public IEnumerator ExecutionCoroutine()  
+		public IEnumerator ExecutionCoroutine( bool log = false )  
 		{
 			GetMessage().Log( _logType );
 			if( false ) yield return null;
@@ -17,6 +17,6 @@ namespace Automation.Unity
 
 		public string GetMessage() => _processor?.Execute( _message ) ?? _message;
 
-		public string GetSummaryColored() => $"🧻 {"DebugLogOperation".Colorfy( Colors.Console.Verbs )}( {_logType} ): \"{GetMessage()}\"";
+		public override string ToString() => $"🧻 {"DebugLogOperation".Colorfy( Colors.Console.Verbs )}( {_logType} ): \"{GetMessage()}\"";
 	}
 }
