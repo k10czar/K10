@@ -25,6 +25,9 @@ public sealed class CodeTimingOldGUIDebugExhibitor : CodeTimingDebugExhibitor
 
 	public static string RemoveRichTextTags(string input)
 	{
+		if (string.IsNullOrEmpty( input ))
+			return string.Empty;
+
 		return Regex.Replace(input, "<.*?>", string.Empty);
 	}
 }
