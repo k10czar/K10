@@ -338,7 +338,7 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 
 		if( changed && !Application.isPlaying )
 		{
-			Debug.Log( $"Changed {t.ToStringOrNull()} {changedRuntimeRef} {changedId}({initialId}->{id}) {changedHardRef}" );
+			Debug.Log( $"{"Changed".Colorfy(Colors.Console.Verbs)} {t.ToStringOrNullColored(Colors.Console.TypeName)} ({initialId.ToStringColored(Colors.Console.LightDanger)}->{id.ToStringColored(Colors.Console.Numbers)}) {(changedRuntimeRef?" ChangedRuntime":" ")} {(changedHardRef?" changedHardRef":" ")}" );
 		}
 #endif //UNITY_EDITOR
 		return changed;
