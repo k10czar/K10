@@ -37,19 +37,21 @@ public sealed class RandomizeButtonDrawer : PropertyDrawer
 						property.intValue = rnd.Next(min,max);
 						return;
 					}
+#if UNITY_2022_1_OR_NEWER
 					else if (type == "uint")
 					{
 						property.uintValue = (uint)Random.Range(uint.MinValue, uint.MaxValue);
 						return;
 					}
-					else if (type == "long")
-					{
-						property.longValue = rnd.NextLong();
-						return;
-					}
 					else if (type == "ulong")
 					{
 						property.ulongValue = rnd.NextULong();
+						return;
+					}
+#endif //UNITY_2022_1_OR_NEWER
+					else if (type == "long")
+					{
+						property.longValue = rnd.NextLong();
 						return;
 					}
 					break;
