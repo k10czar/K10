@@ -23,7 +23,7 @@ public static class CollectionElementSoftReferenceEditorExtensions
     {
 		elementRef.FindPropertyRelative("_id").intValue = newLoot.HashID;
         elementRef.FindPropertyRelative("_editorAssetRefGuid").stringValue = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(newLoot));
-        elementRef.FindPropertyRelative("_assetHardReference").objectReferenceValue = newLoot;
+        // elementRef.FindPropertyRelative("_assetHardReference").objectReferenceValue = newLoot;
     }
 
     public static void ClearCollectionSoftRef( this SerializedProperty elementRef )
