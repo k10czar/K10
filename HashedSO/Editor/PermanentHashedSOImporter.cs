@@ -26,11 +26,9 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 		for (int i = 0; i < collections.Count; i++)
 		{
 			var collection = collections[i];
-			Debug.Log(
-				$"OnPostprocessAllAssets Before EditorRemoveWrongElements( {AssetDatabase.GetAssetPath(collection as Object)} )\n{collection}");
+			Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"Before".Colorfy( Keyword )} {"EditorRemoveWrongElements".Colorfy( Verbs )}( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
 			collection.EditorRemoveWrongElements();
-			Debug.Log(
-				$"OnPostprocessAllAssets After EditorRemoveWrongElements( {AssetDatabase.GetAssetPath(collection as Object)} )\n{collection}");
+			Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"After".Colorfy( Warning )} {"EditorRemoveWrongElements".Colorfy( Verbs )}( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
 		}
 
 		for (int i = 0; i < elements.Count; i++)
@@ -40,22 +38,18 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 			if (col != null)
 			{
 				var oHso = hso as Object;
-				Debug.Log(
-					$"OnPostprocessAllAssets Before of EditorRequestMember( {oHso.NameOrNull()}[{hso.HashID}] ) on Collection {col.ToStringOrNull()}");
-				col.EditorRequestMember(oHso);
-				Debug.Log(
-					$"OnPostprocessAllAssets After of EditorRequestMember( {oHso.NameOrNull()}[{hso.HashID}] ) on Collection {col.ToStringOrNull()}");
+				Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"Before".Colorfy( Keyword )} of {"EditorRequestMember".Colorfy( Verbs )}( {oHso.NameOrNull()}[{hso.HashID}] ) on Collection {col.ToStringOrNull()}" );
+				col.EditorRequestMember( oHso );
+				Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"After".Colorfy( Warning )} of {"EditorRequestMember".Colorfy( Verbs )}( {oHso.NameOrNull()}[{hso.HashID}] ) on Collection {col.ToStringOrNull()}" );
 			}
 		}
 
 		for (int i = 0; i < collections.Count; i++)
 		{
 			var collection = collections[i];
-			Debug.Log(
-				$"OnPostprocessAllAssets Before EditorCheckConsistency( {AssetDatabase.GetAssetPath(collection as Object)} )\n{collection}");
+			Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"Before".Colorfy( Keyword )} {"EditorCheckConsistency".Colorfy( Verbs )}( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
 			collection.EditorCheckConsistency();
-			Debug.Log(
-				$"OnPostprocessAllAssets After EditorCheckConsistency( {AssetDatabase.GetAssetPath(collection as Object)} )\n{collection}");
+			Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"After".Colorfy( Warning )} {"EditorCheckConsistency".Colorfy( Verbs )}( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
 		}
 
 		sw.Stop();

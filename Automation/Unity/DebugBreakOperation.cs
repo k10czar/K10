@@ -5,12 +5,12 @@ namespace Automation.Unity
 {
     public class DebugBreakOperation : Automation.IOperation
 	{
-		public IEnumerator ExecutionCoroutine()  
+		public IEnumerator ExecutionCoroutine( bool log = false )  
 		{
 			Debug.Break();
 			if( false ) yield return null;
 		}
 
-		public string GetSummaryColored() => $"💥 {"DebugBreakOperation".Colorfy( Colors.Console.Verbs )}";
+		public override string ToString() => $"💥 {"DebugBreakOperation".Colorfy( Colors.Console.Verbs )}";
 	}
 }

@@ -7,11 +7,11 @@ namespace Automation
 	{
 		[SerializeField] OperationObject _object;
 
-		public IEnumerator ExecutionCoroutine() 
+		public IEnumerator ExecutionCoroutine( bool log = false ) 
 		{
-			if( _object != null ) yield return _object.ExecutionCoroutine();
+			if( _object != null ) yield return _object.ExecutionCoroutine( log );
 		}
 
-		public string GetSummaryColored() => $"📦 {"RunFromObject".Colorfy( Colors.Console.Fields )}";
+		public override string ToString() => $"📦 {"RunFromObject".Colorfy( Colors.Console.Fields )}";
 	}
 }
