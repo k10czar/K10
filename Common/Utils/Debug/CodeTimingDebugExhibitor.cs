@@ -22,7 +22,7 @@ public abstract class CodeTimingDebugExhibitor : MonoBehaviour
 		CodeTimingDebug.Disable();
 	}
 
-	void OnPostRender()
+	void LateUpdate()
 	{
 		var log = CodeTimingDebug.GetLog();
 		
