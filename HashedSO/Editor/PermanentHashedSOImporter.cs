@@ -11,6 +11,8 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 		var sw = new System.Diagnostics.Stopwatch();
 		sw.Start();
 
+		bool containsTags = false;
+
 		var collections = new List<IHashedSOCollection>();
 		var elements = new List<IHashedSO>();
 
@@ -20,6 +22,7 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 
 			if( obj is IHashedSOCollection collection ) collections.Add( collection );
 			if( obj is IHashedSO hso ) elements.Add( hso );
+			if( obj is TagSO tag ) containsTags = true;
 		}
 
 		for( int i = 0; i < collections.Count; i++ )
@@ -64,5 +67,7 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 		if( movedFromAssetPaths.Length > 0 ) log += $"\n{$"{movedFromAssetPaths.Length.ToString().Colorfy( Numbers )} moved from asset paths:".Colorfy( Interfaces )}{afterLine}{string.Join( ",\n   -", movedFromAssetPaths ).Colorfy( Names )}{Colorfy.CloseTag()}";
 
 		Debug.Log( log );
+		
+		if( containsTags ) TagsDebug.Instance.Rebuild();
 	}
 }

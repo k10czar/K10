@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Text;
 
+[System.Obsolete("Use ObjectPool<T> instead that is thread safe I supose")]
 public static class ObjectPool
 {
     public static void Return<T>(T obj) where T : new() => ObjectPool<T>.Return(obj);
@@ -41,6 +43,7 @@ public static class ObjectPool<T> where T : new()
 	{
 		if( t == null ) return;
 		if( t is System.Collections.IList list ) list.Clear();
+		if( t is StringBuilder sb ) sb.Clear();
 		var thread = System.Threading.Thread.CurrentThread;
 		if( !_pools.TryGetValue( thread, out var pool ) )
 		{
