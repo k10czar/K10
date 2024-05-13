@@ -274,6 +274,7 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 		if (_assetHardReference == null)
 		{
 			_id = -1;
+			_editorAssetRefGuid = string.Empty;
 			return;
 		}
         var path = UnityEditor.AssetDatabase.GetAssetPath( _assetHardReference );
@@ -322,13 +323,14 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 		// changed |= changedRuntimeRef;
 		_assetRuntimeReference = t;
 
-		var id = _assetRuntimeReference?.HashID ?? -1;
+		var validRef = _assetRuntimeReference != null;
+
+		var id = validRef ? _assetRuntimeReference.HashID : -1;
 		var changedId = id != _id;
 		changed |= changedId;
 		_id = id;
 
 #if UNITY_EDITOR
-
 		var changedHardRef = _assetHardReference != t;
 		// changed |= changedHardRef;
 		_assetHardReference = t;

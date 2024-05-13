@@ -178,13 +178,29 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 		}
 		if( GUILayout.Button( $"Process ({_soTypes.Count - _soSelectionIgnore.Count}) ScriptableObject Types" ) )
 		{
-			var sb = new StringBuilder();
+			var sb = ObjectPool<StringBuilder>.Request();
+			var noTypes = new List<(Type type,double duration)>();
+			var noTypesDuration = 0.0;
 			for( int j = 0; j < _soTypes.Count; j++ )
             {
                 if (_soSelectionIgnore.Contains(j)) continue;
                 var typeClass = _soTypes[j];
-                RunAssetValidationInAll( typeClass, sb );
+                var validationResult = RunAssetValidationInAll( typeClass, sb );
+				if( validationResult.transfers == 0 ) 
+				{
+					noTypes.Add( ( typeClass, validationResult.duration ) );
+					noTypesDuration += validationResult.duration;
+				}
             }
+			
+			sb.AppendLine( $"{noTypes.Count.ToStringColored( Numbers )} types were {"not processed".ToStringColored( LightDanger )} and took {$"{noTypesDuration}ms".ToStringColored( Negation )}:" );
+			for( int j = 0; j < noTypes.Count; j++ )
+			{
+				var data = noTypes[j];
+				sb.AppendLine( $"  -{data.type.Name.Colorfy( TypeName )} took {$"{data.duration}ms".ToStringColored( Negation )}" );
+			}
+			UnityEngine.Debug.Log( sb );
+			ObjectPool<StringBuilder>.Return( sb );
         }
 		EditorGUILayout.EndVertical();
 		EditorGUILayout.BeginVertical();
@@ -294,14 +310,14 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 		EditorGUILayout.EndHorizontal();
 	}
 
-    public static void RunAssetValidationInAll( Type typeClass, StringBuilder sb = null )
+    public static (int transfers, double duration) RunAssetValidationInAll( Type typeClass, StringBuilder sb = null )
     {
 		if( sb == null ) sb = new StringBuilder();
 
 		var sw = new Stopwatch();
 		sw.Start();
         var transfers = 0;
-        var transferables = AssetDatabaseUtils.GetAll(typeClass);
+        var transferables = AssetDatabaseUtils.GetAll(typeClass, false);
         sb.Clear();
         for (int i = 0; i < transferables.Length; i++)
         {
@@ -322,7 +338,8 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
             transfers++;
         }
         sw.Stop();
-        UnityEngine.Debug.Log($"{"Processed".Colorfy(Verbs)} {transfers.ToStringColored( Numbers )} {typeClass.FullName.Colorfy(TypeName)} in {$"{sw.Elapsed.TotalMilliseconds}ms".ToStringColored( Negation )}:\n{sb.ToString()}");
+        if( transfers > 0 ) UnityEngine.Debug.Log($"{"Processed".Colorfy(Verbs)} {transfers.ToStringColored( Numbers )} {typeClass.FullName.Colorfy(TypeName)} in {$"{sw.Elapsed.TotalMilliseconds}ms".ToStringColored( Negation )}:\n{sb.ToString()}");
 		sb.Clear();
+		return ( transfers, sw.Elapsed.TotalMilliseconds );
     }
 }
