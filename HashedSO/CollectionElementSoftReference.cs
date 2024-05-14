@@ -21,11 +21,11 @@ public static class HsoUtils
 	{
 		if( directRef == default(T) ) 
 		{
-			if( softRef != default(K) && softRef.GetReference() == default(T) )
+			if( softRef == default(K) || softRef.GetReference() == default(T) )
 			{
-				softRef = default(K);
-				return true;
-				// return false;
+				// softRef.ClearReference();
+				// return true;
+				return false;
 			} else
 			{
 				return softRef?.RefreshUsedRef() ?? false;
