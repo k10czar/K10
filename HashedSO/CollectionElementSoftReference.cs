@@ -163,22 +163,6 @@ public static class CollectionElementSoftReferenceExtensions
 			yield return collection[i].GetReference();
 		}
 	}
-	
-#if UNITY_EDITOR
-	public static bool EDITOR_TransferToSoftReference<T>( this IList<T> collection ) where T : IEditorAssetValidationProcess
-	{
-		if( collection == null ) return false;
-		var modded = false;
-		for( int i = 0; i < collection.Count; i++ )
-		{
-			var t = collection[i];
-			if( t == null ) continue;
-			modded |= t.EDITOR_ExecuteAssetValidationProcess();
-			collection[i] = t;
-		}
-		return modded;
-	}
-#endif
 
 #if UNITY_EDITOR
 	public static string EDITOR_NameOrNull<T>( UnityEditor.SerializedProperty prop ) where T : UnityEngine.Object

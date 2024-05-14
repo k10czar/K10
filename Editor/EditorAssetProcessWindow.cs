@@ -275,7 +275,7 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 							components++;
 							var transferable = component as IEditorAssetValidationProcess;
 							if( transferable == null ) continue;
-							var transfered = transferable.EDITOR_ExecuteAssetValidationProcess();
+							var transfered = transferable.EDITOR_ExecuteAssetValidationProcessOnObject();
 							if( !transfered ) continue;
 							modifiedPrefab = true;
 							EditorUtility.SetDirty( refs[i] );
@@ -326,11 +326,11 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
             var transfered = false;
             try
             {
-                transfered = transferable.EDITOR_ExecuteAssetValidationProcess();
+                transfered = transferable.EDITOR_ExecuteAssetValidationProcessOnObject();
             }
             catch (System.Exception ex)
             {
-                UnityEngine.Debug.LogError($"Failed to execute {AssetDatabase.GetAssetPath(transferables[i])}.{nameof(transferable.EDITOR_ExecuteAssetValidationProcess)}():\n{ex}");
+                UnityEngine.Debug.LogError($"Failed to execute {AssetDatabase.GetAssetPath(transferables[i])}.EDITOR_ExecuteAssetValidationProcess():\n{ex}");
             }
             if (!transfered) continue;
             EditorUtility.SetDirty(transferables[i]);
