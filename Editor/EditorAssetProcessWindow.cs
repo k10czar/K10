@@ -179,7 +179,7 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 		if( GUILayout.Button( $"Process ({_soTypes.Count - _soSelectionIgnore.Count}) ScriptableObject Types" ) )
 		{
 			var sb = ObjectPool<StringBuilder>.Request();
-			var noTypes = new List<(Type type,double duration)>();
+			var noTypes = new List<(Type type,double duration, int objectsCount)>();
 			var noTypesDuration = 0.0;
 			for( int j = 0; j < _soTypes.Count; j++ )
             {
@@ -188,7 +188,7 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
                 var validationResult = RunAssetValidationInAll( typeClass, sb );
 				if( validationResult.transfers == 0 ) 
 				{
-					noTypes.Add( ( typeClass, validationResult.duration ) );
+					noTypes.Add( ( typeClass, validationResult.duration, validationResult.objectsCount ) );
 					noTypesDuration += validationResult.duration;
 				}
             }
@@ -197,7 +197,7 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 			for( int j = 0; j < noTypes.Count; j++ )
 			{
 				var data = noTypes[j];
-				sb.AppendLine( $"  -{data.type.Name.Colorfy( TypeName )} took {$"{data.duration}ms".ToStringColored( Negation )}" );
+				sb.AppendLine( $"  -{data.objectsCount.ToStringColored( Numbers )} {data.type.Name.Colorfy( TypeName )} took {$"{data.duration}ms".ToStringColored( Negation )}" );
 			}
 			UnityEngine.Debug.Log( sb );
 			ObjectPool<StringBuilder>.Return( sb );
@@ -310,7 +310,7 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 		EditorGUILayout.EndHorizontal();
 	}
 
-    public static (int transfers, double duration) RunAssetValidationInAll( Type typeClass, StringBuilder sb = null )
+    public static (int transfers, double duration, int objectsCount) RunAssetValidationInAll( Type typeClass, StringBuilder sb = null )
     {
 		if( sb == null ) sb = new StringBuilder();
 
@@ -338,8 +338,8 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
             transfers++;
         }
         sw.Stop();
-        if( transfers > 0 ) UnityEngine.Debug.Log($"{"Processed".Colorfy(Verbs)} {transfers.ToStringColored( Numbers )} {typeClass.FullName.Colorfy(TypeName)} in {$"{sw.Elapsed.TotalMilliseconds}ms".ToStringColored( Negation )}:\n{sb.ToString()}");
+        if( transfers > 0 ) UnityEngine.Debug.Log($"{"Processed".Colorfy(Verbs)} {transfers.ToStringColored( Numbers )}/{transferables.Length.ToStringColored( Numbers )} {typeClass.FullName.Colorfy(TypeName)} in {$"{sw.Elapsed.TotalMilliseconds}ms".ToStringColored( Negation )}:\n{sb.ToString()}");
 		sb.Clear();
-		return ( transfers, sw.Elapsed.TotalMilliseconds );
+		return ( transfers, sw.Elapsed.TotalMilliseconds, transferables.Length );
     }
 }

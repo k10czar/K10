@@ -483,7 +483,12 @@ public static class K10UnityExtensions
 	}
 	#endregion Colliders
 
-	const string NULL_STRING = "NULL";
+	public const string NULL_STRING = "NULL";
+	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, string nullString = NULL_STRING ) => ( obj != null ) ? $"{obj.name.Colorfy(Colors.Console.Names)}<{obj.TypeNameOrNullColored(Colors.Console.TypeName)}>" : nullString.Colorfy(Colors.Console.Negation);
+	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, Color nameColor, string nullString = NULL_STRING ) => ( obj != null ) ? $"{obj.name.Colorfy(nameColor)}<{obj.TypeNameOrNullColored(Colors.Console.TypeName)}>" : nullString.Colorfy(Colors.Console.Negation);
+	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, Color nameColor, Color typeColor, string nullString = NULL_STRING ) => ( obj != null ) ? $"{obj.name.Colorfy(nameColor)}<{obj.TypeNameOrNullColored(typeColor)}>" : nullString.Colorfy(Colors.Console.Negation);
+	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, Color nameColor, Color typeColor, Color nullColor, string nullString = NULL_STRING )=> ( obj != null ) ? $"{obj.name.Colorfy(nameColor)}<{obj.TypeNameOrNullColored(typeColor)}>" : nullString.Colorfy(nullColor);
+
 	[MethodImpl( AggrInline )] public static string NameOrNull( this Object obj, string nullString = NULL_STRING ) => obj != null ? obj.name : nullString;
 	[MethodImpl( AggrInline )] public static string ToStringColored( this bool boolValue ) => boolValue.ToString().Colorfy( boolValue ? Colors.Console.Numbers : Colors.Console.Negation );
 	[MethodImpl( AggrInline )] public static string ToStringColored( this object obj, Color valueColor ) => obj.ToString().Colorfy(valueColor);
