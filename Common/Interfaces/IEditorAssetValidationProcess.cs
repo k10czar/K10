@@ -24,7 +24,7 @@ public static class EditorAssetValidationProcess
 
 	
 #if UNITY_EDITOR
-	public static bool EDITOR_TransferToSoftReference<T>( this IList<T> collection ) where T : IEditorAssetValidationProcess
+	public static bool EDITOR_ExecuteAssetValidationProcess<T>( this IList<T> collection ) where T : IEditorAssetValidationProcess
 	{
 		if( collection == null ) return false;
 		var modded = false;
