@@ -7,7 +7,7 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 
     void Awake()
 	{
-		StartServices();
+		RegisterServices();
 	}
 
 	void Start()
@@ -43,7 +43,7 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 		}
 	}
 
-	void StartServices()
+	void RegisterServices()
 	{
 		if (_services == null) return;
 		for( int i = 0; i < _services.Length; i++ )
