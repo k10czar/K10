@@ -13,6 +13,7 @@ public static class EditorAssetValidationProcess
 	private static Object _currentModifiedAsset;
     public static Object CurrentModifiedAsset => _currentModifiedAsset;
 
+#if UNITY_EDITOR
     public static bool EDITOR_ExecuteAssetValidationProcessOnObject( this IEditorAssetValidationProcess t )
 	{
 		var old = _currentModifiedAsset;
@@ -23,7 +24,6 @@ public static class EditorAssetValidationProcess
 	}
 
 	
-#if UNITY_EDITOR
 	public static bool EDITOR_ExecuteAssetValidationProcess<T>( this IList<T> collection ) where T : IEditorAssetValidationProcess
 	{
 		if( collection == null ) return false;
