@@ -1,5 +1,19 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+
+public class ServiceBehavior : MonoBehaviour
+{
+    void Awake()
+	{
+		ServiceLocator.Register( this );
+	}
+
+	void OnDestroy()
+	{
+		ServiceLocator.Unregister( this );
+	}
+}
 
 public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSelected, IDrawGizmos
 {

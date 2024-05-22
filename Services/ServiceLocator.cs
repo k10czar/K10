@@ -74,9 +74,15 @@ public static class ServiceLocator
 
 	public static bool Contains(System.Type type) => _services.ContainsKey(type);
 
-	public static void Register(IService service) 
+	public static void Register( object obj ) 
 	{
-		var type = service.GetType();
+		var type = obj.GetType();
+		var service = obj as IService;
+		if( service == null ) 
+		{
+			Debug.LogError($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Register non-IService object of type {type.Name.Colorfy(Keyword)}");
+			return;
+		}
 		// _services[type] = service;
 		var SB = new StringBuilder();
 		SB.AppendLine($"{"ServiceLocator".Colorfy(TypeName)} Register( {type.Name.Colorfy(Keyword)} )");
@@ -113,9 +119,15 @@ public static class ServiceLocator
 		if(service is IStartable startable) startable.Start();
 	}
 
-	public static void Unregister(IService service)
+	public static void Unregister( object obj )
 	{
-		var type = service.GetType();
+		var type = obj.GetType();
+		var service = obj as IService;
+		if( service == null ) 
+		{
+			Debug.LogError($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Unregister non-IService object of type {type.Name.Colorfy(Keyword)}");
+			return;
+		}
 		// _services[type] = service;
 		var SB = new StringBuilder();
 		SB.AppendLine($"{"ServiceLocator".Colorfy(TypeName)} Unregister( {type.Name.Colorfy(Keyword)} )");
