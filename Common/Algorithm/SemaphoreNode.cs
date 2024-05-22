@@ -4,6 +4,6 @@
 
     public SemaphoreNode(SemaphoreNode parent)
     {
-        ReleaseOn(parent);
+        if (parent != null) ReleaseOn(parent);
     }
 }
