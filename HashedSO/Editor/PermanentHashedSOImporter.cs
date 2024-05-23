@@ -25,9 +25,9 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 		for( int i = 0; i < collections.Count; i++ )
 		{
 			var collection = collections[i];
-			Debug.Log( $"OnPostprocessAllAssets Before EditorRemoveWrongElements( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
+			//Debug.Log( $"OnPostprocessAllAssets Before EditorRemoveWrongElements( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
 			collection.EditorRemoveWrongElements();
-			Debug.Log( $"OnPostprocessAllAssets After EditorRemoveWrongElements( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
+			//Debug.Log( $"OnPostprocessAllAssets After EditorRemoveWrongElements( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
 		}
 
 		for( int i = 0; i < elements.Count; i++ )
@@ -37,18 +37,18 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 			if( col != null )
 			{
 				var oHso = hso as Object;
-				Debug.Log( $"OnPostprocessAllAssets Before of EditorRequestMember( {oHso.NameOrNull()}[{hso.HashID}] ) on Collection {col.ToStringOrNull()}" );
+				//Debug.Log( $"OnPostprocessAllAssets Before of EditorRequestMember( {oHso.NameOrNull()}[{hso.HashID}] ) on Collection {col.ToStringOrNull()}" );
 				col.EditorRequestMember( oHso );
-				Debug.Log( $"OnPostprocessAllAssets After of EditorRequestMember( {oHso.NameOrNull()}[{hso.HashID}] ) on Collection {col.ToStringOrNull()}" );
+				//Debug.Log( $"OnPostprocessAllAssets After of EditorRequestMember( {oHso.NameOrNull()}[{hso.HashID}] ) on Collection {col.ToStringOrNull()}" );
 			}
 		}
 
 		for( int i = 0; i < collections.Count; i++ )
 		{
 			var collection = collections[i];
-			Debug.Log( $"OnPostprocessAllAssets Before EditorCheckConsistency( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
+			//Debug.Log( $"OnPostprocessAllAssets Before EditorCheckConsistency( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
 			collection.EditorCheckConsistency();
-			Debug.Log( $"OnPostprocessAllAssets After EditorCheckConsistency( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
+			//Debug.Log( $"OnPostprocessAllAssets After EditorCheckConsistency( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
 		}
 
 		sw.Stop();
@@ -63,6 +63,6 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 		if( movedAssets.Length > 0 ) log += $"\n{$"{movedAssets.Length.ToString().Colorfy( Numbers )} moved assets:".Colorfy( TypeName )}{afterLine}{string.Join( ",\n   -", movedAssets ).Colorfy( Names )}{Colorfy.CloseTag()}";
 		if( movedFromAssetPaths.Length > 0 ) log += $"\n{$"{movedFromAssetPaths.Length.ToString().Colorfy( Numbers )} moved from asset paths:".Colorfy( Interfaces )}{afterLine}{string.Join( ",\n   -", movedFromAssetPaths ).Colorfy( Names )}{Colorfy.CloseTag()}";
 
-		Debug.Log( log );
+		//Debug.Log( log );
 	}
 }
