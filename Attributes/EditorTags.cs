@@ -4,7 +4,15 @@ using UnityEngine;
 
 
 public class ToStringAttribute : PropertyAttribute { }
-public class ExtendedDrawerAttribute : PropertyAttribute { }
+public class ExtendedDrawerAttribute : PropertyAttribute 
+{ 
+	public readonly bool ShowName;
+
+	public ExtendedDrawerAttribute( bool showName = false )
+	{
+		ShowName = showName;
+	}
+}
 public class RandomizeButtonAttribute : PropertyAttribute 
 {
 	// public readonly object min = null;

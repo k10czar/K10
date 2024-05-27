@@ -313,7 +313,7 @@ public static class SerializedPropertyExtensions
 
 	public static bool ChangeActiveButton( Rect rect, bool isActive ) => IconButton.Draw( rect, isActive ? "on" : "off", isActive ? 'O' : '-' );
 
-	public static void DrawSerializedReference( this SerializedProperty prop, Rect rect, bool includeChildren = true, float spacing = 0 )
+	public static void DrawSerializedReference( this SerializedProperty prop, Rect rect, bool includeChildren = true, bool showName = false, float spacing = 0 )
     {
 		var type = prop.GetManagedType();
 		if( type == null )
@@ -327,6 +327,18 @@ public static class SerializedPropertyExtensions
 
 		var isActiveProp = prop.FindPropertyRelative( "_isActive" );
 		isActiveProp.TryDrawIsActive( ref firstLine, EditorGUIUtility.singleLineHeight );
+
+		if( showName )
+		{
+			var name = prop.displayName;
+			var content = new GUIContent( name );
+			var size = EditorStyles.label.CalcSize( content );
+			var width = size.x + EditorGUIUtility.standardVerticalSpacing * 2;
+			if( width > firstLine.width / 3 ) width = firstLine.width / 3;
+			var nameRect = firstLine.RequestLeft( width );
+			EditorGUI.LabelField( nameRect, name );
+			firstLine = firstLine.CutLeft( width );
+		}
 
 		var isInactive = IsInactive( isActiveProp );
 		if( isInactive ) GuiColorManager.New( Colors.Console.GrayOut );

@@ -11,6 +11,7 @@ public sealed class ExtendedPropertyDrawer : PropertyDrawer
 
     public override void OnGUI( Rect rect, SerializedProperty property, GUIContent label )
     {
-        property.DrawSerializedReference( rect, true );
+        ExtendedDrawerAttribute att = (ExtendedDrawerAttribute)attribute;
+        property.DrawSerializedReference( rect, true, att.ShowName );
     }
 }

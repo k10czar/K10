@@ -3,7 +3,6 @@ using UnityEngine;
 using K10.EditorGUIExtention;
 using Automation;
 
-
 [InitializeOnLoad]
 public sealed class AutomationWindow : EditorWindow
 {
@@ -42,6 +41,7 @@ public sealed class AutomationWindow : EditorWindow
 
 	private static string _automationData;
 	public static string AutomationKey => _automationData ?? ( _automationData = "Automation@" + Application.dataPath );
+	public static bool HasDataToRun() => !string.IsNullOrEmpty( AutomationKey );
 
 	public static AutomationData _data;
 	public static AutomationData Data => EditorPrefsUtils.GetPersistent( ref _data, AutomationKey );
