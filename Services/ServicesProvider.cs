@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class ServiceBehavior : MonoBehaviour
 {
-    void Awake()
+    void OnEnable()
 	{
 		ServiceLocator.Register( this );
 	}
 
-	void OnDestroy()
+	void OnDisable()
 	{
 		ServiceLocator.Unregister( this );
 	}
