@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using IronFeather.IronDebug;
 using UnityEngine;
 
 using static Colors.Console;
@@ -14,7 +15,7 @@ public static class ServiceLocator
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     public static void Clear()
     {
-		// Debug.Log( $"{"ServiceLocator".Colorfy(TypeName)}.{"Clear".Colorfy(Verbs)}()" );
+		// Log( $"{"ServiceLocator".Colorfy(TypeName)}.{"Clear".Colorfy(Verbs)}()" );
         _services.Clear();
 		_genericServices.Clear();
     }
@@ -63,35 +64,35 @@ public static class ServiceLocator
 			{
 				var generics = type.GetGenericArguments();
 				if( gServices.TryGetValue(generics, out var gService) ) return gService;
-				Debug.Log($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Get generic service of type {type.Name.Colorfy(Keyword)}<{generics.Select(g => g.Name.Colorfy(TypeName))}>");
-			} 
-			Debug.Log($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Get generic service of type {type.Name.Colorfy(Keyword)}");
+				Log($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Get generic service of type {type.Name.Colorfy(Keyword)}<{generics.Select(g => g.Name.Colorfy(TypeName))}>");
+			}
+			Log($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Get generic service of type {type.Name.Colorfy(Keyword)}");
 		}
 		if (_services.TryGetValue(type, out var service)) return service;
-		Debug.Log($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Get service of type {type.Name.Colorfy(Keyword)}");
+		Log($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Get service of type {type.Name.Colorfy(Keyword)}");
 		return null;
 	}
 
 	public static bool Contains(System.Type type) => _services.ContainsKey(type);
 
-	public static void Register( object obj ) 
+	public static void Register( object obj )
 	{
 		var type = obj.GetType();
 		var service = obj as IService;
-		if( service == null ) 
+		if( service == null )
 		{
-			Debug.LogError($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Register non-IService object of type {type.Name.Colorfy(Keyword)}");
+			Log($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Register non-IService object of type {type.Name.Colorfy(Keyword)}", true);
 			return;
 		}
 		// _services[type] = service;
 		var SB = new StringBuilder();
-		SB.AppendLine($"{"ServiceLocator".Colorfy(TypeName)} Register( {type.Name.Colorfy(Keyword)} )");
+		SB.AppendLine($"Register( {type.Name.Colorfy(Keyword)} )");
 		var servType = typeof(IService);
 		foreach ( var typeInterface in type.GetInterfaces() )
 		{
 			var isService = typeInterface.Implements(servType) && typeInterface != servType;
 			if (!isService) continue;
-			
+
 			if( typeInterface.IsGenericType )
 			{
 				if( !_genericServices.TryGetValue(typeInterface, out var gService) )
@@ -115,7 +116,7 @@ public static class ServiceLocator
 			if (isService) continue;
 			SB.AppendLine($"{"IGNORED".Colorfy(Danger)} as {typeInterface.Name.Colorfy(Keyword)}");
 		}
-		Debug.Log(SB.ToString());
+		Log(SB.ToString());
 		if(service is IStartable startable) startable.Start();
 	}
 
@@ -123,9 +124,9 @@ public static class ServiceLocator
 	{
 		var type = obj.GetType();
 		var service = obj as IService;
-		if( service == null ) 
+		if( service == null )
 		{
-			Debug.LogError($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Unregister non-IService object of type {type.Name.Colorfy(Keyword)}");
+			Log($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Unregister non-IService object of type {type.Name.Colorfy(Keyword)}", true);
 			return;
 		}
 		// _services[type] = service;
@@ -151,6 +152,9 @@ public static class ServiceLocator
 				SB.AppendLine($"{(removed ? "Unregistered".Colorfy(Verbs) : "NOT_FOUND".Colorfy(Danger))} as {typeInterface.Name.Colorfy(Keyword)}");
 			}
 		}
-		Debug.Log(SB.ToString());
+
+		Log(SB.ToString());
 	}
+
+	private static void Log(string message, bool isError = false) => IronLog.Log(GameSystem.Services, isError ? LogSeverity.Danger : LogSeverity.Info, message);
 }
