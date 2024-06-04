@@ -83,6 +83,7 @@ public static class ServiceLocator
 	}
 
 	public static bool Contains(System.Type type) => _services.ContainsKey(type);
+	public static bool Contains<T>() => Contains(typeof(T));
 
 	public static void Register(object obj)
 	{
