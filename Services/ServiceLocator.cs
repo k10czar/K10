@@ -4,25 +4,27 @@ using System.Linq;
 using System.Text;
 using IronFeather.IronDebug;
 using UnityEngine;
-
 using static Colors.Console;
 
 public static class ServiceLocator
 {
 	private static readonly Type ServType = typeof(IService);
 
-	[ResetedOnLoad] static Dictionary<System.Type, IService> _services = new();
-	[ResetedOnLoad] static Dictionary<System.Type, Dictionary<System.Type[], IService>> _genericServices = new();
+	[ResetedOnLoad] private static readonly Dictionary<Type, IService> services = new();
+	[ResetedOnLoad] private static readonly Dictionary<Type, Dictionary<Type[], IService>> genericServices = new();
+
+	[ResetedOnLoad] private static readonly Dictionary<Type, List<Action>> onServiceRegisteredCallbacks = new();
+	[ResetedOnLoad] private static readonly Dictionary<Type, List<Action>> onServiceReadyCallbacks = new();
 
 	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
 	public static void Clear()
 	{
 		// Log( $"{"ServiceLocator".Colorfy(TypeName)}.{"Clear".Colorfy(Verbs)}()" );
-		_services.Clear();
-		_genericServices.Clear();
+		services.Clear();
+		genericServices.Clear();
 	}
 
-	public class GenericsComparer : IEqualityComparer<System.Type[]>
+	public class GenericsComparer : IEqualityComparer<Type[]>
 	{
 		public bool Equals(Type[] x, Type[] y)
 		{
@@ -63,11 +65,11 @@ public static class ServiceLocator
 		return (T)Get(typeof(T));
 	}
 
-	public static IService Get(System.Type type)
+	public static IService Get(Type type)
 	{
 		if (type.IsGenericType)
 		{
-			if (_genericServices.TryGetValue(type, out var gServices))
+			if (genericServices.TryGetValue(type, out var gServices))
 			{
 				var generics = type.GetGenericArguments();
 				if (gServices.TryGetValue(generics, out var gService)) return gService;
@@ -77,13 +79,49 @@ public static class ServiceLocator
 			Log($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Get generic service of type {type.Name.Colorfy(Keyword)}");
 		}
 
-		if (_services.TryGetValue(type, out var service)) return service;
+		if (services.TryGetValue(type, out var service)) return service;
 		Log($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Get service of type {type.Name.Colorfy(Keyword)}");
 		return null;
 	}
 
-	public static bool Contains(System.Type type) => _services.ContainsKey(type);
+	public static bool Contains(Type type) => services.ContainsKey(type);
 	public static bool Contains<T>() => Contains(typeof(T));
+
+	public static void CallOnRegister<T>(Action callback) where T : IService
+	{
+		if (Contains<T>())
+		{
+			callback();
+			return;
+		}
+
+		onServiceRegisteredCallbacks.TryAdd(typeof(T), new List<Action>());
+
+		var list = onServiceRegisteredCallbacks[typeof(T)];
+		list.Add(callback);
+	}
+
+	public static void DeregisterCallOnRegister<T>(Action callback) where T : IService
+	{
+		if (!onServiceRegisteredCallbacks.ContainsKey(typeof(T))) return;
+
+		var list = onServiceRegisteredCallbacks[typeof(T)];
+		list.Remove(callback);
+	}
+
+	public static void CallWhenReady<T>(Action callback) where T : IService
+	{
+		if (Contains<T>())
+		{
+			Get<T>().IsReady.CallWhenReady(callback);
+			return;
+		}
+
+		onServiceReadyCallbacks.TryAdd(typeof(T), new List<Action>());
+
+		var list = onServiceReadyCallbacks[typeof(T)];
+		list.Add(callback);
+	}
 
 	public static void Register(object obj)
 	{
@@ -103,7 +141,7 @@ public static class ServiceLocator
 
 		Log(builder.ToString());
 
-		if (service is IStartable startable) startable.Start();
+		if (service is IStartableService startable) startable.Start();
 	}
 
 	private static void RegisterInterfaces(IService service, Type type, StringBuilder builder)
@@ -115,10 +153,10 @@ public static class ServiceLocator
 
 			if (typeInterface.IsGenericType)
 			{
-				if (!_genericServices.TryGetValue(typeInterface, out var gService))
+				if (!genericServices.TryGetValue(typeInterface, out var gService))
 				{
 					gService = new Dictionary<Type[], IService>(GenericsComparer.Instance);
-					_genericServices.Add(typeInterface, gService);
+					genericServices.Add(typeInterface, gService);
 				}
 
 				var generics = typeInterface.GetGenericArguments();
@@ -127,8 +165,8 @@ public static class ServiceLocator
 			}
 			else
 			{
-				builder.AppendLine($"{(_services.ContainsKey(typeInterface) ? "REPLACED" : "Registered").Colorfy(Verbs)} as {typeInterface.Name.Colorfy(Keyword)} ");
-				_services[typeInterface] = service;
+				builder.AppendLine($"{(services.ContainsKey(typeInterface) ? "REPLACED" : "Registered").Colorfy(Verbs)} as {typeInterface.Name.Colorfy(Keyword)} ");
+				ReallyRegister(service, typeInterface);
 			}
 		}
 
@@ -142,8 +180,24 @@ public static class ServiceLocator
 
 	private static void RegisterConcreteType(IService service, Type type, StringBuilder builder)
 	{
-		builder.AppendLine($"{(_services.ContainsKey(type) ? "REPLACED" : "Registered").Colorfy(Verbs)} as {type.Name.Colorfy(Keyword)}");
-		_services[type] = service;
+		builder.AppendLine($"{(services.ContainsKey(type) ? "REPLACED" : "Registered").Colorfy(Verbs)} as {type.Name.Colorfy(Keyword)}");
+		ReallyRegister(service, type);
+	}
+
+	private static void ReallyRegister(IService service, Type type)
+	{
+		services[type] = service;
+
+		if (onServiceRegisteredCallbacks.TryGetValue(type, out var registerList))
+		{
+			foreach (var callback in registerList) callback.Invoke();
+		}
+
+		if (onServiceReadyCallbacks.TryGetValue(type, out var readyList))
+		{
+			foreach (var callback in readyList) service.IsReady.CallWhenReady(callback);
+			onServiceReadyCallbacks.Remove(type);
+		}
 	}
 
 	public static void Unregister(object obj)
@@ -166,7 +220,7 @@ public static class ServiceLocator
 			if (!isService) continue;
 			if (typeInterface.IsGenericType)
 			{
-				if (_genericServices.TryGetValue(typeInterface, out var gService))
+				if (genericServices.TryGetValue(typeInterface, out var gService))
 				{
 					var generics = typeInterface.GetGenericArguments();
 					var removedGenerics = gService.TryGetValue(generics, out var qgServ) && service == qgServ && gService.Remove(generics);
@@ -175,7 +229,7 @@ public static class ServiceLocator
 			}
 			else
 			{
-				var removed = _services.TryGetValue(typeInterface, out var qServ) && service == qServ && _services.Remove(typeInterface);
+				var removed = services.TryGetValue(typeInterface, out var qServ) && service == qServ && services.Remove(typeInterface);
 				SB.AppendLine($"{(removed ? "Unregistered".Colorfy(Verbs) : "NOT_FOUND".Colorfy(Danger))} as {typeInterface.Name.Colorfy(Keyword)}");
 			}
 		}

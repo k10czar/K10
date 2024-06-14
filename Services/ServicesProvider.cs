@@ -30,7 +30,7 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 		for( int i = 0; i < _services.Length; i++ )
 		{
 			var service = _services[i];
-			if (service is IStartable startable ) 
+			if (!service.IsReady && service is IStartableService startable)
 			{
 				if( service is IActivatable act && !act.IsActive.Value ) continue;
 				startable.Start();
@@ -45,12 +45,12 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 		for( int i = 0; i < _services.Length; i++ )
 		{
 			var service = _services[i];
-			if (service is IUpdatable updatable ) 
+			if (service is IUpdatable updatable )
 			{
 				if( service is IActivatable act )
 				{
 					if( !act.IsActive.Value ) continue;
-					else if( service is IStartable startable && !startable.IsStarted ) startable.Start();
+					if( service is IStartableService startable && !startable.IsReady ) startable.Start();
 				}
 				updatable.Update( deltaTime );
 			}
@@ -72,7 +72,7 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 	{
 		KillServices();
 	}
-    
+
     protected override IEnumerable<object> GetKomposedDebugableObjects()
     {
         for( int i = 0; i < _services.Length; i++ ) yield return _services[i];
