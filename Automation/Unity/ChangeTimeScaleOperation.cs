@@ -6,11 +6,11 @@ namespace Automation.Unity
 	{
 		[UnityEngine.SerializeField] float _timeScale = 1;
 
-		public System.Collections.IEnumerator ExecutionCoroutine()  
+		public System.Collections.IEnumerator ExecutionCoroutine( bool log = false )  
 		{
 			Time.timeScale = _timeScale; yield return null;
 		}
 
-		public string GetSummaryColored() => $"⏳ {"ChangeTimeScaleOperation".Colorfy( Colors.Console.Verbs )} to {_timeScale.ToStringColored( Colors.Console.Numbers )}";
+		public override string ToString() => $"⏳ {"ChangeTimeScaleOperation".Colorfy( Colors.Console.Verbs )} to {_timeScale.ToStringColored( Colors.Console.Numbers )}";
 	}
 }

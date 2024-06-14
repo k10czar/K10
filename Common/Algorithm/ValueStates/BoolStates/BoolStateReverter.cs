@@ -23,7 +23,7 @@ public struct LazyBoolStateReverterHolder
 	}
 }
 
-public class BoolStateReverter : IBoolStateObserver
+public class BoolStateReverter : IBoolStateObserver, ICustomDisposableKill
 {
 	bool _killed;
 	IBoolStateObserver _original;

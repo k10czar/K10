@@ -5,7 +5,7 @@ namespace Automation.Unity
 {
 	public class EditorPauseOperation : Automation.IOperation
 	{
-		public IEnumerator ExecutionCoroutine() 
+		public IEnumerator ExecutionCoroutine( bool log = false ) 
 		{
 	#if UNITY_EDITOR
 			UnityEditor.EditorApplication.isPaused = true;
@@ -13,6 +13,6 @@ namespace Automation.Unity
 			if( false ) yield return null;
 		}
 
-		public string GetSummaryColored() => $"✋ {"EditorPauseOperation".Colorfy( Colors.Console.Verbs )}";
+		public override string ToString() => $"✋ {"EditorPauseOperation".Colorfy( Colors.Console.Verbs )}";
 	}
 }
