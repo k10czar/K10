@@ -87,7 +87,7 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 		var components = 0;
 		var prefabs = 0;
 		var totalPrefabs = 0;
-		
+
 		for( int j = 0; j < _mbTypes.Count; j++ )
 		{
 			_mbTypesCount.Add(0);
@@ -96,7 +96,7 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 
 		string[] guids = AssetDatabase.FindAssets("t:Prefab");
 		totalPrefabs += guids.Length;
-		
+
 		foreach( string guid in guids )
 		{
 			string assetPath = AssetDatabase.GUIDToAssetPath( guid );
@@ -118,7 +118,7 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 				}
 			}
 		}
-		
+
 		var sb = new StringBuilder();
 		for( int j = 0; j < _mbTypes.Count; j++ )
 		{
@@ -132,7 +132,7 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 		if( num < 0 ) return "?";
 		return num.ToString();
 	}
-	
+
 	private void OnGUI()
 	{
 		EditorGUILayout.BeginHorizontal();
@@ -146,7 +146,7 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 			CountMbTypes();
 		}
 		EditorGUILayout.EndHorizontal();
-		
+
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.BeginVertical();
 		if( GUILayout.Button( $"Select {((_soSelectionIgnore.Count == 0)?"None":"All")} Types" ) )
@@ -170,7 +170,7 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 			var newTggl = tggl;
 			if( i < _soTypesCount.Count ) newTggl = EditorGUILayout.ToggleLeft( $"{type.FullName} ({NumToString(_soTypesCount[i])})", tggl );
 			else newTggl = EditorGUILayout.ToggleLeft( type.FullName, tggl );
-			if( tggl != newTggl ) 
+			if( tggl != newTggl )
 			{
 				if( newTggl ) _soSelectionIgnore.Remove( i );
 				else _soSelectionIgnore.Add( i );
@@ -209,7 +209,7 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 			var newTggl = tggl;
 			if( i < _mbTypesCount.Count && i < _mbPrefabsCount.Count ) newTggl = EditorGUILayout.ToggleLeft( $"{type.FullName} ({NumToString(_mbTypesCount[i])}/{NumToString(_mbPrefabsCount[i])})", tggl );
 			else newTggl = EditorGUILayout.ToggleLeft( type.FullName, tggl );
-			if( tggl != newTggl ) 
+			if( tggl != newTggl )
 			{
 				if( newTggl ) _mbSelectionIgnore.Remove( i );
 				else _mbSelectionIgnore.Add( i );
@@ -227,14 +227,14 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 
 			for( int j = _mbPrefabsCount.Count; j < _mbTypes.Count; j++ ) _mbPrefabsCount.Add( int.MinValue );
 			for( int j = _mbTypesCount.Count; j < _mbTypes.Count; j++ ) _mbTypesCount.Add( int.MinValue );
-			
+
 			for( int j = 0; j < _mbTypes.Count; j++ )
 			{
 				if( _mbSelectionIgnore.Contains( j ) ) continue;
 				_mbPrefabsCount[j] = 0;
 				_mbTypesCount[j] = 0;
 			}
-			
+
 			foreach( string guid in guids )
 			{
 				string assetPath = AssetDatabase.GUIDToAssetPath( guid );
@@ -267,21 +267,21 @@ public sealed class EditorAssetValidationProcessWindow : EditorWindow
 							transfers++;
 						}
 					}
-					
+
 					if( !modifiedPrefab ) continue;
 
 					EditorUtility.SetDirty( prefab );
 					PrefabUtility.SavePrefabAsset( prefab, out var savedSuccessfully );
 					sb.AppendLine( $"{prefab.name} @ {assetPath} {(savedSuccessfully?"<color=lime>Successfully":"<color=red>Failed")}</color>" );
 				}
-				catch( System.Exception ex )
+				catch(Exception)
 				{
 					UnityEngine.Debug.LogError( $"{assetPath} <color=red>Failed to Load</color>" );
 					sb.AppendLine( $"{assetPath} <color=red>Failed to Load</color>" );
 				}
 			}
 			sw.Stop();
-			
+
 			if( transfers > 0 )
 			{
 				AssetDatabase.SaveAssets();

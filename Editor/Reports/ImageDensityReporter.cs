@@ -10,7 +10,7 @@ public class ImageDensityReporter : EditorWindow
 {
     const string FILE_EXTENSION = "kirl";
     const string REPORT_NAME = "Report";
-    
+
     InfoNode _root = new InfoNode( REPORT_NAME );
     private bool _showHierarchy = false;
     private bool _showReportCount = false;
@@ -50,9 +50,9 @@ public class ImageDensityReporter : EditorWindow
     {
         _lastReportMetrics = new System.Diagnostics.Stopwatch();
         _lastReportMetrics.Start();
-        
-        var objs = FindObjectsOfType<Image>();
-        
+
+        var objs = FindObjectsByType<Image>(FindObjectsSortMode.None);
+
         foreach (var uiImg in objs)
         {
             if( uiImg == null ) continue;
@@ -67,7 +67,7 @@ public class ImageDensityReporter : EditorWindow
 
             var sRect = sprite.rect;
             var TextureSize = sprite != null ? new Vector2( sRect.width, sRect.height ) : Vector2.zero;
-            
+
             var rt = uiImg.rectTransform;
             var rect = rt.rect;
             var scl = rt.lossyScale;
@@ -86,7 +86,7 @@ public class ImageDensityReporter : EditorWindow
         if( _tickOnUpdate ) Report();
         Repaint();
     }
-    
+
     public void OnGUI()
     {
         EditorGUILayout.BeginHorizontal();
@@ -169,7 +169,7 @@ public class ImageDensityReporter : EditorWindow
         [SerializeField] string[] _serializedKeys;
         [SerializeField] InfoNode[] _serializedValues;
         Dictionary<string,InfoNode> _nodes = new Dictionary<string,InfoNode>();
-        
+
         public static readonly Comparison<InfoNode> NAME_SORT = ( InfoNode a, InfoNode b ) => a._name?.CompareTo( b._name ) ?? 1;
         public static readonly Comparison<InfoNode> MINDENSITY_SORT = ( InfoNode a, InfoNode b ) => a._minDensity.CompareTo( b._minDensity );
         public static readonly Comparison<InfoNode> MAXDENSITY_SORT = ( InfoNode a, InfoNode b ) => a._maxDensity.CompareTo( b._maxDensity );
@@ -177,7 +177,7 @@ public class ImageDensityReporter : EditorWindow
         public static readonly Comparison<InfoNode> NODES_COUNT_SORT = ( InfoNode a, InfoNode b ) => ( a._nodes?.Count ?? 0).CompareTo( b._nodes?.Count ?? 0 );
 
         private static readonly GUILayoutOption _ScaleWidth = GUILayout.Width( 100 );
-        
+
         public void OnAfterDeserialize()
         {
             if( _serializedKeys != null && _serializedValues != null && _serializedKeys.Length == _serializedValues.Length )
@@ -248,7 +248,7 @@ public class ImageDensityReporter : EditorWindow
                 if( hasChilds )
                 {
                     var newFold = EditorGUILayout.Foldout( _expanded, label );
-                    if( _expanded != newFold ) 
+                    if( _expanded != newFold )
                     {
                         var recursive = EditorGUI.actionKey;
                         ToggleExpand( recursive );
@@ -257,7 +257,7 @@ public class ImageDensityReporter : EditorWindow
                 else
                 {
                     TryReadTexture();
-                    if( _texture != null ) 
+                    if( _texture != null )
                     {
                         // EditorGuiIndentManager.New( 0 );
                         EditorGUILayout.ObjectField( _texture, typeof(Texture2D), true );
@@ -309,7 +309,7 @@ public class ImageDensityReporter : EditorWindow
             _expanded = newExpandValue;
             if( recursive )
             {
-                foreach( var node in _nodes ) 
+                foreach( var node in _nodes )
                     node.Value.Expand( newExpandValue, true );
             }
         }
@@ -327,7 +327,7 @@ public class ImageDensityReporter : EditorWindow
             {
                 _maxDensity = maxDensity;
             }
-            if( lastNode ) 
+            if( lastNode )
             {
                 _texture = texture;
                 // if( texture != null ) _guid = AssetDatabase.AssetPathToGUID( AssetDatabase.GetAssetPath( _texture ) );

@@ -43,7 +43,7 @@ public static class SerializedPropertyExtensions
                     if (!isInnerArrayProp) lastArray = null;
                     else continue;
                 }
-				
+
 				var propLevel = 0;
 				for( int i = iteratedProp.Length; i < path.Length; i++ ) if( path[i] == '.' ) propLevel++;
 
@@ -60,12 +60,12 @@ public static class SerializedPropertyExtensions
             }
         }
     }
-	
+
     public static System.Type GetSerializedPropertyType(this SerializedProperty property)
     {
         object targetObject = property.serializedObject.targetObject;
 		var objectType = targetObject.GetType();
-        FieldInfo field = objectType.GetField(property.propertyPath, 
+        FieldInfo field = objectType.GetField(property.propertyPath,
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         if (field != null)
         {
@@ -73,17 +73,17 @@ public static class SerializedPropertyExtensions
         }
         return null; // Or handle the case where the type is not found
     }
-	
+
     public static void DrawChildProps( this SerializedProperty prop, bool includeChildren = true, float spacing = 0, SerializedProperty ignoreProp = null )
 	{
 		IterateThroughChildProps( prop, ( sp ) => DrawElementLayout( sp, includeChildren, spacing ), ignoreProp );
 	}
-	
+
     public static void DrawChildProps( this SerializedProperty prop, Rect rect, bool includeChildren = true, float spacing = 0, SerializedProperty ignoreProp = null )
 	{
 		IterateThroughChildProps( prop, ( sp ) => DrawElement( ref rect, sp, includeChildren, spacing ), ignoreProp );
 	}
-	
+
     public static float CalcChildPropsHeight( this SerializedProperty prop, bool includeChildren = true, float spacing = 0 )
 	{
 		if( prop == null ) return 0;
@@ -122,7 +122,7 @@ public static class SerializedPropertyExtensions
 
 	static Dictionary<string,long> _cacheTime = null;
 	static Dictionary<string,long> _includedChildrenCacheTime = null;
-	
+
 	private static string CompletePath( this SerializedProperty sp )
 	{
 		return $"{{{string.Join(",",sp.serializedObject.targetObjects.Select( o => o.GetInstanceID()))}}}.{sp.propertyPath}";
@@ -196,7 +196,7 @@ public static class SerializedPropertyExtensions
 		if( !prop.name.Contains( "isActive", System.StringComparison.OrdinalIgnoreCase ) ) return;
 		if( prop.propertyType == SerializedPropertyType.Boolean )
 		{
-			if( ChangeActiveButton( prop.boolValue, size ) ) 
+			if( ChangeActiveButton( prop.boolValue, size ) )
 				prop.boolValue = !prop.boolValue;
 		}
 		else if( prop.propertyType == SerializedPropertyType.ObjectReference )
@@ -206,8 +206,8 @@ public static class SerializedPropertyExtensions
 		}
 	}
 
-	public static bool ChangeActiveButton( bool isActive, float size = 18f ) 
-		=> IconButton.Layout( isActive ? "on" : "off", 
+	public static bool ChangeActiveButton( bool isActive, float size = 18f )
+		=> IconButton.Layout( isActive ? "on" : "off",
 								size,
 								isActive ? 'O' : '-',
 								isActive ? "Active" : "Inactive",
@@ -248,17 +248,17 @@ public static class SerializedPropertyExtensions
 		GuiLabelWidthManager.New( refSize );
 		prop.DrawChildProps( includeChildren, spacing );
 		GuiLabelWidthManager.Revert();
-		
+
 		if( isInactive ) GuiColorManager.Revert();
 	}
-	
+
 	public static System.Type GetManagedType( this SerializedProperty prop )
 	{
 		var assType = prop.managedReferenceFieldTypename;
 		var splited = assType.Split( ' ' );
 		if( splited.Length <= 0 ) return null;
 		if( splited.Length == 1 ) return TypeFinder.WithName( splited[0] );
-		
+
 		var assemblyName = splited[0];
 		if ( splited.Length > 2 )
 		{
@@ -284,7 +284,7 @@ public static class SerializedPropertyExtensions
 			// Debug.Log( prop.propertyPath + " " + prop.propertyType );
 		if( prop.propertyType == SerializedPropertyType.Boolean )
 		{
-			if( ChangeActiveButton( rect.RequestLeft( size ), prop.boolValue ) ) 
+			if( ChangeActiveButton( rect.RequestLeft( size ), prop.boolValue ) )
 				prop.boolValue = !prop.boolValue;
 		}
 		else if( prop.propertyType == SerializedPropertyType.Generic )
@@ -297,10 +297,10 @@ public static class SerializedPropertyExtensions
 		rect = rect.CutLeft( size );
 	}
 
-	public static bool IsInactive( this SerializedProperty prop ) 
+	public static bool IsInactive( this SerializedProperty prop )
 	{
 		if( prop == null ) return false;
-		if( !prop.name.Contains( "isActive", System.StringComparison.OrdinalIgnoreCase ) ) 
+		if( !prop.name.Contains( "isActive", System.StringComparison.OrdinalIgnoreCase ) )
 		{
 			prop = prop.FindPropertyRelative( "_isActive" );
 			if( prop == null ) return false;
@@ -309,7 +309,7 @@ public static class SerializedPropertyExtensions
 		if( prop.propertyType == SerializedPropertyType.Boolean ) return !prop.boolValue;
 		if( prop.propertyType == SerializedPropertyType.Generic ) return !( prop.FindPropertyRelative( "_value" )?.boolValue ?? true );
 		 return false;
-	} 
+	}
 
 	public static bool ChangeActiveButton( Rect rect, bool isActive ) => IconButton.Draw( rect, isActive ? "on" : "off", isActive ? 'O' : '-' );
 
@@ -356,7 +356,7 @@ public static class SerializedPropertyExtensions
 		var refType = prop?.managedReferenceValue?.GetType() ?? null;
 		var script = refType?.EditorGetScript() ?? null;
 		if( script != null )
-		{ 
+		{
 			var size = 18f;
 			if( IconButton.Draw( triggerSummaryRect.RequestRight( size ), "script", 's', null, Colors.Celeste ) ) AssetDatabase.OpenAsset( script );
 			triggerSummaryRect = triggerSummaryRect.CutRight( size );
@@ -370,7 +370,7 @@ public static class SerializedPropertyExtensions
 			prop.DrawChildProps( rect, includeChildren, spacing, isActiveProp );
 			GuiLabelWidthManager.Revert();
 		}
-		
+
 		if( isInactive ) GuiColorManager.Revert();
 		EditorGuiIndentManager.Revert();
     }
@@ -478,7 +478,7 @@ public static class SerializedPropertyExtensions
 				// Debug.Log( $"Succeded to get {(objType?.Name ?? "NULL")}.GetField( {element.ToStringOrNull()} ) on {property.propertyPath}" );
 				return fieldObj;
 			}
-			catch( System.Exception ex )
+			catch(System.Exception)
 			{
 				// Debug.LogError( $"Failed to get {(objType?.Name ?? "NULL")}.GetField( element[{i}]:{element.ToStringOrNull()} ) on {property.propertyPath}" );
 				type = type.BaseType;
