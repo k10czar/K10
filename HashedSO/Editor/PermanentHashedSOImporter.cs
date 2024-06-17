@@ -6,7 +6,8 @@ using static Colors.Console;
 
 public sealed class PermanentHashedSOImporter : AssetPostprocessor
 {
-	static void OnPostprocessAllAssets( string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths )
+	// static void OnPostprocessAllAssets( string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths )
+	static void Deactivated(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
 	{
 		var sw = new System.Diagnostics.Stopwatch();
 		sw.Start();
@@ -16,16 +17,16 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 		var collections = new List<IHashedSOCollection>();
 		var elements = new List<IHashedSO>();
 
-		for( int i = 0; i < importedAssets.Length; i++ )
+		for (int i = 0; i < importedAssets.Length; i++)
 		{
-			var obj = AssetDatabase.LoadAssetAtPath( importedAssets[i], typeof( ScriptableObject ) );
+			var obj = AssetDatabase.LoadAssetAtPath(importedAssets[i], typeof(ScriptableObject));
 
 			if( obj is IHashedSOCollection collection ) collections.Add( collection );
 			if( obj is IHashedSO hso ) elements.Add( hso );
 			if( obj is TagSO tag ) containsTags = true;
 		}
 
-		for( int i = 0; i < collections.Count; i++ )
+		for (int i = 0; i < collections.Count; i++)
 		{
 			var collection = collections[i];
 			Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"Before".Colorfy( Keyword )} {"EditorRemoveWrongElements".Colorfy( Verbs )}( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
@@ -33,11 +34,11 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 			Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"After".Colorfy( Warning )} {"EditorRemoveWrongElements".Colorfy( Verbs )}( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
 		}
 
-		for( int i = 0; i < elements.Count; i++ )
+		for (int i = 0; i < elements.Count; i++)
 		{
 			var hso = elements[i];
 			var col = hso.GetCollection();
-			if( col != null )
+			if (col != null)
 			{
 				var oHso = hso as Object;
 				Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"Before".Colorfy( Keyword )} of {"EditorRequestMember".Colorfy( Verbs )}( {oHso.NameOrNull()}[{hso.HashID}] ) on Collection {col.ToStringOrNull()}" );
@@ -46,7 +47,7 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 			}
 		}
 
-		for( int i = 0; i < collections.Count; i++ )
+		for (int i = 0; i < collections.Count; i++)
 		{
 			var collection = collections[i];
 			Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"Before".Colorfy( Keyword )} {"EditorCheckConsistency".Colorfy( Verbs )}( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );

@@ -8,11 +8,11 @@ namespace Automation
 	{
 		[ExtendedDrawer,SerializeReference] IOperation _operation;
 
-        public IEnumerator ExecutionCoroutine( bool log = false ) 
+        public IEnumerator ExecutionCoroutine( bool log = false )
         {
 			if( _operation != null )
 			{
-				Debug.Log( $"{"Started".Colorfy( Colors.Console.Verbs )} automation {name.Colorfy( Colors.Console.TypeName )}" );
+				_operation.Log($"{"Started".Colorfy( Colors.Console.Verbs )} automation {name.Colorfy( Colors.Console.TypeName )}");
             	yield return _operation.ExecutionCoroutine( log );
 			}
         }

@@ -3,7 +3,6 @@ using UnityEngine;
 using K10.EditorGUIExtention;
 using Automation;
 
-
 [InitializeOnLoad]
 public sealed class AutomationWindow : EditorWindow
 {
@@ -14,7 +13,7 @@ public sealed class AutomationWindow : EditorWindow
 	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
 	static void Init()
 	{
-		_alreadyTryed = false;   
+		_alreadyTryed = false;
 	}
 
 	static AutomationWindow _instance;
@@ -42,6 +41,7 @@ public sealed class AutomationWindow : EditorWindow
 
 	private static string _automationData;
 	public static string AutomationKey => _automationData ?? ( _automationData = "Automation@" + Application.dataPath );
+	public static bool HasDataToRun() => Data.operation != null;
 
 	public static AutomationData _data;
 	public static AutomationData Data => EditorPrefsUtils.GetPersistent( ref _data, AutomationKey );
@@ -66,7 +66,7 @@ public sealed class AutomationWindow : EditorWindow
 			_guid = AssetDatabase.AssetPathToGUID( _debugPath );
 		}
 	}
-	
+
 	public static void TriggerGameStart( MonoBehaviour mb = null, bool log = true )
 	{
 		if( _alreadyTryed ) return;
@@ -78,11 +78,7 @@ public sealed class AutomationWindow : EditorWindow
 			Debug.LogError( "Cannot start Automation operation because persistent data is null" );
 			return;
 		}
-		if( data.operation == null )
-		{
-			Debug.Log( "No Automation operation setted to start" );
-			return;
-		}
+		if( data.operation == null ) return;
 
 		if( !data.active ) return;
 		data.operation.ExecuteOn( mb, log );

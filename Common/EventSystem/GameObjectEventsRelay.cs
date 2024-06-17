@@ -12,7 +12,7 @@ public interface IUnityEventsRelay
 public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 {
 	bool _destroyed = false;
-	private EventSlot _onDestroy;
+	private EventSlot<GameObject> _onDestroy;
 	// private EventSlot _onLateDestroy;
 	private BoolState _isActive;
 	private BoolState _isAlive;
@@ -20,7 +20,7 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 
 	IEventRegister IUnityEventsRelay.OnDestroy => OnDestroyEvent;
 	// public IEventRegister OnLateDestroy => Lazy.Request( ref _onLateDestroy );
-	public IEventRegister OnDestroyEvent => Lazy.Request( ref _onDestroy );
+	public IEventRegister<GameObject> OnDestroyEvent => Lazy.Request( ref _onDestroy );
 	public IBoolStateObserver IsActive
 	{
 		get
@@ -34,7 +34,7 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 	{
 		get
 		{
-			if( _isAlive == null ) 
+			if( _isAlive == null )
 			{
 				if( _destroyed ) return FalseState.Instance;
 				_isAlive = new BoolState( true );
@@ -55,7 +55,7 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 
 	// string _debugName;
 	// static int _count = 0;
-	// string DebugName 
+	// string DebugName
 	// {
 	// 	get
 	// 	{
@@ -80,7 +80,7 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 	void Clear()
 	{
 		_destroyed = true;
-		_onDestroy?.Trigger();
+		_onDestroy?.Trigger(gameObject);
 		_isAlive?.SetFalse();
 		_lifetimeValidator?.OnDestroy();
 
@@ -100,7 +100,7 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 		_isActive?.SetFalse();
 	}
 
-	~GameObjectEventsRelay() 
+	~GameObjectEventsRelay()
 	{
 		// Debug.Log( $"~GameObjectEventsRelay.Destructor( {DebugName} ) => {GetStateDebug()}" );
 		Clear();

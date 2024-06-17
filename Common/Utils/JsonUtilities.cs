@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
-using UnityEngine;
 
 public static class JsonUtilities
 {
@@ -128,7 +127,7 @@ public static class JsonUtilities
 					var nextCode = 0;
 					var nextAscii = (int)nc;
 					if( nextAscii < CODES_LENGTH ) nextCode = codes[ nextAscii ];
-					
+
 					var nextClose = ( nextCode & closesCode ) != 0;
 					if( nextClose )
 					{
