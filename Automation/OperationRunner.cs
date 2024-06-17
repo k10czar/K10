@@ -36,7 +36,7 @@ namespace Automation
 
 		private static void Log(string message, bool log = true)
 		{
-			if (log) IronLog.Log(GameSystem.Automation, message);
+			if (log) K10Log.Log(GameSystem.Automation, message);
 		}
 	}
 }

@@ -237,5 +237,5 @@ public static class ServiceLocator
 		Log(SB.ToString());
 	}
 
-	private static void Log(string message, bool isError = false) => IronLog.Log(GameSystem.Services, isError ? LogSeverity.Danger : LogSeverity.Info, message);
+	private static void Log(string message, bool isError = false) => K10Log.Log(GameSystem.Services, isError ? LogSeverity.Danger : LogSeverity.Info, message);
 }
