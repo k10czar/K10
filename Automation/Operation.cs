@@ -1,6 +1,13 @@
 using System.Collections;
-using IronFeather.IronDebug;
 using UnityEngine;
+
+public class AutomationLogCategory : IK10LogCategory
+{
+    public string Name => "Automation";
+#if UNITY_EDITOR
+    public Color Color => Colors.Orange;
+#endif
+}
 
 namespace Automation
 {
@@ -34,7 +41,7 @@ namespace Automation
 
         public static void Log(this IOperation _, string message, bool log = true)
         {
-	        if (log) K10Log.Log(GameSystem.Automation, message);
+	        if (log) K10Log<AutomationLogCategory>.Log( message );
         }
 	}
 }

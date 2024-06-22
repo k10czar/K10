@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using IronFeather.IronDebug;
 using PlasticGui.Help.Conditions;
 using UnityEngine;
 
@@ -36,7 +35,7 @@ namespace Automation
 
 		private static void Log(string message, bool log = true)
 		{
-			if (log) K10Log.Log(GameSystem.Automation, message);
+			if (log) K10Log<AutomationLogCategory>.Log( message );
 		}
 	}
 }

@@ -2,9 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using IronFeather.IronDebug;
 using UnityEngine;
 using static Colors.Console;
+
+public class ServicesLogCategory : IK10LogCategory
+{
+    public string Name => "Services";
+#if UNITY_EDITOR
+    public Color Color => Colors.Orange;
+#endif
+}
 
 public static class ServiceLocator
 {
@@ -237,5 +244,5 @@ public static class ServiceLocator
 		Log(SB.ToString());
 	}
 
-	private static void Log(string message, bool isError = false) => K10Log.Log(GameSystem.Services, isError ? LogSeverity.Danger : LogSeverity.Info, message);
+	private static void Log(string message, bool isError = false) => K10Log<ServicesLogCategory>.Log( isError ? LogSeverity.Danger : LogSeverity.Info, message );
 }
