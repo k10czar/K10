@@ -10,14 +10,35 @@ using UnityEngine;
 public static class K10DebugSystem
 {
     public static bool CanDebug<T>( bool verbose = false ) where T : IK10LogCategory, new()
-            => EditorPrefs.GetBool( GetSaveKey<T>() ) || typeof(T) == typeof(TempLogCategory);
+            => CanDebug( K10Log<T>.Name, verbose ) || typeof(T) == typeof(TempLogCategory);
+
+    public static bool CanDebugVisuals<T>() where T : IK10LogCategory, new()
+            => CanDebugVisuals( K10Log<T>.Name ) || typeof(T) == typeof(TempLogCategory);
+
+    public static bool CanDebugVisuals( string baseName )
+            => EditorPrefs.GetBool( GetVisualsSaveKey( baseName ) );
+
+    public static bool CanDebug( string baseName, bool verbose = false )
+            => EditorPrefs.GetBool( GetSaveKey( baseName, verbose ) );
 
     private static string GetSaveKey<T>( bool verbose = false ) where T : IK10LogCategory, new()
-            => $"{K10Log<T>.Name}{(verbose?"_VERBOSE":"")}_LOG_ENABLED";
+            => GetSaveKey( K10Log<T>.Name, verbose );
 
-    public static void ToggleLog<T>() where T : IK10LogCategory, new()
+    public static string GetSaveKey( string baseName, bool verbose = false )
+            => $"{baseName}{(verbose?"_VERBOSE":"")}_LOG_ENABLED";
+
+    public static string GetVisualsSaveKey( string baseName )
+            => $"{baseName}_VISUALS_DEBUG_ENABLED";
+    public static void ToggleLog( string baseName, bool verbose = false )
     {
-        var key = GetSaveKey<T>();
+        var key = GetSaveKey( baseName, verbose );
+        ToggleLogWithKey( key );
+    }
+
+    public static void ToggleVisualsLog( string baseName, bool verbose = false ) => ToggleLogWithKey( GetVisualsSaveKey( baseName ) );
+
+    public static void ToggleLogWithKey( string key )
+    {
         var isEnabled = !EditorPrefs.GetBool(key);
         EditorPrefs.SetBool(key, isEnabled);
     }

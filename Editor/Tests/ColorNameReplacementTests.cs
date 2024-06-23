@@ -3,19 +3,19 @@ using NUnit.Framework;
 public class ColorNameReplacementTests 
 { 
     [Test]
-    public void ColorReplacementLogIgnoreCase1()
+    public void ColorReplacementLogUnchanged1()
     {
         Assert.AreEqual( K10Log.ReplaceColorsNames( "asdas<>ureotrn" ), "asdas<>ureotrn" );
     }
     
     [Test]
-    public void ColorReplacementLogIgnoreCase2()
+    public void ColorReplacementLogUnchanged2()
     {
         Assert.AreEqual( K10Log.ReplaceColorsNames( "asdas<>ureotrn<" ), "asdas<>ureotrn<" );
     }
     
     [Test]
-    public void ColorReplacementLogIgnoreCase3()
+    public void ColorReplacementLogUnchanged3()
     {
         Assert.AreEqual( K10Log.ReplaceColorsNames( "asdas<>ureotrn<>" ), "asdas<>ureotrn<>" );
     }
