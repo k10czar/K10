@@ -34,6 +34,7 @@ public static class K10GuiStyles
 	public static readonly GUIStyle midLeftButtonStyle = new GUIStyle( EditorStyles.miniButton ) { fontSize = SMALL_FONT_SIZE, alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Bold, fixedHeight = 28 };
 	public static readonly GUIStyle bigbuttonStyle = new GUIStyle( EditorStyles.miniButton ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold, fixedHeight = 40 };
 	public static readonly GUIStyle bigbuttonFlatStyle = new GUIStyle( EditorStyles.miniButton ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold, fixedHeight = 32, normal = new GUIStyleState() { background = EditorGUIUtility.whiteTexture, textColor = EditorStyles.miniButton.normal.textColor } };
+	public static readonly GUIStyle bigbuttonLeanFlatStyle = new GUIStyle( EditorStyles.miniButton ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold, fixedHeight = 18, normal = new GUIStyleState() { background = EditorGUIUtility.whiteTexture, textColor = EditorStyles.miniButton.normal.textColor } };
 	public static readonly GUIStyle bigFoldStyle = new GUIStyle( EditorStyles.foldout ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold };
 	public static readonly GUIStyle textFieldStyle = new GUIStyle( EditorStyles.textField ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold };
 	public static readonly GUIStyle foldStyle = new GUIStyle( EditorStyles.foldout ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold };

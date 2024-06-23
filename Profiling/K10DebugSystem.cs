@@ -35,12 +35,24 @@ public static class K10DebugSystem
         ToggleLogWithKey( key );
     }
 
-    public static void ToggleVisualsLog( string baseName, bool verbose = false ) => ToggleLogWithKey( GetVisualsSaveKey( baseName ) );
+    public static void ToggleVisualsLog( string baseName ) => ToggleLogWithKey( GetVisualsSaveKey( baseName ) );
+
+    public static void SetLog( string baseName, bool value, bool verbose = false )
+    {
+        var key = GetSaveKey( baseName, verbose );
+        SetLogWithKey( key, value );
+    }
+
+    public static void SetVisualsLog( string baseName, bool value ) => SetLogWithKey( GetVisualsSaveKey( baseName ), value );
 
     public static void ToggleLogWithKey( string key )
     {
         var isEnabled = !EditorPrefs.GetBool(key);
-        EditorPrefs.SetBool(key, isEnabled);
+        SetLogWithKey(key, isEnabled);
+    }
+    public static void SetLogWithKey( string key, bool value )
+    {
+        EditorPrefs.SetBool(key, value);
     }
     
     #region Debug Targets

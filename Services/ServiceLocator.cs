@@ -7,7 +7,7 @@ using static Colors.Console;
 
 public class ServicesLogCategory : IK10LogCategory
 {
-    public string Name => "Services";
+    public string Name => "💂Services";
 #if UNITY_EDITOR
     public Color Color => Colors.Orange;
 #endif

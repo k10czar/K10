@@ -6,6 +6,12 @@ using UnityEngine;
 
 public class K10DebugSystemWindow : EditorWindow
 {
+    static readonly Color TRUE_COLOR = Colors.LimeGreen.WithAlpha( .4f );
+    static readonly Color FALSE_COLOR = Colors.Crimson.WithAlpha( .4f );
+    static readonly Color SECTION_COLOR = Colors.DarkSlateGray.WithHue( .66f );
+    static readonly Color SECTION_HIDDEN_COLOR = Colors.DarkSlateGray.Revalue( .5f );
+    static readonly Color MODIFIERS_COLOR = Colors.DarkSlateGray.WithHue( .1666666f );
+
     private ReorderableList debugTargetsList;
     private Vector2 scrollPos;
 
@@ -26,52 +32,144 @@ public class K10DebugSystemWindow : EditorWindow
 		}
 	}
 
-
-
     private static void DrawGameSystemDebugEnablers( string name )
     {
+        var inspectorWidth = EditorGUIUtility.currentViewWidth;
+        var elementWidth = ( inspectorWidth - 22 ) / 3f;
+        var width = GUILayout.Width( elementWidth );
+
         GUILayout.BeginHorizontal();
-
-        var mainColor = BoolToColor( K10DebugSystem.CanDebug( name ) );
-        GuiBackgroundColorManager.New( mainColor );
-        if ( GUILayout.Button( name, K10GuiStyles.bigbuttonFlatStyle ) ) K10DebugSystem.ToggleLog( name );
-
         GUILayout.Space(4);
-        
-        var verboseColor = BoolToColor( K10DebugSystem.CanDebug( name, true ) );
-        GuiBackgroundColorManager.New( verboseColor );
-        if ( GUILayout.Button( "Verbose", K10GuiStyles.bigbuttonFlatStyle ) ) K10DebugSystem.ToggleLog( name, true );
-
+        if( ToggleButton( name, K10DebugSystem.CanDebug( name ), width ) ) K10DebugSystem.ToggleLog( name );
         GUILayout.Space(4);
-        
-        var visualsColor = BoolToColor( K10DebugSystem.CanDebugVisuals( name ) );
-        GuiBackgroundColorManager.New( visualsColor );
-        if ( GUILayout.Button( "Visuals", K10GuiStyles.bigbuttonFlatStyle ) ) K10DebugSystem.ToggleVisualsLog( name );
-        GuiColorManager.Revert(3);
-
+        if( ToggleButton( "Verbose", K10DebugSystem.CanDebug( name, true ), width ) ) K10DebugSystem.ToggleLog( name, true );
+        GUILayout.Space(4);
+        if( ToggleButton( "Visuals", K10DebugSystem.CanDebugVisuals( name ), width ) ) K10DebugSystem.ToggleVisualsLog( name );
+        GUILayout.Space(4);
         GUILayout.EndHorizontal();
     }
+
+    private static bool ToggleButton( string name, bool initialState, params GUILayoutOption[] options )
+    {
+        GuiBackgroundColorManager.New( BoolToColor( initialState ) );
+        var changed = GUILayout.Button( name, K10GuiStyles.bigbuttonFlatStyle, options );
+        GuiBackgroundColorManager.Revert();
+        return changed;
+    }
     
-    List<IK10LogCategory> categories = new List<IK10LogCategory> {
-        typeof( UniverseLogCategory ).CreateInstance() as IK10LogCategory,
-        typeof( ServicesLogCategory ).CreateInstance() as IK10LogCategory,
-    };
+    List<IK10LogCategory> categories = null;
+    IEnumerable<IK10LogCategory> Categories
+    {
+        get
+        {
+            if( categories == null )
+            {
+                categories = new List<IK10LogCategory>();
+                foreach( var catType in TypeListDataCache.GetFrom( typeof( IK10LogCategory ) ).GetTypes() )
+                {
+                    if( catType == typeof(TempLogCategory) ) continue;
+                    try
+                    {
+                        var instance = catType.CreateInstance();
+                        var cat = instance as IK10LogCategory;
+                        if( cat != null ) categories.Add( cat );
+                    }
+                    catch( Exception ex )
+                    {
+                        Debug.LogError( $"{catType.ToStringOrNullColored( Colors.Console.TypeName )}: {ex.Message}" );
+                    }
+                }
+            }
+            return categories;
+        }
+    }
 
     private void DrawGameSystem()
     {
-        GuiBackgroundColorManager.New( Colors.DarkSlateGray.WithHue( .66f ) );
-        if( GUILayout.Button( "Game Systems", K10GuiStyles.bigbuttonFlatStyle ) ) isGameSystemsExpanded = !isGameSystemsExpanded;
-        GuiColorManager.Revert();
+        if( DrawSection( "Game Systems", ref isGameSystemsExpanded ) ) return;
 
-        if( !isGameSystemsExpanded ) return;
-
-        foreach ( var cat in categories )
+        foreach ( var cat in Categories )
         {
-            GUILayout.Space(4);
+            Space();
             DrawGameSystemDebugEnablers( cat.Name );
         }
+        
+        Space();
+
+        var inspectorWidth = EditorGUIUtility.currentViewWidth;
+        var collumWidth = ( inspectorWidth - 22 ) / 3f;
+        var btnWidth = ( collumWidth - 12 ) / 3f;
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Space(4);
+        DrawCollumModifiers( btnWidth );
+        GUILayout.Space(4);
+        DrawCollumModifiers( btnWidth, true );
+        GUILayout.Space(4);
+        DrawCollumModifiers( btnWidth, false, true );
+        GUILayout.Space(4);
+        GUILayout.EndHorizontal();
 
         Space();
+        
+        GUILayout.BeginVertical();
+        DrawCollumModifiers( inspectorWidth - 6, true, true );
+        GUILayout.EndVertical();
+
+        Space();
+    }
+
+    private void DrawCollumModifiers( float width, bool verbose = false, bool visuals = false )
+    {
+        var opts = GUILayout.Width( width );
+
+        GuiBackgroundColorManager.New( MODIFIERS_COLOR );
+        if( GUILayout.Button( "All", K10GuiStyles.bigbuttonLeanFlatStyle, opts ) ) Set( true, verbose, visuals );
+        GUILayout.Space(4);
+        if( GUILayout.Button( "Flip", K10GuiStyles.bigbuttonLeanFlatStyle, opts ) ) Flip( verbose, visuals );
+        GUILayout.Space(4);
+        if( GUILayout.Button( "None", K10GuiStyles.bigbuttonLeanFlatStyle, opts ) ) Set( false, verbose, visuals );
+        GuiColorManager.Revert();
+    }
+
+    private void Flip(bool verbose, bool visuals)
+    {
+        bool all = verbose && visuals;
+
+        if( all )
+        {
+            foreach ( var cat in Categories ) 
+            {
+                K10DebugSystem.ToggleVisualsLog( cat.Name );
+                K10DebugSystem.ToggleLog( cat.Name );
+                K10DebugSystem.ToggleLog( cat.Name, verbose );
+            }
+        }
+        else
+        {
+            if( visuals ) foreach ( var cat in Categories ) K10DebugSystem.ToggleVisualsLog( cat.Name );
+            else foreach ( var cat in Categories ) K10DebugSystem.ToggleLog( cat.Name, verbose );
+        }
+    }
+
+    private void Set( bool value, bool verbose, bool visuals)
+    {
+        bool all = verbose && visuals;
+
+        if( all )
+        {
+            foreach ( var cat in Categories ) 
+            {
+                K10DebugSystem.SetVisualsLog( cat.Name, value );
+                K10DebugSystem.SetLog( cat.Name, value );
+                K10DebugSystem.SetLog( cat.Name, value, verbose );
+            }
+        }
+        else
+        {
+            if( visuals ) foreach ( var cat in Categories ) K10DebugSystem.SetVisualsLog( cat.Name, value );
+            else foreach ( var cat in Categories ) K10DebugSystem.SetLog( cat.Name, value, verbose );
+        }
     }
 
     private void Space()
@@ -82,37 +180,44 @@ public class K10DebugSystemWindow : EditorWindow
 
     protected virtual void DrawCustomTargetControl() {}
 
-    // private void DrawDebugTargets()
-    // {
-    //     if (!SkyxLayout.ShouldShowBlock("Debug Targets", ref isDebugOptionsExpanded)) return;
+    private static bool DrawSection( string name, ref bool isExpanded, params GUILayoutOption[] options )
+    {
+        GuiBackgroundColorManager.New( isExpanded ? SECTION_COLOR : SECTION_HIDDEN_COLOR );
+        if( GUILayout.Button( name, K10GuiStyles.bigbuttonFlatStyle, options ) ) isExpanded = !isExpanded;
+        GuiColorManager.Revert();
+        return !isExpanded;
+    }
 
-    //     var alwaysPrintErrors = K10DebugSystem.DebugErrors();
-    //     var errorsText = alwaysPrintErrors ? "Always log errors" : "Log only selected";
-    //     if (SkyxLayout.PlainBGHeaderButton(errorsText, alwaysPrintErrors))
-    //         K10DebugSystem.ToggleDebugErrors();
+    private void DrawDebugTargets()
+    {
+        if ( DrawSection("Debug Targets", ref isDebugOptionsExpanded) ) return;
 
-    //     var debugTarget = K10DebugSystem.DebugTargets();
-    //     var color = debugTarget switch
-    //     {
-    //         K10DebugSystem.EDebugTargets.Disabled => SkyxStyles.danger,
-    //         K10DebugSystem.EDebugTargets.All => SkyxStyles.success,
-    //         _ => SkyxStyles.darkerWarning,
-    //     };
+        // var alwaysPrintErrors = K10DebugSystem.DebugErrors();
+        // var errorsText = alwaysPrintErrors ? "Always log errors" : "Log only selected";
+        // if (SkyxLayout.PlainBGHeaderButton(errorsText, alwaysPrintErrors))
+        //     K10DebugSystem.ToggleDebugErrors();
 
-    //     if (SkyxLayout.PlainBGHeaderButton($"Targets: {debugTarget}", color))
-    //         K10DebugSystem.ToggleDebugTargets();
+        // var debugTarget = K10DebugSystem.DebugTargets();
+        // var color = debugTarget switch
+        // {
+        //     K10DebugSystem.EDebugTargets.Disabled => SkyxStyles.danger,
+        //     K10DebugSystem.EDebugTargets.All => SkyxStyles.success,
+        //     _ => SkyxStyles.darkerWarning,
+        // };
 
-    //     if (debugTarget < K10DebugSystem.EDebugTargets.OnlySelected) return;
+        // if (SkyxLayout.PlainBGHeaderButton($"Targets: {debugTarget}", color))
+        //     K10DebugSystem.ToggleDebugTargets();
 
-    //     DrawCustomTargetControl();
+        // if (debugTarget < K10DebugSystem.EDebugTargets.OnlySelected) return;
 
-    //     if (!Application.isPlaying) return;
+        // DrawCustomTargetControl();
 
-    //     Space();
-    //     TryAddHierarchySelection();
-    //     debugTargetsList.DoLayoutList();
-    //     Space();
-    // }
+        // if (!Application.isPlaying) return;
+
+        // Space();
+        // TryAddHierarchySelection();
+        // debugTargetsList.DoLayoutList();
+    }
 
     private void TryAddHierarchySelection()
     {
@@ -151,14 +256,12 @@ public class K10DebugSystemWindow : EditorWindow
     {
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
-        // DrawDebugTargets();
+        DrawDebugTargets();
+        Space();
         DrawGameSystem();
 
         EditorGUILayout.EndScrollView();
     }
-
-    static readonly Color TRUE_COLOR = Colors.LimeGreen.WithAlpha( .4f );
-    static readonly Color FALSE_COLOR = Colors.Crimson.WithAlpha( .4f );
 
     private static Color BoolToColor(bool active) => active ? TRUE_COLOR : FALSE_COLOR;
 }

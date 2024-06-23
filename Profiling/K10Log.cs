@@ -13,14 +13,6 @@ public interface IK10LogCategory
 #endif
 }
 
-public class UniverseLogCategory : IK10LogCategory
-{
-    public string Name => "Universe";
-#if UNITY_EDITOR
-    public Color Color => Colors.Orange;
-#endif
-}
-
 public class TempLogCategory : IK10LogCategory
 {
     public string Name => "Temp";

@@ -16,6 +16,7 @@ public static class TypeExtensions
         return type.GetType().Name;
     }
 
+	public static string TypeNameOrNullColored( this object obj, string nullString = NULL_STRING ) => TypeNameOrNullColored( obj, Colors.Console.TypeName, Colors.Console.Negation, nullString );
 	public static string TypeNameOrNullColored( this object obj, Color color, string nullString = NULL_STRING ) => TypeNameOrNullColored( obj, color, Colors.Console.Negation, nullString );
     public static string TypeNameOrNullColored( this object obj, Color color, Color nullColor, string nullString = NULL_STRING )
     {
