@@ -5,7 +5,7 @@ public class AutomationLogCategory : IK10LogCategory
 {
     public string Name => "🤖Automation";
 #if UNITY_EDITOR
-    public Color Color => Colors.Orange;
+    public Color Color => Colors.DodgerBlue;
 #endif
 }
 

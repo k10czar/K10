@@ -8,6 +8,7 @@ public class K10DebugSystemWindow : EditorWindow
 {
     static readonly Color TRUE_COLOR = Colors.LimeGreen.WithAlpha( .4f );
     static readonly Color FALSE_COLOR = Colors.Crimson.WithAlpha( .4f );
+    static readonly Color MORE_COLOR = TRUE_COLOR.WithHue( .1f );
     static readonly Color SECTION_COLOR = Colors.DarkSlateGray.WithHue( .66f );
     static readonly Color SECTION_HIDDEN_COLOR = Colors.DarkSlateGray.Revalue( .5f );
     static readonly Color MODIFIERS_COLOR = Colors.DarkSlateGray.WithHue( .1666666f );
@@ -32,13 +33,25 @@ public class K10DebugSystemWindow : EditorWindow
 		}
 	}
 
-    private static void DrawGameSystemDebugEnablers( string name )
+    private static void DrawGameSystemDebugEnablers( IK10LogCategory cat )
     {
         var inspectorWidth = EditorGUIUtility.currentViewWidth;
-        var elementWidth = ( inspectorWidth - 22 ) / 3f;
+        var elementWidth = ( inspectorWidth - 46 ) / 3f;
         var width = GUILayout.Width( elementWidth );
 
+        var name = cat.Name;
+
         GUILayout.BeginHorizontal();
+        GUILayout.Space(4);
+        GuiBackgroundColorManager.New( cat.Color );
+        if( GUILayout.Button( GUIContent.none, K10GuiStyles.bigbuttonFlatStyle, GUILayout.Width( 20 ) ) )
+        {
+            var on = K10DebugSystem.GetLog( name );
+            K10DebugSystem.SetVisualsLog( cat.Name, !on );
+            K10DebugSystem.SetLog( cat.Name, !on );
+            K10DebugSystem.SetLog( cat.Name, !on, true );
+        }
+        GuiBackgroundColorManager.Revert();
         GUILayout.Space(4);
         if( ToggleButton( name, K10DebugSystem.CanDebug( name ), width ) ) K10DebugSystem.ToggleLog( name );
         GUILayout.Space(4);
@@ -91,17 +104,17 @@ public class K10DebugSystemWindow : EditorWindow
         foreach ( var cat in Categories )
         {
             Space();
-            DrawGameSystemDebugEnablers( cat.Name );
+            DrawGameSystemDebugEnablers( cat );
         }
         
         Space();
 
         var inspectorWidth = EditorGUIUtility.currentViewWidth;
-        var collumWidth = ( inspectorWidth - 22 ) / 3f;
+        var collumWidth = ( inspectorWidth - 46 ) / 3f;
         var btnWidth = ( collumWidth - 12 ) / 3f;
 
         GUILayout.BeginHorizontal();
-        GUILayout.Space(4);
+        GUILayout.Space(30);
         DrawCollumModifiers( btnWidth );
         GUILayout.Space(4);
         DrawCollumModifiers( btnWidth, true );
@@ -142,7 +155,7 @@ public class K10DebugSystemWindow : EditorWindow
             {
                 K10DebugSystem.ToggleVisualsLog( cat.Name );
                 K10DebugSystem.ToggleLog( cat.Name );
-                K10DebugSystem.ToggleLog( cat.Name, verbose );
+                K10DebugSystem.ToggleLog( cat.Name, true );
             }
         }
         else
@@ -162,7 +175,7 @@ public class K10DebugSystemWindow : EditorWindow
             {
                 K10DebugSystem.SetVisualsLog( cat.Name, value );
                 K10DebugSystem.SetLog( cat.Name, value );
-                K10DebugSystem.SetLog( cat.Name, value, verbose );
+                K10DebugSystem.SetLog( cat.Name, value, true );
             }
         }
         else
@@ -182,41 +195,49 @@ public class K10DebugSystemWindow : EditorWindow
 
     private static bool DrawSection( string name, ref bool isExpanded, params GUILayoutOption[] options )
     {
-        GuiBackgroundColorManager.New( isExpanded ? SECTION_COLOR : SECTION_HIDDEN_COLOR );
-        if( GUILayout.Button( name, K10GuiStyles.bigbuttonFlatStyle, options ) ) isExpanded = !isExpanded;
-        GuiColorManager.Revert();
+        if( Button( name, isExpanded ? SECTION_COLOR : SECTION_HIDDEN_COLOR, K10GuiStyles.bigbuttonFlatStyle, options ) ) 
+            isExpanded = !isExpanded;
         return !isExpanded;
+    }
+
+    private static bool Button( string name, Color color, GUIStyle style, params GUILayoutOption[] options )
+    {
+        GuiBackgroundColorManager.New( color );
+        var changed = GUILayout.Button( name, style, options );
+        GuiBackgroundColorManager.Revert();
+        return changed;
     }
 
     private void DrawDebugTargets()
     {
         if ( DrawSection("Debug Targets", ref isDebugOptionsExpanded) ) return;
 
-        // var alwaysPrintErrors = K10DebugSystem.DebugErrors();
-        // var errorsText = alwaysPrintErrors ? "Always log errors" : "Log only selected";
-        // if (SkyxLayout.PlainBGHeaderButton(errorsText, alwaysPrintErrors))
-        //     K10DebugSystem.ToggleDebugErrors();
+        Space();
+        var alwaysPrintErrors = K10DebugSystem.DebugErrors();
+        var errorsText = alwaysPrintErrors ? "Always log errors" : "Log only selected";
+        if( Button( errorsText, alwaysPrintErrors ? TRUE_COLOR : FALSE_COLOR, K10GuiStyles.bigbuttonFlatStyle ) )
+            K10DebugSystem.ToggleDebugErrors();
 
-        // var debugTarget = K10DebugSystem.DebugTargets();
-        // var color = debugTarget switch
-        // {
-        //     K10DebugSystem.EDebugTargets.Disabled => SkyxStyles.danger,
-        //     K10DebugSystem.EDebugTargets.All => SkyxStyles.success,
-        //     _ => SkyxStyles.darkerWarning,
-        // };
+        Space();
+        var debugTarget = K10DebugSystem.DebugTargets();
+        var color = debugTarget switch
+        {
+            K10DebugSystem.EDebugTargets.Disabled => FALSE_COLOR,
+            K10DebugSystem.EDebugTargets.All => TRUE_COLOR,
+            _ => MORE_COLOR,
+        };
 
-        // if (SkyxLayout.PlainBGHeaderButton($"Targets: {debugTarget}", color))
-        //     K10DebugSystem.ToggleDebugTargets();
+        if (Button( $"Targets: {debugTarget}", color, K10GuiStyles.bigbuttonFlatStyle ))
+            K10DebugSystem.ToggleDebugTargets();
 
-        // if (debugTarget < K10DebugSystem.EDebugTargets.OnlySelected) return;
+        if (debugTarget < K10DebugSystem.EDebugTargets.OnlySelected) return;
 
-        // DrawCustomTargetControl();
+        DrawCustomTargetControl();
 
-        // if (!Application.isPlaying) return;
+        if (!Application.isPlaying) return;
 
-        // Space();
-        // TryAddHierarchySelection();
-        // debugTargetsList.DoLayoutList();
+        TryAddHierarchySelection();
+        debugTargetsList.DoLayoutList();
     }
 
     private void TryAddHierarchySelection()

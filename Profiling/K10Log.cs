@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -45,16 +46,26 @@ public static class K10Log<T> where T : IK10LogCategory, new()
         {
             var color = category.Color;
             if( verbose ) color = color.AddSaturation( -0.22f );
-            log = $"<b><color=#{color}>[{category.Name}]</color></b> {log}";
+            log = $"<b>{(verbose?"*":"")}<color={color.ToHexRGB()}>[{category.Name}]</color></b> {log}";
         }
         log = K10Log.ReplaceColorsNames(log);
         #else
-        log = Regex.Replace($"[{systemId}] {log}", "<.*?>", string.Empty);
+        log = $"{(verbose?"*":"")}[{category.Name}] {Regex.Replace(log, "<.*?>", string.Empty)}";
         #endif
 
         if (severity == LogSeverity.Danger) Debug.LogError(log, obj);
         else if (severity == LogSeverity.Warning) Debug.LogWarning(log, obj);
         else Debug.Log(log, obj);
+    }
+
+    public static void SetGizmosColor()
+    {
+        GizmosColorManager.New( category.Color );
+    }
+
+    public static void RevertGizmosColor()
+    {
+        GizmosColorManager.Revert();
     }
 }
 

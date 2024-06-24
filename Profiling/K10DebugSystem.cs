@@ -15,6 +15,9 @@ public static class K10DebugSystem
     public static bool CanDebugVisuals<T>() where T : IK10LogCategory, new()
             => CanDebugVisuals( K10Log<T>.Name ) || typeof(T) == typeof(TempLogCategory);
 
+    public static bool SkipVisuals<T>() where T : IK10LogCategory, new()
+            => !CanDebugVisuals<T>();
+
     public static bool CanDebugVisuals( string baseName )
             => EditorPrefs.GetBool( GetVisualsSaveKey( baseName ) );
 
@@ -41,6 +44,18 @@ public static class K10DebugSystem
     {
         var key = GetSaveKey( baseName, verbose );
         SetLogWithKey( key, value );
+    }
+
+    public static bool GetLog( string baseName, bool verbose = false )
+    {
+        var key = GetSaveKey( baseName, verbose );
+        return EditorPrefs.GetBool(key);
+    }
+
+    public static bool GetVisualsLog( string baseName )
+    {
+        var key = GetVisualsSaveKey( baseName );
+        return EditorPrefs.GetBool(key);
     }
 
     public static void SetVisualsLog( string baseName, bool value ) => SetLogWithKey( GetVisualsSaveKey( baseName ), value );
@@ -106,6 +121,16 @@ public static class K10DebugSystem
     private static void OnPlayModeStateChanged(PlayModeStateChange playModeStateChange)
     {
         selectedTargets.Clear();
+    }
+
+    public static void AddTarget( GameObject go )
+    {
+        selectedTargets.Add( go );
+    }
+
+    public static void RemoveTarget( GameObject go )
+    {
+        selectedTargets.Remove( go );
     }
     #endregion
 
