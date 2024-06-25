@@ -5,6 +5,15 @@ public class ExternalCoroutine : MonoBehaviour
 {
 	private static ExternalCoroutine instance = null;
 
+	public static ExternalCoroutine Instance 
+	{
+		get
+		{
+			TryCreateInstance();
+			return instance;
+		}
+	}
+
 	private static void TryCreateInstance()
 	{
 		if( instance == null )

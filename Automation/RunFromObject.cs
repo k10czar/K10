@@ -5,7 +5,7 @@ namespace Automation
 {
     public class RunFromObject : IOperation
 	{
-		[SerializeField] OperationObject _object;
+		[SerializeField,InlineProperties] OperationObject _object;
 
 		public IEnumerator ExecutionCoroutine( bool log = false ) 
 		{
