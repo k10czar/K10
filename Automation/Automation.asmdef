@@ -2,8 +2,7 @@
     "name": "Automation",
     "rootNamespace": "",
     "references": [
-        "GUID:6ac568dd7a2af634895b6119885b2204",
-        "GUID:c3394204debbc8d43b7332e4edf990e3"
+        "GUID:6ac568dd7a2af634895b6119885b2204"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

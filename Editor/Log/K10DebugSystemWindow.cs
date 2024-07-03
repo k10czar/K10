@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditorInternal;
 using UnityEngine;
 
@@ -281,6 +282,9 @@ public class K10DebugSystemWindow : EditorWindow
     private void OnGUI()
     {
         dirty = false;
+        DrawConditionalCompilation();
+        Space();
+
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
         DrawDebugTargets();
@@ -297,4 +301,47 @@ public class K10DebugSystemWindow : EditorWindow
     }
 
     private static Color BoolToColor(bool active) => active ? TRUE_COLOR : FALSE_COLOR;
+    
+
+    #region Define Symbol Manipulation
+    private void DrawConditionalCompilation()
+    {
+        var enabled = HasTargetDefineSymbol(K10Log.ConditionalDirective);
+        var text = enabled ? "Log calls Included" : "Log calls Stripped";
+        if( ToggleButton( text, enabled ) )
+            ToggleDirective(K10Log.ConditionalDirective);
+    }
+
+    private static void ToggleDirective(string symbolName)
+    {
+        var isEnabled = HasTargetDefineSymbol(symbolName);
+        if (isEnabled) RemoveDefineSymbol(symbolName);
+        else AddDefineSymbol(symbolName);
+
+        // EditorPrefs.SetBool(symbolName, !isEnabled);
+
+        UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
+        AssetDatabase.SaveAssets();
+    }
+
+    private static bool HasTargetDefineSymbol(string symbol)
+    {
+        var all = PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.Standalone);
+        return all.Contains(symbol);
+    }
+
+    private static void RemoveDefineSymbol(string symbol)
+    {
+        var all = PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.Standalone);
+        var newSymbols = all.Replace($"{symbol}", "");
+
+        PlayerSettings.SetScriptingDefineSymbols(NamedBuildTarget.Standalone, newSymbols);
+    }
+
+    private static void AddDefineSymbol(string symbol)
+    {
+        var all = PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.Standalone);
+        PlayerSettings.SetScriptingDefineSymbols(NamedBuildTarget.Standalone, $"{all};{symbol}");
+    }
+    #endregion
 }

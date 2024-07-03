@@ -1,28 +1,46 @@
 using UnityEngine;
 
-public interface LogglableObject<T> where T : IK10LogCategory, new()
+public interface ILogglable<T> where T : IK10LogCategory, new()
 {
-
 }
 
-public static class LogglableBehaviourExtentions
+public interface ILogglableTarget<T> : ILogglable<T> where T : IK10LogCategory, new()
 {
-    public static void Log<T>( this LogglableObject<T> behaviour, string message, LogSeverity logSeverity = LogSeverity.Info ) where T : IK10LogCategory, new()
+    MonoBehaviour LogTarget { get; }
+}
+
+public static class LogglableTargetExtentions
+{
+    [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    public static void Log<T>( this ILogglable<T> obj, string message, LogSeverity logSeverity = LogSeverity.Info ) where T : IK10LogCategory, new()
     {
-        K10Log<T>.Log( logSeverity, message, behaviour as MonoBehaviour );
+        K10Log<T>.Log( logSeverity, message, obj as MonoBehaviour );
     }
 
-    public static void VerboseLog<T>( this LogglableObject<T> behaviour, string message, LogSeverity logSeverity = LogSeverity.Info ) where T : IK10LogCategory, new()
+    [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    public static void LogVerbose<T>( this ILogglable<T> obj, string message, LogSeverity logSeverity = LogSeverity.Info ) where T : IK10LogCategory, new()
     {
-        K10Log<T>.Log( logSeverity, message, behaviour as MonoBehaviour, true );
+        K10Log<T>.Log( logSeverity, message, obj as MonoBehaviour, true );
     }
 
-    public static bool CanLog<T>( this LogglableObject<T> behaviour, bool verbose = false ) where T : IK10LogCategory, new()
+    [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    public static void Log<T>( this ILogglableTarget<T> obj, string message, LogSeverity logSeverity = LogSeverity.Info ) where T : IK10LogCategory, new()
+    {
+        K10Log<T>.Log( logSeverity, message, obj.LogTarget );
+    }
+
+    [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    public static void LogVerbose<T>( this ILogglableTarget<T> obj, string message, LogSeverity logSeverity = LogSeverity.Info ) where T : IK10LogCategory, new()
+    {
+        K10Log<T>.Log( logSeverity, message, obj.LogTarget, true );
+    }
+
+    public static bool CanLog<T>( this ILogglable<T> obj, bool verbose = false ) where T : IK10LogCategory, new()
     {
         return K10DebugSystem.CanDebug<T>( verbose );
     }
 
-    public static bool CanLogVisuals<T>( this LogglableObject<T> behaviour ) where T : IK10LogCategory, new()
+    public static bool CanLogVisuals<T>( this ILogglable<T> obj ) where T : IK10LogCategory, new()
     {
         return K10DebugSystem.CanDebugVisuals<T>();
     }

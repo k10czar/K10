@@ -29,10 +29,18 @@ public static class K10Log<T> where T : IK10LogCategory, new()
     public static string Name => category.Name;
 
     public static bool Can( bool verbose = false ) => K10DebugSystem.CanDebug<T>();
+    public static bool Skip( bool verbose = false ) => !K10DebugSystem.CanDebug<T>();
+    public static bool SkipVisuals() => !K10DebugSystem.SkipVisuals<T>();
 
-    public static void Log( string log, MonoBehaviour obj = null)
-        => Log( LogSeverity.Info, log, obj);
+    [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    public static void Log( string log, LogSeverity severity = LogSeverity.Info, MonoBehaviour obj = null, bool verbose = false)
+        => Log( severity, log, obj, verbose);
 
+    [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    public static void LogVerbose( string log, LogSeverity severity = LogSeverity.Info, MonoBehaviour obj = null)
+        => Log( severity, log, obj, true);
+
+    [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void Log(LogSeverity severity, string log, MonoBehaviour obj = null, bool verbose = false)
     {
         if (!K10DebugSystem.CanDebug<T>(verbose)) return;
@@ -71,6 +79,7 @@ public static class K10Log<T> where T : IK10LogCategory, new()
 
 public static class K10Log
 {
+    public const string ConditionalDirective = "ENABLE_K10LOG";
     [LazyConst] private static Dictionary<string,Color> EDITOR_colorReplaceDict = null;
     private static Dictionary<string,Color> EDITOR_ColorReplace
     {
