@@ -21,11 +21,11 @@ public static class HsoUtils
 	{
 		if( directRef == default(T) ) 
 		{
-			if( softRef != default(K) && softRef.GetReference() == default(T) )
+			if( softRef == default(K) || softRef.GetReference() == default(T) )
 			{
-				softRef = default(K);
-				return true;
-				// return false;
+				// softRef.ClearReference();
+				// return true;
+				return false;
 			} else
 			{
 				return softRef?.RefreshUsedRef() ?? false;
@@ -163,22 +163,6 @@ public static class CollectionElementSoftReferenceExtensions
 			yield return collection[i].GetReference();
 		}
 	}
-	
-#if UNITY_EDITOR
-	public static bool EDITOR_TransferToSoftReference<T>( this IList<T> collection ) where T : IEditorAssetValidationProcess
-	{
-		if( collection == null ) return false;
-		var modded = false;
-		for( int i = 0; i < collection.Count; i++ )
-		{
-			var t = collection[i];
-			if( t == null ) continue;
-			modded |= t.EDITOR_ExecuteAssetValidationProcess();
-			collection[i] = t;
-		}
-		return modded;
-	}
-#endif
 
 #if UNITY_EDITOR
 	public static string EDITOR_NameOrNull<T>( UnityEditor.SerializedProperty prop ) where T : UnityEngine.Object
@@ -274,6 +258,7 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 		if (_assetHardReference == null)
 		{
 			_id = -1;
+			_editorAssetRefGuid = string.Empty;
 			return;
 		}
         var path = UnityEditor.AssetDatabase.GetAssetPath( _assetHardReference );
@@ -322,13 +307,14 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 		// changed |= changedRuntimeRef;
 		_assetRuntimeReference = t;
 
-		var id = _assetRuntimeReference?.HashID ?? -1;
+		var validRef = _assetRuntimeReference != null;
+
+		var id = validRef ? _assetRuntimeReference.HashID : -1;
 		var changedId = id != _id;
 		changed |= changedId;
 		_id = id;
 
 #if UNITY_EDITOR
-
 		var changedHardRef = _assetHardReference != t;
 		// changed |= changedHardRef;
 		_assetHardReference = t;

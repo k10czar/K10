@@ -11,12 +11,33 @@ public static class Colors
 {
     private const float BYTE_TO_FLOAT = 1f / 255f;
     public static Color From( byte r, byte g, byte b ) => new Color( r * BYTE_TO_FLOAT, g * BYTE_TO_FLOAT, b * BYTE_TO_FLOAT );
+
+    [LazyConst] private static Dictionary<string,Color> ALL_COLORS = null;
+    public static Dictionary<string,Color> All
+    {
+        get
+        {
+            if( ALL_COLORS == null ) 
+            {
+                ALL_COLORS = new();
+                var allColors = typeof(Colors).GetFields( FLAGS );
+                foreach( var colorField in allColors )
+                {
+                    var colorValue = colorField.GetValue( null );
+                    ALL_COLORS.Add( colorField.Name, (Color)colorValue );
+                }
+            }
+            return ALL_COLORS;
+        }
+    }
     
 #if UNITY_EDITOR
+    private const System.Reflection.BindingFlags FLAGS = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
+
     [UnityEditor.MenuItem("K10/Colors/Log")]
     private static void EDITOR_Log()
     {
-        var binding = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
+        var binding = FLAGS;
         typeof(Color).ReflectListMembers<Color>( EDITOR_DebugColor, binding, 0 ).Log();
         typeof(Colors).ReflectListMembers<Color>( EDITOR_DebugColor, binding, 0 ).Log();
         typeof(Console).ReflectListMembers<Color>( EDITOR_DebugColor, binding, 0 ).Log();
@@ -25,19 +46,38 @@ public static class Colors
     [UnityEditor.MenuItem("K10/Colors/Log Codes")]
     private static void EDITOR_LogCodes()
     {
-        var binding = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
+        var binding = FLAGS;
         typeof(Color).ReflectListMembers<Color>( EDITOR_DebugColorCode, binding, 0 ).Log();
         typeof(Colors).ReflectListMembers<Color>( EDITOR_DebugColorCode, binding, 0 ).Log();
         typeof(Console).ReflectListMembers<Color>( EDITOR_DebugColorCode, binding, 0 ).Log();
     }
 
-    private static string EDITOR_DebugColor( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{name}</color>";
-    private static string EDITOR_DebugColorCode( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>#{ColorUtility.ToHtmlStringRGB(color)}</color>";
+    private static string EDITOR_DebugColor( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{name} █  </color>";
+    private static string EDITOR_DebugColorCode( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>#{ColorUtility.ToHtmlStringRGB(color)}█</color>";
 #endif
     
 
     public static class Console
     {
+        [LazyConst] private static Dictionary<string,Color> ALL_COLORS = null;
+        public static Dictionary<string,Color> All
+        {
+            get
+            {
+                if( ALL_COLORS == null ) 
+                {
+                    ALL_COLORS = new();
+                    var allColors = typeof(Console).GetFields( FLAGS );
+                    foreach( var colorField in allColors )
+                    {
+                        var colorValue = colorField.GetValue( null );
+                        ALL_COLORS.Add( colorField.Name, (Color)colorValue );
+                    }
+                }
+                return ALL_COLORS;
+            }
+        }
+
         [ConstLike] public static readonly Color Danger = Crimson;
         [ConstLike] public static readonly Color Negation = OrangeRed;
         [ConstLike] public static readonly Color Interfaces = Coral;

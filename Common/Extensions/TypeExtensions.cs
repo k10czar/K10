@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public static class TypeExtensions
 {
-    const string NULL_STRING = "NULL";
+    const string NULL_STRING = K10UnityExtensions.NULL_STRING;
 
     public static bool Implements( this System.Type type, System.Type interfaceType )
     {
@@ -50,5 +51,13 @@ public static class TypeExtensions
 
     static bool HasAnyInterfaces(Type type, Type intefaceType) {
         return type.GetInterfaces().Any(i => ResolveGenericType(i) == intefaceType);
+    }
+    
+	public static string TypeNameOrNullColored( this object obj, string nullString = NULL_STRING ) => TypeNameOrNullColored( obj, Colors.Console.TypeName, Colors.Console.Negation, nullString );
+	public static string TypeNameOrNullColored( this object obj, Color color, string nullString = NULL_STRING ) => TypeNameOrNullColored( obj, color, Colors.Console.Negation, nullString );
+    public static string TypeNameOrNullColored( this object obj, Color color, Color nullColor, string nullString = NULL_STRING )
+    {
+        if( obj == null ) return nullString.Colorfy( nullColor );
+        return obj.GetType().Name.Colorfy( color );
     }
 }

@@ -11,7 +11,7 @@ namespace K10.Reflection.Extensions
         public static string[] ReflectListMembers<T>( this Type type, Func<T, string, string> debugColor, BindingFlags flags, int batches = 1 )
         {
             if( type == null ) return new string[]{ $"Cannot list Members of NULL" };
-            var allColors = type.GetFields( flags );
+            var allColors = type.GetMembers( flags );
             List<int> batchesDirector = new List<int>();
             var count = allColors.Count();
             if( count == 0 ) return new string[]{ $"No members defined on {type.FullName}" };
@@ -28,8 +28,16 @@ namespace K10.Reflection.Extensions
                 for( ; it < stopAt; it++ )
                 {
                     var field = allColors[it];
-                    var value = field.GetValue( null );
-                    if( value is T t ) SB.Append( $"{debugColor(t,field.Name)} " );
+                    if( field is FieldInfo fi )
+                    {
+                        var value = fi.GetValue( null );
+                        if( value is T t ) SB.Append( $"{debugColor(t,field.Name)} " );
+                    }
+                    if( field is PropertyInfo pi )
+                    {
+                        var value = pi.GetValue( null );
+                        if( value is T t ) SB.Append( $"{debugColor(t,field.Name)} " );
+                    }
                 }
                 var itContinues = ( bi + 1 ) < batchesDirector.Count;
                 SB.Append( itContinues ? "..." : "." );
