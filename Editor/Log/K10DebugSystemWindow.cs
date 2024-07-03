@@ -19,6 +19,8 @@ public class K10DebugSystemWindow : EditorWindow
     private bool isGameSystemsExpanded = true;
     private bool isDebugOptionsExpanded;
 
+    bool dirty = false;
+
 	[MenuItem( "K10/Log/Filter" )] static void Open() { var i = Instance; }
 
 	// [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] static void Init() { }
@@ -33,7 +35,7 @@ public class K10DebugSystemWindow : EditorWindow
 		}
 	}
 
-    private static void DrawGameSystemDebugEnablers( IK10LogCategory cat )
+    private void DrawGameSystemDebugEnablers( IK10LogCategory cat )
     {
         var inspectorWidth = EditorGUIUtility.currentViewWidth;
         var elementWidth = ( inspectorWidth - 46 ) / 3f;
@@ -62,11 +64,12 @@ public class K10DebugSystemWindow : EditorWindow
         GUILayout.EndHorizontal();
     }
 
-    private static bool ToggleButton( string name, bool initialState, params GUILayoutOption[] options )
+    private bool ToggleButton( string name, bool initialState, params GUILayoutOption[] options )
     {
         GuiBackgroundColorManager.New( BoolToColor( initialState ) );
         var changed = GUILayout.Button( name, K10GuiStyles.bigbuttonFlatStyle, options );
         GuiBackgroundColorManager.Revert();
+        dirty |= changed;
         return changed;
     }
     
@@ -148,6 +151,7 @@ public class K10DebugSystemWindow : EditorWindow
     private void Flip(bool verbose, bool visuals)
     {
         bool all = verbose && visuals;
+        dirty = true;
 
         if( all )
         {
@@ -168,6 +172,7 @@ public class K10DebugSystemWindow : EditorWindow
     private void Set( bool value, bool verbose, bool visuals)
     {
         bool all = verbose && visuals;
+        dirty = true;
 
         if( all )
         {
@@ -275,6 +280,7 @@ public class K10DebugSystemWindow : EditorWindow
 
     private void OnGUI()
     {
+        dirty = false;
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
         DrawDebugTargets();
@@ -282,6 +288,12 @@ public class K10DebugSystemWindow : EditorWindow
         DrawGameSystem();
 
         EditorGUILayout.EndScrollView();
+
+        if( dirty )
+        {
+            SceneView.RepaintAll();
+            HandleUtility.Repaint();
+        }
     }
 
     private static Color BoolToColor(bool active) => active ? TRUE_COLOR : FALSE_COLOR;
