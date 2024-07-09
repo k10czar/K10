@@ -33,20 +33,20 @@ public static class K10Log<T> where T : IK10LogCategory, new()
     public static bool SkipVisuals() => !K10DebugSystem.SkipVisuals<T>();
 
     [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-    public static void Log( string log, LogSeverity severity = LogSeverity.Info, MonoBehaviour obj = null, bool verbose = false)
-        => Log( severity, log, obj, verbose);
+    public static void Log( string log, LogSeverity severity = LogSeverity.Info, MonoBehaviour target = null, bool verbose = false)
+        => Log( severity, log, target, verbose);
 
     [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-    public static void LogVerbose( string log, LogSeverity severity = LogSeverity.Info, MonoBehaviour obj = null)
-        => Log( severity, log, obj, true);
+    public static void LogVerbose( string log, LogSeverity severity = LogSeverity.Warning, MonoBehaviour target = null)
+        => Log( severity, log, target, true);
 
     [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-    public static void Log(LogSeverity severity, string log, MonoBehaviour obj = null, bool verbose = false)
+    public static void Log(LogSeverity severity, string log, MonoBehaviour target = null, bool verbose = false)
     {
         if (!K10DebugSystem.CanDebug<T>(verbose)) return;
 
         #if UNITY_EDITOR
-        if (!K10DebugSystem.CanDebugTarget(obj, severity)) return;
+        if (!K10DebugSystem.CanDebugTarget(target, severity)) return;
         #endif
 
         #if UNITY_EDITOR
@@ -61,9 +61,9 @@ public static class K10Log<T> where T : IK10LogCategory, new()
         log = $"{(verbose?"*":"")}[{category.Name}] {Regex.Replace(log, "<.*?>", string.Empty)}";
         #endif
 
-        if (severity == LogSeverity.Danger) Debug.LogError(log, obj);
-        else if (severity == LogSeverity.Warning) Debug.LogWarning(log, obj);
-        else Debug.Log(log, obj);
+        if (severity == LogSeverity.Danger) Debug.LogError(log, target);
+        else if (severity == LogSeverity.Warning) Debug.LogWarning(log, target);
+        else Debug.Log(log, target);
     }
 
     public static void SetGizmosColor()
