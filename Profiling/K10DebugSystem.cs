@@ -99,7 +99,7 @@ public static class K10DebugSystem
 
     public static bool CanDebugTarget(MonoBehaviour targetBehaviour, LogSeverity severity)
     {
-        if (DebugErrors() && severity is LogSeverity.Danger) return true;
+        if (DebugErrors() && severity is LogSeverity.Error) return true;
 
         var target = targetBehaviour == null ? null : targetBehaviour.gameObject;
 

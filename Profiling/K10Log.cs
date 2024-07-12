@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-public enum LogSeverity { Info, Warning, Danger }
+public enum LogSeverity { Info, Warning, Error }
 
 // using System.Text.RegularExpressions;
 public interface IK10LogCategory
@@ -30,7 +30,7 @@ public static class K10Log<T> where T : IK10LogCategory, new()
 
     public static bool Can( bool verbose = false ) => K10DebugSystem.CanDebug<T>();
     public static bool Skip( bool verbose = false ) => !K10DebugSystem.CanDebug<T>();
-    public static bool SkipVisuals() => !K10DebugSystem.SkipVisuals<T>();
+    public static bool SkipVisuals() => K10DebugSystem.SkipVisuals<T>();
 
     [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void Log( string log, LogSeverity severity = LogSeverity.Info, MonoBehaviour target = null, bool verbose = false)
@@ -45,23 +45,24 @@ public static class K10Log<T> where T : IK10LogCategory, new()
     {
         if (!K10DebugSystem.CanDebug<T>(verbose)) return;
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         if (!K10DebugSystem.CanDebugTarget(target, severity)) return;
-        #endif
+#endif
 
-        #if UNITY_EDITOR
-        if( !string.IsNullOrEmpty( category.Name ) ) 
+#if UNITY_EDITOR
+        if (!string.IsNullOrEmpty(category.Name))
         {
             var color = category.Color;
-            if( verbose ) color = color.AddSaturation( -0.22f );
-            log = $"<b>{(verbose?"*":"")}<color={color.ToHexRGB()}>[{category.Name}]</color></b> {log}";
+            if (verbose) color = color.AddSaturation(-0.22f);
+            log = $"<b><color={color.ToHexRGB()}>[{category.Name}]</color></b> {log}";
         }
-        log = K10Log.ReplaceColorsNames(log);
-        #else
-        log = $"{(verbose?"*":"")}[{category.Name}] {Regex.Replace(log, "<.*?>", string.Empty)}";
-        #endif
 
-        if (severity == LogSeverity.Danger) Debug.LogError(log, target);
+        log = K10Log.ReplaceColorsNames(log);
+#else
+        log = $"{(verbose?"*":"")}[{category.Name}] {Regex.Replace(log, "<.*?>", string.Empty)}";
+#endif
+
+        if (severity == LogSeverity.Error) Debug.LogError(log, target);
         else if (severity == LogSeverity.Warning) Debug.LogWarning(log, target);
         else Debug.Log(log, target);
     }
@@ -85,10 +86,10 @@ public static class K10Log
     {
         get
         {
-            if( EDITOR_colorReplaceDict == null ) 
+            if( EDITOR_colorReplaceDict == null )
             {
                 EDITOR_colorReplaceDict = new();
-                
+
                 foreach( var color in Colors.All ) EDITOR_colorReplaceDict.Add( color.Key.ToLower(), color.Value );
                 foreach( var color in Colors.Console.All ) EDITOR_colorReplaceDict.Add( color.Key.ToLower(), color.Value );
             }
@@ -107,13 +108,13 @@ public static class K10Log
 
         StringBuilder sb = null;
         int rescribed = 0;
-        
+
         for( ; i < lti && (i+j) < len; j++ )
         {
             var letter = log[i+j];
             if( j >= tLen )
             {
-                if( letter == '>' ) 
+                if( letter == '>' )
                 {
                     var firstLetter = log[i + tLen];
                     if( firstLetter != '#' )
@@ -125,7 +126,7 @@ public static class K10Log
                         // Debug.Log( $"{log}\n{log.Substring(0,i)}#{colorName}#{log.Substring(i+j+1)}" );
                         if( EDITOR_ColorReplace.TryGetValue( lowerName, out var color ) )
                         {
-                            
+
                             if( sb == null ) sb = ObjectPool<StringBuilder>.Request();
                             sb.Append( log.Substring( rescribed, i + tLen - rescribed ) );
 
@@ -133,7 +134,7 @@ public static class K10Log
                             sb.Append( $"#{colorCode}>" );
 
                             i += tLen + colorName.Length + 1;
-                            rescribed = i; 
+                            rescribed = i;
 
                             j = -1;
                             continue;

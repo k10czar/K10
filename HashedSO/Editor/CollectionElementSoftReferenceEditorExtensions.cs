@@ -9,10 +9,13 @@ public static class CollectionElementSoftReferenceEditorExtensions
 
 		T element = null;
 		try { element = (T)collection.GetElementBase( id.intValue ); }
-		catch( System.Exception ex ) { }
+		catch (System.Exception)
+		{
+			// ignored
+		}
 
 		var newElement = EditorGUI.ObjectField( area, element, typeof(T), false ) as T;
-		if( newElement != element ) 
+		if( newElement != element )
 		{
 			if( newElement == null ) elementRef.ClearCollectionSoftRef();
             else elementRef.SetCollectionSoftRef( newElement );
