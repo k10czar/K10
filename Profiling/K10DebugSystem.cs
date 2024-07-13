@@ -69,7 +69,7 @@ public static class K10DebugSystem
     {
         EditorPrefs.SetBool(key, value);
     }
-    
+
     #region Debug Targets
 
     public enum EDebugTargets
@@ -97,7 +97,7 @@ public static class K10DebugSystem
         EditorPrefs.SetBool(DEBUG_ERRORS_SAVE_KEY, !EditorPrefs.GetBool(DEBUG_ERRORS_SAVE_KEY));
     }
 
-    public static bool CanDebugTarget(MonoBehaviour targetBehaviour, LogSeverity severity)
+    public static bool CanDebugTarget(MonoBehaviour targetBehaviour, LogSeverity severity = LogSeverity.Info)
     {
         if (DebugErrors() && severity is LogSeverity.Error) return true;
 

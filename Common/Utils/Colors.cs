@@ -13,24 +13,61 @@ public static class Colors
     public static Color From( byte r, byte g, byte b ) => new Color( r * BYTE_TO_FLOAT, g * BYTE_TO_FLOAT, b * BYTE_TO_FLOAT );
 
     [LazyConst] private static Dictionary<string,Color> ALL_COLORS = null;
-    public static Dictionary<string,Color> All
+
+    public static Dictionary<string, Color> All
     {
         get
         {
-            if( ALL_COLORS == null ) 
+            if (ALL_COLORS != null) return ALL_COLORS;
+
+            ALL_COLORS = new();
+            var allColors = typeof(Colors).GetFields(FLAGS);
+            foreach (var colorField in allColors)
             {
-                ALL_COLORS = new();
-                var allColors = typeof(Colors).GetFields( FLAGS );
-                foreach( var colorField in allColors )
-                {
-                    var colorValue = colorField.GetValue( null );
-                    ALL_COLORS.Add( colorField.Name, (Color)colorValue );
-                }
+                var colorValue = colorField.GetValue(null);
+                ALL_COLORS.Add(colorField.Name, (Color)colorValue);
             }
+
             return ALL_COLORS;
         }
     }
-    
+
+    [LazyConst] private static List<Color> optionsSequence;
+
+    public static List<Color> OptionsSequence
+    {
+        get
+        {
+            if (optionsSequence != null) return optionsSequence;
+
+            optionsSequence = new List<Color> { Azure, Fern, Coral, Cyan, Salmon, Goldenrod, DeepPink, Khaki };
+
+            return optionsSequence;
+        }
+    }
+
+    [LazyConst] private static List<Color> statusSequence;
+
+    public static List<Color> StatusSequence
+    {
+        get
+        {
+            if (statusSequence != null) return statusSequence;
+
+            statusSequence = new List<Color> { MintGreen, Orange, LightCoral, OrangeRed };
+
+            return statusSequence;
+        }
+    }
+
+    public static Color FromSequence<T>(T value, bool isStatus = false, bool loop = false) where T : Enum => FromSequence((int)(object)value);
+    public static Color FromSequence(int index, bool isStatus = false, bool loop = false)
+    {
+        var sequence = isStatus ? StatusSequence : OptionsSequence;
+        index = loop ? index % sequence.Count : Mathf.Clamp(index, 0, sequence.Count);
+        return sequence[index];
+    }
+
 #if UNITY_EDITOR
     private const System.Reflection.BindingFlags FLAGS = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
 
@@ -55,7 +92,7 @@ public static class Colors
     private static string EDITOR_DebugColor( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{name} █  </color>";
     private static string EDITOR_DebugColorCode( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>#{ColorUtility.ToHtmlStringRGB(color)}█</color>";
 #endif
-    
+
 
     public static class Console
     {
@@ -64,7 +101,7 @@ public static class Colors
         {
             get
             {
-                if( ALL_COLORS == null ) 
+                if( ALL_COLORS == null )
                 {
                     ALL_COLORS = new();
                     var allColors = typeof(Console).GetFields( FLAGS );
@@ -96,7 +133,7 @@ public static class Colors
         [ConstLike] public static readonly Color LightDanger = LightCoral;
         [ConstLike] public static readonly Color GrayOut = LightGray;
     }
-    
+
     //Red colors
     [ConstLike] public static readonly Color LightSalmon = From( 255, 160, 122);
     [ConstLike] public static readonly Color Salmon = From( 250, 128, 114);
@@ -126,7 +163,7 @@ public static class Colors
     [ConstLike] public static readonly Color Khaki = From( 240, 230, 140);
     [ConstLike] public static readonly Color DarkKhaki = From( 189, 183, 107);
 
-    
+
     //Limes
     [ConstLike] public static readonly Color Peridot = From( 230, 226, 0 );
     [ConstLike] public static readonly Color Volt = From( 206, 255, 0 );
@@ -177,7 +214,7 @@ public static class Colors
     [ConstLike] public static readonly Color ForestGreen = From( 34, 139, 34);
     [ConstLike] public static readonly Color Green = From( 0, 128, 0);
     [ConstLike] public static readonly Color DarkGreen = From( 0, 100, 0);
-    
+
     //Greens
     [ConstLike] public static readonly Color Erin = From( 0, 255, 64 );
     [ConstLike] public static readonly Color Harlequin = From( 63, 255, 0 );
@@ -253,7 +290,7 @@ public static class Colors
     [ConstLike] public static readonly Color Ultramarine = From( 18, 10, 143 );
     [ConstLike] public static readonly Color MidnightBlue = From( 25, 25, 112);
     [ConstLike] public static readonly Color Sapphire = From(8, 37, 103);
-    
+
     [ConstLike] public static readonly Color Cerulean = From( 0, 123, 167 );
     [ConstLike] public static readonly Color DuckBlue = From(0, 119, 145);
     [ConstLike] public static readonly Color CeruleanBlue = From( 42, 82, 190 );
