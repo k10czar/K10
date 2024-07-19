@@ -1,11 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
 public enum LogSeverity { Info, Warning, Error }
 
-// using System.Text.RegularExpressions;
 public interface IK10LogCategory
 {
     string Name { get; }
@@ -28,17 +26,17 @@ public static class K10Log<T> where T : IK10LogCategory, new()
 
     public static string Name => category.Name;
 
-    public static bool Can( bool verbose = false ) => K10DebugSystem.CanDebug<T>();
-    public static bool Skip( bool verbose = false ) => !K10DebugSystem.CanDebug<T>();
+    public static bool Can(bool verbose = false) => K10DebugSystem.CanDebug<T>();
+    public static bool Skip(bool verbose = false) => !K10DebugSystem.CanDebug<T>();
     public static bool SkipVisuals() => K10DebugSystem.SkipVisuals<T>();
 
     [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-    public static void Log( string log, LogSeverity severity = LogSeverity.Info, MonoBehaviour target = null, bool verbose = false)
-        => Log( severity, log, target, verbose);
+    public static void Log(string log, LogSeverity severity = LogSeverity.Info, MonoBehaviour target = null, bool verbose = false)
+        => Log(severity, log, target, verbose);
 
     [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-    public static void LogVerbose( string log, LogSeverity severity = LogSeverity.Warning, MonoBehaviour target = null)
-        => Log( severity, log, target, true);
+    public static void LogVerbose(string log, MonoBehaviour target = null, LogSeverity severity = LogSeverity.Warning)
+        => Log(severity, log, target, true);
 
     [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void Log(LogSeverity severity, string log, MonoBehaviour target = null, bool verbose = false)
@@ -69,7 +67,7 @@ public static class K10Log<T> where T : IK10LogCategory, new()
 
     public static void SetGizmosColor()
     {
-        GizmosColorManager.New( category.Color );
+        GizmosColorManager.New(category.Color);
     }
 
     public static void RevertGizmosColor()
