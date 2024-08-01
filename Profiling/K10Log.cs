@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 public enum LogSeverity { Info, Warning, Error }
@@ -65,6 +66,7 @@ public static class K10Log<T> where T : IK10LogCategory, new()
         else Debug.Log(log, target);
     }
 
+#if UNITY_EDITOR
     public static void SetGizmosColor()
     {
         GizmosColorManager.New(category.Color);
@@ -74,6 +76,7 @@ public static class K10Log<T> where T : IK10LogCategory, new()
     {
         GizmosColorManager.Revert();
     }
+#endif
 }
 
 public static class K10Log

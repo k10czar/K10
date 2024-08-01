@@ -21,12 +21,14 @@ public static class Colors
             if (ALL_COLORS != null) return ALL_COLORS;
 
             ALL_COLORS = new();
+#if UNITY_EDITOR
             var allColors = typeof(Colors).GetFields(FLAGS);
             foreach (var colorField in allColors)
             {
                 var colorValue = colorField.GetValue(null);
                 ALL_COLORS.Add(colorField.Name, (Color)colorValue);
             }
+#endif
 
             return ALL_COLORS;
         }
@@ -104,12 +106,14 @@ public static class Colors
                 if( ALL_COLORS == null )
                 {
                     ALL_COLORS = new();
+#if UNITY_EDITOR
                     var allColors = typeof(Console).GetFields( FLAGS );
                     foreach( var colorField in allColors )
                     {
                         var colorValue = colorField.GetValue( null );
                         ALL_COLORS.Add( colorField.Name, (Color)colorValue );
                     }
+#endif
                 }
                 return ALL_COLORS;
             }
