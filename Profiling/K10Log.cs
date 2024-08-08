@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using K10;
 using UnityEngine;
 
 public enum LogSeverity { Info, Warning, Error }

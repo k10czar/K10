@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using K10;
 
 [Serializable]
 public class Blackboard : IBlackboard

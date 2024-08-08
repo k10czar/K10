@@ -1,6 +1,7 @@
 
 
 using System;
+using K10;
 
 public interface IVoidable
 {

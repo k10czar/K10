@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using K10;
 
 
 public class EventSlot : IEvent, ICustomDisposableKill

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections;
+using K10;
 using UnityEngine;
 
 public static class Cache
