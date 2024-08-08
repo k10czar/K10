@@ -244,5 +244,5 @@ public static class ServiceLocator
 		Log(SB.ToString());
 	}
 
-	private static void Log(string message, bool isError = false) => K10Log<ServicesLogCategory>.Log( isError ? LogSeverity.Danger : LogSeverity.Info, message );
+	private static void Log(string message, bool isError = false) => K10Log<ServicesLogCategory>.Log( isError ? LogSeverity.Error : LogSeverity.Info, message );
 }

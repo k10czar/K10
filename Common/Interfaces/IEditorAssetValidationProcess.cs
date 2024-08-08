@@ -1,11 +1,10 @@
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
 
 public interface IEditorAssetValidationProcess
 {
-#if UNITY_EDITOR
 	bool EDITOR_ExecuteAssetValidationProcess();
-#endif
 }
 
 public static class EditorAssetValidationProcess
@@ -22,8 +21,6 @@ public static class EditorAssetValidationProcess
 		return ret;
 	}
 
-	
-#if UNITY_EDITOR
 	public static bool EDITOR_ExecuteAssetValidationProcess<T>( this IList<T> collection ) where T : IEditorAssetValidationProcess
 	{
 		if( collection == null ) return false;
@@ -37,5 +34,5 @@ public static class EditorAssetValidationProcess
 		}
 		return modded;
 	}
-#endif
 }
+#endif

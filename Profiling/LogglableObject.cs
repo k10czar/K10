@@ -18,7 +18,13 @@ public static class LogglableTargetExtentions
     }
 
     [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-    public static void LogVerbose<T>( this ILogglable<T> obj, string message, LogSeverity logSeverity = LogSeverity.Info ) where T : IK10LogCategory, new()
+    public static void LogError<T>( this ILogglable<T> obj, string message ) where T : IK10LogCategory, new()
+    {
+        K10Log<T>.Log( LogSeverity.Error, message, obj as MonoBehaviour );
+    }
+
+    [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    public static void LogVerbose<T>( this ILogglable<T> obj, string message, LogSeverity logSeverity = LogSeverity.Warning ) where T : IK10LogCategory, new()
     {
         K10Log<T>.Log( logSeverity, message, obj as MonoBehaviour, true );
     }
@@ -30,7 +36,7 @@ public static class LogglableTargetExtentions
     }
 
     [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-    public static void LogVerbose<T>( this ILogglableTarget<T> obj, string message, LogSeverity logSeverity = LogSeverity.Info ) where T : IK10LogCategory, new()
+    public static void LogVerbose<T>( this ILogglableTarget<T> obj, string message, LogSeverity logSeverity = LogSeverity.Warning ) where T : IK10LogCategory, new()
     {
         K10Log<T>.Log( logSeverity, message, obj.LogTarget, true );
     }

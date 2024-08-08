@@ -131,7 +131,7 @@ public abstract class BaseHashedSOCollection : ScriptableObject, IHashedSOCollec
 		UnityEditor.EditorUtility.SetDirty( this );
 	}
 
-	bool IHashedSOCollectionEditor.EditorRequestMember( Object obj, bool forceCorrectPosition = false )
+	bool IHashedSOCollectionEditor.EditorRequestMember( Object obj, bool forceCorrectPosition)
 	{
 		var t = obj as IHashedSO;
 		if( t == null ) return false;
