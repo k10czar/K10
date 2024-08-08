@@ -45,9 +45,8 @@ public static class LogglableTargetExtentions
         return K10DebugSystem.CanDebugVisuals<T>();
     }
     
-    public static bool SkipVisuals<T>( this LogglableObject<T> behaviour ) where T : IK10LogCategory, new()
+    public static bool SkipVisuals<T>( this ILogglable<T> behaviour ) where T : IK10LogCategory, new()
     {
-        
         return K10DebugSystem.SkipVisuals<T>();
     }
 }
