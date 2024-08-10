@@ -59,6 +59,7 @@ namespace Skyx.CustomEditor
             GUILayout.Space(margin.y);
         }
 
+        public static void HeaderSeparator() => Separator(SkyxStyles.headerSeparatorMargin);
         public static void Separator() => Separator(SkyxStyles.defaultSeparatorColor, SkyxStyles.DefaultSeparatorSize, SkyxStyles.defaultSeparatorMargin);
         public static void Separator(Color color, float height) => Separator(color, height, SkyxStyles.defaultSeparatorMargin);
         public static void Separator(Vector2 margin) => Separator(SkyxStyles.defaultSeparatorColor, SkyxStyles.DefaultSeparatorSize, margin);
