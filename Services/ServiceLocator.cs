@@ -118,9 +118,10 @@ public static class ServiceLocator
 
 	public static void CallWhenReady<T>(Action callback) where T : IService
 	{
-		if (Contains<T>())
+		if ( services.TryGetValue(typeof(T), out var service) )
 		{
-			Get<T>().IsReady.CallWhenReady(callback);
+			if( service is IReadyService readyService ) readyService.IsReady.CallWhenReady(callback);
+			else callback();
 			return;
 		}
 
@@ -202,7 +203,11 @@ public static class ServiceLocator
 
 		if (onServiceReadyCallbacks.TryGetValue(type, out var readyList))
 		{
-			foreach (var callback in readyList) service.IsReady.CallWhenReady(callback);
+			foreach (var callback in readyList) 
+			{
+				if( service is IReadyService readyService ) readyService.IsReady.CallWhenReady(callback);
+				else callback();
+			}
 			onServiceReadyCallbacks.Remove(type);
 		}
 	}
