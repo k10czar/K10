@@ -44,7 +44,7 @@ public class IconCache : IIconCache
 
 	public void Layout() { if( _icon != null ) GUILayout.Label( _icon, GUILayout.Width( _icon.width ), GUILayout.Height( _icon.height ) ); }
 	public void Layout( float size ) { Layout( size, size ); }
-	public float LayoutWithHeight( float height ) { var w = _icon.width * height / _icon.height; Layout( w, height ); return w; }
+	public float LayoutWithHeight( float height ) { if( _icon == null ) return 16; var w = _icon.width * height / _icon.height; Layout( w, height ); return w; }
 	public void Layout( float w, float h ) { if( _icon != null ) GUILayout.Label( _icon, GUILayout.Width( w ), GUILayout.Height( h ) ); else GUILayout.Label( "", GUILayout.Width( w ), GUILayout.Height( h ) ); }
 
 	public void Draw( Vector2 pos ) { Draw( pos, SpriteAlignment.Center ); }
