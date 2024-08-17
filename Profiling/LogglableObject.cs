@@ -55,4 +55,9 @@ public static class LogglableTargetExtentions
     {
         return K10DebugSystem.SkipVisuals<T>();
     }
+    
+    public static Color LogColor<T>( this ILogglable<T> behaviour ) where T : IK10LogCategory, new()
+    {
+        return K10Log<T>.Category.Color;
+    }
 }

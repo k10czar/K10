@@ -8,9 +8,7 @@ public enum LogSeverity { Info, Warning, Error }
 public interface IK10LogCategory
 {
     string Name { get; }
-#if UNITY_EDITOR
     Color Color { get; }
-#endif
 }
 
 public class TempLogCategory : IK10LogCategory
@@ -26,6 +24,7 @@ public static class K10Log<T> where T : IK10LogCategory, new()
     static readonly T category = new T();
 
     public static string Name => category.Name;
+    public static T Category => category;
 
     public static bool Can(bool verbose = false) => K10DebugSystem.CanDebug<T>();
     public static bool Skip(bool verbose = false) => !K10DebugSystem.CanDebug<T>();
