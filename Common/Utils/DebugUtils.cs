@@ -31,7 +31,7 @@ public static class DebugUtils
 		var cam = Camera.main;
 
 		DebugUtils.Circle( pos, cam.transform.right, cam.transform.forward, radius, color, false );
-		DebugUtils.Circle( pos, forward, up, radius, Color.blue, false );
+		DebugUtils.Circle( pos, forward, up, radius, color, false );
 	}
 
 	public static void Elipse( Vector3 pos, Vector3 forward, Vector3 up, float a, float b, Color color, Vector3 scale, bool forwardGuide = false, float anglePrecision = K_DEFAULT_ANGLE_PRECISION )
