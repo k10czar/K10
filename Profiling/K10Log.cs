@@ -39,12 +39,19 @@ public static class K10Log<T> where T : IK10LogCategory, new()
         => Log(severity, log, target, true);
 
     [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    public static void LogException(System.Exception exception, MonoBehaviour target = null)
+    {
+        Debug.LogException(exception, target);
+    }
+
+    [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void Log(LogSeverity severity, string log, MonoBehaviour target = null, bool verbose = false)
     {
-        if (!K10DebugSystem.CanDebug<T>(verbose)) return;
+        var notError = ( severity != LogSeverity.Error );
+        if (!K10DebugSystem.CanDebug<T>(verbose) && notError) return;
 
 #if UNITY_EDITOR
-        if (!K10DebugSystem.CanDebugTarget(target, severity)) return;
+        if (!K10DebugSystem.CanDebugTarget(target, severity) && notError) return;
 #endif
 
 #if UNITY_EDITOR

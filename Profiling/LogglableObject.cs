@@ -24,6 +24,12 @@ public static class LogglableTargetExtentions
     }
 
     [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    public static void LogException<T>( this ILogglable<T> obj, System.Exception exception ) where T : IK10LogCategory, new()
+    {
+        K10Log<T>.LogException( exception, obj as MonoBehaviour );
+    }
+
+    [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void LogVerbose<T>( this ILogglable<T> obj, string message, LogSeverity logSeverity = LogSeverity.Warning ) where T : IK10LogCategory, new()
     {
         K10Log<T>.Log( logSeverity, message, obj as MonoBehaviour, true );
