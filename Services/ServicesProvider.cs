@@ -15,7 +15,7 @@ public class ServiceBehavior : MonoBehaviour
 	}
 }
 
-public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSelected, IDrawGizmos
+public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSelected, IDrawGizmos, ILogglable<ServicesLogCategory>
 {
 	[ExtendedDrawer, SerializeReference] IService[] _services;
 
@@ -30,10 +30,17 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 		for( int i = 0; i < _services.Length; i++ )
 		{
 			var service = _services[i];
-			if ( service is IStartableService startable )
+			if ( service is IStartable startable )
 			{
 				if( service is IActivatable act && !act.IsActive.Value ) continue;
-				startable.Start();
+				try
+				{
+					startable.Start();
+				}
+				catch( Exception e ) 
+				{
+					this.LogException( e );
+				}
 			}
 		}
 	}

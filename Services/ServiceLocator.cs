@@ -149,7 +149,7 @@ public static class ServiceLocator
 
 		Log(builder.ToString());
 
-		if (service is IStartableService startable) startable.Start();
+		// if (service is IStartable startable) startable.Start();
 	}
 
 	private static void RegisterInterfaces(IService service, Type type, StringBuilder builder)
