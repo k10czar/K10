@@ -48,9 +48,8 @@ public static class K10Log<T> where T : IK10LogCategory, new()
     public static void Log(LogSeverity severity, string log, MonoBehaviour target = null, bool verbose = false)
     {
         var notError = ( severity != LogSeverity.Error );
-        if (!K10DebugSystem.CanDebug<T>(verbose) && notError) return;
-
 #if UNITY_EDITOR
+        if (!K10DebugSystem.CanDebug<T>(verbose) && notError) return;
         if (!K10DebugSystem.CanDebugTarget(target, severity) && notError) return;
 #endif
 
