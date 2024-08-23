@@ -80,27 +80,63 @@ public static class ValidatedObjectExtensions
 }
 
 
-public interface IEventTrigger : IValidatedObject
+public interface IEventTrigger : IValidatedObject, ITriggerable { }
+public interface IEventTrigger<T> : IValidatedObject, ITriggerable<T> { }
+public interface IEventTrigger<T, K> : IValidatedObject, ITriggerable<T,K> { }
+public interface IEventTrigger<T, K, J> : IValidatedObject, ITriggerable<T,K,J> { }
+public interface IEventTrigger<T, K, J, L> : IValidatedObject, ITriggerable<T,K,J,L> { }
+
+public interface ITriggerable
 {
 	void Trigger();
 }
 
-public interface IEventTrigger<T> : IValidatedObject
+public interface ITriggerable<T>
 {
-	void Trigger( T t );
+	void Trigger(T t);
 }
 
-public interface IEventTrigger<T, K> : IValidatedObject
+public interface ITriggerable<T,K>
 {
-	void Trigger( T t, K k );
+	void Trigger(T t, K k);
 }
 
-public interface IEventTrigger<T, K, J> : IValidatedObject
+public interface ITriggerable<T,K,J>
 {
-	void Trigger( T t, K k, J j );
+	void Trigger(T t, K k, J j);
 }
 
-public interface IEventTrigger<T, K, J, L> : IValidatedObject
+public interface ITriggerable<T,K,J,L>
 {
-	void Trigger( T t, K k, J j, L l );
+	void Trigger(T t, K k, J j, L l);
+}
+
+
+public static class TriggerableExtensions
+{
+	public static void TriggerAll( this IEnumerable<ITriggerable> triggers ) 
+	{
+		if( triggers == null ) return;
+		foreach( var trigger in triggers ) { trigger.Trigger(); }
+	}
+	public static void TriggerAll<T>( this IEnumerable<ITriggerable<T>> triggers, T t ) 
+	{
+		if( triggers == null ) return;
+		foreach( var trigger in triggers ) { trigger.Trigger(t); }
+	}
+	public static void TriggerAll<T,K>( this IEnumerable<ITriggerable<T,K>> triggers, T t, K k ) 
+	{
+		if( triggers == null ) return;
+		foreach( var trigger in triggers ) { trigger.Trigger( t, k ); }
+	}
+	public static void TriggerAll<T,K,J>( this IEnumerable<ITriggerable<T,K,J>> triggers, T t, K k, J j ) 
+	{
+		if( triggers == null ) return;
+		foreach( var trigger in triggers ) { trigger.Trigger( t, k, j ); }
+	}
+	public static void TriggerAll<T,K,J,L>( this IEnumerable<ITriggerable<T,K,J,L>> triggers, T t, K k, J j, L l ) 
+	{
+		if( triggers == null ) return;
+		foreach( var trigger in triggers ) { trigger.Trigger( t, k, j, l ); }
+	}
 }
