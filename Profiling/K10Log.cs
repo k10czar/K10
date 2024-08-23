@@ -11,6 +11,7 @@ public interface IK10LogCategory
     string Name { get; }
 #if UNITY_EDITOR
     Color Color { get; }
+    Color SecondaryColor => Color.AddLigth(-.1f);
 #endif
 }
 
@@ -24,9 +25,11 @@ public class TempLogCategory : IK10LogCategory
 
 public static class K10Log<T> where T : IK10LogCategory, new()
 {
-    static readonly T category = new T();
+    static readonly T category = new();
 
     public static string Name => category.Name;
+    public static Color Color => category.Color;
+    public static Color SecondaryColor => category.SecondaryColor;
 
     public static bool Can(bool verbose = false) => K10DebugSystem.CanDebug<T>();
     public static bool Skip(bool verbose = false) => !K10DebugSystem.CanDebug<T>();

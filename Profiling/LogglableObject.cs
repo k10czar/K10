@@ -4,6 +4,7 @@ public interface ILogglable<T> where T : IK10LogCategory, new()
 {
     bool prefixWithObjName => false;
     string TryAddPrefix(string message) => prefixWithObjName ? $"<b>{ToString()} |</b> {message}" : message;
+    Color DebugColor => K10Log<T>.Color;
 }
 
 public interface ILogglableTarget<T> : ILogglable<T> where T : IK10LogCategory, new()
@@ -48,7 +49,7 @@ public static class LogglableTargetExtentions
         return K10DebugSystem.CanDebug<T>( verbose );
     }
 
-    public static bool CanLogVisuals<T>( this ILogglable<T> obj ) where T : IK10LogCategory, new()
+    public static bool CanDebugVisuals<T>( this ILogglable<T> obj ) where T : IK10LogCategory, new()
     {
         return K10DebugSystem.CanDebugVisuals<T>();
     }
