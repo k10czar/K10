@@ -18,6 +18,8 @@ public class ServiceBehavior : MonoBehaviour
 public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSelected, IDrawGizmos, ILogglable<ServicesLogCategory>
 {
 	[ExtendedDrawer, SerializeReference] IService[] _services;
+	
+    protected override bool CanDrawGizmos => this.CanLogVisuals();
 
     void Awake()
 	{
