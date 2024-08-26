@@ -46,7 +46,7 @@ public class EventSlot : IEvent, ICustomDisposableKill
 			}
 			catch (Exception exception)
 			{
-				Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
+				Debug.LogException(exception);
 			}
 		}
 
@@ -97,7 +97,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
 	public int CountValidEvents => ( _generic?.CountValidEvents ?? 0 ) + _listeners.Count( ( et ) => et.IsValid );
 	public bool HasListeners => EventsCount > 0;
-	
+
 	public static implicit operator EventSlot( EventSlot<T> v ) => Lazy.Request( ref v._generic );
 
 	public void Trigger( T t )
@@ -129,7 +129,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 				}
 				catch (Exception exception)
 				{
-					Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
+					Debug.LogException(exception);
 				}
 			}
 			ObjectPool<List<IEventTrigger<T>>>.Return( listenersToTrigger );
@@ -215,7 +215,7 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 	public bool HasListeners => EventsCount > 0;
 
 	public static implicit operator EventSlot<T>( EventSlot<T, K> v ) => Lazy.Request( ref v._generic );
-	
+
 	public void Trigger( T t, K k )
 	{
 		if( _killed )
@@ -245,7 +245,7 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 				}
 				catch (Exception exception)
 				{
-					Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
+					Debug.LogException(exception);
 				}
 			}
 			ObjectPool<List<IEventTrigger<T,K>>>.Return( listenersToTrigger );
@@ -342,7 +342,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
 	public int CountValidEvents => ( _generic?.CountValidEvents ?? 0 ) + _listeners.Count( ( et ) => et.IsValid );
 	public bool HasListeners => EventsCount > 0;
-	
+
 	public static implicit operator EventSlot<T, K>( EventSlot<T, K, L> v ) => Lazy.Request( ref v._generic );
 
 	public void Trigger( T t, K k, L l )
@@ -374,7 +374,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 				}
 				catch (Exception exception)
 				{
-					Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
+					Debug.LogException(exception);
 				}
 			}
 			ObjectPool<List<IEventTrigger<T, K, L>>>.Return( listenersToTrigger );
