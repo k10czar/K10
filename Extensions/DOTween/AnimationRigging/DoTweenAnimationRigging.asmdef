@@ -1,9 +1,9 @@
 {
-    "name": "DOTweenAnimationRigging1",
+    "name": "DoTweenAnimationRigging",
     "rootNamespace": "",
     "references": [
-        "GUID:b77033f7db320894ab2f94772d224966",
-        "GUID:7f7d1af65c2641843945d409d28f2e20"
+        "Unity.Animation.Rigging",
+        "DoTweenExtensions"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -11,7 +11,9 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
+    "defineConstraints": [
+        "DOTWEEN"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }
