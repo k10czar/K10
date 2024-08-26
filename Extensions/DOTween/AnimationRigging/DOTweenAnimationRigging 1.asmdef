@@ -1,0 +1,17 @@
+{
+    "name": "DOTweenAnimationRigging1",
+    "rootNamespace": "",
+    "references": [
+        "GUID:b77033f7db320894ab2f94772d224966",
+        "GUID:7f7d1af65c2641843945d409d28f2e20"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
