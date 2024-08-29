@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using K10;
 
 
 public class EventSlot : IEvent, ICustomDisposableKill
@@ -128,7 +129,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 				}
 				catch (Exception exception)
 				{
-					Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
+					Debug.LogException(exception);
 				}
 			}
 			ObjectPool<List<IEventTrigger<T>>>.Return( listenersToTrigger );
@@ -244,7 +245,7 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 				}
 				catch (Exception exception)
 				{
-					Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
+					Debug.LogException(exception);
 				}
 			}
 			ObjectPool<List<IEventTrigger<T,K>>>.Return( listenersToTrigger );
@@ -373,7 +374,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 				}
 				catch (Exception exception)
 				{
-					Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
+					Debug.LogException(exception);
 				}
 			}
 			ObjectPool<List<IEventTrigger<T, K, L>>>.Return( listenersToTrigger );

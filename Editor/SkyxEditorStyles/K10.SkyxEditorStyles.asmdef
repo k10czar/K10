@@ -1,0 +1,18 @@
+{
+    "name": "SkyxStyles",
+    "rootNamespace": "",
+    "references": [
+        "GUID:b45b332c2592e3f47be79ab5172d60e7"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

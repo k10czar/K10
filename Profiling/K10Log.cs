@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using K10;
+using K10.DebugSystem;
 using UnityEngine;
 
 public enum LogSeverity { Info, Warning, Error }
@@ -8,24 +10,25 @@ public enum LogSeverity { Info, Warning, Error }
 public interface IK10LogCategory
 {
     string Name { get; }
-#if UNITY_EDITOR
     Color Color { get; }
-#endif
+    Color SecondaryColor => Color.AddLigth(-.1f);
+    ELogPrefix PrefixType => ELogPrefix.None;
 }
 
 public class TempLogCategory : IK10LogCategory
 {
     public string Name => "Temp";
-#if UNITY_EDITOR
     public Color Color => Colors.Orange;
-#endif
 }
 
 public static class K10Log<T> where T : IK10LogCategory, new()
 {
-    static readonly T category = new T();
+    static readonly T category = new();
 
     public static string Name => category.Name;
+    public static Color Color => category.Color;
+    public static Color SecondaryColor => category.SecondaryColor;
+    public static ELogPrefix PrefixType => category.PrefixType;
 
     public static bool Can(bool verbose = false) => K10DebugSystem.CanDebug<T>();
     public static bool Skip(bool verbose = false) => !K10DebugSystem.CanDebug<T>();

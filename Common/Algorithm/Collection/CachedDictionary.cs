@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using K10;
 
 
 public interface ICachedDictionaryObserver<K, T> : ICachedCollectionObserverEnumerable<T>

@@ -1,6 +1,7 @@
 
 
 using System.Collections.Generic;
+using K10;
 
 public static class SerializationGuidExtensions
 {

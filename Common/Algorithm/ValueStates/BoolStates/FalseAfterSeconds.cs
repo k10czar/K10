@@ -1,4 +1,5 @@
 using System.Collections;
+using K10;
 using UnityEngine;
 
 public class FalseAfterSeconds : IBoolStateObserver
