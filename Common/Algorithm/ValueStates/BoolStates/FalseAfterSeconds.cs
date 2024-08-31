@@ -20,7 +20,7 @@ public class FalseAfterSeconds : IBoolStateObserver
 
 	public FalseAfterSeconds( float defaultBubbleTime )
 	{
-		ExternalCoroutine.StartCoroutine( DelayedExpiration( defaultBubbleTime ) );
+		ExternalCoroutine.Play( DelayedExpiration( defaultBubbleTime ) );
 	}
 
 	private IEnumerator DelayedExpiration( float defaultBubbleTime )

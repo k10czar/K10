@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -5,7 +6,7 @@ namespace K10
 {
 	public class ExternalCoroutine : MonoBehaviour
 	{
-		private static ExternalCoroutine instance = null;
+		private static ExternalCoroutine instance;
 
 		public static ExternalCoroutine Instance
 		{
@@ -18,35 +19,46 @@ namespace K10
 
 		private static void TryCreateInstance()
 		{
-			if( instance == null )
-			{
-				var go = new GameObject( "External Coroutine" );
-				Object.DontDestroyOnLoad( go );
+			if (instance != null) return;
 
-				instance = go.AddComponent<ExternalCoroutine>();
-			}
+			var go = new GameObject("External Coroutine");
+			DontDestroyOnLoad(go);
+
+			instance = go.AddComponent<ExternalCoroutine>();
 		}
 
-		public static new Coroutine StartCoroutine( IEnumerator coroutine )
+		public static Coroutine Play(IEnumerator coroutine, ref Coroutine cacheVariable)
+		{
+			Debug.Assert(cacheVariable == null, "Overwriting coroutine cache variable");
+
+			cacheVariable = Play(coroutine);
+			return cacheVariable;
+		}
+
+		public static Coroutine Play(IEnumerator coroutine)
 		{
 			TryCreateInstance();
-			return instance.BaseStartCoroutine( coroutine );
+			return instance.StartCoroutine(coroutine);
 		}
 
-		public static new void StopCoroutine( Coroutine coroutine )
+		public static void Stop(ref Coroutine cacheVariable)
+		{
+			Stop(cacheVariable);
+			cacheVariable = null;
+		}
+
+		public static void Stop(Coroutine coroutine)
 		{
 			TryCreateInstance();
-			instance.BaseStopCoroutine( coroutine );
+			instance.StopCoroutine(coroutine);
 		}
 
-		private Coroutine BaseStartCoroutine( IEnumerator coroutine )
-		{
-			return base.StartCoroutine( coroutine );
-		}
+		public static Coroutine DelayedCall(Action callback, float delay) => Play(DelayedCallCoroutine(callback, delay));
 
-		private void BaseStopCoroutine( Coroutine coroutine )
+		private static IEnumerator DelayedCallCoroutine(Action callback, float delay)
 		{
-			base.StopCoroutine( coroutine );
+			yield return new WaitForSeconds(delay);
+			callback.Invoke();
 		}
 	}
 }
