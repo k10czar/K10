@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 
 
+[UnityEngine.HideInInspector]
 public class EventTriggerList : IEventTrigger
 {
 	List<IEventTrigger> _triggers = new List<IEventTrigger>();
@@ -11,6 +12,7 @@ public class EventTriggerList : IEventTrigger
 	bool IValidatedObject.IsValid { get { return true; } }
 }
 
+[UnityEngine.HideInInspector]
 public class EventTriggerList<T> : IEventTrigger<T>
 {
 	List<IEventTrigger<T>> _triggers = new List<IEventTrigger<T>>();
@@ -21,6 +23,7 @@ public class EventTriggerList<T> : IEventTrigger<T>
 	bool IValidatedObject.IsValid { get { return true; } }
 }
 
+[UnityEngine.HideInInspector]
 public class EventTriggerList<T,K> : IEventTrigger<T,K>
 {
 	List<IEventTrigger<T,K>> _triggers = new List<IEventTrigger<T,K>>();

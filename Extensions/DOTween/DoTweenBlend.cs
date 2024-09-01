@@ -5,14 +5,14 @@ using UnityEngine;
 public class DoTweenBlend : ScriptableObject
 {
     [SerializeField] float duration = .5f;
-    [SerializeField] Ease ease = Ease.InOutQuad;
+    [SerializeField] Ease ease = Ease.InOutCubic;
 
-    public static void GetBlendAndDuration( DoTweenBlend blend, out float duration, out Ease ease )
+    public static void GetEaseAndDuration( DoTweenBlend blend, out float duration, out Ease ease )
     {
         if( blend == null ) 
         { 
             duration = .5f;
-            ease = Ease.InOutQuad;
+            ease = Ease.InOutCubic;
             return;
         }
         duration = blend.duration;

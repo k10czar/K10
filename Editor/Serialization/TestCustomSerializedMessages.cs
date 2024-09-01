@@ -289,8 +289,8 @@ public class TestCustomSerializedMessages : EditorWindow
 		}
 	}
 
-	private static string DebugConstructor( ConstructorInfo cons ) => cons != null ? $"new({DebugParameters( cons.GetParameters() )})" : "Null";
-	private static string DebugMethod( MethodInfo method ) => method != null ? $"{method.ReturnType} {method}({DebugParameters( method.GetParameters() )})" : "Null";
+	private static string DebugConstructor( ConstructorInfo cons ) => cons != null ? $"new({DebugParameters( cons.GetParameters() )})" : ConstsK10.NULL_STRING;
+	private static string DebugMethod( MethodInfo method ) => method != null ? $"{method.ReturnType} {method}({DebugParameters( method.GetParameters() )})" : ConstsK10.NULL_STRING;
 
 	private static string DebugParameters( ParameterInfo[] parameters )
 	{

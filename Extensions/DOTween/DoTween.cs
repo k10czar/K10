@@ -1,3 +1,4 @@
+using System.Collections;
 using DG.Tweening;
 using UnityEngine;
 
@@ -6,12 +7,24 @@ public interface ITween
     void Do( in float duration, in Ease ease );
 }
 
-public static class TweenExtensions
+public interface ITween<T> : ITween
 {
-    public static void Do( this ITween tween, in DoTweenBlend blend )
+}
+
+public abstract class TweenOf<T> : ITween<T>
+{
+    [SerializeField] protected T[] elements;
+
+    protected abstract void Do(T element, in float duration, in Ease ease);
+
+    public void Do(in float duration, in Ease ease)
     {
-        DoTweenBlend.GetBlendAndDuration( blend, out var duration, out var ease );
-        tween.Do( duration, ease );
+        if( elements == null ) return;
+        foreach( var element in elements )
+        {
+            if( element == null ) continue;
+            Do( element, duration, ease );
+        }
     }
 }
 
@@ -22,12 +35,33 @@ public class DoTween : ITriggerable
 
     public void Trigger()
     {
-        if( tweens == null ) return;
-        DoTweenBlend.GetBlendAndDuration( blend, out var duration, out var ease );
-        foreach( var t in tweens )
-        {
-            if( t == null ) continue;
-            t.Do( duration, ease );
-        }
+        tweens.Do( blend );
+    }
+}
+
+public interface ITweenAction<T>
+{
+    void Do( T element, in float duration, in Ease ease );
+}
+
+public abstract class DoOn<T> : ITween
+{
+    [SerializeField] T element;
+    [SerializeReference,ExtendedDrawer] ITweenAction<T>[] tweens;
+
+    public void Do(in float duration, in Ease ease)
+    {
+        tweens.Do( element, duration, ease );
+    }
+}
+
+public abstract class DoOnArrayOf<T> : ITween
+{
+    [SerializeField] T[] elements;
+    [SerializeReference,ExtendedDrawer] ITweenAction<T>[] tweens;
+
+    public void Do(in float duration, in Ease ease)
+    {
+        tweens.Do( elements, duration, ease );
     }
 }

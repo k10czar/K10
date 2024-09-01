@@ -5,7 +5,6 @@ using UnityEngine;
 
 public static class TypeExtensions
 {
-    const string NULL_STRING = K10UnityExtensions.NULL_STRING;
 
     public static bool Implements( this System.Type type, System.Type interfaceType )
     {
@@ -13,7 +12,7 @@ public static class TypeExtensions
         return false;
     }
 
-    public static string TypeNameOrNull( this object type, string nullString = NULL_STRING )
+    public static string TypeNameOrNull( this object type, string nullString = ConstsK10.NULL_STRING )
     {
         if( type == null ) return nullString;
         return type.GetType().Name;
@@ -53,9 +52,9 @@ public static class TypeExtensions
         return type.GetInterfaces().Any(i => ResolveGenericType(i) == intefaceType);
     }
     
-	public static string TypeNameOrNullColored( this object obj, string nullString = NULL_STRING ) => TypeNameOrNullColored( obj, Colors.Console.TypeName, Colors.Console.Negation, nullString );
-	public static string TypeNameOrNullColored( this object obj, Color color, string nullString = NULL_STRING ) => TypeNameOrNullColored( obj, color, Colors.Console.Negation, nullString );
-    public static string TypeNameOrNullColored( this object obj, Color color, Color nullColor, string nullString = NULL_STRING )
+	public static string TypeNameOrNullColored( this object obj, string nullString = ConstsK10.NULL_STRING ) => TypeNameOrNullColored( obj, Colors.Console.TypeName, Colors.Console.Negation, nullString );
+	public static string TypeNameOrNullColored( this object obj, Color color, string nullString = ConstsK10.NULL_STRING ) => TypeNameOrNullColored( obj, color, Colors.Console.Negation, nullString );
+    public static string TypeNameOrNullColored( this object obj, Color color, Color nullColor, string nullString = ConstsK10.NULL_STRING )
     {
         if( obj == null ) return nullString.Colorfy( nullColor );
         return obj.GetType().Name.Colorfy( color );

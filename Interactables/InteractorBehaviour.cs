@@ -43,7 +43,7 @@ public class InteractorBehaviour : MonoBehaviour, IInteractor, ILogglable<Intera
         if( dirT == null ) dirT = transform;
 
         var dir = dirT.forward;
-        var calculatedTarget = Interactable.GetInteractable( origin, dir );
+        var calculatedTarget = Interactable.GetInteractable( origin, dir, this );
         target.ChangeReference( calculatedTarget );
         if( this.SkipVisuals() ) return;
         DebugUtils.Circle( origin, dir, dirT.up, .2f, this.LogColor(), true );

@@ -1,18 +1,13 @@
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 
-public class DoFadeRig : ITween
+public class DoFadeRig : ITweenAction<Rig>
 {
     [SerializeField,Range(0, 1)] float value = 0;
-    [SerializeField] UnityEngine.Animations.Rigging.Rig[] rigs;
 
-    public void Do(in float duration, in Ease ease)
+    public void Do(Rig element, in float duration, in Ease ease)
     {
-        if( rigs == null ) return;
-        foreach( var rig in rigs )
-        {
-            rig.DOFade( value, duration ).SetEase( ease );
-        }
+        element.DOFade( value, duration ).SetEase( ease );
     }
 }
-

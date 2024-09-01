@@ -79,7 +79,6 @@ public static class ValidatedObjectExtensions
 	public static bool IsValidAndNotNull( this IValidatedObject obj ) => obj != null && obj.IsValid;
 }
 
-
 public interface IEventTrigger : IValidatedObject, ITriggerable { }
 public interface IEventTrigger<T> : IValidatedObject, ITriggerable<T> { }
 public interface IEventTrigger<T, K> : IValidatedObject, ITriggerable<T,K> { }

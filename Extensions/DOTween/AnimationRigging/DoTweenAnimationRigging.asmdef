@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "Unity.Animation.Rigging",
-        "DoTweenExtensions"
+        "DoTweenExtensions",
+        "K10"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

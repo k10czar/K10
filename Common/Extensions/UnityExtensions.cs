@@ -6,8 +6,6 @@ using System.Text;
 using System.Linq;
 using UnityEngine.SceneManagement;
 
-
-
 public static class K10UnityExtensions
 {
 	const MethodImplOptions AggrInline = MethodImplOptions.AggressiveInlining;
@@ -483,22 +481,21 @@ public static class K10UnityExtensions
 	}
 	#endregion Colliders
 
-	public const string NULL_STRING = "NULL";
-	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, string nullString = NULL_STRING ) => ( obj != null ) ? $"{obj.name.Colorfy(Colors.Console.Names)}<{obj.TypeNameOrNullColored(Colors.Console.TypeName)}>" : nullString.Colorfy(Colors.Console.Negation);
-	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, Color nameColor, string nullString = NULL_STRING ) => ( obj != null ) ? $"{obj.name.Colorfy(nameColor)}<{obj.TypeNameOrNullColored(Colors.Console.TypeName)}>" : nullString.Colorfy(Colors.Console.Negation);
-	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, Color nameColor, Color typeColor, string nullString = NULL_STRING ) => ( obj != null ) ? $"{obj.name.Colorfy(nameColor)}<{obj.TypeNameOrNullColored(typeColor)}>" : nullString.Colorfy(Colors.Console.Negation);
-	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, Color nameColor, Color typeColor, Color nullColor, string nullString = NULL_STRING )=> ( obj != null ) ? $"{obj.name.Colorfy(nameColor)}<{obj.TypeNameOrNullColored(typeColor)}>" : nullString.Colorfy(nullColor);
+	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, string nullString = ConstsK10.NULL_STRING ) => ( obj != null ) ? $"{obj.name.Colorfy(Colors.Console.Names)}<{obj.TypeNameOrNullColored(Colors.Console.TypeName)}>" : nullString.Colorfy(Colors.Console.Negation);
+	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, Color nameColor, string nullString = ConstsK10.NULL_STRING ) => ( obj != null ) ? $"{obj.name.Colorfy(nameColor)}<{obj.TypeNameOrNullColored(Colors.Console.TypeName)}>" : nullString.Colorfy(Colors.Console.Negation);
+	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, Color nameColor, Color typeColor, string nullString = ConstsK10.NULL_STRING ) => ( obj != null ) ? $"{obj.name.Colorfy(nameColor)}<{obj.TypeNameOrNullColored(typeColor)}>" : nullString.Colorfy(Colors.Console.Negation);
+	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, Color nameColor, Color typeColor, Color nullColor, string nullString = ConstsK10.NULL_STRING )=> ( obj != null ) ? $"{obj.name.Colorfy(nameColor)}<{obj.TypeNameOrNullColored(typeColor)}>" : nullString.Colorfy(nullColor);
 
-	[MethodImpl( AggrInline )] public static string NameOrNull( this Object obj, string nullString = NULL_STRING ) => obj != null ? obj.name : nullString;
+	[MethodImpl( AggrInline )] public static string NameOrNull( this Object obj, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.name : nullString;
 	[MethodImpl( AggrInline )] public static string ToStringColored( this bool boolValue ) => boolValue.ToString().Colorfy( boolValue ? Colors.Console.Numbers : Colors.Console.Negation );
 	[MethodImpl( AggrInline )] public static string ToStringColored( this object obj, Color valueColor ) => obj.ToString().Colorfy(valueColor);
-	[MethodImpl( AggrInline )] public static string ToStringOrNull( this object obj, string nullString = NULL_STRING ) => obj != null ? obj.ToString() : nullString;
-	[MethodImpl( AggrInline )] public static string ToStringOrNullColored( this object obj, Color valueColor, string nullString = NULL_STRING ) => obj != null ? obj.ToString().Colorfy(valueColor) : nullString.Colorfy(Colors.Console.Negation);
-	[MethodImpl( AggrInline )] public static string ToStringOrNullColored( this object obj, Color valueColor, Color nullColor, string nullString = NULL_STRING ) => obj != null ? obj.ToString().Colorfy(valueColor) : nullString.Colorfy(nullColor);
-	[MethodImpl( AggrInline )] public static string HierarchyNameOrNull( this GameObject obj, string nullString = NULL_STRING ) => obj != null ? obj.HierarchyName() : nullString;
-	[MethodImpl( AggrInline )] public static string HierarchyNameOrNullColored( this GameObject obj, Color valueColor, string nullString = NULL_STRING ) => obj != null ? obj.HierarchyName().Colorfy(valueColor) : nullString.Colorfy(Colors.Console.Negation);
-	[MethodImpl( AggrInline )] public static string HierarchyNameOrNull( this Transform obj, string nullString = NULL_STRING ) => obj != null ? obj.HierarchyName() : nullString;
-	[MethodImpl( AggrInline )] public static string HierarchyNameOrNullColored( this Transform obj, Color valueColor, string nullString = NULL_STRING ) => obj != null ? obj.HierarchyName().Colorfy(valueColor) : nullString.Colorfy(Colors.Console.Negation);
-	[MethodImpl( AggrInline )] public static string HierarchyNameOrNull( this Component obj, string nullString = NULL_STRING ) => ( obj != null ? ( obj.transform.HierarchyName() + $"<{( obj != null ? obj.GetType().ToString() : nullString )}>" ) : nullString );
-	[MethodImpl( AggrInline )] public static string HierarchyNameOrNullColored( this Component obj, Color valueColor, string nullString = NULL_STRING ) => ( obj != null ? ( obj.transform.HierarchyName().Colorfy(valueColor) + $"<{( obj != null ? obj.GetType().ToString() : nullString.Colorfy(Colors.Console.Negation) )}>" ) : nullString.Colorfy(Colors.Console.Negation) );
+	[MethodImpl( AggrInline )] public static string ToStringOrNull( this object obj, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.ToString() : nullString;
+	[MethodImpl( AggrInline )] public static string ToStringOrNullColored( this object obj, Color valueColor, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.ToString().Colorfy(valueColor) : nullString.Colorfy(Colors.Console.Negation);
+	[MethodImpl( AggrInline )] public static string ToStringOrNullColored( this object obj, Color valueColor, Color nullColor, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.ToString().Colorfy(valueColor) : nullString.Colorfy(nullColor);
+	[MethodImpl( AggrInline )] public static string HierarchyNameOrNull( this GameObject obj, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.HierarchyName() : nullString;
+	[MethodImpl( AggrInline )] public static string HierarchyNameOrNullColored( this GameObject obj, Color valueColor, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.HierarchyName().Colorfy(valueColor) : nullString.Colorfy(Colors.Console.Negation);
+	[MethodImpl( AggrInline )] public static string HierarchyNameOrNull( this Transform obj, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.HierarchyName() : nullString;
+	[MethodImpl( AggrInline )] public static string HierarchyNameOrNullColored( this Transform obj, Color valueColor, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.HierarchyName().Colorfy(valueColor) : nullString.Colorfy(Colors.Console.Negation);
+	[MethodImpl( AggrInline )] public static string HierarchyNameOrNull( this Component obj, string nullString = ConstsK10.NULL_STRING ) => ( obj != null ? ( obj.transform.HierarchyName() + $"<{( obj != null ? obj.GetType().ToString() : nullString )}>" ) : nullString );
+	[MethodImpl( AggrInline )] public static string HierarchyNameOrNullColored( this Component obj, Color valueColor, string nullString = ConstsK10.NULL_STRING ) => ( obj != null ? ( obj.transform.HierarchyName().Colorfy(valueColor) + $"<{( obj != null ? obj.GetType().ToString() : nullString.Colorfy(Colors.Console.Negation) )}>" ) : nullString.Colorfy(Colors.Console.Negation) );
 }

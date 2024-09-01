@@ -249,5 +249,6 @@ public static class ServiceLocator
 		Log(SB.ToString());
 	}
 
+	[HideInCallstack]
 	private static void Log(string message, bool isError = false) => K10Log<ServicesLogCategory>.Log( isError ? LogSeverity.Error : LogSeverity.Info, message );
 }

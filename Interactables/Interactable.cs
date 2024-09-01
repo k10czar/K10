@@ -33,19 +33,32 @@ public interface IInteractionValue<T> : IInteractableInteraction
 public interface IInteractorTrigger : ITriggerable<IInteractor> { }
 public interface IInteractorTrigger<T> : ITriggerable<IInteractor,T> { }
 
+public interface IInteractorValidator<T>
+{
+    bool Validate( T interactor );
+}
+
+public class HoldingObject : IInteractorValidator<IInteractor>
+{
+    [SerializeReference,ExtendedDrawer] IReferenceHolderRaw<IInteractionObject> holdObject;
+    public bool Validate( IInteractor interactor ) => holdObject.CurrentReference.Equals( interactor.Object.CurrentReference );
+}
+
 public class Interactable : MonoBehaviour, ILogglable<InteractableLogCategory>
 {
+    [SerializeReference,ReadOnly] List<IInteractor> currentInteractors = new List<IInteractor>();
     [SerializeField,ReadOnly] BoolState isBeingTargeted = new BoolState();
     [SerializeField] EInteractionTargetingType targetingType = 0;
+    [SerializeReference,ExtendedDrawer(true)] IInteractorValidator<IInteractor> condition;
     [SerializeField] Vector3 offset;
     [SerializeField] Collider areaTriggerCollider;
     [SerializeField] Collider lookCollider;
     [SerializeField] Transform lookPositionOverride;
     [SerializeField, Range(0, 10)] float maxDistance = 1;
     [SerializeReference,ExtendedDrawer] IInteractableInteraction[] interactions;
-    [SerializeField,ReadOnly] List<GameObject> currentInteractors = new List<GameObject>();
     [SerializeReference,ExtendedDrawer] ITriggerable[] targetedReactions;
     [SerializeReference,ExtendedDrawer] ITriggerable[] untargetedReactions;
+
 
     static List<Interactable> allActiveInteractables = new List<Interactable>();
 
@@ -56,6 +69,12 @@ public class Interactable : MonoBehaviour, ILogglable<InteractableLogCategory>
     float ScaledMaxDistance => Mathf.Max( transform.lossyScale.x, transform.lossyScale.z ) * maxDistance;
 
     public Vector3 LookPosition => lookPositionOverride != null ? lookPositionOverride.position : transform.position;
+
+    public bool CanBeTargetedBy( IInteractor interactor )
+    {
+        if( condition == null ) return true;
+        return condition.Validate( interactor );
+    }
 
     void Start()
     {
@@ -86,13 +105,13 @@ public class Interactable : MonoBehaviour, ILogglable<InteractableLogCategory>
         UpdateIsInteracting();
     }
 
-    public void AddInteractor( GameObject interactor )
+    public void AddInteractor( IInteractor interactor )
     {
-        currentInteractors.Add(interactor);
+        currentInteractors.Add( interactor );
         UpdateIsInteracting();
     }
 
-    public void RemoveInteractor( GameObject interactor )
+    public void RemoveInteractor( IInteractor interactor )
     {
         currentInteractors.Remove( interactor );
         UpdateIsInteracting();
@@ -109,7 +128,7 @@ public class Interactable : MonoBehaviour, ILogglable<InteractableLogCategory>
         for (int i = currentInteractors.Count - 1; i >= 0; i--)
         {
             var interactor = currentInteractors[i];
-            if (interactor == null) currentInteractors.RemoveAt(i);
+            if (interactor == null || interactor.TheInteractor == null) currentInteractors.RemoveAt(i);
         }
     }
 
@@ -168,9 +187,9 @@ public class Interactable : MonoBehaviour, ILogglable<InteractableLogCategory>
         return consumed;
     }
 
-    public static Interactable GetInteractable( Vector3 origin, Vector3 dir ) => GetInteractable(new Ray(origin, dir));
-    public static Interactable GetInteractable(Ray look) => GetInteractable(allActiveInteractables, look);
-    private static Interactable GetInteractable( IEnumerable<Interactable> interactables, Ray look )
+    public static Interactable GetInteractable( Vector3 origin, Vector3 dir, IInteractor interactor ) => GetInteractable(new Ray(origin, dir), interactor);
+    public static Interactable GetInteractable(Ray look, IInteractor interactor) => GetInteractable(allActiveInteractables, look, interactor);
+    private static Interactable GetInteractable( IEnumerable<Interactable> interactables, Ray look, IInteractor interactor )
     {
         // TimeLogging<Interactable>
         Interactable bestInteractable = default;
@@ -183,9 +202,21 @@ public class Interactable : MonoBehaviour, ILogglable<InteractableLogCategory>
             var origin = look.origin;
             var pos = interactable.Center;
             var dx = origin.x - pos.x;
-            var dz = origin.z - pos.z;
-            var distSqr = dx * dx + dz * dz;
             var iMaxDis = interactable.ScaledMaxDistance;
+            var negiMaxDis = -iMaxDis;
+            if( dx > iMaxDis || dx < negiMaxDis ) 
+            {
+                interactable.DrawDebug( Color.black );
+                continue;
+            }
+            var dz = origin.z - pos.z;
+            if( dz > iMaxDis || dz < negiMaxDis )
+            {
+                interactable.DrawDebug( Color.black );
+                continue;
+            }
+
+            var distSqr = dx * dx + dz * dz;
             if( distSqr > iMaxDis * iMaxDis ) 
             {
                 interactable.DrawDebug( Color.gray );
@@ -217,9 +248,14 @@ public class Interactable : MonoBehaviour, ILogglable<InteractableLogCategory>
                 var insideBounds = area.bounds.Contains( look.origin );
                 if( !insideBounds ) 
                 {
-                    interactable.DrawDebug( Colors.Orange );
+                    interactable.DrawDebug( Colors.Yellow );
                     continue;
                 }
+            }
+            if( !interactable.CanBeTargetedBy( interactor ) )
+            {
+                interactable.DrawDebug( Colors.Orange );
+                continue;
             }
             if( bestInteractable != null )
             {

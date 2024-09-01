@@ -2,7 +2,6 @@ using System;
 using System.Reflection;
 using UnityEngine;
 
-
 public class ToStringAttribute : PropertyAttribute { }
 public class ExtendedDrawerAttribute : PropertyAttribute 
 { 

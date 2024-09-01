@@ -30,21 +30,21 @@ public static class K10Log<T> where T : IK10LogCategory, new()
     public static bool Skip(bool verbose = false) => !K10DebugSystem.CanDebug<T>();
     public static bool SkipVisuals() => K10DebugSystem.SkipVisuals<T>();
 
-    [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void Log(string log, LogSeverity severity = LogSeverity.Info, MonoBehaviour target = null, bool verbose = false)
         => Log(severity, log, target, verbose);
 
-    [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void LogVerbose(string log, MonoBehaviour target = null, LogSeverity severity = LogSeverity.Warning)
         => Log(severity, log, target, true);
 
-    [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void LogException(System.Exception exception, MonoBehaviour target = null)
     {
         Debug.LogException(exception, target);
     }
 
-    [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void Log(LogSeverity severity, string log, MonoBehaviour target = null, bool verbose = false)
     {
         var notError = ( severity != LogSeverity.Error );

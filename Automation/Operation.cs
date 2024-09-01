@@ -22,7 +22,7 @@ namespace Automation
 		{
 			if( op == null )
 			{
-				Log(null, $"{"CANNOT".Colorfy( Colors.Console.Warning )} start {"NULL".Colorfy( Colors.Console.Danger )} operation", log);
+				Log(null, $"{"CANNOT".Colorfy( Colors.Console.Warning )} start {ConstsK10.NULL_STRING.Colorfy( Colors.Console.Danger )} operation", log);
 				return null;
 			}
 
