@@ -59,6 +59,13 @@ namespace Skyx.CustomEditor
                 newNodeName = newNodeName[0].ToString().ToUpper() + newNodeName[1..];
         }
 
+        private string GetInsertedEntryLine()
+        {
+            return newNodePath == null
+                ? $"        {newNodeName} = {targetIntValue},"
+                : $"        [EnumTree({newNodePath.Replace("/", ",")})] {newNodeName} = {targetIntValue},";
+        }
+
         private void CreateEnumEntry()
         {
             if (destroyed) return;
@@ -73,7 +80,7 @@ namespace Skyx.CustomEditor
                 var line = allLines[index];
                 if (line.Contains(previousEnumName))
                 {
-                    allLines.Insert(index + 1, $"        [EnumTree({newNodePath.Replace("/", ",")})] {newNodeName} = {targetIntValue},");
+                    allLines.Insert(index + 1, GetInsertedEntryLine());
                 }
             }
 
@@ -86,7 +93,7 @@ namespace Skyx.CustomEditor
         private void GetTargetEnumValue(Enum enumValue)
         {
             targetIntValue = ((IConvertible)enumValue).ToInt32(null);
-            var delta = targetIntValue > 0 ? 1 : -1;
+            var delta = targetIntValue >= 0 ? 1 : -1;
 
             for (int i = 0; i < 1000; i++)
             {
