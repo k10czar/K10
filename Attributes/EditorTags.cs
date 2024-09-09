@@ -12,6 +12,9 @@ public class ExtendedDrawerAttribute : PropertyAttribute
 		ShowName = showName;
 	}
 }
+public class BoxedAttribute : PropertyAttribute { }
+public class OnlyOnPlayAttribute : PropertyAttribute { }
+
 public class RandomizeButtonAttribute : PropertyAttribute 
 {
 	// public readonly object min = null;

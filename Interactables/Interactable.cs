@@ -33,23 +33,11 @@ public interface IInteractionValue<T> : IInteractableInteraction
 public interface IInteractorTrigger : ITriggerable<IInteractor> { }
 public interface IInteractorTrigger<T> : ITriggerable<IInteractor,T> { }
 
-public interface IInteractorValidator<T>
-{
-    bool Validate( T interactor );
-}
-
-public class HoldingObject : IInteractorValidator<IInteractor>
-{
-    [SerializeReference,ExtendedDrawer] IReferenceHolderRaw<IInteractionObject> holdObject;
-    public bool Validate( IInteractor interactor ) => holdObject.CurrentReference.Equals( interactor.Object.CurrentReference );
-}
-
 public class Interactable : MonoBehaviour, ILogglable<InteractableLogCategory>
 {
-    [SerializeReference,ReadOnly] List<IInteractor> currentInteractors = new List<IInteractor>();
-    [SerializeField,ReadOnly] BoolState isBeingTargeted = new BoolState();
+    [OnlyOnPlay,SerializeField,ReadOnly] BoolState isBeingTargeted = new BoolState();
     [SerializeField] EInteractionTargetingType targetingType = 0;
-    [SerializeReference,ExtendedDrawer(true)] IInteractorValidator<IInteractor> condition;
+    [Boxed,SerializeReference,ExtendedDrawer(true)] IValidator<IInteractor> condition;
     [SerializeField] Vector3 offset;
     [SerializeField] Collider areaTriggerCollider;
     [SerializeField] Collider lookCollider;
@@ -58,6 +46,8 @@ public class Interactable : MonoBehaviour, ILogglable<InteractableLogCategory>
     [SerializeReference,ExtendedDrawer] IInteractableInteraction[] interactions;
     [SerializeReference,ExtendedDrawer] ITriggerable[] targetedReactions;
     [SerializeReference,ExtendedDrawer] ITriggerable[] untargetedReactions;
+    
+    List<IInteractor> currentInteractors = new List<IInteractor>();
 
 
     static List<Interactable> allActiveInteractables = new List<Interactable>();
@@ -289,8 +279,12 @@ public class Interactable : MonoBehaviour, ILogglable<InteractableLogCategory>
 
     void DrawDebug( Color color )
     {
-        if( this.SkipVisuals() ) return;
-        DebugUtils.Circle( Center, ScaledMaxDistance, color );
+        if (this.SkipVisuals()) return;
+        var center = Center;
+        DebugUtils.Circle(center, ScaledMaxDistance, color);
+        var look = LookPosition;
+        if( center.IsCloser( look ) ) return;
+        Debug.DrawLine(center, LookPosition, color);
     }
 
     void OnDrawGizmos()

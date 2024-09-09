@@ -80,14 +80,14 @@ public static class ServiceLocator
 			{
 				var generics = type.GetGenericArguments();
 				if (gServices.TryGetValue(generics, out var gService)) return gService;
-				Log($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Get generic service of type {type.Name.Colorfy(Keyword)}<{generics.Select(g => g.Name.Colorfy(TypeName))}>");
+				LogVerbose($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Get generic service of type {type.Name.Colorfy(Keyword)}<{generics.Select(g => g.Name.Colorfy(TypeName))}>");
 			}
 
-			Log($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Get generic service of type {type.Name.Colorfy(Keyword)}");
+			LogVerbose($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Get generic service of type {type.Name.Colorfy(Keyword)}");
 		}
 
 		if (services.TryGetValue(type, out var service)) return service;
-		Log($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Get service of type {type.Name.Colorfy(Keyword)}");
+		LogVerbose($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Get service of type {type.Name.Colorfy(Keyword)}");
 		return null;
 	}
 
@@ -137,7 +137,7 @@ public static class ServiceLocator
 
 		if (obj is not IService service)
 		{
-			Log($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Register non-IService object of type {type.Name.Colorfy(Keyword)}", true);
+			LogVerbose($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Register non-IService object of type {type.Name.Colorfy(Keyword)}");
 			return;
 		}
 
@@ -147,7 +147,7 @@ public static class ServiceLocator
 		RegisterConcreteType(service, type, builder);
 		RegisterInterfaces(service, type, builder);
 
-		Log(builder.ToString());
+		LogVerbose(builder.ToString());
 
 		// if (service is IStartable startable) startable.Start();
 	}
@@ -218,7 +218,7 @@ public static class ServiceLocator
 		var service = obj as IService;
 		if (service == null)
 		{
-			Log($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Unregister non-IService object of type {type.Name.Colorfy(Keyword)}", true);
+			LogError($"{"ServiceLocator".Colorfy(TypeName)} {"CANNOT".Colorfy(Danger)} Unregister non-IService object of type {type.Name.Colorfy(Keyword)}");
 			return;
 		}
 
@@ -246,9 +246,9 @@ public static class ServiceLocator
 			}
 		}
 
-		Log(SB.ToString());
+		LogVerbose(SB.ToString());
 	}
 
-	[HideInCallstack]
-	private static void Log(string message, bool isError = false) => K10Log<ServicesLogCategory>.Log( isError ? LogSeverity.Error : LogSeverity.Info, message );
+	[HideInCallstack] private static void LogVerbose( string message ) => K10Log<ServicesLogCategory>.LogVerbose( message );
+	[HideInCallstack] private static void LogError(string message) => K10Log<ServicesLogCategory>.Log( LogSeverity.Error, message );
 }
