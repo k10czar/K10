@@ -42,7 +42,7 @@ namespace Skyx.SkyxEditor
             }
         }
 
-        protected void DrawScriptFile()
+        private void DrawScriptFile()
         {
             EditorGUI.BeginDisabledGroup(true);
             EditorGUILayout.ObjectField(EditorGUIUtility.TrTempContent("Script"), MonoScript.FromMonoBehaviour(Target), typeof(T), false);
@@ -52,7 +52,6 @@ namespace Skyx.SkyxEditor
         }
 
         private void CacheProperties() => Properties = PropertyCollection.Get(serializedObject, true);
-        // private void CacheProperties() => Properties = PropertyCollection.GetAllProperties(serializedObject);
 
         protected virtual void OnEnable()
         {

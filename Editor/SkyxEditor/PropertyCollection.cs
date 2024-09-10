@@ -4,6 +4,7 @@ using UnityEditor;
 using System.Linq;
 using System;
 using UnityEditorInternal;
+using Object = UnityEngine.Object;
 
 namespace Skyx.SkyxEditor
 {
@@ -30,9 +31,7 @@ namespace Skyx.SkyxEditor
                 collections.Remove(id);
             }
 
-            Debug.Log($"Creating property collection! {id} {serializedProperty} | {forceReset}");
-
-            collection = new PropertyCollection();
+            collection = new PropertyCollection(serializedProperty.serializedObject.targetObject);
             collections.Add(id, collection);
 
             var currentProperty = serializedProperty.Copy();
@@ -44,6 +43,7 @@ namespace Skyx.SkyxEditor
             do
             {
                 if (SerializedProperty.EqualContents(currentProperty, nextSiblingProperty)) break;
+
                 collection.Add(currentProperty.name, currentProperty.Copy());
             }
             while (currentProperty.NextVisible(false));
@@ -51,46 +51,12 @@ namespace Skyx.SkyxEditor
             return collection;
         }
 
-        public static PropertyCollection GetAllProperties(SerializedObject serializedObject)
-        {
-            Debug.Log($"GetAllProperties! {serializedObject}");
-            PropertyCollection properties = new();
-
-            SerializedProperty property = serializedObject.GetIterator();
-            SerializedProperty currentProperty = property.Copy();
-            SerializedProperty nextSiblingProperty = property.Copy();
-
-            if (currentProperty.NextVisible(true))
-            {
-                do
-                {
-                    if (SerializedProperty.EqualContents(currentProperty, nextSiblingProperty))
-                        break;
-
-                    properties.Add(currentProperty.name, currentProperty.Copy());
-                }
-                while (currentProperty.NextVisible(false));
-            }
-
-            return properties;
-        }
-
         #endregion
 
+        private readonly Object owner;
         private readonly Dictionary<SerializedProperty, ReorderableList> lists = new();
 
-        private bool IsValid()
-        {
-            try
-            {
-                _ = Values.All(entry => entry.isExpanded); // Forces internal Verify call
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        #region Layout Draw
 
         public SerializedProperty GetRelative(string propertyPath)
         {
@@ -138,54 +104,31 @@ namespace Skyx.SkyxEditor
 
         public void Draw(string propertyName, int indent = 0)
         {
-            if (TryGetValue(propertyName, out SerializedProperty property))
-            {
-                if (indent > 0) EditorGUI.indentLevel += indent;
-                EditorGUILayout.PropertyField(property);
-                if (indent > 0) EditorGUI.indentLevel -= indent;
-            }
+            if (!TryGet(propertyName, out SerializedProperty property)) return;
+
+            if (indent > 0) EditorGUI.indentLevel += indent;
+            EditorGUILayout.PropertyField(property);
+            if (indent > 0) EditorGUI.indentLevel -= indent;
         }
 
         public void DrawList(string propertyName, bool displayHeader = false, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true)
         {
-            if (!TryGetValue(propertyName, out var property)) return;
+            if (!TryGet(propertyName, out var property)) return;
 
-            if (!lists.TryGetValue(property, out var list))
-            {
-                list = new ReorderableList(property.serializedObject, property, draggable, displayHeader, displayAddButton, displayRemoveButton)
-                {
-                    drawElementCallback = DrawElementCallback,
-                    // elementHeightCallback = ElementHeightCallback
-                };
-
-                // float ElementHeightCallback(int index)
-                // {
-                //     var target = property.GetArrayElementAtIndex(index);
-                //     return target.GetPropertyChildHeight()
-                // }
-
-                void DrawElementCallback(Rect rect, int index, bool isActive, bool isFocused)
-                {
-                    var target = property.GetArrayElementAtIndex(index);
-                    EditorGUI.PropertyField(rect, target);
-                }
-
-                lists.Add(property, list);
-            }
-
+            var list = GetReorderableList(property, displayHeader, draggable, displayAddButton, displayRemoveButton);
             list.DoLayoutList();
         }
 
         public void DrawBacking(string propertyName)
         {
             propertyName = $"<{propertyName}>k__BackingField";
-            if (TryGetValue(propertyName, out SerializedProperty property))
+            if (TryGet(propertyName, out SerializedProperty property))
                 EditorGUILayout.PropertyField(property);
         }
 
         public bool DrawGetBool(string propertyName)
         {
-            if (!TryGetValue(propertyName, out SerializedProperty property)) return false;
+            if (!TryGet(propertyName, out SerializedProperty property)) return false;
 
             EditorGUILayout.PropertyField(property);
             return property.boolValue;
@@ -193,41 +136,17 @@ namespace Skyx.SkyxEditor
 
         public string DrawGetString(string propertyName)
         {
-            if (!TryGetValue(propertyName, out SerializedProperty property)) return null;
+            if (!TryGet(propertyName, out SerializedProperty property)) return null;
 
             EditorGUILayout.PropertyField(property);
             return property.stringValue;
         }
 
-        public bool DrawToggleLeft(string propertyName)
+        public void DrawAll(bool indentDropdowns = false, params string[] except)
         {
-            if (TryGetValue(propertyName, out SerializedProperty property))
+            foreach (var property in this)
             {
-                GUIContent label = new(property.displayName, property.tooltip);
-                return property.boolValue = EditorGUILayout.ToggleLeft(label, property.boolValue);
-            }
-
-            return false;
-        }
-
-        public void DrawAll(bool indentDropdowns = false, int skip = 0)
-        {
-            foreach (var property in this.Skip(skip))
-            {
-                bool shouldIndent = property.Value.propertyType == SerializedPropertyType.Generic;
-
-                if (indentDropdowns && shouldIndent) EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(property.Value);
-                if (indentDropdowns && shouldIndent) EditorGUI.indentLevel--;
-            }
-        }
-
-        public void DrawAllExcept(bool indentDropdowns = false, int skip = 0, params string[] except)
-        {
-            foreach (var property in this.Skip(skip))
-            {
-                if (except.Contains(property.Key))
-                    continue;
+                if (except.Contains(property.Key)) continue;
 
                 bool shouldIndent = property.Value.propertyType == SerializedPropertyType.Generic;
 
@@ -252,27 +171,9 @@ namespace Skyx.SkyxEditor
             }
         }
 
-        public bool BoolValue(string propertyName)
-        {
-            if (TryGetValue(propertyName, out SerializedProperty property))
-                return property.boolValue;
-
-            return false;
-        }
-
-        public void DrawArray(string propertyName)
-        {
-            if (TryGetValue(propertyName, out SerializedProperty property))
-            {
-                if (property.isArray) EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(property);
-                if (property.isArray) EditorGUI.indentLevel--;
-            }
-        }
-
         public void Draw(string propertyName, bool includeChildren)
         {
-            if (TryGetValue(propertyName, out SerializedProperty property))
+            if (TryGet(propertyName, out SerializedProperty property))
                 EditorGUILayout.PropertyField(property, includeChildren);
         }
 
@@ -282,45 +183,118 @@ namespace Skyx.SkyxEditor
                 EditorGUILayout.PropertyField(property, label);
         }
 
-        public bool DrawGetBool(string propertyName, GUIContent label)
-        {
-            if (TryGetValue(propertyName, out SerializedProperty property))
-            {
-                EditorGUILayout.PropertyField(property, label);
-                return property.boolValue;
-            }
+        #endregion
 
-            return false;
-        }
-
-        public void Draw(string propertyName, GUIContent label, bool includeChildren)
-        {
-            if (TryGetValue(propertyName, out SerializedProperty property))
-                EditorGUILayout.PropertyField(property, label, includeChildren);
-        }
+        #region Draw Rect
 
         public void Draw(Rect rect, string propertyName)
         {
-            if (TryGetValue(propertyName, out SerializedProperty property))
+            if (TryGet(propertyName, out var property))
                 EditorGUI.PropertyField(rect, property);
         }
 
-        public void Draw(Rect rect, string propertyName, bool includeChildren)
+        public void DrawNoLabel(Rect rect, string propertyName)
         {
-            if (TryGetValue(propertyName, out SerializedProperty property))
-                EditorGUI.PropertyField(rect, property, includeChildren);
+            if (TryGet(propertyName, out var property))
+                EditorGUI.PropertyField(rect, property, GUIContent.none);
         }
 
-        public void Draw(Rect rect, string propertyName, GUIContent label)
+        public string DrawGetString(Rect rect, string propertyName)
         {
-            if (TryGetValue(propertyName, out SerializedProperty property))
-                EditorGUI.PropertyField(rect, property, label);
+            if (!TryGet(propertyName, out var property)) return null;
+
+            EditorGUI.PropertyField(rect, property);
+            return property.stringValue;
         }
 
-        public void Draw(Rect rect, string propertyName, GUIContent label, bool includeChildren)
+        public void DrawList(Rect rect, string propertyName, bool displayHeader = false, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true)
         {
-            if (TryGetValue(propertyName, out SerializedProperty property))
-                EditorGUI.PropertyField(rect, property, label, includeChildren);
+            if (!TryGet(propertyName, out var property)) return;
+
+            var list = GetReorderableList(property, displayHeader, draggable, displayAddButton, displayRemoveButton);
+            list.DoList(rect);
+        }
+
+        public void DrawEnum<T>(Rect rect, string propertyName, Colors.EConsoleColor color = Colors.EConsoleColor.Primary) where T: Enum
+        {
+            if (TryGet(propertyName, out var property))
+                EnumTreeGUI.DrawEnum(rect, property, typeof(T), Colors.Console.Get(color));
+        }
+
+        #endregion
+
+        public float GetHeight(params string[] excludeFields)
+        {
+            var total = 0f;
+
+            foreach (var (field, property) in this)
+            {
+                if (excludeFields.Contains(field)) continue;
+
+                total += EditorGUIUtility.standardVerticalSpacing;
+
+                if (lists.TryGetValue(property, out var list)) total += list.GetHeight();
+                else total += EditorGUI.GetPropertyHeight(property, true);
+            }
+
+            return total;
+        }
+
+        private ReorderableList GetReorderableList(SerializedProperty property, bool displayHeader = false, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true)
+        {
+            if (lists.TryGetValue(property, out var list))
+            {
+                Debug.Assert(list.draggable == draggable && list.displayAdd == displayAddButton && list.displayRemove == displayRemoveButton && ((displayHeader && list.drawHeaderCallback != null) || (!displayHeader && list.drawHeaderCallback == null)), "Reorderable list with incompatible configs");
+                return list;
+            }
+
+            list = new ReorderableList(property.serializedObject, property, draggable, displayHeader, displayAddButton, displayRemoveButton)
+            {
+                drawElementCallback = DrawElementCallback,
+                elementHeightCallback = ElementHeightCallback
+            };
+
+            lists.Add(property, list);
+
+            return list;
+
+            void DrawElementCallback(Rect rect, int index, bool isActive, bool isFocused)
+            {
+                var target = property.GetArrayElementAtIndex(index);
+                EditorGUI.PropertyField(rect, target);
+            }
+
+            float ElementHeightCallback(int index)
+            {
+                var target = property.GetArrayElementAtIndex(index);
+                return EditorGUI.GetPropertyHeight(target, true);
+            }
+        }
+
+        private bool TryGet(string propertyName, out SerializedProperty property)
+        {
+            if (TryGetValue(propertyName, out property)) return true;
+
+            Debug.LogError($"{owner} does not contain {propertyName}", owner);
+            return false;
+        }
+
+        private bool IsValid()
+        {
+            try
+            {
+                _ = Values.All(entry => entry.isExpanded); // Forces internal Verify call
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private PropertyCollection(Object owner)
+        {
+            this.owner = owner;
         }
     }
 }

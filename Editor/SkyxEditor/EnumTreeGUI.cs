@@ -27,8 +27,8 @@ namespace Skyx.SkyxEditor
         }
 
         // Only works with sequenced enums!
-        public static void DrawSwitch(Rect rect, SerializedProperty property, Type enumType, string hint = null, bool nicify = true)
-            => DrawSwitch(rect, property, Enum.GetNames(enumType), hint, nicify);
+        public static void DrawSwitch<T>(Rect rect, SerializedProperty property, string hint = null, bool nicify = true)
+            where T: Enum => DrawSwitch(rect, property, Enum.GetNames(typeof(T)), hint, nicify);
 
         public static void DrawSwitch(Rect rect, SerializedProperty property, string hint = null, bool nicify = true)
             => DrawSwitch(rect, property, property.enumNames, hint, nicify);

@@ -10,7 +10,7 @@ namespace Skyx.SkyxEditor
             BoxGUI.BeginBox(roundedBox);
         }
 
-        public SimpleBoxScope(string title, float headerHeight = SkyxStyles.HeaderHeight, bool roundedBox = true)
+        public SimpleBoxScope(string title, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
         {
             BoxGUI.BeginHeaderBox(new GUIContent(title), headerHeight, roundedBox);
         }
@@ -25,7 +25,7 @@ namespace Skyx.SkyxEditor
     {
         private readonly bool disableContent;
 
-        public ToggleBoxScope(GUIContent title, SerializedProperty toggle, float headerHeight = SkyxStyles.HeaderHeight, bool roundedBox = true, bool disableContent = true)
+        public ToggleBoxScope(GUIContent title, SerializedProperty toggle, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true, bool disableContent = true)
         {
             this.disableContent = disableContent;
             var value = toggle.boolValue;
@@ -44,10 +44,10 @@ namespace Skyx.SkyxEditor
     {
         public readonly bool isExpanded;
 
-        public FoldoutBoxScope(SerializedProperty property, float headerHeight = SkyxStyles.HeaderHeight, bool roundedBox = true)
+        public FoldoutBoxScope(SerializedProperty property, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
             : this(property, ObjectNames.NicifyVariableName(property.name), headerHeight, roundedBox) {}
 
-        public FoldoutBoxScope(SerializedProperty property, string title, float headerHeight = SkyxStyles.HeaderHeight, bool roundedBox = true)
+        public FoldoutBoxScope(SerializedProperty property, string title, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
         {
             isExpanded = BoxGUI.BeginFoldout(new GUIContent(title), property, headerHeight, roundedBox);
         }

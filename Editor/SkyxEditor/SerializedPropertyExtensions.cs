@@ -1,14 +1,4 @@
-﻿// <author>
-//   douduck08: https://github.com/douduck08
-//   Use Reflection to get instance of Unity's SerializedProperty in Custom Editor.
-//   Modified codes from 'Unity Answers', in order to apply on nested List<T> or Array.
-//
-//   Original author: HiddenMonk & Johannes Deml
-//   Ref: http://answers.unity3d.com/questions/627090/convert-serializedproperty-to-custom-class.html
-// </author>
-
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -118,40 +108,5 @@ namespace Skyx.SkyxEditor
         }
 
         public static bool IsArrayEntry(this SerializedProperty property) => isArrayEntryRegex.IsMatch(property.propertyPath);
-
-        public static float GetPropertyChildHeight(this SerializedProperty property)
-        {
-            SerializedProperty ite = property.Copy();
-            float totalHeight = EditorGUI.GetPropertyHeight(ite, true);
-
-            while (ite.NextVisible(false))
-            {
-                totalHeight += EditorGUIUtility.standardVerticalSpacing;
-                totalHeight += EditorGUI.GetPropertyHeight(ite, true);
-            }
-
-            return totalHeight;
-        }
-
-        public static IEnumerable<SerializedProperty>GetVisibleFields(this SerializedProperty serializedProperty)
-        {
-            SerializedProperty currentProperty = serializedProperty.Copy();
-            SerializedProperty nextSiblingProperty = serializedProperty.Copy();
-            {
-                nextSiblingProperty.NextVisible(false);
-            }
-
-            if (currentProperty.NextVisible(true))
-            {
-                do
-                {
-                    if (SerializedProperty.EqualContents(currentProperty, nextSiblingProperty))
-                        break;
-
-                    yield return currentProperty;
-                }
-                while (currentProperty.NextVisible(false));
-            }
-        }
     }
 }

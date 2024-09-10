@@ -96,6 +96,8 @@ public static class Colors
 #endif
 
 
+    public enum EConsoleColor { Primary, Secondary, Info, Success, Warning, Danger, Support }
+
     public static class Console
     {
         [LazyConst] private static Dictionary<string,Color> ALL_COLORS = null;
@@ -117,6 +119,28 @@ public static class Colors
                 }
                 return ALL_COLORS;
             }
+        }
+
+        [LazyConst] private static Color[] sequence;
+
+        public static Color[] Sequence
+        {
+            get
+            {
+                if (sequence != null) return sequence;
+
+                sequence = new [] { Primary, Secondary, Info, Success, Warning, Danger, GrayOut };
+
+                return sequence;
+            }
+        }
+
+
+        public static Color Get<T>(T value, bool isStatus = false, bool loop = false) where T : Enum => Get((int)(object)value);
+        public static Color Get(int index, bool isStatus = false, bool loop = false)
+        {
+            index = loop ? index % Sequence.Length : Mathf.Clamp(index, 0, Sequence.Length);
+            return Sequence[index];
         }
 
         [ConstLike] public static readonly Color Primary = Azure;

@@ -227,10 +227,10 @@ namespace Skyx.SkyxEditor
             rect.width = endX - rect.x;
         }
 
-        public static void NextLine(ref Rect rect, float startX, float width)
+        public static void NextLine(ref Rect rect, float startX, float width, float extraMargin = 0)
         {
             rect.x = startX;
-            rect.y += SkyxStyles.FullLineHeight;
+            rect.y += SkyxStyles.FullLineHeight + extraMargin;
             rect.width = width;
         }
 

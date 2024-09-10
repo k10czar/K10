@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 
 namespace Skyx.SkyxEditor
@@ -9,9 +10,11 @@ namespace Skyx.SkyxEditor
         protected PropertyCollection GetProperties(SerializedProperty property) => PropertyCollection.Get(property);
 
         protected virtual float ExtraHeight => 0;
+        protected virtual string[] ExcludeFieldsFromHeight { get; } = Array.Empty<string>();
+
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            return property.GetPropertyChildHeight() + ExtraHeight;
+            return GetProperties(property).GetHeight(ExcludeFieldsFromHeight) + ExtraHeight;
         }
     }
 }

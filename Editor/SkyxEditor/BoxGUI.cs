@@ -60,7 +60,7 @@ namespace Skyx.SkyxEditor
         {
             EditorGUI.DrawRect(headerRect, SkyxStyles.HeaderColor);
 
-            Rect labelRect = new Rect(headerRect.x + 4f, headerRect.y - 1f, headerRect.width - 4f, headerRect.height);
+            Rect labelRect = new Rect(headerRect.x + SkyxStyles.BoxMargin, headerRect.y - 1f, headerRect.width - SkyxStyles.BoxMargin, headerRect.height);
             EditorGUI.LabelField(labelRect, title, labelStyle ?? SkyxStyles.BoldStyle);
         }
 
@@ -68,7 +68,7 @@ namespace Skyx.SkyxEditor
         {
             EditorGUI.DrawRect(headerRect, SkyxStyles.HeaderColor);
 
-            Rect toggleRect = new Rect(headerRect.x + 4f, headerRect.y, EditorGUIUtility.singleLineHeight, headerRect.height);
+            Rect toggleRect = new Rect(headerRect.x + SkyxStyles.BoxMargin, headerRect.y, EditorGUIUtility.singleLineHeight, headerRect.height);
             toggle = GUI.Toggle(toggleRect, toggle, new GUIContent("", "Enabled"), EditorStyles.toggle);
 
             Rect labelRect = new Rect(toggleRect.xMax, headerRect.y - 1f, headerRect.width - toggleRect.xMax, headerRect.height);
@@ -82,11 +82,11 @@ namespace Skyx.SkyxEditor
             EditorGUI.DrawRect(headerRect, SkyxStyles.HeaderColor);
 
             // Define and draw foldout toggle
-            Rect foldoutRect = new Rect(headerRect.x + 4f, headerRect.y, SkyxStyles.LineHeight, headerRect.height);
+            Rect foldoutRect = new Rect(headerRect.x + SkyxStyles.BoxMargin, headerRect.y, SkyxStyles.LineHeight, headerRect.height);
             GUI.Toggle(foldoutRect, expanded, GUIContent.none, EditorStyles.foldout);
 
             // Define and draw title label
-            Rect labelRect = new Rect(foldoutRect.xMax, headerRect.y - 1f, headerRect.width - foldoutRect.xMax + 4f, headerRect.height);
+            Rect labelRect = new Rect(foldoutRect.xMax, headerRect.y - 1f, headerRect.width - foldoutRect.xMax + SkyxStyles.BoxMargin, headerRect.height);
             EditorGUI.LabelField(labelRect, title, SkyxStyles.BoldStyle);
 
             // Handle mouse events for foldout interaction
@@ -109,7 +109,7 @@ namespace Skyx.SkyxEditor
             // Set up initial positions
             Rect foldoutRect = headerRect;
             foldoutRect.width = SkyxStyles.LineHeight;
-            foldoutRect.x += 4f;
+            foldoutRect.x += SkyxStyles.BoxMargin;
 
             GUI.Toggle(foldoutRect, expanded, GUIContent.none, EditorStyles.foldout);
             foldoutRect.x += SkyxStyles.LineHeight;
@@ -132,7 +132,7 @@ namespace Skyx.SkyxEditor
             }
         }
 
-        public static Rect DrawHeaderWithBorder(ref Rect rect, GUIContent title, float headerHeight = SkyxStyles.HeaderHeight, bool roundedBox = true)
+        public static Rect DrawHeaderWithBorder(ref Rect rect, GUIContent title, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
         {
             DrawBox(ref rect, roundedBox);
             rect.x += 1;
@@ -158,7 +158,7 @@ namespace Skyx.SkyxEditor
             return headerRect;
         }
 
-        private static void DrawBox(ref Rect rect, bool roundedBox) => GUI.Box(rect, GUIContent.none, SkyxStyles.BoxStyle(roundedBox));
+        public static void DrawBox(ref Rect rect, bool roundedBox) => GUI.Box(rect, GUIContent.none, SkyxStyles.BoxStyle(roundedBox));
 
         #endregion
 
@@ -170,9 +170,9 @@ namespace Skyx.SkyxEditor
             DrawBox(ref drawingRect, roundedBox);
         }
 
-        public static Rect BeginHeaderBox(GUIContent title, float headerHeight = SkyxStyles.HeaderHeight, bool roundedBox = true)
+        public static Rect BeginHeaderBox(GUIContent title, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
         {
-            Rect headerRect = EditorGUILayout.GetControlRect(false, headerHeight + 4f);
+            Rect headerRect = EditorGUILayout.GetControlRect(false, headerHeight + SkyxStyles.BoxMargin);
             Rect drawingRect = EditorGUILayout.BeginVertical(SkyxStyles.borderBoxHeaderStyle);
             drawingRect.yMin -= headerHeight + 6f;
 
@@ -185,12 +185,12 @@ namespace Skyx.SkyxEditor
 
         #region Foldout Boxes
 
-        public static bool BeginFoldout(GUIContent title, ref bool expanded, float headerHeight = SkyxStyles.HeaderHeight, bool roundedBox = true)
+        public static bool BeginFoldout(GUIContent title, ref bool expanded, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
             => BeginFoldout(title, ref expanded, out _, headerHeight, roundedBox);
 
-        public static bool BeginFoldout(GUIContent title, ref bool expanded, out Rect headerRect, float headerHeight = SkyxStyles.HeaderHeight, bool roundedBox = true)
+        public static bool BeginFoldout(GUIContent title, ref bool expanded, out Rect headerRect, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
         {
-            headerRect = EditorGUILayout.GetControlRect(false, headerHeight + 4f);
+            headerRect = EditorGUILayout.GetControlRect(false, headerHeight + SkyxStyles.BoxMargin);
             var boxRect = headerRect;
 
             if (expanded)
@@ -204,12 +204,12 @@ namespace Skyx.SkyxEditor
             return expanded;
         }
 
-        public static bool BeginFoldout(GUIContent title, SerializedProperty property, float headerHeight = SkyxStyles.HeaderHeight, bool roundedBox = true)
+        public static bool BeginFoldout(GUIContent title, SerializedProperty property, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
             => BeginFoldout(title, property, out _, headerHeight, roundedBox);
 
-        public static bool BeginFoldout(GUIContent title, SerializedProperty property, out Rect headerRect, float headerHeight = SkyxStyles.HeaderHeight, bool roundedBox = true)
+        public static bool BeginFoldout(GUIContent title, SerializedProperty property, out Rect headerRect, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
         {
-            headerRect = EditorGUILayout.GetControlRect(false, headerHeight + 4f);
+            headerRect = EditorGUILayout.GetControlRect(false, headerHeight + SkyxStyles.BoxMargin);
             var boxRect = headerRect;
             var returnValue = property.isExpanded;
 
@@ -228,12 +228,12 @@ namespace Skyx.SkyxEditor
 
         #region Toggle Boxes
 
-        public static bool BeginToggle(GUIContent title, ref bool toggle, float headerHeight = SkyxStyles.HeaderHeight, bool roundedBox = true)
+        public static bool BeginToggle(GUIContent title, ref bool toggle, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
             => BeginToggle(title, ref toggle, out _, headerHeight, roundedBox);
 
-        public static bool BeginToggle(GUIContent title, ref bool toggle, out Rect headerRect, float headerHeight = SkyxStyles.HeaderHeight, bool roundedBox = true)
+        public static bool BeginToggle(GUIContent title, ref bool toggle, out Rect headerRect, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
         {
-            headerRect = EditorGUILayout.GetControlRect(false, headerHeight + 4f);
+            headerRect = EditorGUILayout.GetControlRect(false, headerHeight + SkyxStyles.BoxMargin);
             Rect drawingRect = EditorGUILayout.BeginVertical(SkyxStyles.borderBoxHeaderStyle);
             drawingRect.yMin -= headerHeight + 6f;
 
@@ -245,12 +245,12 @@ namespace Skyx.SkyxEditor
 
         #region Foldout & Toggle Boxes
 
-        public static bool BeginFoldoutToggle(GUIContent title, SerializedProperty foldoutProperty, ref bool toggle, float headerHeight = SkyxStyles.HeaderHeight, bool roundedBox = true)
+        public static bool BeginFoldoutToggle(GUIContent title, SerializedProperty foldoutProperty, ref bool toggle, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
             => BeginFoldoutToggle(title, foldoutProperty, ref toggle, out _, headerHeight, roundedBox);
 
-        public static bool BeginFoldoutToggle(GUIContent title, SerializedProperty foldoutProperty, ref bool toggle, out Rect headerRect, float headerHeight = SkyxStyles.HeaderHeight, bool roundedBox = true)
+        public static bool BeginFoldoutToggle(GUIContent title, SerializedProperty foldoutProperty, ref bool toggle, out Rect headerRect, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
         {
-            headerRect = EditorGUILayout.GetControlRect(false, headerHeight + 4f);
+            headerRect = EditorGUILayout.GetControlRect(false, headerHeight + SkyxStyles.BoxMargin);
             Rect boxRect = headerRect;
 
             bool expanded = foldoutProperty.isExpanded;
