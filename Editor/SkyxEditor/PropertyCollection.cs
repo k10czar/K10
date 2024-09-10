@@ -88,20 +88,6 @@ namespace Skyx.SkyxEditor
             }
         }
 
-        public void DrawRelative(string propertyPath, GUIContent label)
-        {
-            string[] paths = propertyPath.Split(new char[] { '.' });
-            if (TryGetValue(paths[0], out SerializedProperty pathProperty))
-            {
-                for (int i = 1; i < paths.Length; i++)
-                {
-                    pathProperty = pathProperty.FindPropertyRelative(paths[i]);
-                }
-
-                EditorGUILayout.PropertyField(pathProperty, label);
-            }
-        }
-
         public void Draw(string propertyName, int indent = 0)
         {
             if (!TryGet(propertyName, out SerializedProperty property)) return;
@@ -121,9 +107,14 @@ namespace Skyx.SkyxEditor
 
         public void DrawBacking(string propertyName)
         {
-            propertyName = $"<{propertyName}>k__BackingField";
-            if (TryGet(propertyName, out SerializedProperty property))
+            if (TryGetBacking(propertyName, out var property))
                 EditorGUILayout.PropertyField(property);
+        }
+
+        public void Draw(string propertyName, string label)
+        {
+            if (TryGetValue(propertyName, out var property))
+                EditorGUILayout.PropertyField(property, new GUIContent(label));
         }
 
         public bool DrawGetBool(string propertyName)
@@ -142,45 +133,9 @@ namespace Skyx.SkyxEditor
             return property.stringValue;
         }
 
-        public void DrawAll(bool indentDropdowns = false, params string[] except)
+        public void DrawAll(params string[] properties)
         {
-            foreach (var property in this)
-            {
-                if (except.Contains(property.Key)) continue;
-
-                bool shouldIndent = property.Value.propertyType == SerializedPropertyType.Generic;
-
-                if (indentDropdowns && shouldIndent) EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(property.Value);
-                if (indentDropdowns && shouldIndent) EditorGUI.indentLevel--;
-            }
-        }
-
-        public void DrawAllPredicate(bool indentDropdowns, int skip, Predicate<string> predicate)
-        {
-            foreach (var property in this.Skip(skip))
-            {
-                if (!predicate(property.Key))
-                    continue;
-
-                bool shouldIndent = property.Value.propertyType == SerializedPropertyType.Generic;
-
-                if (indentDropdowns && shouldIndent) EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(property.Value);
-                if (indentDropdowns && shouldIndent) EditorGUI.indentLevel--;
-            }
-        }
-
-        public void Draw(string propertyName, bool includeChildren)
-        {
-            if (TryGet(propertyName, out SerializedProperty property))
-                EditorGUILayout.PropertyField(property, includeChildren);
-        }
-
-        public void Draw(string propertyName, GUIContent label)
-        {
-            if (TryGetValue(propertyName, out SerializedProperty property))
-                EditorGUILayout.PropertyField(property, label);
+            foreach (var entry in properties) Draw(entry);
         }
 
         #endregion
@@ -220,6 +175,18 @@ namespace Skyx.SkyxEditor
             if (TryGet(propertyName, out var property))
                 EnumTreeGUI.DrawEnum(rect, property, typeof(T), Colors.Console.Get(color));
         }
+
+        #endregion
+
+        #region Scopes
+
+        public FoldoutBoxScope GetFoldoutScope(string propertyName, bool isBacking, string name = null)
+        {
+            return TryGet(propertyName, isBacking, out var property)
+                ? new FoldoutBoxScope(property, string.IsNullOrEmpty(name) ? ObjectNames.NicifyVariableName(property.name) : name)
+                : null;
+        }
+
 
         #endregion
 
@@ -271,8 +238,22 @@ namespace Skyx.SkyxEditor
             }
         }
 
+        private bool TryGet(string propertyName, bool isBacking, out SerializedProperty property)
+        {
+            return isBacking ? TryGetBacking(propertyName, out property) : TryGet(propertyName, out property);
+        }
+
         private bool TryGet(string propertyName, out SerializedProperty property)
         {
+            if (TryGetValue(propertyName, out property)) return true;
+
+            Debug.LogError($"{owner} does not contain {propertyName}", owner);
+            return false;
+        }
+
+        private bool TryGetBacking(string propertyName, out SerializedProperty property)
+        {
+            propertyName = $"<{propertyName}>k__BackingField";
             if (TryGetValue(propertyName, out property)) return true;
 
             Debug.LogError($"{owner} does not contain {propertyName}", owner);
