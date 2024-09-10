@@ -3,12 +3,13 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace Skyx.CustomEditor
+namespace Skyx.SkyxEditor
 {
     public static class EnumTreeGUI
     {
-        public static void DrawPrimaryEnum(Rect rect, SerializedProperty property, Type enumType, string hint = null) => DrawEnum(rect, property, enumType, SkyxStyles.desaturatedPrimary, hint);
-        public static void DrawSecondaryEnum(Rect rect, SerializedProperty property, Type enumType, string hint = null) => DrawEnum(rect, property, enumType, SkyxStyles.transparentInfo, hint);
+        public static void DrawPrimary(Rect rect, SerializedProperty property, Type enumType, string hint = null) => DrawEnum(rect, property, enumType, Colors.Console.Primary, hint);
+        public static void DrawSecondary(Rect rect, SerializedProperty property, Type enumType, string hint = null) => DrawEnum(rect, property, enumType, Colors.Console.Secondary, hint);
+        public static void DrawSupport(Rect rect, SerializedProperty property, Type enumType, string hint = null) => DrawEnum(rect, property, enumType, Colors.Console.GrayOut, hint);
 
         public static void DrawEnum(Rect rect, SerializedProperty property, Type enumType, Color color, string hint = "")
         {
@@ -26,19 +27,19 @@ namespace Skyx.CustomEditor
         }
 
         // Only works with sequenced enums!
-        public static void DrawEnumSwitch(Rect rect, SerializedProperty property, Type enumType, string hint = null, bool nicify = true)
-            => DrawEnumSwitch(rect, property, Enum.GetNames(enumType), hint, nicify);
+        public static void DrawSwitch(Rect rect, SerializedProperty property, Type enumType, string hint = null, bool nicify = true)
+            => DrawSwitch(rect, property, Enum.GetNames(enumType), hint, nicify);
 
-        public static void DrawEnumSwitch(Rect rect, SerializedProperty property, string hint = null, bool nicify = true)
-            => DrawEnumSwitch(rect, property, property.enumNames, hint, nicify);
+        public static void DrawSwitch(Rect rect, SerializedProperty property, string hint = null, bool nicify = true)
+            => DrawSwitch(rect, property, property.enumNames, hint, nicify);
 
-        public static void DrawEnumSwitch(Rect rect, SerializedProperty property, string[] enumNames, string hint = null, bool nicify = true)
+        public static void DrawSwitch(Rect rect, SerializedProperty property, string[] enumNames, string hint = null, bool nicify = true)
         {
             var enumValueCount = enumNames.Length;
             var currentIndex = Mathf.Abs(property.intValue) % enumValueCount;
 
             var label = nicify ? ObjectNames.NicifyVariableName(enumNames[currentIndex]) : enumNames[currentIndex];
-            var color = SkyxStyles.ColorFromSequence(currentIndex);
+            var color = Colors.FromSequence(currentIndex);
 
             var clicked = SkyxGUI.RectButton(rect, label, color, SkyxStyles.ButtonStyle, hint);
 
@@ -46,12 +47,12 @@ namespace Skyx.CustomEditor
         }
 
         // Only works with sequenced enums!
-        public static void DrawIntEnumSwitch(Rect rect, SerializedProperty property, string[] names, string hint = null, Color[] colorSequence = null)
+        public static void DrawIntSwitch(Rect rect, SerializedProperty property, string[] names, string hint = null, Color[] colorSequence = null)
         {
             var currentIndex = property.intValue;
             var enumValueCount = names.Length;
 
-            colorSequence ??= SkyxStyles.ColorSequence;
+            colorSequence ??= Colors.OptionsSequence;
             var color = colorSequence[currentIndex];
 
             var label = names[currentIndex];

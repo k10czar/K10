@@ -1,6 +1,6 @@
 ﻿using UnityEditor;
 
-namespace Skyx.CustomEditor
+namespace Skyx.SkyxEditor
 {
     public static class EditorSerializationLib
     {

@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace Skyx.CustomEditor
+namespace Skyx.SkyxEditor
 {
     [CustomPropertyDrawer(typeof(Enum), true)]
     public sealed class EnumTreeDrawer : PropertyDrawer
@@ -30,6 +30,17 @@ namespace Skyx.CustomEditor
             SkyxLayout.RestoreBackgroundColor();
         }
 
+        public static void DrawEnumDropdown<T>(Rect position, T value, Action<object> callback) where T: Enum
+            => DrawEnumDropdown(position, typeof(T), value, callback, Colors.Console.Primary, SkyxStyles.PopupStyle);
+
+        public static void DrawEnumDropdown(Rect position, Type enumType, object enumObj, Action<object> callback, Color color, GUIStyle style)
+        {
+            SkyxLayout.SetBackgroundColor(color);
+            position.y += 1;
+            DrawEnumDropdown(position, enumType, enumObj, null, callback, style);
+            SkyxLayout.RestoreBackgroundColor();
+        }
+
         private static void DrawEnumDropdown(Rect position, SerializedProperty property, GUIStyle style, Type fieldType)
         {
             var enumType = fieldType;
@@ -43,6 +54,12 @@ namespace Skyx.CustomEditor
             }
 
             var enumObj = Enum.ToObject(enumType, property.intValue);
+
+            DrawEnumDropdown(position, enumType, enumObj, property, null, style);
+        }
+
+        private static void DrawEnumDropdown(Rect position, Type enumType, object enumObj, SerializedProperty property, Action<object> callback, GUIStyle style)
+        {
             var name = new GUIContent(ObjectNames.NicifyVariableName(enumObj.ToString()));
 
             if (!EditorGUI.DropdownButton(position, name, FocusType.Passive, style)) return;
@@ -54,7 +71,7 @@ namespace Skyx.CustomEditor
 
             var genericDropdownType = typeof(TreeAdvancedDropdown<>);
             var specificDropdownType = genericDropdownType.MakeGenericType(enumType);
-            var dropdown = (AdvancedDropdown) Activator.CreateInstance(specificDropdownType, state, tree, property);
+            var dropdown = (AdvancedDropdown) Activator.CreateInstance(specificDropdownType, state, tree, property, callback);
 
             var dropdownRect = new Rect(position);
             dropdown.Show(dropdownRect);
@@ -65,14 +82,16 @@ namespace Skyx.CustomEditor
     {
         private readonly TreeNode<T> treeNode;
         private readonly SerializedProperty property;
+        private readonly Action<object> callback;
 
         private readonly bool canCreateNodes;
         private readonly string enumDeclarationFilePath;
 
-        public TreeAdvancedDropdown(AdvancedDropdownState state, EnumTreeNode<T> treeNode, SerializedProperty property) : base(state)
+        public TreeAdvancedDropdown(AdvancedDropdownState state, EnumTreeNode<T> treeNode, SerializedProperty property, Action<object> callback) : base(state)
         {
             this.treeNode = treeNode;
             this.property = property;
+            this.callback = callback;
 
             var definitionAttributes = typeof(T).GetCustomAttributes(typeof(ExpandableEnumTreeAttribute), true);
             canCreateNodes = definitionAttributes.Length > 0;
@@ -95,7 +114,8 @@ namespace Skyx.CustomEditor
             {
                 if (node.IsValid)
                 {
-                    dropdown.AddChild(new TreeAdvancedDropdownItem<T>(node, (int)(object)node.Value == property.enumValueFlag));
+                    var isSelected = property?.enumValueFlag == (int)(object)node.Value;
+                    dropdown.AddChild(new TreeAdvancedDropdownItem<T>(node, isSelected));
                     hasValidChildren = true;
                 }
 
@@ -122,10 +142,12 @@ namespace Skyx.CustomEditor
         {
             Debug.Assert(treeItem.isValid, $"Selected invalid entry! {treeItem.value}");
 
+            callback?.Invoke(treeItem.value);
+
+            if (property == null) return;
+
             property.serializedObject.Update();
-
             property.intValue = (int)(object) treeItem.value;
-
             property.serializedObject.ApplyModifiedProperties();
         }
 

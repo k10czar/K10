@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace Skyx.CustomEditor
+namespace Skyx.SkyxEditor
 {
     public static class SkyxGUI
     {
@@ -24,10 +24,10 @@ namespace Skyx.CustomEditor
             var isNumber = float.TryParse(property.stringValue, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out _);
 
             var color = string.IsNullOrEmpty(property.stringValue)
-                ? SkyxStyles.transparentWarning
+                ? Colors.Console.Warning
                 : (validValues.Contains(property.stringValue) || isNumber)
-                    ? SkyxStyles.transparentSuccess
-                    : SkyxStyles.transparentDanger;
+                    ? Colors.Console.Success
+                    : Colors.Console.Danger;
 
             SkyxLayout.DrawWithBGColor(color, () => DrawTextField(rect, property, inlaidHint));
         }
@@ -64,7 +64,7 @@ namespace Skyx.CustomEditor
 
         public static void DrawObjectField(Rect rect, SerializedProperty property, Type objType, string hint)
         {
-            var backgroundColor = property.objectReferenceValue != null ? SkyxStyles.desaturatedSuccess : SkyxStyles.desaturatedDanger;
+            var backgroundColor = property.objectReferenceValue != null ? Colors.Console.Success : Colors.Console.Danger;
             SkyxLayout.SetBackgroundColor(backgroundColor);
 
             property.objectReferenceValue = EditorGUI.ObjectField(rect, property.objectReferenceValue, objType, false);
@@ -76,7 +76,7 @@ namespace Skyx.CustomEditor
 
         public static void DrawColorField(Rect rect, SerializedProperty property,string hint)
         {
-            SkyxLayout.SetBackgroundColor(SkyxStyles.desaturatedSuccess);
+            SkyxLayout.SetBackgroundColor(Colors.Console.Success);
 
             property.colorValue = EditorGUI.ColorField(rect, GUIContent.none, property.colorValue, true, true, true);
 
@@ -105,16 +105,16 @@ namespace Skyx.CustomEditor
         #region Toggles
 
         public static bool DrawSuccessToggle(Rect rect, string label, SerializedProperty property, string hint)
-            => DrawToggle(rect, label, label, SkyxStyles.success, SkyxStyles.transparentSecondary, property, hint);
+            => DrawToggle(rect, label, label, Colors.Console.Success, Colors.Console.GrayOut, property, hint);
 
         public static bool DrawEnableToggle(Rect rect, string onLabel, string offLabel, SerializedProperty property, string hint)
-            => DrawToggle(rect, onLabel, offLabel, SkyxStyles.desaturatedInfo, SkyxStyles.transparentSecondary, property, hint);
+            => DrawToggle(rect, onLabel, offLabel, Colors.Console.Info, Colors.Console.GrayOut, property, hint);
 
         public static bool DrawWarningToggle(Rect rect, string onLabel, string offLabel, SerializedProperty property, string hint)
-            => DrawToggle(rect, onLabel, offLabel, SkyxStyles.desaturatedWarning, SkyxStyles.transparentSecondary, property, hint);
+            => DrawToggle(rect, onLabel, offLabel, Colors.Console.Warning, Colors.Console.GrayOut, property, hint);
 
         public static bool DrawChoiceToggle(Rect rect, string onLabel, string offLabel, SerializedProperty property, string hint)
-            => DrawToggle(rect, onLabel, offLabel, SkyxStyles.transparentSecondary, SkyxStyles.desaturatedSecondary, property, hint);
+            => DrawToggle(rect, onLabel, offLabel, Colors.Console.GrayOut, Colors.Console.DarkerGrayOut, property, hint);
 
         public static bool MiniSuccessToggle(ref Rect rect, SerializedProperty toggleProp, string label, string hint)
             => DrawSuccessToggle(ExtractMiniButton(ref rect), label, toggleProp, hint);
@@ -152,7 +152,7 @@ namespace Skyx.CustomEditor
         }
 
         public static bool ExpandButton(ref Rect rect, SerializedProperty isExpandedProp)
-            => MiniToggle(ref rect, isExpandedProp, "⇓", ">", "Expand", SkyxStyles.secondary, SkyxStyles.transparentSecondary, true);
+            => MiniToggle(ref rect, isExpandedProp, "⇓", ">", "Expand", Colors.Console.GrayOut, Colors.Console.DarkerGrayOut, true);
 
         #endregion
 
@@ -173,16 +173,16 @@ namespace Skyx.CustomEditor
         }
 
         public static bool MiniSuccessButton(ref Rect rect, string label, string hint)
-            => RectButton(ExtractMiniButton(ref rect), label, SkyxStyles.success, SkyxStyles.ButtonStyle, hint);
+            => RectButton(ExtractMiniButton(ref rect), label, Colors.Console.Success, SkyxStyles.ButtonStyle, hint);
 
         public static bool MiniEnableButton(ref Rect rect, string label, string hint)
-            => RectButton(ExtractMiniButton(ref rect), label, SkyxStyles.desaturatedInfo, SkyxStyles.ButtonStyle, hint);
+            => RectButton(ExtractMiniButton(ref rect), label, Colors.Console.Info, SkyxStyles.ButtonStyle, hint);
 
         public static bool MiniWarningButton(ref Rect rect, string label, string hint)
-            => RectButton(ExtractMiniButton(ref rect), label, SkyxStyles.desaturatedWarning, SkyxStyles.ButtonStyle, hint);
+            => RectButton(ExtractMiniButton(ref rect), label, Colors.Console.Warning, SkyxStyles.ButtonStyle, hint);
 
         public static bool MiniDangerButton(ref Rect rect, string label, string hint)
-            => RectButton(ExtractMiniButton(ref rect), label, SkyxStyles.desaturatedDanger, SkyxStyles.ButtonStyle, hint);
+            => RectButton(ExtractMiniButton(ref rect), label, Colors.Console.Danger, SkyxStyles.ButtonStyle, hint);
 
         #endregion
 

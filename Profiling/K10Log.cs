@@ -11,7 +11,7 @@ public interface IK10LogCategory
 {
     string Name { get; }
     Color Color { get; }
-    Color SecondaryColor => Color.AddLigth(-.1f);
+    Color SecondaryColor => Color.AddLight(-.1f);
     ELogPrefix PrefixType => ELogPrefix.None;
 }
 

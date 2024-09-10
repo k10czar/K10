@@ -34,29 +34,29 @@ public static class Colors
         }
     }
 
-    [LazyConst] private static List<Color> optionsSequence;
+    [LazyConst] private static Color[] optionsSequence;
 
-    public static List<Color> OptionsSequence
+    public static Color[] OptionsSequence
     {
         get
         {
             if (optionsSequence != null) return optionsSequence;
 
-            optionsSequence = new List<Color> { Azure, Fern, Coral, Cyan, Salmon, Goldenrod, DeepPink, Khaki };
+            optionsSequence = new[] { Azure, Fern, Coral, Cyan, Salmon, Goldenrod, DeepPink, Khaki };
 
             return optionsSequence;
         }
     }
 
-    [LazyConst] private static List<Color> statusSequence;
+    [LazyConst] private static Color[] statusSequence;
 
-    public static List<Color> StatusSequence
+    public static Color[] StatusSequence
     {
         get
         {
             if (statusSequence != null) return statusSequence;
 
-            statusSequence = new List<Color> { MintGreen, Orange, LightCoral, OrangeRed };
+            statusSequence = new [] { MintGreen, Orange, LightCoral, OrangeRed };
 
             return statusSequence;
         }
@@ -66,7 +66,7 @@ public static class Colors
     public static Color FromSequence(int index, bool isStatus = false, bool loop = false)
     {
         var sequence = isStatus ? StatusSequence : OptionsSequence;
-        index = loop ? index % sequence.Count : Mathf.Clamp(index, 0, sequence.Count);
+        index = loop ? index % sequence.Length : Mathf.Clamp(index, 0, sequence.Length);
         return sequence[index];
     }
 
@@ -119,6 +119,9 @@ public static class Colors
             }
         }
 
+        [ConstLike] public static readonly Color Primary = Azure;
+        [ConstLike] public static readonly Color Secondary = Cerulean;
+
         [ConstLike] public static readonly Color Danger = Crimson;
         [ConstLike] public static readonly Color Negation = OrangeRed;
         [ConstLike] public static readonly Color Interfaces = Coral;
@@ -135,7 +138,10 @@ public static class Colors
         [ConstLike] public static readonly Color Success = MintGreen;
         [ConstLike] public static readonly Color Warning = Orange;
         [ConstLike] public static readonly Color LightDanger = LightCoral;
+
         [ConstLike] public static readonly Color GrayOut = LightGray;
+        [ConstLike] public static readonly Color DarkerGrayOut = Silver;
+        [ConstLike] public static readonly Color Dark = DimGray;
     }
 
     //Red colors
@@ -355,6 +361,7 @@ public static class Colors
     [ConstLike] public static readonly Color LightSlateGray = From( 119, 136, 153);
     [ConstLike] public static readonly Color SlateGray = From( 112, 128, 144);
     [ConstLike] public static readonly Color DarkSlateGray = From( 47, 79, 79);
+    [ConstLike] public static readonly Color AlmostBlack = From( 25, 25, 25);
     [ConstLike] public static readonly Color Black = From( 0, 0, 0);
 
 
