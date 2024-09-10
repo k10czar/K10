@@ -183,7 +183,7 @@ namespace Skyx.SkyxEditor
         public FoldoutBoxScope GetFoldoutScope(string propertyName, bool isBacking, string name = null)
         {
             return TryGet(propertyName, isBacking, out var property)
-                ? new FoldoutBoxScope(property, string.IsNullOrEmpty(name) ? ObjectNames.NicifyVariableName(property.name) : name)
+                ? new FoldoutBoxScope(property, string.IsNullOrEmpty(name) ? property.PrettyName() : name)
                 : null;
         }
 

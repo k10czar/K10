@@ -283,6 +283,19 @@ namespace Skyx.SkyxEditor
             rect.y += 3;
         }
 
+        public static void ExtractLineDef(Rect rect, out float startX, out float totalWidth)
+        {
+            startX = rect.x;
+            totalWidth = rect.width;
+        }
+
+        public static void ApplyBoxMargin(ref Rect rect, ref float startX, ref float totalWidth)
+        {
+            rect.y += SkyxStyles.BoxMargin;
+            startX += SkyxStyles.BoxMargin;
+            totalWidth -= SkyxStyles.BoxMargin * 2;
+        }
+
         #endregion
     }
 }

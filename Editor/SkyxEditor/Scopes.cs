@@ -49,7 +49,7 @@ namespace Skyx.SkyxEditor
 
         public FoldoutBoxScope(SerializedProperty property, string title, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
         {
-            isExpanded = BoxGUI.BeginFoldout(new GUIContent(title), property, headerHeight, roundedBox);
+            isExpanded = BoxGUI.BeginFoldout(title, property, headerHeight, roundedBox);
         }
 
         protected override void CloseScope()
