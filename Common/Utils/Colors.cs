@@ -165,7 +165,8 @@ public static class Colors
 
         [ConstLike] public static readonly Color GrayOut = LightGray;
         [ConstLike] public static readonly Color DarkerGrayOut = Silver;
-        [ConstLike] public static readonly Color Dark = DimGray;
+        [ConstLike] public static readonly Color Dark = Charcoal;
+        [ConstLike] public static readonly Color DarkerDark = DarkCharcoal;
     }
 
     //Red colors
@@ -385,6 +386,8 @@ public static class Colors
     [ConstLike] public static readonly Color LightSlateGray = From( 119, 136, 153);
     [ConstLike] public static readonly Color SlateGray = From( 112, 128, 144);
     [ConstLike] public static readonly Color DarkSlateGray = From( 47, 79, 79);
+    [ConstLike] public static readonly Color Charcoal = From( 70, 70, 70);
+    [ConstLike] public static readonly Color DarkCharcoal = From( 60, 60, 60);
     [ConstLike] public static readonly Color AlmostBlack = From( 25, 25, 25);
     [ConstLike] public static readonly Color Black = From( 0, 0, 0);
 

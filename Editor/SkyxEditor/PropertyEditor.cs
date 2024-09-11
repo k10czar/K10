@@ -7,7 +7,7 @@ namespace Skyx.SkyxEditor
     public class PropertyEditor<T> : PropertyDrawer where T : class
     {
         protected T GetTarget(SerializedProperty property) => property.GetValue<T>();
-        protected PropertyCollection GetProperties(SerializedProperty property) => PropertyCollection.Get(property);
+        protected PropertyCollection GetProperties(SerializedProperty property, bool forceReset = false) => PropertyCollection.Get(property, forceReset);
 
         protected virtual float ExtraHeight => 0;
         protected virtual string[] ExcludeFieldsFromHeight { get; } = Array.Empty<string>();

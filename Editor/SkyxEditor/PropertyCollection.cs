@@ -13,6 +13,7 @@ namespace Skyx.SkyxEditor
         #region Static
 
         [ResetedOnLoad] private static readonly Dictionary<string, PropertyCollection> collections = new();
+        [ResetedOnLoad] private static readonly Dictionary<string, uint> collectionsContentHash = new();
 
         private static string GetID(SerializedObject target) => target.targetObject.GetHashCode().ToString();
         private static string GetID(SerializedProperty target) => $"{target.serializedObject.targetObject.GetHashCode()}|{target.propertyPath}";
@@ -25,14 +26,20 @@ namespace Skyx.SkyxEditor
 
         private static PropertyCollection Get(string id, SerializedProperty serializedProperty, bool fromObject, bool forceReset)
         {
+            var contentHash = serializedProperty.contentHash;
+
             if (collections.TryGetValue(id, out var collection))
             {
-                if (!forceReset && collection.IsValid()) return collection;
+                var previousHash = collectionsContentHash[id];
+                if (!forceReset && previousHash == contentHash && collection.IsValid()) return collection;
+
                 collections.Remove(id);
+                collectionsContentHash.Remove(id);
             }
 
             collection = new PropertyCollection(serializedProperty.serializedObject.targetObject);
             collections.Add(id, collection);
+            collectionsContentHash.Add(id, contentHash);
 
             var currentProperty = serializedProperty.Copy();
             if (!currentProperty.NextVisible(true)) return collection;
@@ -43,7 +50,6 @@ namespace Skyx.SkyxEditor
             do
             {
                 if (SerializedProperty.EqualContents(currentProperty, nextSiblingProperty)) break;
-
                 collection.Add(currentProperty.name, currentProperty.Copy());
             }
             while (currentProperty.NextVisible(false));

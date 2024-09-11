@@ -23,13 +23,12 @@ namespace Skyx.SkyxEditor
         {
             if (HasRuntimeVisualization && Application.isPlaying)
             {
-                if (!SkyxLayout.ShouldShowBlock("Runtime", $"{typeof(T)}Runtime")) return;
-
-                DrawRuntimeInfo();
-
-                if (!SkyxLayout.ShouldShowBlock("Configs", $"{typeof(T)}Configs")) return;
-
-                DrawConfigsInternal();
+                if (SkyxLayout.ShouldShowBlock("Runtime", $"{typeof(T)}Runtime"))
+                {
+                    DrawRuntimeInfo();
+                    SkyxLayout.Space();
+                }
+                if (!SkyxLayout.ShouldShowBlock("Configs", $"{typeof(T)}Configs")) DrawConfigsInternal();
             }
             else
             {
@@ -37,8 +36,7 @@ namespace Skyx.SkyxEditor
 
                 DrawConfigsInternal();
 
-                if (serializedObject.ApplyModifiedProperties())
-                    CacheProperties();
+                if (serializedObject.ApplyModifiedProperties()) CacheProperties();
             }
         }
 
