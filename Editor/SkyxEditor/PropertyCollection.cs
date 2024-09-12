@@ -176,10 +176,10 @@ namespace Skyx.SkyxEditor
             list.DoList(rect);
         }
 
-        public void DrawEnum<T>(Rect rect, string propertyName, Colors.EConsoleColor color = Colors.EConsoleColor.Primary) where T: Enum
+        public void DrawEnum<T>(Rect rect, string propertyName, Colors.EConsoleColor color = Colors.EConsoleColor.Primary, string hint = null) where T: Enum
         {
             if (TryGet(propertyName, out var property))
-                EnumTreeGUI.DrawEnum(rect, property, typeof(T), Colors.Console.Get(color));
+                EnumTreeGUI.DrawEnum(rect, property, typeof(T), Colors.Console.Get(color), hint);
         }
 
         #endregion
