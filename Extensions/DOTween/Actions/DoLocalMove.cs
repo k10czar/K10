@@ -5,8 +5,8 @@ public class DoLocalMove : ITweenAction<Transform>
 {
     [SerializeField] Vector3 value;
 
-    public void Do(Transform element, in float duration, in Ease ease)
+    public Tweener Do(Transform element, in float duration, in Ease ease)
     {
-        element.DOLocalMove( value, duration ).SetEase( ease );
+        return element.DOLocalMove( value, duration ).SetEase( ease );
     }
 }

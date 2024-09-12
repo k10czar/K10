@@ -12,7 +12,21 @@ public class ExtendedDrawerAttribute : PropertyAttribute
 		ShowName = showName;
 	}
 }
-public class BoxedAttribute : PropertyAttribute { }
+public class BoxedAttribute : PropertyAttribute
+{
+    public string ColorName { get; private set; }
+
+	public BoxedAttribute()
+	{
+		ColorName = null;
+	}
+
+	public BoxedAttribute( string colorName )
+	{
+		ColorName = colorName;
+	}
+}
+
 public class OnlyOnPlayAttribute : PropertyAttribute { }
 
 public class RandomizeButtonAttribute : PropertyAttribute 
@@ -25,6 +39,16 @@ public class RandomizeButtonAttribute : PropertyAttribute
 	// 	this.min = min;
 	// 	this.max = max;
 	// }
+}
+
+public class UnitAttribute : PropertyAttribute 
+{ 
+	public readonly string UnitName;
+
+	public UnitAttribute( string unitName )
+	{
+		UnitName = unitName;
+	}
 }
 
 public class ListingPathAttribute : Attribute

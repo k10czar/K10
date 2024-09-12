@@ -14,6 +14,18 @@ public static class Colors
 
     [LazyConst] private static Dictionary<string,Color> ALL_COLORS = null;
 
+    public static Color Get(string colorName)
+    {
+        if( string.IsNullOrEmpty( colorName ) ) return Color.white;
+        if( colorName[0] == '#' ) 
+        {
+            ColorUtility.TryParseHtmlString( colorName, out var htmlColor );
+            return htmlColor;
+        }
+        if( All.TryGetValue( colorName, out var color ) ) return color;
+        return Color.white;
+    }
+
     public static Dictionary<string, Color> All
     {
         get
@@ -21,14 +33,14 @@ public static class Colors
             if (ALL_COLORS != null) return ALL_COLORS;
 
             ALL_COLORS = new();
-#if UNITY_EDITOR
+// #if UNITY_EDITOR
             var allColors = typeof(Colors).GetFields(FLAGS);
             foreach (var colorField in allColors)
             {
                 var colorValue = colorField.GetValue(null);
                 ALL_COLORS.Add(colorField.Name, (Color)colorValue);
             }
-#endif
+// #endif
 
             return ALL_COLORS;
         }
@@ -94,7 +106,6 @@ public static class Colors
     private static string EDITOR_DebugColor( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{name} █  </color>";
     private static string EDITOR_DebugColorCode( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>#{ColorUtility.ToHtmlStringRGB(color)}█</color>";
 #endif
-
 
     public static class Console
     {

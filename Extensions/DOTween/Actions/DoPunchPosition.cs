@@ -8,8 +8,8 @@ public class DoPunchPosition : ITweenAction<Transform>
     [SerializeField] float elasticity = 1;
     [SerializeField] bool snapping = false;
 
-    public void Do(Transform element, in float duration, in Ease ease)
+    public Tweener Do(Transform element, in float duration, in Ease ease)
     {
-        element.DOPunchPosition( punch, duration, vibrato, elasticity, snapping ).SetEase( ease );
+        return element.DOPunchPosition( punch, duration, vibrato, elasticity, snapping ).SetEase( ease );
     }
 }

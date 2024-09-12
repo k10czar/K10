@@ -9,8 +9,8 @@ public class DoShakeRotation : ITweenAction<Transform>
     [SerializeField] bool fadeOut = true;
     [SerializeField] ShakeRandomnessMode mode = ShakeRandomnessMode.Full;
 
-    public void Do(Transform element, in float duration, in Ease ease)
+    public Tweener Do(Transform element, in float duration, in Ease ease)
     {
-        element.DOShakeRotation( duration, strength, vibrato, randomness, fadeOut, mode ).SetEase( ease );
+        return element.DOShakeRotation( duration, strength, vibrato, randomness, fadeOut, mode ).SetEase( ease );
     }
 }

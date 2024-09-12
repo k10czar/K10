@@ -7,8 +7,8 @@ public class DoPunchScale : ITweenAction<Transform>
     [SerializeField] int vibrato = 10;
     [SerializeField] float elasticity = 1;
 
-    public void Do(Transform element, in float duration, in Ease ease)
+    public Tweener Do(Transform element, in float duration, in Ease ease)
     {
-        element.DOPunchScale( punch, duration, vibrato, elasticity ).SetEase( ease );
+        return element.DOPunchScale( punch, duration, vibrato, elasticity ).SetEase( ease );
     }
 }
