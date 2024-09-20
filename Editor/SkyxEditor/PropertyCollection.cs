@@ -8,90 +8,101 @@ using Object = UnityEngine.Object;
 
 namespace Skyx.SkyxEditor
 {
-    public class PropertyCollection : Dictionary<string, SerializedProperty>
+    public class PropertyCollection
     {
         #region Static
 
-        [ResetedOnLoad] private static readonly Dictionary<string, PropertyCollection> collections = new();
-        [ResetedOnLoad] private static readonly Dictionary<string, uint> collectionsContentHash = new();
+        [ResetedOnLoad] private static readonly Dictionary<string, Dictionary<string, PropertyCollection>> collections = new();
 
         private static string GetID(SerializedObject target) => target.targetObject.GetHashCode().ToString();
-        private static string GetID(SerializedProperty target) => $"{target.serializedObject.targetObject.GetHashCode()}|{target.propertyPath}";
 
-        public static PropertyCollection Get(SerializedObject serializedObject, bool forceReset = false)
-            => Get(GetID(serializedObject), serializedObject.GetIterator(), true, forceReset);
+        public static PropertyCollection Get(SerializedObject serializedObject) => Get(serializedObject, "");
+        public static PropertyCollection Get(SerializedProperty property) => Get(property.serializedObject, property.propertyPath);
 
-        public static PropertyCollection Get(SerializedProperty serializedProperty, bool forceReset = false)
-            => Get(GetID(serializedProperty), serializedProperty, false, forceReset);
-
-        private static PropertyCollection Get(string id, SerializedProperty serializedProperty, bool fromObject, bool forceReset)
+        private static PropertyCollection Get(SerializedObject root, string path)
         {
-            var contentHash = serializedProperty.contentHash;
-
-            if (collections.TryGetValue(id, out var collection))
+            var id = GetID(root);
+            if (!collections.TryGetValue(id, out var objectCollections))
             {
-                var previousHash = collectionsContentHash[id];
-                if (!forceReset && previousHash == contentHash && collection.IsValid()) return collection;
-
-                collections.Remove(id);
-                collectionsContentHash.Remove(id);
+                objectCollections = new Dictionary<string, PropertyCollection>();
+                collections.Add(id, objectCollections);
             }
 
-            collection = new PropertyCollection(serializedProperty.serializedObject.targetObject);
-            collections.Add(id, collection);
-            collectionsContentHash.Add(id, contentHash);
+            TryApply(root);
 
-            var currentProperty = serializedProperty.Copy();
-            if (!currentProperty.NextVisible(true)) return collection;
-
-            var nextSiblingProperty = serializedProperty.Copy();
-            if (!fromObject) nextSiblingProperty.NextVisible(false);
-
-            do
+            if (objectCollections.TryGetValue(path, out var collection))
             {
-                if (SerializedProperty.EqualContents(currentProperty, nextSiblingProperty)) break;
-                collection.Add(currentProperty.name, currentProperty.Copy());
+                if (collection.IsValid()) return collection;
+                objectCollections.Remove(path);
             }
-            while (currentProperty.NextVisible(false));
+
+            UpdateCollections(root);
+
+            collection = new PropertyCollection(root, path);
+            objectCollections.Add(path, collection);
 
             return collection;
         }
 
+        public static bool TryApply(SerializedObject serializedObject)
+        {
+            if (!serializedObject.hasModifiedProperties) return false;
+
+            serializedObject.ApplyModifiedProperties();
+            ResetCollections(serializedObject);
+
+            return true;
+        }
+
+        private static void UpdateCollections(SerializedObject serializedObject)
+        {
+            serializedObject.Update();
+            ResetCollections(serializedObject);
+        }
+
+        private static void ResetCollections(SerializedObject serializedObject)
+        {
+            if (!collections.TryGetValue(GetID(serializedObject), out var objectCollections)) return;
+
+            foreach (var (key, collection) in objectCollections.ToList())
+            {
+                if (collection.IsValid()) collection.Reset();
+                else objectCollections.Remove(key);
+            }
+        }
+
         #endregion
 
+        private readonly SerializedObject root;
         private readonly Object owner;
+        private readonly string propertyPath;
+
+        private readonly Dictionary<string, SerializedProperty> properties = new();
         private readonly Dictionary<SerializedProperty, ReorderableList> lists = new();
 
         #region Layout Draw
 
         public SerializedProperty GetRelative(string propertyPath)
         {
-            string[] paths = propertyPath.Split(new char[] { '.' });
-            if (TryGetValue(paths[0], out SerializedProperty pathProperty))
-            {
-                for (int i = 1; i < paths.Length; i++)
-                {
-                    pathProperty = pathProperty.FindPropertyRelative(paths[i]);
-                }
+            var paths = propertyPath.Split('.');
+            if (!properties.TryGetValue(paths[0], out var pathProperty)) return null;
 
-                return pathProperty;
-            }
+            for (int i = 1; i < paths.Length; i++)
+                pathProperty = pathProperty.FindPropertyRelative(paths[i]);
 
-            return null;
+            return pathProperty;
+
         }
 
         public void DrawRelative(string propertyPath)
         {
-            string[] paths = propertyPath.Split(new char[] { '.' });
-            if (TryGetValue(paths[0], out SerializedProperty pathProperty))
-            {
-                for (int i = 1; i < paths.Length; i++)
-                {
-                    pathProperty = pathProperty.FindPropertyRelative(paths[i]);
-                }
+            var paths = propertyPath.Split('.');
+            if (!properties.TryGetValue(paths[0], out SerializedProperty pathProperty)) return;
 
-                EditorGUILayout.PropertyField(pathProperty);
-            }
+            for (int i = 1; i < paths.Length; i++)
+                pathProperty = pathProperty.FindPropertyRelative(paths[i]);
+
+            EditorGUILayout.PropertyField(pathProperty);
         }
 
         public void Draw(string propertyName, int indent = 0)
@@ -119,7 +130,7 @@ namespace Skyx.SkyxEditor
 
         public void Draw(string propertyName, string label)
         {
-            if (TryGetValue(propertyName, out var property))
+            if (TryGet(propertyName, out var property))
                 EditorGUILayout.PropertyField(property, new GUIContent(label));
         }
 
@@ -200,7 +211,7 @@ namespace Skyx.SkyxEditor
         {
             var total = 0f;
 
-            foreach (var (field, property) in this)
+            foreach (var (field, property) in properties)
             {
                 if (excludeFields.Contains(field)) continue;
 
@@ -244,23 +255,25 @@ namespace Skyx.SkyxEditor
             }
         }
 
-        private bool TryGet(string propertyName, bool isBacking, out SerializedProperty property)
+        public SerializedProperty this[string key] => properties[key];
+
+        public bool TryGet(string propertyName, bool isBacking, out SerializedProperty property)
         {
             return isBacking ? TryGetBacking(propertyName, out property) : TryGet(propertyName, out property);
         }
 
-        private bool TryGet(string propertyName, out SerializedProperty property)
+        public bool TryGet(string propertyName, out SerializedProperty property)
         {
-            if (TryGetValue(propertyName, out property)) return true;
+            if (properties.TryGetValue(propertyName, out property)) return true;
 
             Debug.LogError($"{owner} does not contain {propertyName}", owner);
             return false;
         }
 
-        private bool TryGetBacking(string propertyName, out SerializedProperty property)
+        public bool TryGetBacking(string propertyName, out SerializedProperty property)
         {
             propertyName = $"<{propertyName}>k__BackingField";
-            if (TryGetValue(propertyName, out property)) return true;
+            if (properties.TryGetValue(propertyName, out property)) return true;
 
             Debug.LogError($"{owner} does not contain {propertyName}", owner);
             return false;
@@ -270,7 +283,7 @@ namespace Skyx.SkyxEditor
         {
             try
             {
-                _ = Values.All(entry => entry.isExpanded); // Forces internal Verify call
+                _ = properties.Values.All(entry => entry.isExpanded); // Forces internal Verify call
                 return true;
             }
             catch
@@ -279,9 +292,41 @@ namespace Skyx.SkyxEditor
             }
         }
 
-        private PropertyCollection(Object owner)
+        private void Reset()
         {
-            this.owner = owner;
+            properties.Clear();
+            lists.Clear();
+
+            Setup();
+        }
+
+        private void Setup()
+        {
+            var fromObject = string.IsNullOrEmpty(propertyPath);
+            var rootProperty = fromObject ? root.GetIterator() : root.FindProperty(propertyPath);
+
+            var currentProperty = rootProperty.Copy();
+            if (!currentProperty.NextVisible(true)) return;
+
+            var nextSiblingProperty = rootProperty.Copy();
+            if (!fromObject) nextSiblingProperty.NextVisible(false);
+
+            do
+            {
+                if (SerializedProperty.EqualContents(currentProperty, nextSiblingProperty)) break;
+                properties.Add(currentProperty.name, currentProperty.Copy());
+            }
+            while (currentProperty.NextVisible(false));
+        }
+
+        private PropertyCollection(SerializedObject root, string path)
+        {
+            this.root = root;
+
+            owner = root.targetObject;
+            propertyPath = path;
+
+            Setup();
         }
     }
 }

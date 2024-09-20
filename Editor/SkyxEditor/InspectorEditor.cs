@@ -32,11 +32,9 @@ namespace Skyx.SkyxEditor
             }
             else
             {
-                serializedObject.Update();
-
+                CacheProperties();
                 DrawConfigsInternal();
-
-                if (serializedObject.ApplyModifiedProperties()) CacheProperties();
+                if (PropertyCollection.TryApply(serializedObject)) CacheProperties();
             }
         }
 
@@ -49,7 +47,7 @@ namespace Skyx.SkyxEditor
             SkyxLayout.Space();
         }
 
-        private void CacheProperties() => Properties = PropertyCollection.Get(serializedObject, true);
+        private void CacheProperties() => Properties = PropertyCollection.Get(serializedObject);
 
         protected virtual void OnEnable()
         {

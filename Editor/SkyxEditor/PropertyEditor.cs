@@ -7,7 +7,7 @@ namespace Skyx.SkyxEditor
     public abstract class PropertyEditor<T> : PropertyDrawer where T : class
     {
         protected T GetTarget(SerializedProperty property) => property.GetValue<T>();
-        protected PropertyCollection GetProperties(SerializedProperty property, bool forceReset = false) => PropertyCollection.Get(property, forceReset);
+        protected PropertyCollection GetProperties(SerializedProperty property) => PropertyCollection.Get(property);
 
         protected virtual float ExtraHeight => 0;
         protected virtual string[] ExcludeFieldsFromHeight { get; } = Array.Empty<string>();
@@ -16,12 +16,8 @@ namespace Skyx.SkyxEditor
 
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
         {
-            property.serializedObject.Update();
-
             Draw(rect, property, label);
-
-            if (property.serializedObject.ApplyModifiedProperties())
-                GetProperties(property, true);
+            PropertyCollection.TryApply(property.serializedObject);
         }
 
 
