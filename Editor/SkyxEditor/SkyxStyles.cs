@@ -110,7 +110,7 @@ namespace Skyx.SkyxEditor
         public const float BoxHeaderHeight = FullLineHeight;
         public const float BoxTotalExtraHeight = BoxHeaderHeight + 2 * LineSpace;
         public const float BoxMargin = 4;
-        public static Color HeaderColor => Colors.AlmostBlack.WithAlpha(.4f);
+        public static Color HeaderColor => Colors.Console.DarkBackground;
 
         // public static GUIStyle BoxStyle(bool isRounded) => new(isRounded ? "HelpBox" : "Tooltip");
         // public static GUIStyle BoxStyle(bool isRounded) => isRounded ? roundedBox : squaredBox;

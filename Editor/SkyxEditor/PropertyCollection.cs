@@ -19,6 +19,8 @@ namespace Skyx.SkyxEditor
         public static PropertyCollection Get(SerializedObject serializedObject) => Get(serializedObject, "");
         public static PropertyCollection Get(SerializedProperty property) => Get(property.serializedObject, property.propertyPath);
 
+        public static void Release(SerializedObject root) => collections.Remove(GetID(root));
+
         private static PropertyCollection Get(SerializedObject root, string path)
         {
             var id = GetID(root);

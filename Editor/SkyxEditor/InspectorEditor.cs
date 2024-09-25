@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 
 namespace Skyx.SkyxEditor
@@ -53,6 +54,14 @@ namespace Skyx.SkyxEditor
         {
             Target = target as T;
             CacheProperties();
+        }
+
+        protected void OnDisable()
+        {
+            Target = target as T;
+
+            if (serializedObject.targetObject != null)
+                PropertyCollection.Release(serializedObject);
         }
     }
 }

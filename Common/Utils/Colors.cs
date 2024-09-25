@@ -167,6 +167,7 @@ public static class Colors
         [ConstLike] public static readonly Color DarkerGrayOut = Silver;
         [ConstLike] public static readonly Color Dark = Charcoal;
         [ConstLike] public static readonly Color DarkerDark = DarkCharcoal;
+        [ConstLike] public static readonly Color DarkBackground = AlmostBlack.WithAlpha(.4f);
     }
 
     //Red colors
