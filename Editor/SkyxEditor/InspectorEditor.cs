@@ -1,10 +1,10 @@
-﻿using System;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Skyx.SkyxEditor
 {
-    public abstract class InspectorEditor<T> : Editor where T : MonoBehaviour
+    public abstract class InspectorEditor<T> : Editor where T : Object
     {
         protected T Target { get; private set; }
         protected PropertyCollection Properties { get; private set; }
@@ -42,7 +42,8 @@ namespace Skyx.SkyxEditor
         private void DrawScriptFile()
         {
             EditorGUI.BeginDisabledGroup(true);
-            EditorGUILayout.ObjectField(EditorGUIUtility.TrTempContent("Script"), MonoScript.FromMonoBehaviour(Target), typeof(T), false);
+            var script = Target is MonoBehaviour behaviour ? MonoScript.FromMonoBehaviour(behaviour) : MonoScript.FromScriptableObject(Target as ScriptableObject);
+            EditorGUILayout.ObjectField(EditorGUIUtility.TrTempContent("Script"), script, typeof(T), false);
             EditorGUI.EndDisabledGroup();
 
             SkyxLayout.Space();
