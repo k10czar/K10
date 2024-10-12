@@ -35,15 +35,15 @@ public static class K10Log<T> where T : IK10LogCategory, new()
     public static bool SkipVisuals() => K10DebugSystem.SkipVisuals<T>();
 
     [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-    public static void Log(string log, LogSeverity severity = LogSeverity.Info, MonoBehaviour target = null, bool verbose = false)
+    public static void Log(string log, LogSeverity severity = LogSeverity.Info, Component target = null, bool verbose = false)
         => Log(severity, log, target, verbose);
 
     [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-    public static void LogVerbose(string log, MonoBehaviour target = null, LogSeverity severity = LogSeverity.Warning)
+    public static void LogVerbose(string log, Component target = null, LogSeverity severity = LogSeverity.Warning)
         => Log(severity, log, target, true);
 
     [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-    public static void Log(LogSeverity severity, string log, MonoBehaviour target = null, bool verbose = false)
+    public static void Log(LogSeverity severity, string log, Component target = null, bool verbose = false)
     {
         if (!K10DebugSystem.CanDebug<T>(verbose)) return;
 

@@ -98,7 +98,7 @@ public static class K10DebugSystem
         EditorPrefs.SetBool(DEBUG_ERRORS_SAVE_KEY, !EditorPrefs.GetBool(DEBUG_ERRORS_SAVE_KEY));
     }
 
-    public static bool CanDebugTarget(MonoBehaviour targetBehaviour, LogSeverity severity = LogSeverity.Info)
+    public static bool CanDebugTarget(Component targetBehaviour, LogSeverity severity = LogSeverity.Info)
     {
         if (DebugErrors() && severity is LogSeverity.Error) return true;
 

@@ -7,7 +7,10 @@ public class ScalePorting : MonoBehaviour
 	[SerializeField] bool _forcePcSize;
 	[SerializeField] float _forcedPcSize = .6666666f;
 	[SerializeField] bool _forceMobileSize;
+
+	#if !UNITY_STANDALONE
 	[SerializeField] float _forcedMobileSize = 1;
+	#endif
 
 	#if UNITY_STANDALONE
 	const float SIZE = .6666666f;
@@ -23,7 +26,7 @@ public class ScalePorting : MonoBehaviour
 	void Update() { UpdateScale(); }
 	#endif
 
-	float Size 
+	float Size
 	{
 		get
 		{
@@ -37,15 +40,15 @@ public class ScalePorting : MonoBehaviour
 //			if( _forcePcSize ) return _forcedPcSize;
 			return _forceMobileSize ? _forcedMobileSize : SIZE;
 			#endif
-		} 
+		}
 	}
 
-	void UpdateScale() 
-	{ 
-		var scale = transform.localScale; 
+	void UpdateScale()
+	{
+		var scale = transform.localScale;
 		var desired = Vector3.one * Size;
-		if( Mathf.Approximately( Vector3.Distance( scale, desired ), 0 ) ) return; 
-		transform.localScale = desired; 
-		K10.Utils.Unity.Algorithm.UpdateChildrenOrganizers( gameObject ); 
+		if( Mathf.Approximately( Vector3.Distance( scale, desired ), 0 ) ) return;
+		transform.localScale = desired;
+		K10.Utils.Unity.Algorithm.UpdateChildrenOrganizers( gameObject );
 	}
 }
