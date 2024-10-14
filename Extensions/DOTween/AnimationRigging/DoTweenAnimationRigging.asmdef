@@ -14,13 +14,13 @@
     "autoReferenced": true,
     "defineConstraints": [
         "DOTWEEN",
-        "ANIMATION_RIGGING"
+        "ANIMATION_RIGGING_ENABLED"
     ],
     "versionDefines": [
         {
             "name": "com.unity.animation.rigging",
             "expression": "1.0",
-            "define": "ANIMATION_RIGGING"
+            "define": "ANIMATION_RIGGING_ENABLED"
         }
     ],
     "noEngineReferences": false
