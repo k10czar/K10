@@ -123,6 +123,11 @@ public static class TriggerableExtensions
 		if( triggers == null ) return;
 		foreach( var trigger in triggers ) { trigger.Trigger(t); }
 	}
+	public static void TriggerAll<T>( this IEnumerable<ITriggerable<T>> triggers, IEnumerable<T> ts ) 
+	{
+		if( triggers == null ) return;
+		foreach( var trigger in triggers ) { foreach( var t in ts ) trigger.Trigger(t); }
+	}
 	public static void TriggerAll<T,K>( this IEnumerable<ITriggerable<T,K>> triggers, T t, K k ) 
 	{
 		if( triggers == null ) return;

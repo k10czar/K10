@@ -2,13 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[Flags]
-public enum EInteractionTargetingType
-{
-    Look = 1,
-    ColliderBounds = 2,
-}
-
 public class InteractableLogCategory : IK10LogCategory
 {
     public string Name => "🤏Interactables";
@@ -18,8 +11,8 @@ public class InteractableLogCategory : IK10LogCategory
 public interface IInteractableInteraction 
 { 
     bool ConsumeEvent { get; }
-
 }
+
 public interface IInteractionEvent : IInteractableInteraction
 {
     bool TryTrigger( string key, IInteractor interactor );
@@ -33,263 +26,273 @@ public interface IInteractionValue<T> : IInteractableInteraction
 public interface IInteractorTrigger : ITriggerable<IInteractor> { }
 public interface IInteractorTrigger<T> : ITriggerable<IInteractor,T> { }
 
-public class Interactable : MonoBehaviour, ILogglable<InteractableLogCategory>
+namespace K10.Interactables
 {
-    [OnlyOnPlay,SerializeField,ReadOnly] BoolState isBeingTargeted = new BoolState();
-    [SerializeField] EInteractionTargetingType targetingType = 0;
-    [Boxed,SerializeReference,ExtendedDrawer(true)] IValidator<IInteractor> condition;
-    [SerializeField] Vector3 offset;
-    [SerializeField] Collider areaTriggerCollider;
-    [SerializeField] Collider lookCollider;
-    [SerializeField] Transform lookPositionOverride;
-    [SerializeField, Range(0, 10)] float maxDistance = 1;
-    [SerializeReference,ExtendedDrawer] IInteractableInteraction[] interactions;
-    [SerializeReference,ExtendedDrawer] ITriggerable[] targetedReactions;
-    [SerializeReference,ExtendedDrawer] ITriggerable[] untargetedReactions;
-    
-    List<IInteractor> currentInteractors = new List<IInteractor>();
-
-
-    static List<Interactable> allActiveInteractables = new List<Interactable>();
-
-    public Vector3 Center => transform.position + transform.rotation * offset;
-
-    public IBoolStateObserver IsBeingTargeted => isBeingTargeted;
-    
-    float ScaledMaxDistance => Mathf.Max( transform.lossyScale.x, transform.lossyScale.z ) * maxDistance;
-
-    public Vector3 LookPosition => lookPositionOverride != null ? lookPositionOverride.position : transform.position;
-
-    public bool CanBeTargetedBy( IInteractor interactor )
+    [Flags]
+    public enum EInteractionTargetingType
     {
-        if( condition == null ) return true;
-        return condition.Validate( interactor );
+        Look = 1,
+        ColliderBounds = 2,
     }
 
-    void Start()
+    public class Interactable : MonoBehaviour, ILogglable<InteractableLogCategory>
     {
-        isBeingTargeted.Synchronize(OnIsTargetedChange);
-    }
+        [OnlyOnPlay,SerializeField,ReadOnly] BoolState isBeingTargeted = new BoolState();
+        [SerializeField] EInteractionTargetingType targetingType = 0;
+        [Boxed,SerializeReference,ExtendedDrawer(true)] IValidator<IInteractor> condition;
+        [SerializeField] Vector3 offset;
+        [SerializeField] Collider areaTriggerCollider;
+        [SerializeField] Collider lookCollider;
+        [SerializeField] Transform lookPositionOverride;
+        [SerializeField, Range(0, 10)] float maxDistance = 1;
+        [SerializeReference,ExtendedDrawer] IInteractableInteraction[] interactions;
+        [SerializeReference,ExtendedDrawer] ITriggerable[] targetedReactions;
+        [SerializeReference,ExtendedDrawer] ITriggerable[] untargetedReactions;
+        
+        List<IInteractor> currentInteractors = new List<IInteractor>();
 
-    void OnEnable()
-    {
-        allActiveInteractables.Add( this );
-    }
 
-    void OnDisable()
-    {
-        allActiveInteractables.Remove(this);
-        // RemoveAllInteractors();
-    }
+        static List<Interactable> allActiveInteractables = new List<Interactable>();
 
-    private void OnIsTargetedChange( bool isTargeted )
-    {
-        if( isTargeted ) targetedReactions.TriggerAll();
-        else untargetedReactions.TriggerAll();
-    }
+        public Vector3 Center => transform.position + transform.rotation * offset;
 
-    private void RemoveAllInteractors()
-    {
-        if (currentInteractors.Count == 0) return;
-        currentInteractors.Clear();
-        UpdateIsInteracting();
-    }
+        public IBoolStateObserver IsBeingTargeted => isBeingTargeted;
+        
+        float ScaledMaxDistance => Mathf.Max( transform.lossyScale.x, transform.lossyScale.z ) * maxDistance;
 
-    public void AddInteractor( IInteractor interactor )
-    {
-        currentInteractors.Add( interactor );
-        UpdateIsInteracting();
-    }
+        public Vector3 LookPosition => lookPositionOverride != null ? lookPositionOverride.position : transform.position;
 
-    public void RemoveInteractor( IInteractor interactor )
-    {
-        currentInteractors.Remove( interactor );
-        UpdateIsInteracting();
-    }
-
-    private void UpdateIsInteracting()
-    {
-        RemoveNullInteractors();
-        isBeingTargeted.Setter(currentInteractors.Count > 0);
-    }
-
-    private void RemoveNullInteractors()
-    {
-        for (int i = currentInteractors.Count - 1; i >= 0; i--)
+        public bool CanBeTargetedBy( IInteractor interactor )
         {
-            var interactor = currentInteractors[i];
-            if (interactor == null || interactor.TheInteractor == null) currentInteractors.RemoveAt(i);
+            if( condition == null ) return true;
+            return condition.Validate( interactor );
         }
-    }
 
-    private IEnumerable<T> GetInteractions<T>() where T : IInteractableInteraction
-    {
-        foreach( var interaction in interactions )
-            if( interaction is T action )
-                yield return action;
-    }
-
-    public bool TryInteractEvent( string key, IInteractor interactor )
-    {
-        var consumed = false;
-        foreach( var interaction in GetInteractions<IInteractionEvent>() )
+        void Start()
         {
-            var triggered = interaction.TryTrigger( key, interactor );
-            if( triggered && interaction.ConsumeEvent ) return true;
-            consumed |= true;
+            isBeingTargeted.Synchronize(OnIsTargetedChange);
         }
-        return consumed;
-    }
 
-    public bool TryInteractHold( string key, IInteractor interactor, bool isHolding )
-    {
-        var consumed = false;
-        foreach( var interaction in GetInteractions<IInteractionValue<bool>>() )
+        void OnEnable()
         {
-            var triggered = interaction.TryTrigger( key, interactor, isHolding );
-            if( triggered && interaction.ConsumeEvent ) return true;
-            consumed |= true;
+            allActiveInteractables.Add( this );
         }
-        return consumed;
-    }
 
-    public bool TryInteractAxis( string key, IInteractor interactor, float value )
-    {
-        var consumed = false;
-        foreach( var interaction in GetInteractions<IInteractionValue<float>>() )
+        void OnDisable()
         {
-            var triggered = interaction.TryTrigger( key, interactor, value );
-            if( triggered && interaction.ConsumeEvent ) return true;
-            consumed |= true;
+            allActiveInteractables.Remove(this);
+            // RemoveAllInteractors();
         }
-        return consumed;
-    }
 
-    public bool TryInteractAxis2d( string key, IInteractor interactor, Vector2 value )
-    {
-        var consumed = false;
-        foreach( var interaction in GetInteractions<IInteractionValue<Vector2>>() )
+        private void OnIsTargetedChange( bool isTargeted )
         {
-            var triggered = interaction.TryTrigger( key, interactor, value );
-            if( triggered && interaction.ConsumeEvent ) return true;
-            consumed |= true;
+            if( isTargeted ) targetedReactions.TriggerAll();
+            else untargetedReactions.TriggerAll();
         }
-        return consumed;
-    }
 
-    public static Interactable GetInteractable( Vector3 origin, Vector3 dir, IInteractor interactor ) => GetInteractable(new Ray(origin, dir), interactor);
-    public static Interactable GetInteractable(Ray look, IInteractor interactor) => GetInteractable(allActiveInteractables, look, interactor);
-    private static Interactable GetInteractable( IEnumerable<Interactable> interactables, Ray look, IInteractor interactor )
-    {
-        // TimeLogging<Interactable>
-        Interactable bestInteractable = default;
-        float bestDistanceSqr = float.MaxValue;
-
-        foreach( var interactable in interactables )
+        private void RemoveAllInteractors()
         {
-            if( interactable == null ) continue;
-            // if( !interactable.isActiveAndEnabled ) continue;
-            var origin = look.origin;
-            var pos = interactable.Center;
-            var dx = origin.x - pos.x;
-            var iMaxDis = interactable.ScaledMaxDistance;
-            var negiMaxDis = -iMaxDis;
-            if( dx > iMaxDis || dx < negiMaxDis ) 
+            if (currentInteractors.Count == 0) return;
+            currentInteractors.Clear();
+            UpdateIsInteracting();
+        }
+
+        public void AddInteractor( IInteractor interactor )
+        {
+            currentInteractors.Add( interactor );
+            UpdateIsInteracting();
+        }
+
+        public void RemoveInteractor( IInteractor interactor )
+        {
+            currentInteractors.Remove( interactor );
+            UpdateIsInteracting();
+        }
+
+        private void UpdateIsInteracting()
+        {
+            RemoveNullInteractors();
+            isBeingTargeted.Setter(currentInteractors.Count > 0);
+        }
+
+        private void RemoveNullInteractors()
+        {
+            for (int i = currentInteractors.Count - 1; i >= 0; i--)
             {
-                interactable.DrawDebug( Color.black );
-                continue;
+                var interactor = currentInteractors[i];
+                if (interactor == null || interactor.TheInteractor == null) currentInteractors.RemoveAt(i);
             }
-            var dz = origin.z - pos.z;
-            if( dz > iMaxDis || dz < negiMaxDis )
-            {
-                interactable.DrawDebug( Color.black );
-                continue;
-            }
+        }
 
-            var distSqr = dx * dx + dz * dz;
-            if( distSqr > iMaxDis * iMaxDis ) 
+        private IEnumerable<T> GetInteractions<T>() where T : IInteractableInteraction
+        {
+            foreach( var interaction in interactions )
+                if( interaction is T action )
+                    yield return action;
+        }
+
+        public bool TryInteractEvent( string key, IInteractor interactor )
+        {
+            var consumed = false;
+            foreach( var interaction in GetInteractions<IInteractionEvent>() )
             {
-                interactable.DrawDebug( Color.gray );
-                continue;
+                var triggered = interaction.TryTrigger( key, interactor );
+                if( triggered && interaction.ConsumeEvent ) return true;
+                consumed |= true;
             }
-            if( ( interactable.targetingType & EInteractionTargetingType.Look ) != 0 )
+            return consumed;
+        }
+
+        public bool TryInteractHold( string key, IInteractor interactor, bool isHolding )
+        {
+            var consumed = false;
+            foreach( var interaction in GetInteractions<IInteractionValue<bool>>() )
             {
-                var collider = interactable.lookCollider;
-                if( collider == null ) 
+                var triggered = interaction.TryTrigger( key, interactor, isHolding );
+                if( triggered && interaction.ConsumeEvent ) return true;
+                consumed |= true;
+            }
+            return consumed;
+        }
+
+        public bool TryInteractAxis( string key, IInteractor interactor, float value )
+        {
+            var consumed = false;
+            foreach( var interaction in GetInteractions<IInteractionValue<float>>() )
+            {
+                var triggered = interaction.TryTrigger( key, interactor, value );
+                if( triggered && interaction.ConsumeEvent ) return true;
+                consumed |= true;
+            }
+            return consumed;
+        }
+
+        public bool TryInteractAxis2d( string key, IInteractor interactor, Vector2 value )
+        {
+            var consumed = false;
+            foreach( var interaction in GetInteractions<IInteractionValue<Vector2>>() )
+            {
+                var triggered = interaction.TryTrigger( key, interactor, value );
+                if( triggered && interaction.ConsumeEvent ) return true;
+                consumed |= true;
+            }
+            return consumed;
+        }
+
+        public static Interactable GetInteractable( Vector3 origin, Vector3 dir, IInteractor interactor ) => GetInteractable(new Ray(origin, dir), interactor);
+        public static Interactable GetInteractable(Ray look, IInteractor interactor) => GetInteractable(allActiveInteractables, look, interactor);
+        private static Interactable GetInteractable( IEnumerable<Interactable> interactables, Ray look, IInteractor interactor )
+        {
+            // TimeLogging<Interactable>
+            Interactable bestInteractable = default;
+            float bestDistanceSqr = float.MaxValue;
+
+            foreach( var interactable in interactables )
+            {
+                if( interactable == null ) continue;
+                // if( !interactable.isActiveAndEnabled ) continue;
+                var origin = look.origin;
+                var pos = interactable.Center;
+                var dx = origin.x - pos.x;
+                var iMaxDis = interactable.ScaledMaxDistance;
+                var negiMaxDis = -iMaxDis;
+                if( dx > iMaxDis || dx < negiMaxDis ) 
                 {
-                    interactable.DrawDebug( Color.red );
+                    interactable.DrawDebug( Color.black );
                     continue;
                 }
-                var hitted = collider.Raycast( look, out var hit, iMaxDis );
-                if( !hitted ) 
+                var dz = origin.z - pos.z;
+                if( dz > iMaxDis || dz < negiMaxDis )
                 {
-                    interactable.DrawDebug( Color.blue );
+                    interactable.DrawDebug( Color.black );
                     continue;
                 }
-            }
-            if( ( interactable.targetingType & EInteractionTargetingType.ColliderBounds ) != 0 )
-            {
-                var area = interactable.areaTriggerCollider;
-                if( area == null ) 
+
+                var distSqr = dx * dx + dz * dz;
+                if( distSqr > iMaxDis * iMaxDis ) 
                 {
-                    interactable.DrawDebug( Color.red );
+                    interactable.DrawDebug( Color.gray );
                     continue;
                 }
-                var insideBounds = area.bounds.Contains( look.origin );
-                if( !insideBounds ) 
+                if( ( interactable.targetingType & EInteractionTargetingType.Look ) != 0 )
                 {
-                    interactable.DrawDebug( Colors.Yellow );
+                    var collider = interactable.lookCollider;
+                    if( collider == null ) 
+                    {
+                        interactable.DrawDebug( Color.red );
+                        continue;
+                    }
+                    var hitted = collider.Raycast( look, out var hit, iMaxDis );
+                    if( !hitted ) 
+                    {
+                        interactable.DrawDebug( Color.blue );
+                        continue;
+                    }
+                }
+                if( ( interactable.targetingType & EInteractionTargetingType.ColliderBounds ) != 0 )
+                {
+                    var area = interactable.areaTriggerCollider;
+                    if( area == null ) 
+                    {
+                        interactable.DrawDebug( Color.red );
+                        continue;
+                    }
+                    var insideBounds = area.bounds.Contains( look.origin );
+                    if( !insideBounds ) 
+                    {
+                        interactable.DrawDebug( Colors.Yellow );
+                        continue;
+                    }
+                }
+                if( !interactable.CanBeTargetedBy( interactor ) )
+                {
+                    interactable.DrawDebug( Colors.Orange );
                     continue;
                 }
-            }
-            if( !interactable.CanBeTargetedBy( interactor ) )
-            {
-                interactable.DrawDebug( Colors.Orange );
-                continue;
-            }
-            if( bestInteractable != null )
-            {
-                if( distSqr > bestDistanceSqr ) 
+                if( bestInteractable != null )
                 {
-                    interactable.DrawDebug( Color.magenta );
-                    DrawRayDebug( Color.magenta, origin, interactable );
-                    continue;
+                    if( distSqr > bestDistanceSqr ) 
+                    {
+                        interactable.DrawDebug( Color.magenta );
+                        DrawRayDebug( Color.magenta, origin, interactable );
+                        continue;
+                    }
                 }
+                bestInteractable = interactable;
+                bestDistanceSqr = distSqr;
+                interactable.DrawDebug( Color.cyan );
+                DrawRayDebug( Color.cyan, origin, interactable );
             }
-            bestInteractable = interactable;
-            bestDistanceSqr = distSqr;
-            interactable.DrawDebug( Color.cyan );
-            DrawRayDebug( Color.cyan, origin, interactable );
+
+            if( bestInteractable != null ) bestInteractable.DrawDebug( Color.green );
+            return bestInteractable;
         }
 
-        if( bestInteractable != null ) bestInteractable.DrawDebug( Color.green );
-        return bestInteractable;
-    }
+        static void DrawRayDebug( Color color, Vector3 origin, Interactable interactable )
+        {
+            if( interactable.SkipVisuals() ) return;
+            var targetPos = interactable.Center;
+            var nDir = targetPos - origin;
+            nDir.y = 0;
+            nDir.Normalize();
+            Debug.DrawRay( origin, nDir * interactable.ScaledMaxDistance, Color.gray );
+            Debug.DrawLine( origin, targetPos, color );
+        }
 
-    static void DrawRayDebug( Color color, Vector3 origin, Interactable interactable )
-    {
-        if( interactable.SkipVisuals() ) return;
-        var targetPos = interactable.Center;
-        var nDir = targetPos - origin;
-        nDir.y = 0;
-        nDir.Normalize();
-        Debug.DrawRay( origin, nDir * interactable.ScaledMaxDistance, Color.gray );
-        Debug.DrawLine( origin, targetPos, color );
-    }
+        void DrawDebug( Color color )
+        {
+            if (this.SkipVisuals()) return;
+            var center = Center;
+            DebugUtils.Circle(center, ScaledMaxDistance, color);
+            var look = LookPosition;
+            if( center.IsCloser( look ) ) return;
+            Debug.DrawLine(center, LookPosition, color);
+        }
 
-    void DrawDebug( Color color )
-    {
-        if (this.SkipVisuals()) return;
-        var center = Center;
-        DebugUtils.Circle(center, ScaledMaxDistance, color);
-        var look = LookPosition;
-        if( center.IsCloser( look ) ) return;
-        Debug.DrawLine(center, LookPosition, color);
-    }
-
-    void OnDrawGizmos()
-    {
-        if( Application.isPlaying ) return;
-        DrawDebug( this.LogColor() );
+        void OnDrawGizmos()
+        {
+            if( Application.isPlaying ) return;
+            DrawDebug( this.LogColor() );
+        }
     }
 }
