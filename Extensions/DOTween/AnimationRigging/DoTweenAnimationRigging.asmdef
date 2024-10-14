@@ -13,8 +13,15 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [
-        "DOTWEEN"
+        "DOTWEEN",
+        "ANIMATION_RIGGING"
     ],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.animation.rigging",
+            "expression": "1.0",
+            "define": "ANIMATION_RIGGING"
+        }
+    ],
     "noEngineReferences": false
 }
