@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 
+[UnityEngine.HideInInspector]
 public class ErrorEvent : IEvent
 {
 	public bool IsValid => true;
@@ -17,6 +18,7 @@ public class ErrorEvent : IEvent
 	public static IEvent Ref => _instance;
 }
 
+[UnityEngine.HideInInspector]
 public class ErrorEvent<T> : IEvent<T>
 {
 	public bool IsValid => true;

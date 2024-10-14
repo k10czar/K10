@@ -1,6 +1,6 @@
-using System;
 
 
+[UnityEngine.HideInInspector]
 public struct ActionEventCapsule : IEventTrigger//, ICustomDisposableKill
 {
 	private System.Action _callback;
@@ -28,6 +28,7 @@ public struct ActionEventCapsule : IEventTrigger//, ICustomDisposableKill
 	public override int GetHashCode() { return _callback?.GetHashCode() ?? 0; }
 }
 
+[UnityEngine.HideInInspector]
 public struct ActionEventCapsule<T> : IEventTrigger<T>//, ICustomDisposableKill
 {
 	private System.Action<T> _callback;
@@ -55,6 +56,7 @@ public struct ActionEventCapsule<T> : IEventTrigger<T>//, ICustomDisposableKill
 	public override int GetHashCode() { return _callback?.GetHashCode() ?? 0; }
 }
 
+[UnityEngine.HideInInspector]
 public struct ActionEventCapsule<T, K> : IEventTrigger<T, K>//, ICustomDisposableKill
 {
 	private System.Action<T, K> _callback;
@@ -83,6 +85,7 @@ public struct ActionEventCapsule<T, K> : IEventTrigger<T, K>//, ICustomDisposabl
 }
 
 
+[UnityEngine.HideInInspector]
 public struct ActionEventCapsule<T, K, L> : IEventTrigger<T, K, L>//, ICustomDisposableKill
 {
 	private System.Action<T, K, L> _callback;

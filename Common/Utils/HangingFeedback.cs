@@ -120,7 +120,7 @@ public abstract class HangingFeedback : MonoBehaviour
 		public float Alpha => _alphaCanvas.alpha;
 
 		public bool Get() => _isValid;
-		void IEventTrigger.Trigger() => Void();
+		void ITriggerable.Trigger() => Void();
 
 		public Message( string msg )
 		{

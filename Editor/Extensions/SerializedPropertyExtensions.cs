@@ -233,9 +233,9 @@ public static class SerializedPropertyExtensions
 
 		var refSize = listingData.MaxWidth;
 		var refSizeLimited = Mathf.Min( EditorGUILayout.GetControlRect().width / 2, refSize );
-        var index = FindIndexOf( prop.managedReferenceValue, listingData );
-        var newIndex = EditorGUILayout.Popup( index, listingData.GetGUIsWithIcon(), GUILayout.Width(refSizeLimited) );
-        CheckSelectionChange( prop, listingData, index, newIndex );
+        var index = FindIndexOf( prop.managedReferenceValue, listingData ) + 1;
+        var newIndex = EditorGUILayout.Popup( index, listingData.GetGUIsWithIconWithNull(), GUILayout.Width(refSizeLimited) );
+        CheckSelectionChange( prop, listingData, index - 1, newIndex - 1 );
         EditorGUILayout.Space( MAGIC_POPUP_SPACE, false );
         var triggerSummary = prop.managedReferenceFullTypename;
         prop.isExpanded = EditorGUILayout.BeginFoldoutHeaderGroup( prop.isExpanded, triggerSummary );
@@ -346,9 +346,9 @@ public static class SerializedPropertyExtensions
         rect = rect.CutTop(EditorGUIUtility.singleLineHeight + spacing);
 		var listingData = TypeListDataCache.GetFrom( type );
 		var popupWidth = Mathf.Min( rect.width / 2, listingData.MaxWidth + MAGIC_POPUP_SPACE );
-        var index = FindIndexOf( prop.managedReferenceValue, listingData );
-        var newIndex = EditorGUI.Popup(firstLine.RequestLeft(popupWidth), index, listingData.GetGUIsWithIcon());
-        CheckSelectionChange( prop, listingData, index, newIndex );
+        var index = FindIndexOf( prop.managedReferenceValue, listingData ) + 1;
+        var newIndex = EditorGUI.Popup(firstLine.RequestLeft(popupWidth), index, listingData.GetGUIsWithIconWithNull());
+        CheckSelectionChange( prop, listingData, index - 1, newIndex - 1 );
 		var triggerSummarys = prop.managedReferenceFullTypename.Split( " " );
         var triggerSummary = triggerSummarys.LastOrDefault().ToStringOrNull();
 		var triggerSummaryRect = firstLine.CutLeft(popupWidth + MAGIC_POPUP_SPACE);
@@ -392,8 +392,8 @@ public static class SerializedPropertyExtensions
         if( newIndex == oldIndex ) return;
 		var types = listingData.GetTypes();
 		var newType = (newIndex >= 0) ? types[newIndex] : null;
-		var newTypeName = newType?.FullName ?? "NULL";
-		var oldTypeName = ( oldIndex < 0 || oldIndex >= types.Length ) ? "MISSING" : types[oldIndex]?.FullName ?? "NULL";
+		var newTypeName = newType?.FullName ?? ConstsK10.NULL_STRING;
+		var oldTypeName = ( oldIndex < 0 || oldIndex >= types.Length ) ? "MISSING" : types[oldIndex]?.FullName ?? ConstsK10.NULL_STRING;
 		Debug.Log($"{"Changed".Colorfy( Colors.Console.Verbs )} {"SerializedReference".Colorfy( Colors.Console.TypeName )} {prop.propertyPath.Colorfy( Colors.Console.Interfaces )} type from {$"{oldTypeName}[{oldIndex}]".Colorfy(Colors.Console.TypeName)} to {$"{newTypeName}[{newIndex}]".Colorfy(Colors.Console.Numbers)}");
 		prop.managedReferenceValue = newType.CreateInstance();
     }
@@ -475,16 +475,16 @@ public static class SerializedPropertyExtensions
 			{
 				var field = type.GetField( fieldName, flags );
 				var fieldObj = field.GetValue( obj );
-				// Debug.Log( $"Succeded to get {(objType?.Name ?? "NULL")}.GetField( {element.ToStringOrNull()} ) on {property.propertyPath}" );
+				// Debug.Log( $"Succeded to get {(objType?.Name ?? ConstsK10.NULL_STRING)}.GetField( {element.ToStringOrNull()} ) on {property.propertyPath}" );
 				return fieldObj;
 			}
 			catch(System.Exception)
 			{
-				// Debug.LogError( $"Failed to get {(objType?.Name ?? "NULL")}.GetField( element[{i}]:{element.ToStringOrNull()} ) on {property.propertyPath}" );
+				// Debug.LogError( $"Failed to get {(objType?.Name ?? ConstsK10.NULL_STRING)}.GetField( element[{i}]:{element.ToStringOrNull()} ) on {property.propertyPath}" );
 				type = type.BaseType;
 			}
 		}
-		Debug.LogError( $"{"Failed".Colorfy( Colors.Console.Verbs )} to get {(firstTime?.Name ?? "NULL")}.GetField( {fieldName.ToStringOrNull()} )" );
+		Debug.LogError( $"{"Failed".Colorfy( Colors.Console.Verbs )} to get {(firstTime?.Name ?? ConstsK10.NULL_STRING)}.GetField( {fieldName.ToStringOrNull()} )" );
 		// for( int j = 0; j < path.Length; j++ ) Debug.LogError( $"element[{j}]:{path[j].ToStringOrNull()}" );
 		return null;
 	}

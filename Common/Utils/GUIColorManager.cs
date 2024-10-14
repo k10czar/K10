@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public class GuiColorManager
 {
@@ -13,7 +14,12 @@ public class GuiColorManager
 		GUI.contentColor = color;
 	}
 
-	public static void Revert( int count = 1 )
+    public static void New(object color)
+    {
+        throw new NotImplementedException();
+    }
+
+    public static void Revert( int count = 1 )
 	{
 		if( count <= 0 ) return;
 		var len = _colors.Count;

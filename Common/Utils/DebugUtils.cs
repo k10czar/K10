@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Animations;
 
 public static class DebugUtils
 {
@@ -30,7 +31,7 @@ public static class DebugUtils
 		var cam = Camera.main;
 
 		DebugUtils.Circle( pos, cam.transform.right, cam.transform.forward, radius, color, false );
-		DebugUtils.Circle( pos, forward, up, radius, Color.blue, false );
+		DebugUtils.Circle( pos, forward, up, radius, color, false );
 	}
 
 	public static void Elipse( Vector3 pos, Vector3 forward, Vector3 up, float a, float b, Color color, Vector3 scale, bool forwardGuide = false, float anglePrecision = K_DEFAULT_ANGLE_PRECISION )
@@ -211,5 +212,52 @@ public static class DebugUtils
 		Debug.DrawRay(point, Vector3.forward * ptSize, color);
 		Debug.DrawRay(point, Vector3.up * ptSize, color);
 		Debug.DrawRay(point, Vector3.right * ptSize, color);
+	}
+	
+    public static class Gizmos
+	{
+		public static void Bar( float fill, Vector3 origin )
+		{
+			Bar( fill, origin, new Vector3( .1f, 1, .1f ), Axis.Y );
+		}
+		
+		public static void Bar( float fill, Vector3 origin, Color color )
+		{
+			Bar( fill, origin, new Vector3( .1f, 1, .1f ), color, Axis.Y );
+		}
+		
+		public static void Bar( float fill, Vector3 origin, Vector3 size, Axis fillAxis = Axis.Y )
+		{
+			var scaledBar = size;
+			var fillCenter = origin;
+			var fullCenter = origin;
+			if( ( fillAxis & Axis.X ) != 0 ) 
+			{
+				fullCenter.x += size.x / 2;
+				scaledBar.x *= fill;
+				fillCenter.x += scaledBar.x / 2;
+			}
+			if( ( fillAxis & Axis.Y ) != 0 ) 
+			{
+				fullCenter.y += size.y / 2;
+				scaledBar.y *= fill;
+				fillCenter.y += scaledBar.y / 2;
+			}
+			if( ( fillAxis & Axis.Z ) != 0 ) 
+			{
+				fullCenter.z += size.z / 2;
+				scaledBar.z *= fill;
+				fillCenter.z += scaledBar.z / 2;
+			}
+			UnityEngine.Gizmos.DrawWireCube( fullCenter, size );
+			UnityEngine.Gizmos.DrawCube( fillCenter, scaledBar );
+		}
+
+		public static void Bar( float fill, Vector3 origin, Vector3 size, Color color, Axis fillAxis = Axis.Y )
+		{
+			GizmosColorManager.New( color );
+			Bar( fill, origin, size, fillAxis );
+			GizmosColorManager.Revert();
+		}
 	}
 }

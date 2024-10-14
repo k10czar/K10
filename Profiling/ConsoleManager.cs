@@ -15,8 +15,8 @@ public class ConsoleManager
     bool _debugLogs = true;
     bool _isDirty = true;
 
-    string _text = "NULL";
-    string _shadowText = "NULL";
+    string _text = ConstsK10.NULL_STRING;
+    string _shadowText = ConstsK10.NULL_STRING;
 
     List<int> _numberPile = new List<int>();
 

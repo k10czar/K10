@@ -29,7 +29,7 @@ public static class VoidableExtensions
 	}
 }
 
-
+[UnityEngine.HideInInspector]
 public class CallOnce : IEventTrigger, IVoidable
 {
 	Voidable _voidable;
@@ -48,7 +48,7 @@ public class CallOnce : IEventTrigger, IVoidable
 	public void Void() { _voidable.Void(); }
 }
 
-
+[UnityEngine.HideInInspector]
 public class CallOnce<T> : IEventTrigger<T>, IVoidable
 {
 	Voidable<T> _voidable;
@@ -67,6 +67,7 @@ public class CallOnce<T> : IEventTrigger<T>, IVoidable
 	public void Void() { _voidable.Void(); }
 }
 
+[UnityEngine.HideInInspector]
 public class Voidable : IEventTrigger, IVoidable
 {
     private IEventTrigger _callback;
@@ -82,6 +83,7 @@ public class Voidable : IEventTrigger, IVoidable
     public void Void() { if( _callback == null ) return; _onVoid?.Trigger(); _callback = null; _onVoid?.Kill(); }
 }
 
+[UnityEngine.HideInInspector]
 public class Voidable<T> : IEventTrigger<T>, IVoidable
 {
 	private IEventTrigger<T> _callback;

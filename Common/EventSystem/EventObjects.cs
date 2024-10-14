@@ -5,6 +5,7 @@ using System.Linq;
 using K10;
 
 
+[UnityEngine.HideInInspector]
 public class EventSlot : IEvent, ICustomDisposableKill
 {
 	bool _killed = false;
@@ -84,6 +85,7 @@ public class EventSlot : IEvent, ICustomDisposableKill
 	public override string ToString() { return $"[EventSlot:{EventsCount}]"; }
 }
 
+[UnityEngine.HideInInspector]
 public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 {
 	bool _killed = false;
@@ -200,6 +202,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 	public override string ToString() { return $"[EventSlot<{typeof(T)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
 }
 
+[UnityEngine.HideInInspector]
 public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 {
 	bool _killed = false;
@@ -329,6 +332,7 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
 }
 
+[UnityEngine.HideInInspector]
 public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 {
 	bool _killed = false;
@@ -471,6 +475,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)},{typeof(L)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
 }
 
+[UnityEngine.HideInInspector]
 public class VoidableEventTrigger : IEventTrigger, ICustomDisposableKill
 {
 	IEventTrigger _trigger;
@@ -483,6 +488,7 @@ public class VoidableEventTrigger : IEventTrigger, ICustomDisposableKill
 	public void Kill() { _trigger = null; }
 }
 
+[UnityEngine.HideInInspector]
 public class VoidableEventTrigger<T> : IEventTrigger<T>, ICustomDisposableKill
 {
 	IEventTrigger<T> _trigger;
@@ -495,6 +501,7 @@ public class VoidableEventTrigger<T> : IEventTrigger<T>, ICustomDisposableKill
 	public void Kill() { _trigger = null; }
 }
 
+[UnityEngine.HideInInspector]
 public class VoidableEventTrigger<T, K> : IEventTrigger<T, K>, ICustomDisposableKill
 {
 	IEventTrigger<T, K> _trigger;
@@ -507,6 +514,7 @@ public class VoidableEventTrigger<T, K> : IEventTrigger<T, K>, ICustomDisposable
 	public void Kill() { _trigger = null; }
 }
 
+[UnityEngine.HideInInspector]
 public class VoidableEventTrigger<T, K, J> : IEventTrigger<T, K, J>, ICustomDisposableKill
 {
 	IEventTrigger<T, K, J> _trigger;
