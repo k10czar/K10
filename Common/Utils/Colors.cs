@@ -82,9 +82,9 @@ public static class Colors
         return sequence[index];
     }
 
-#if UNITY_EDITOR
     private const System.Reflection.BindingFlags FLAGS = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
-
+    
+#if UNITY_EDITOR
     [UnityEditor.MenuItem("K10/Colors/Log")]
     private static void EDITOR_Log()
     {

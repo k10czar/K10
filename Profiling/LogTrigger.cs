@@ -1,6 +1,6 @@
 using System;
+using System.Text.RegularExpressions;
 using UnityEngine;
-
 
 [Serializable]
 public class LogTrigger : ITriggerable
