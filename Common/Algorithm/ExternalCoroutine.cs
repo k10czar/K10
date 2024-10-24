@@ -4,6 +4,7 @@ using UnityEngine;
 public class ExternalCoroutine : MonoBehaviour
 {
 	private static ExternalCoroutine instance = null;
+	public static ExternalCoroutine Instance => instance;
 
 	private static void TryCreateInstance()
 	{
