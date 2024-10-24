@@ -1,6 +1,8 @@
+using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
-public class FindThen<T> : ITriggerable<GameObject>
+public class FindThen<T> : ITriggerable<GameObject> where T : Component
 {
     [SerializeReference,ExtendedDrawer] ITriggerable<T>[] execute;
 
