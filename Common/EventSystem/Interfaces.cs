@@ -116,31 +116,31 @@ public static class TriggerableExtensions
 	public static void TriggerAll( this IEnumerable<ITriggerable> triggers ) 
 	{
 		if( triggers == null ) return;
-		foreach( var trigger in triggers ) { trigger.Trigger(); }
+		foreach( var trigger in triggers ) { trigger?.Trigger(); }
 	}
 	public static void TriggerAll<T>( this IEnumerable<ITriggerable<T>> triggers, T t ) 
 	{
 		if( triggers == null ) return;
-		foreach( var trigger in triggers ) { trigger.Trigger(t); }
+		foreach( var trigger in triggers ) { trigger?.Trigger(t); }
 	}
 	public static void TriggerAll<T>( this IEnumerable<ITriggerable<T>> triggers, IEnumerable<T> ts ) 
 	{
 		if( triggers == null ) return;
-		foreach( var trigger in triggers ) { foreach( var t in ts ) trigger.Trigger(t); }
+		foreach( var trigger in triggers ) { foreach( var t in ts ) trigger?.Trigger(t); }
 	}
 	public static void TriggerAll<T,K>( this IEnumerable<ITriggerable<T,K>> triggers, T t, K k ) 
 	{
 		if( triggers == null ) return;
-		foreach( var trigger in triggers ) { trigger.Trigger( t, k ); }
+		foreach( var trigger in triggers ) { trigger?.Trigger( t, k ); }
 	}
 	public static void TriggerAll<T,K,J>( this IEnumerable<ITriggerable<T,K,J>> triggers, T t, K k, J j ) 
 	{
 		if( triggers == null ) return;
-		foreach( var trigger in triggers ) { trigger.Trigger( t, k, j ); }
+		foreach( var trigger in triggers ) { trigger?.Trigger( t, k, j ); }
 	}
 	public static void TriggerAll<T,K,J,L>( this IEnumerable<ITriggerable<T,K,J,L>> triggers, T t, K k, J j, L l ) 
 	{
 		if( triggers == null ) return;
-		foreach( var trigger in triggers ) { trigger.Trigger( t, k, j, l ); }
+		foreach( var trigger in triggers ) { trigger?.Trigger( t, k, j, l ); }
 	}
 }

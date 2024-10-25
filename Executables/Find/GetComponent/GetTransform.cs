@@ -5,9 +5,6 @@ public class GetTransform : IFinder<GameObject, Transform>
 {
     public IEnumerator<Transform> Find(GameObject go)
     {
-        if( go != null )
-        {
-            if( go.transform != null ) yield return go.transform;
-        }
+        if( go != null && go.transform != null ) yield return go.transform;
     }
 }

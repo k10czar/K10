@@ -41,8 +41,8 @@ namespace K10.EditorGUIExtention
 		public static bool Draw( Rect r, string iconName ) { return Draw( r, IconCache.Get( iconName ).Texture, DEFAULT_CHAR, DEFAULT_TOOLTIP, DEFAULT_FAIL_COLOR ); }
 		public static bool Draw( Rect r, string iconName, char failLetter ) { return Draw( r, IconCache.Get( iconName ).Texture, failLetter, DEFAULT_TOOLTIP, DEFAULT_FAIL_COLOR ); }
 		public static bool Draw( Rect r, string iconName, char failLetter, string tooltip, Color failColor ) { return Draw( r, IconCache.Get( iconName ).Texture, failLetter, tooltip, failColor ); }
-		public static bool Draw( Rect r, Texture2D texture ) { return Draw( r, texture, DEFAULT_CHAR, DEFAULT_TOOLTIP, DEFAULT_FAIL_COLOR ); }
-		public static bool Draw( Rect r, Texture2D texture, char failLetter, string tooltip, Color failColor )
+		public static bool Draw( Rect r, Texture texture ) { return Draw( r, texture, DEFAULT_CHAR, DEFAULT_TOOLTIP, DEFAULT_FAIL_COLOR ); }
+		public static bool Draw( Rect r, Texture texture, char failLetter, string tooltip, Color failColor )
 		{
 			var ret = false;
 			if( texture != null ) ret = GUI.Button( r, new GUIContent( texture, tooltip ), K10GuiStyles.basicStyle );

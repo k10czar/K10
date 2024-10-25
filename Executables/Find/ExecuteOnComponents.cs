@@ -11,10 +11,9 @@ public class ExecuteOnComponents<T> : ITriggerable<GameObject> where T : Compone
         if (findStrategy == null) return;
         var components = findStrategy.Find( obj );
         if (components == null) return;
-        while( components.Current != null )
+        while( components.MoveNext() )
         {
             execute.TriggerAll( components.Current );
-            components.MoveNext();
         }
     }
 }
