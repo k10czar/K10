@@ -11,6 +11,7 @@ public class DoTweenScaleFromValue : ITriggerable<float>
 
     public void Trigger( float value )
     {
+        // Debug.Log( $"{transform.HierarchyNameOrNull()}.DoTweenScaleFromValue {value}" );
         if (transform == null) return;
         DoTweenBlend.GetEaseAndDuration( blend, out var duration, out var ease );
         if( blend != null ) value = blend.EaseFunction( value, 1, 0, 0 );

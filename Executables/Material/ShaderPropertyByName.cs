@@ -1,5 +1,10 @@
 using UnityEngine;
 
+public interface IShaderProperty
+{
+    int PropertyID { get; }
+}
+
 public class ShaderPropertyByName : IShaderProperty
 {
     [SerializeReference,ExtendedDrawer] IValueProvider<string> propertyNameProvider;
