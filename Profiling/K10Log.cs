@@ -28,7 +28,7 @@ public static class K10Log<T> where T : IK10LogCategory, new()
 
     public static string Name => category.Name;
     public static T Category => category;
-    
+
     public static Color Color => category.Color;
     public static Color SecondaryColor => category.SecondaryColor;
     public static ELogPrefix PrefixType => category.PrefixType;
@@ -55,8 +55,9 @@ public static class K10Log<T> where T : IK10LogCategory, new()
     public static void Log(LogSeverity severity, string log, Object target = null, bool verbose = false)
     {
         var notError = ( severity != LogSeverity.Error );
-#if UNITY_EDITOR
         if (!K10DebugSystem.CanDebug<T>(verbose) && notError) return;
+
+#if UNITY_EDITOR
         if (!K10DebugSystem.CanDebugTarget(target as Component, severity) && notError) return;
 #endif
 
