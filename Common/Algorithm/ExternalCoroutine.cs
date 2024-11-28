@@ -1,52 +1,49 @@
 using System.Collections;
 using UnityEngine;
 
-namespace K10
+public class ExternalCoroutine : MonoBehaviour
 {
-	public class ExternalCoroutine : MonoBehaviour
+	private static ExternalCoroutine instance = null;
+
+	public static ExternalCoroutine Instance
 	{
-		private static ExternalCoroutine instance = null;
-
-		public static ExternalCoroutine Instance
-		{
-			get
-			{
-				TryCreateInstance();
-				return instance;
-			}
-		}
-
-		private static void TryCreateInstance()
-		{
-			if( instance == null )
-			{
-				var go = new GameObject( "External Coroutine" );
-				Object.DontDestroyOnLoad( go );
-
-				instance = go.AddComponent<ExternalCoroutine>();
-			}
-		}
-
-		public static new Coroutine StartCoroutine( IEnumerator coroutine )
+		get
 		{
 			TryCreateInstance();
-			return instance.BaseStartCoroutine( coroutine );
+			return instance;
 		}
+	}
 
-		public static new void StopCoroutine( Coroutine coroutine )
+	private static void TryCreateInstance()
+	{
+		if( instance == null )
 		{
-			TryCreateInstance();
-			instance.BaseStopCoroutine( coroutine );
-		}
+			var go = new GameObject( "External Coroutine" );
+			Object.DontDestroyOnLoad( go );
 
-		private Coroutine BaseStartCoroutine( IEnumerator coroutine )
-		{
-			return base.StartCoroutine( coroutine );
+			instance = go.AddComponent<ExternalCoroutine>();
 		}
+	}
 
-		private void BaseStopCoroutine( Coroutine coroutine )
-		{
-			base.StopCoroutine( coroutine );
-		}
+	public static new Coroutine StartCoroutine( IEnumerator coroutine )
+	{
+		TryCreateInstance();
+		return instance.BaseStartCoroutine( coroutine );
+	}
+
+	public static new void StopCoroutine( Coroutine coroutine )
+	{
+		TryCreateInstance();
+		instance.BaseStopCoroutine( coroutine );
+	}
+
+	private Coroutine BaseStartCoroutine( IEnumerator coroutine )
+	{
+		return base.StartCoroutine( coroutine );
+	}
+
+	private void BaseStopCoroutine( Coroutine coroutine )
+	{
+		base.StopCoroutine( coroutine );
 	}
 }

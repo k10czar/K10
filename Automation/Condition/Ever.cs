@@ -1,4 +1,8 @@
-public class Ever : ICondition
+
+namespace K10.Conditions
 {
-	public bool Check() => true;
+	public class Ever : ICondition
+	{
+		public bool Check() => true;
+	}
 }

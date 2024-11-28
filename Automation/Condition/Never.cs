@@ -1,4 +1,8 @@
-public class Never : ICondition
+
+namespace K10.Conditions
 {
-	public bool Check() => false;
+	public class Never : ICondition
+	{
+		public bool Check() => false;
+	}
 }

@@ -1,21 +1,25 @@
 using System.Linq;
 using UnityEngine;
 
-public class Or : ICondition
+namespace K10.Conditions
 {
-	[ExtendedDrawer, SerializeReference] ICondition[] _operands;
-	public bool Check()
+	public class Or : ICondition
 	{
-		for( int i = 0; i < _operands.Length; i++ )
+		[ExtendedDrawer, SerializeReference] ICondition[] _operands;
+		public bool Check()
 		{
-			var cond = _operands[i];
-			if( cond == null ) continue;
-			if( cond.Check() ) return true;
+			for( int i = 0; i < _operands.Length; i++ )
+			{
+				var cond = _operands[i];
+				if( cond == null ) continue;
+				if( cond.Check() ) return true;
+			}
+			return false;
 		}
-		return false;
-	}
-	override public string ToString() 
-	{
-		return $"({string.Join( " || ", _operands.Select( ( o ) => o.ToStringOrNull() ).ToArray() )})";
+		
+		override public string ToString() 
+		{
+			return $"({string.Join( " || ", _operands.Select( ( o ) => o.ToStringOrNull() ).ToArray() )})";
+		}
 	}
 }
