@@ -11,6 +11,7 @@ public abstract class BaseExpirableEvent : IExpirableTrigger
 	public void Expire() { _valid = false; }
 }
 
+[UnityEngine.HideInInspector]
 public class ExpirableTrigger : BaseExpirableEvent, IEventTrigger, IExpirableTrigger
 {
 	System.Action _callback;
@@ -19,6 +20,7 @@ public class ExpirableTrigger : BaseExpirableEvent, IEventTrigger, IExpirableTri
 	public void Trigger() { _callback(); }
 }
 
+[UnityEngine.HideInInspector]
 public class ExpirableTrigger<T> : BaseExpirableEvent, IEventTrigger<T>, IExpirableTrigger
 {
 	System.Action<T> _callback;
@@ -27,6 +29,7 @@ public class ExpirableTrigger<T> : BaseExpirableEvent, IEventTrigger<T>, IExpira
 	public void Trigger( T t ) { _callback( t ); }
 }
 
+[UnityEngine.HideInInspector]
 public class ExpirableTrigger<T,K> : BaseExpirableEvent, IEventTrigger<T,K>, IExpirableTrigger
 {
 	System.Action<T, K> _callback;

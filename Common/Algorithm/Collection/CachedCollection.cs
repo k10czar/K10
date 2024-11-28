@@ -61,6 +61,10 @@ public class CachedCollection<T> : ICachedCollection<T>, ICustomDisposableKill
 		_onChange?.Trigger();
 	}
 
+    public int IndexOf( T element ) => _list.IndexOf( element );
+    public void Sort( IComparer<T> comparer ) { _list.Sort( comparer ); }
+    public void Sort( System.Comparison<T> comparison ) { _list.Sort( comparison ); }
+
 	public void AddRange( IEnumerable<T> range )
 	{
 		foreach( var t in range ) Add( t );
@@ -122,7 +126,7 @@ public class CachedCollection<T> : ICachedCollection<T>, ICustomDisposableKill
 		_onChange?.Trigger();
     }
 
-    public override string ToString() { return string.Format( "[CachedCollection<{0}>[{1}]]", typeof(T), string.Join( ", ", _list.ConvertAll( ( t ) => t.ToString() ).ToArray() ) ); }
+    public override string ToString() { return string.Format( "[CachedCollection<{0}>{{ {1} }}]", typeof(T), string.Join( ", ", _list.ConvertAll( ( t ) => t.ToString() ).ToArray() ) ); }
 
 	public IEnumerator<T> GetEnumerator() => _list.GetEnumerator();
 	IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_list).GetEnumerator();

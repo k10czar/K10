@@ -26,7 +26,7 @@ public class ImagesMonitor : EditorWindow
 
     private void UpdateSprites()
     {
-        var objs = FindObjectsOfType<Image>( _includeInactive );
+        var objs = FindObjectsByType<Image>(_includeInactive ? FindObjectsInactive.Include : FindObjectsInactive.Exclude, FindObjectsSortMode.None);
 
         observeds.Clear();
         foreach (var sr in objs)
@@ -67,7 +67,7 @@ public class ImagesMonitor : EditorWindow
         var densityW = GUILayout.Width( 92 );
         var textureW = GUILayout.Width( 240 );
         var sizeW = GUILayout.Width( 120 );
-        
+
         EditorGUILayout.BeginHorizontal();
         if( GUILayout.Button( "Image", refW ) ) SortByImage();
         if( GUILayout.Button( "Width", dimensionW ) ) SortByScreenWidth();

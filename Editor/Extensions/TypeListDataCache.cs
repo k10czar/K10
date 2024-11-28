@@ -32,6 +32,8 @@ public class TypeListDataCache
     }
 }
 
+
+
 public class TypeListData<T>
 {
     public static TypeListData Data => TypeListDataCache.GetFrom( typeof(T) );

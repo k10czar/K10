@@ -9,10 +9,14 @@ public class TypeListData
 
     Type[] _baseTypes = null;
     Type[] _notTypes = null;
-    Type[] _newSkillEffectTypes = null;
-    string[] _newSkillEffectNames = null;
-    GUIContent[] _newSkillEffectGUI = null;
-    public GUIContent[] EDITOR_newSkillEffectGUI = null;
+    Type[] _newTypes = null;
+    Type[] _newTypesWithNull = null;
+    string[] _newNames = null;
+    string[] _newNamesWithNull = null;
+    GUIContent[] _newGUI = null;
+    GUIContent[] _newGUIWithNull = null;
+    public GUIContent[] EDITOR_newGUI = null;
+    public GUIContent[] EDITOR_newGUIWithNull = null;
 
     public TypeListData( params System.Type[] types )
     {
@@ -29,37 +33,52 @@ public class TypeListData
 
     public GUIContent[] GetGUIs()
     {
-        if( _newSkillEffectGUI != null ) return _newSkillEffectGUI;
+        if( _newGUI != null ) return _newGUI;
 
         var effectNames = GetNames();
-        _newSkillEffectGUI = new GUIContent[effectNames.Length];
+        _newGUI = new GUIContent[effectNames.Length];
         for( int i = 0; i < effectNames.Length; i++ )
         {
-            _newSkillEffectGUI[i] = new GUIContent( effectNames[i] );
+            _newGUI[i] = new GUIContent( effectNames[i] );
         } 
 
-        return _newSkillEffectGUI;
+        return _newGUI;
+    }
+
+    public GUIContent[] GetGUIsWithNull()
+    {
+        if( _newGUIWithNull != null ) return _newGUIWithNull;
+
+        var guis = GetGUIs();
+        _newGUIWithNull = new GUIContent[guis.Length+1];
+        _newGUIWithNull[0] = new GUIContent( ConstsK10.NULL_STRING );
+        for( int i = 0; i < guis.Length; i++ )
+        {
+            _newGUIWithNull[i+1] = guis[i];
+        } 
+
+        return _newGUIWithNull;
     }
 
     public string[] GetNames()
     {
-        if( _newSkillEffectNames != null ) return _newSkillEffectNames;
+        if( _newNames != null ) return _newNames;
 
         var effectTypes = GetTypes();
-        _newSkillEffectNames = new string[effectTypes.Length];
+        _newNames = new string[effectTypes.Length];
         string commonPart = null;
-        for( int i = 0; i < _newSkillEffectNames.Length; i++ )
+        for( int i = 0; i < _newNames.Length; i++ )
         {
             var t = effectTypes[i];
             var pathAtt = t.GetCustomAttribute<ListingPathAttribute>();
-            if( pathAtt != null ) _newSkillEffectNames[i] = pathAtt.Path;
+            if( pathAtt != null ) _newNames[i] = pathAtt.Path;
             else 
             {
                 var assemblyName = t.Assembly.GetName().Name;
                 foreach( var ignore in IGNORED_ASSEMBLY_NAMES ) 
                     if( assemblyName.StartsWith( ignore ) ) 
                         assemblyName = assemblyName.Substring( ignore.Length );
-				if (string.IsNullOrEmpty(assemblyName)) _newSkillEffectNames[i] = t.FullName.Replace(".", "/");
+				if (string.IsNullOrEmpty(assemblyName)) _newNames[i] = t.FullName.Replace(".", "/");
 				else
 				{
 					var assemblyNameParsed = assemblyName.Replace(".", "/");
@@ -70,12 +89,12 @@ public class TypeListData
 						if (assemblyNameParsed[equalId] != nameParsed[equalId]) break;
 					}
 					assemblyNameParsed = assemblyNameParsed.Substring(0, equalId);
-					if ( string.IsNullOrEmpty(assemblyNameParsed) ) _newSkillEffectNames[i] = nameParsed;
-					else _newSkillEffectNames[i] = assemblyNameParsed + "/" + nameParsed;
+					if ( string.IsNullOrEmpty(assemblyNameParsed) ) _newNames[i] = nameParsed;
+					else _newNames[i] = assemblyNameParsed + "/" + nameParsed;
 				}
             }
             
-            var str = _newSkillEffectNames[i];
+            var str = _newNames[i];
             if( commonPart == null ) 
             {
                 int id = -1;
@@ -96,25 +115,55 @@ public class TypeListData
         if( !string.IsNullOrEmpty( commonPart ) )
         {
             var cutLength = commonPart.Length;
-            for( int i = 0; i < _newSkillEffectNames.Length; i++ )
+            for( int i = 0; i < _newNames.Length; i++ )
             {
-                var str = _newSkillEffectNames[i];
-                _newSkillEffectNames[i] = str.Substring( cutLength, str.Length - cutLength );
+                var str = _newNames[i];
+                _newNames[i] = str.Substring( cutLength, str.Length - cutLength );
             }
         }
 
-        return _newSkillEffectNames;
+        return _newNames;
+    }
+
+    public string[] GetNameWithNull()
+    {
+        if( _newNamesWithNull != null ) return _newNamesWithNull;
+        
+        var notNullNames = GetNames();
+        _newNamesWithNull = new string[notNullNames.Length + 1];
+        _newNamesWithNull[0] = ConstsK10.NULL_STRING;
+        for( int i = 0; i < notNullNames.Length; i++ )
+        {
+            _newNamesWithNull[i + 1] = notNullNames[i];
+        }
+        return _newNamesWithNull;
     }
 
     public Type[] GetTypes()
     {
-        if( _newSkillEffectTypes != null ) return _newSkillEffectTypes;
+        if( _newTypes != null ) return _newTypes;
 
-        _newSkillEffectTypes = System.AppDomain.CurrentDomain.GetAssemblies()
+        var ignoreAtt = typeof( HideInInspector );
+
+        _newTypes = System.AppDomain.CurrentDomain.GetAssemblies()
                     .SelectMany( s => s.GetTypes() )
-                    .Where( p => p.IsPublic && IsAssignableFrom(p) && !p.IsAbstract && IsNotAssignableFrom( p ) ).ToArray();
+                    .Where( p => p.IsPublic && IsAssignableFrom(p) && !p.IsAbstract && IsNotAssignableFrom( p ) && !Attribute.IsDefined( p, ignoreAtt ) ).ToArray();
 
-        return _newSkillEffectTypes;
+        return _newTypes;
+    }
+
+    public Type[] GetTypesWithNull()
+    {
+        if( _newTypesWithNull != null ) return _newTypesWithNull;
+        
+        var notNullTypes = GetTypes();
+        _newTypesWithNull = new Type[notNullTypes.Length + 1];
+        _newTypesWithNull[0] = null;
+        for( int i = 0; i < notNullTypes.Length; i++ )
+        {
+            _newTypesWithNull[i + 1] = notNullTypes[i];
+        }
+        return _newTypesWithNull;
     }
 
     private bool IsAssignableFrom( Type t )

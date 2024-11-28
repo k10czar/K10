@@ -3,6 +3,7 @@ using System.Collections;
 using System;
 
 using static Colors.Console;
+using Object = UnityEngine.Object;
 
 #if UNITY_EDITOR
 [ExecuteInEditMode]
@@ -32,7 +33,7 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 			{
 				var stopwatch = new System.Diagnostics.Stopwatch();
 				stopwatch.Start();
-				var candidate = (T)MonoBehaviour.FindObjectOfType( typeof( T ) );
+				var candidate = Object.FindFirstObjectByType<T>();
 				Debug.Log( $"{"Shame".Colorfy( Negation )} {"Singleton".Colorfy(TypeName)}<{typeof(T).Name.Colorfy(Keyword)}>.Instance Didn't have a cached object of type! So called {"FindObjectOfType()".Colorfy(Danger)} took:{$"{stopwatch.Elapsed.TotalMilliseconds:N2}ms".Colorfy(Numbers)} {((candidate!=null)?$"{"Found".Colorfy(Verbs)} @ {candidate.HierarchyNameOrNull()}":"Fail".Colorfy(Negation))} on {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.Colorfy(Names)}" );
 				stopwatch.Stop();
 				_instance.RegisterNewReference( candidate );
@@ -72,9 +73,9 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 		return _instance;
 	}
 
-	public static void SayHello( T candidate ) 
+	public static void SayHello( T candidate )
 	{
-		if( _instance.IsValid ) 
+		if( _instance.IsValid )
 		{
 #if UNITY_EDITOR
 			if( _instance.Reference != candidate ) Debug.LogError( $"<color=purple>Shame</color> Conflict with Singleton<<color=lime>{(typeof(T))}</color>>SayHello( {candidate.HierarchyNameOrNull()} ) conflicting with already setted {_instance.Reference.HierarchyNameOrNull()} on <color=yellow>{UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}</color>" );

@@ -8,15 +8,15 @@ namespace Automation
 	{
 		[ExtendedDrawer,SerializeReference] IOperation _operation;
 
-        public IEnumerator ExecutionCoroutine() 
+        public IEnumerator ExecutionCoroutine( bool log = false )
         {
 			if( _operation != null )
 			{
-				Debug.Log( $"{"Started".Colorfy( Colors.Console.Verbs )} automation {name.Colorfy( Colors.Console.TypeName )}" );
-            	yield return _operation.ExecutionCoroutine();
+				_operation.Log($"{"Started".Colorfy( Colors.Console.Verbs )} automation {name.Colorfy( Colors.Console.TypeName )}");
+            	yield return _operation.ExecutionCoroutine( log );
 			}
         }
 
-		public string GetSummaryColored() => $"📦 {"OperationObject".Colorfy( Colors.Console.Fields )} {name} with {_operation.ToStringColored(Colors.Console.Numbers)}";
+		public override string ToString() => $"📦 {"OperationObject".Colorfy( Colors.Console.Fields )} {name} with {_operation.ToStringOrNullColored(Colors.Console.Numbers)}";
     }
 }

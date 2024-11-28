@@ -47,9 +47,11 @@ public static class PropDrawerCache
     /// <returns>Returns if the input property drawer Type is a property drawer of another the given type</returns>
     private static bool IsPropertyDrawerOf(Type propertyDrawerType, Type type)
     {
+        if( propertyDrawerType == null ) return false;
         if( !propertyDrawerType.IsSubclassOf( PROP_TYPE ) ) return false;
         var att = propertyDrawerType.GetCustomAttribute<CustomPropertyDrawer>();
         if( att == null ) return false;
+        if( TYPE_FIELD == null ) return false;
         var attType = TYPE_FIELD.GetValue( att ) as System.Type;
         if( attType == null ) return false;
         return propertyDrawerType.IsSubclassOf( attType );

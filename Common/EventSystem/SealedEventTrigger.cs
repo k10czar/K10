@@ -1,5 +1,6 @@
 ﻿
 
+[UnityEngine.HideInInspector]
 public sealed class SealedTrigger :  IEventTrigger
 {
 	System.Action _callback;
@@ -10,6 +11,7 @@ public sealed class SealedTrigger :  IEventTrigger
 	public bool IsValid { get { return _valid; } }
 }
 
+[UnityEngine.HideInInspector]
 public sealed class SealedTrigger<T> : IEventTrigger<T>
 {
 	System.Action<T> _callback;
@@ -20,6 +22,7 @@ public sealed class SealedTrigger<T> : IEventTrigger<T>
 	public bool IsValid { get { return _valid; } }
 }
 
+[UnityEngine.HideInInspector]
 public sealed class SealedTrigger<T,K> : IEventTrigger<T,K>
 {
 	System.Action<T, K> _callback;

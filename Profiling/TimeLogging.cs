@@ -11,7 +11,6 @@ public class TimeLogging<T>
 	Log _defaultLog = new Log( Time.unscaledTime, "Default" );
 	List<Log> _loadingLogs = new List<Log>();
 	Stopwatch _logMs = new Stopwatch();
-	double _totalLog = 0;
 
     protected EventSlot<string> _onLogEnd = new EventSlot<string>();
     protected EventSlot<string> _onLogSectionEnd = new EventSlot<string>();
@@ -38,7 +37,7 @@ public class TimeLogging<T>
 		_currentLog.End();
 		_loadingLogs.Add( _currentLog );
 
-		if( _onLogEnd.HasListeners ) 
+		if( _onLogEnd.HasListeners )
 		{
 			_onLogEnd.Trigger( GetEndLog() );
 			_onLogEnd.Trigger( GetExportLog() );
@@ -59,7 +58,7 @@ public class TimeLogging<T>
         if( _currentLog == null ) return;
 
 		_logMs.Start();
-		
+
 		_currentLog.End();
         if( _onLogEnd.HasListeners ) _onLogEnd.Trigger( $"{"Canceled log:".Colorfy(Negation)} {_currentLog.ToString()}" );
 		_currentLog = null;
@@ -212,7 +211,7 @@ public class TimeLogging<T>
 
 			public float DurationMs => _watch?.ElapsedMilliseconds ?? _duration;
 
-			public void Start() 
+			public void Start()
 			{
 				Start( UnityEngine.Time.unscaledTime );
 			}

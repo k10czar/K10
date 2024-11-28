@@ -1,5 +1,6 @@
 ﻿
 
+[UnityEngine.HideInInspector]
 public abstract class BaseConditionalEventListener : ICustomDisposableKill
 {
 	protected System.Func<bool> _condition;
@@ -10,6 +11,7 @@ public abstract class BaseConditionalEventListener : ICustomDisposableKill
 	public virtual void Kill() { _condition = null; }
 }
 
+[UnityEngine.HideInInspector]
 public sealed class ConditionalEventListener : BaseConditionalEventListener, IEventTrigger
 {
 	VoidableEventTrigger _evnt;
@@ -37,6 +39,7 @@ public sealed class ConditionalEventListener : BaseConditionalEventListener, IEv
 	public override int GetHashCode() { return _evnt.GetHashCode() + _condition.GetHashCode(); }
 }
 
+[UnityEngine.HideInInspector]
 public sealed class ConditionalEventListener<T> : BaseConditionalEventListener, IEventTrigger<T>
 {
 	VoidableEventTrigger<T> _evnt;
@@ -64,6 +67,7 @@ public sealed class ConditionalEventListener<T> : BaseConditionalEventListener, 
 	public override int GetHashCode() { return _evnt.GetHashCode() + _condition.GetHashCode(); }
 }
 
+[UnityEngine.HideInInspector]
 public sealed class ConditionalEventListener<T, K> : BaseConditionalEventListener, IEventTrigger<T, K>
 {
 	VoidableEventTrigger<T, K> _evnt;
@@ -91,6 +95,7 @@ public sealed class ConditionalEventListener<T, K> : BaseConditionalEventListene
 	public override int GetHashCode() { return _evnt.GetHashCode() + _condition.GetHashCode(); }
 }
 
+[UnityEngine.HideInInspector]
 public sealed class ConditionalEventListener<T, K, J> : BaseConditionalEventListener, IEventTrigger<T, K, J>
 {
 	VoidableEventTrigger<T, K, J> _evnt;

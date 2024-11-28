@@ -50,4 +50,11 @@ public static class RayExtensions
 
 		return new Ray( ray.origin, endDir );
 	}
+
+	public static Vector3 ClosestPoint( this Ray ray, Vector3 point )
+	{
+		var op = point - ray.origin;
+		var proj = Vector3.Dot( ray.direction, op );
+		return ray.origin + proj * ray.direction;
+	}
 }

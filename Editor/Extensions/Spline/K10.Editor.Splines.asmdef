@@ -1,0 +1,29 @@
+{
+    "name": "K10.Editor.Splines",
+    "rootNamespace": "",
+    "references": [
+        "GUID:6ac568dd7a2af634895b6119885b2204",
+        "GUID:d12d6801382f9ad4392c8257d47edbb6",
+        "GUID:21d1eb854b91ade49bc69a263d12bee2",
+        "GUID:d8b63aba1907145bea998dd612889d6b"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "SPLINES_ENABLED"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.splines",
+            "expression": "2",
+            "define": "SPLINES_ENABLED"
+        }
+    ],
+    "noEngineReferences": false
+}
