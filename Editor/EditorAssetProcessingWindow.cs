@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
-using UnityEngine.Rendering.VirtualTexturing;
 
 using static Colors.Console;
 using K10.EditorGUIExtention;
@@ -193,13 +192,13 @@ public sealed class EditorAssetProcessingWindow : EditorWindow
                 if (_soSelectionIgnore.Contains(j)) continue;
                 var typeClass = _soTypes[j];
                 var validationResult = RunAssetValidationInAll( typeClass, _searchMonoBehavioursProcess, sb );
-				if( validationResult.transfers == 0 ) 
+				if( validationResult.transfers == 0 )
 				{
 					noTypes.Add( ( typeClass, validationResult.duration, validationResult.objectsCount ) );
 					noTypesDuration += validationResult.duration;
 				}
             }
-			
+
 			sb.AppendLine( $"{noTypes.Count.ToStringColored( Numbers )} types were {"not processed".ToStringColored( LightDanger )} and took {$"{noTypesDuration}ms".ToStringColored( Negation )}:" );
 			for( int j = 0; j < noTypes.Count; j++ )
 			{

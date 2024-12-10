@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Skyx.Trees
 {
@@ -23,6 +24,6 @@ namespace Skyx.Trees
         public EnumTreeAttribute(bool hide, params object[] path) : this(path, hide: hide) {}
         public EnumTreeAttribute(params object[] path) : this(path, "") {}
 
-        // public EnumTreeAttribute(params Enum[] path) : this(path, "") {}
+        public EnumTreeAttribute(string[] path, string valueDisplayName = "") : this(path.ToArray<object>(), valueDisplayName) {}
     }
 }

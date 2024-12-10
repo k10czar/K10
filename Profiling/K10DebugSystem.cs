@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -17,6 +18,24 @@ public static class K10DebugSystem
 
     public static bool SkipVisuals<T>() where T : IK10LogCategory, new()
         => !CanDebugVisuals<T>();
+
+    public static bool CanDebug(Type type)
+    {
+        var methodInfo = typeof(K10DebugSystem).GetMethod("CanDebug", new [] {typeof(bool)});
+        var genericMethod = methodInfo?.MakeGenericMethod(type);
+        var result = genericMethod?.Invoke(null, null);
+
+        return (bool) result!;
+    }
+
+    public static bool CanDebugVisuals(Type type)
+    {
+        var methodInfo = typeof(K10DebugSystem).GetMethod("CanDebugVisuals", Type.EmptyTypes);
+        var genericMethod = methodInfo?.MakeGenericMethod(type);
+        var result = genericMethod?.Invoke(null, null);
+
+        return (bool) result!;
+    }
 
     public static bool CanDebugVisuals(string baseName)
         => EditorPrefs.GetBool(GetVisualsSaveKey(baseName));
@@ -152,6 +171,9 @@ public static class K10DebugSystem
         => false;
 
     public static bool SkipVisuals<T>() where T : IK10LogCategory, new()
+        => true;
+
+    public static bool SkipVisuals(Type type)
         => true;
 
     public static bool CanDebugVisuals(string baseName)

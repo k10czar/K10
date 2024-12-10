@@ -73,7 +73,7 @@ public class K10DebugSystemWindow : EditorWindow
         dirty |= changed;
         return changed;
     }
-    
+
     List<IK10LogCategory> categories = null;
     IEnumerable<IK10LogCategory> Categories
     {
@@ -110,7 +110,7 @@ public class K10DebugSystemWindow : EditorWindow
             Space();
             DrawGameSystemDebugEnablers( cat );
         }
-        
+
         Space();
 
         var inspectorWidth = EditorGUIUtility.currentViewWidth;
@@ -128,7 +128,7 @@ public class K10DebugSystemWindow : EditorWindow
         GUILayout.EndHorizontal();
 
         Space();
-        
+
         GUILayout.BeginVertical();
         DrawCollumModifiers( inspectorWidth - 6, true, true );
         GUILayout.EndVertical();
@@ -156,7 +156,7 @@ public class K10DebugSystemWindow : EditorWindow
 
         if( all )
         {
-            foreach ( var cat in Categories ) 
+            foreach ( var cat in Categories )
             {
                 K10DebugSystem.ToggleVisualsLog( cat.Name );
                 K10DebugSystem.ToggleLog( cat.Name );
@@ -177,7 +177,7 @@ public class K10DebugSystemWindow : EditorWindow
 
         if( all )
         {
-            foreach ( var cat in Categories ) 
+            foreach ( var cat in Categories )
             {
                 K10DebugSystem.SetVisualsLog( cat.Name, value );
                 K10DebugSystem.SetLog( cat.Name, value );
@@ -201,7 +201,7 @@ public class K10DebugSystemWindow : EditorWindow
 
     private static bool DrawSection( string name, ref bool isExpanded, params GUILayoutOption[] options )
     {
-        if( Button( name, isExpanded ? SECTION_COLOR : SECTION_HIDDEN_COLOR, K10GuiStyles.bigbuttonFlatStyle, options ) ) 
+        if( Button( name, isExpanded ? SECTION_COLOR : SECTION_HIDDEN_COLOR, K10GuiStyles.bigbuttonFlatStyle, options ) )
             isExpanded = !isExpanded;
         return !isExpanded;
     }
@@ -268,6 +268,8 @@ public class K10DebugSystemWindow : EditorWindow
     }
 
 
+    protected virtual void DrawCustomSections() {}
+
     private void OnEnable()
     {
         debugTargetsList = new ReorderableList(K10DebugSystem.selectedTargets, typeof(GameObject))
@@ -290,6 +292,7 @@ public class K10DebugSystemWindow : EditorWindow
         DrawDebugTargets();
         Space();
         DrawGameSystem();
+        DrawCustomSections();
 
         EditorGUILayout.EndScrollView();
 
@@ -301,7 +304,7 @@ public class K10DebugSystemWindow : EditorWindow
     }
 
     private static Color BoolToColor(bool active) => active ? TRUE_COLOR : FALSE_COLOR;
-    
+
 
     #region Define Symbol Manipulation
     private void DrawConditionalCompilation()

@@ -61,6 +61,18 @@ public static class LogglableTargetExtentions
         K10Log<T>.Log( logSeverity, obj.AddPrefix(message), obj as MonoBehaviour, true );
     }
 
+    [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    public static void Log<T>(this ILogglable<T> obj, string message, Object customTarget, LogSeverity logSeverity = LogSeverity.Info) where T : IK10LogCategory, new()
+    {
+        K10Log<T>.Log(logSeverity, obj.AddPrefix(message), customTarget, false);
+    }
+
+    [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    public static void LogVerbose<T>(this ILogglable<T> obj, string message, Object customTarget, LogSeverity logSeverity = LogSeverity.Warning) where T : IK10LogCategory, new()
+    {
+        K10Log<T>.Log(logSeverity, obj.AddPrefix(message), customTarget, true);
+    }
+
     [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void LogVerboseWithHierarchy<T>( this ILogglable<T> obj, string message, LogSeverity logSeverity = LogSeverity.Warning ) where T : IK10LogCategory, new()
     {
@@ -93,12 +105,12 @@ public static class LogglableTargetExtentions
     {
         return K10DebugSystem.CanDebugVisuals<T>();
     }
-    
+
     public static bool SkipVisuals<T>( this ILogglable<T> behaviour ) where T : IK10LogCategory, new()
     {
         return K10DebugSystem.SkipVisuals<T>();
     }
-    
+
     public static Color LogColor<T>( this ILogglable<T> behaviour ) where T : IK10LogCategory, new()
     {
         return K10Log<T>.Category.Color;
