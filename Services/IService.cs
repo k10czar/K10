@@ -4,5 +4,5 @@ public interface IService
 
 public interface IReadyService : IService
 {
-    InitializationEvent IsReady { get; }
+    InitializationEvent<IService> IsReady { get; }
 }
