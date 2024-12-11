@@ -114,7 +114,6 @@ namespace K10.EditorGUIExtention
 		}
 	}
 
-
 	public static class ScriptableObjectField
 	{
 		const string FALLBACK_CREATION_FOLDER = "Assets/Database/SO/";
@@ -147,8 +146,8 @@ namespace K10.EditorGUIExtention
 
 			if( obj == null )
 			{
-				var iconSize = 18;
-				var create = IconButton.Draw( new Rect( r.x, r.y + ( r.height - iconSize ) / 2, iconSize, iconSize ), "match", 'C' );
+				var iconSize = 21;
+				var create = IconButton.Draw( new Rect( r.x, r.y + ( r.height - iconSize ) / 2, iconSize, iconSize ), "d_CreateAddNew", 'C' );
 				if( create )
 				{
 					var selectedAssetPath = path;

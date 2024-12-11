@@ -29,9 +29,11 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 	void Start()
 	{
 		if (_services == null) return;
+		this.Log( $"{this.HierarchyNameOrNullColored(Colors.Console.Fields)} starting services" );
 		for( int i = 0; i < _services.Length; i++ )
 		{
 			var service = _services[i];
+			this.Log( $"Starting service <{service.TypeNameOrNullColored(Colors.Console.TypeName)}>: {service.ToStringOrNull()}" );
 			if ( service is IStartable startable )
 			{
 				if( service is IActivatable act && !act.IsActive.Value ) continue;
