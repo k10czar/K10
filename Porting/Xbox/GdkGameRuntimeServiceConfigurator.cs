@@ -14,6 +14,10 @@ public class GdkGameRuntimeServiceConfigurator : IService, IStartable, ILogglabl
             this.LogError( "Cannot start <color=LawnGreen>GDKGameRuntime</color> because <color=LawnGreen>gdkSettings</color> is NULL" );
             return;
         }
+        if( ServiceLocator.Contains<IGdkRuntimeService>() ) {
+            this.LogVerbose( $"Already has a IGdkRuntimeService {ServiceLocator.Get<IGdkRuntimeService>()}" );
+            return;
+        }
         this.Log( "Starting <color=LawnGreen>GdkGameRuntimeService</color>..." );
         gdkRuntimeManager = new GdkGameRuntimeService( _gdkSettings.TitleId, _gdkSettings.Scid, _gdkSettings.Sandbox );
         ServiceLocator.Register( gdkRuntimeManager );
