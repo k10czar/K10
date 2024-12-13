@@ -45,15 +45,16 @@ public class InitializationEvent : ICustomDisposableKill
 
 public class InitializationEvent<T> : ICustomDisposableKill
 {
-    private readonly T source;
+    private T source;
 
     private readonly EventSlot<T> initialized = new();
     private bool isInitialized;
 
-    public void SetReady()
+    public void SetReady(T sourceRef)
     {
         Debug.Assert(!isInitialized, "Already initialized!");
 
+        source = sourceRef;
         isInitialized = true;
         initialized.Trigger(source);
         initialized.Kill();
@@ -78,12 +79,6 @@ public class InitializationEvent<T> : ICustomDisposableKill
     }
 
     public static implicit operator bool (InitializationEvent<T> v) => v.isInitialized;
-
-    public InitializationEvent(T source, bool startReady = false)
-    {
-        this.source = source;
-        if (startReady) SetReady();
-    }
 
     public void Kill() => initialized.Kill();
 
