@@ -57,6 +57,8 @@ public static class EventExtensions
 	public static void RegisterValidated<T, K>( this IEventRegister<T, K> register, IEventValidator validator, IEventTrigger<T, K> act ) => register.Register( validator.Validated( act ) );
 	public static void RegisterValidated<T, K, J>( this IEventRegister<T, K, J> register, IEventValidator validator, IEventTrigger<T, K, J> act ) => register.Register( validator.Validated( act ) );
 
+	public static void RegisterOnce(this IEventRegister register, Action act) => register.Register(new CallOnce(act));
+	public static void RegisterOnce<T>(this IEventRegister<T> register, Action<T> act) => register.Register(new CallOnce<T>(act));
 
 	#region Enumerables
 	public static void Register( this IEnumerable<IEventRegister> registers, Action act ) => registers.Register( new ActionEventCapsule( act ) );
@@ -113,32 +115,32 @@ public interface ITriggerable<T,K,J,L>
 
 public static class TriggerableExtensions
 {
-	public static void TriggerAll( this IEnumerable<ITriggerable> triggers ) 
+	public static void TriggerAll( this IEnumerable<ITriggerable> triggers )
 	{
 		if( triggers == null ) return;
 		foreach( var trigger in triggers ) { trigger?.Trigger(); }
 	}
-	public static void TriggerAll<T>( this IEnumerable<ITriggerable<T>> triggers, T t ) 
+	public static void TriggerAll<T>( this IEnumerable<ITriggerable<T>> triggers, T t )
 	{
 		if( triggers == null ) return;
 		foreach( var trigger in triggers ) { trigger?.Trigger(t); }
 	}
-	public static void TriggerAll<T>( this IEnumerable<ITriggerable<T>> triggers, IEnumerable<T> ts ) 
+	public static void TriggerAll<T>( this IEnumerable<ITriggerable<T>> triggers, IEnumerable<T> ts )
 	{
 		if( triggers == null ) return;
 		foreach( var trigger in triggers ) { foreach( var t in ts ) trigger?.Trigger(t); }
 	}
-	public static void TriggerAll<T,K>( this IEnumerable<ITriggerable<T,K>> triggers, T t, K k ) 
+	public static void TriggerAll<T,K>( this IEnumerable<ITriggerable<T,K>> triggers, T t, K k )
 	{
 		if( triggers == null ) return;
 		foreach( var trigger in triggers ) { trigger?.Trigger( t, k ); }
 	}
-	public static void TriggerAll<T,K,J>( this IEnumerable<ITriggerable<T,K,J>> triggers, T t, K k, J j ) 
+	public static void TriggerAll<T,K,J>( this IEnumerable<ITriggerable<T,K,J>> triggers, T t, K k, J j )
 	{
 		if( triggers == null ) return;
 		foreach( var trigger in triggers ) { trigger?.Trigger( t, k, j ); }
 	}
-	public static void TriggerAll<T,K,J,L>( this IEnumerable<ITriggerable<T,K,J,L>> triggers, T t, K k, J j, L l ) 
+	public static void TriggerAll<T,K,J,L>( this IEnumerable<ITriggerable<T,K,J,L>> triggers, T t, K k, J j, L l )
 	{
 		if( triggers == null ) return;
 		foreach( var trigger in triggers ) { trigger?.Trigger( t, k, j, l ); }

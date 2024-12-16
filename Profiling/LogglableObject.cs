@@ -4,14 +4,13 @@ using UnityEngine;
 public interface ILogglable<T> where T : IK10LogCategory, new()
 {
     Color DebugColor => K10Log<T>.Color;
-    bool prefixWithObjName => false;
-    string AddPrefix(string message) => $"{GetPrefix()}{message}";
+    string AddPrefix(string message, Object target) => $"{GetPrefix(target)}{message}";
 
-    string GetPrefix() => K10Log<T>.PrefixType switch
+    virtual string GetPrefix(Object target) => K10Log<T>.PrefixType switch
     {
         ELogPrefix.None => "",
-        ELogPrefix.Name => $"<b>{((MonoBehaviour) this).name} |</b> ",
-        ELogPrefix.ToString => $"<b>{ToString()} |</b> ",
+        ELogPrefix.Name => $"<b>{target.name} |</b> ",
+        ELogPrefix.ToString => $"<b>{target} |</b> ",
         _ => throw new System.ArgumentOutOfRangeException()
     };
 }
@@ -28,7 +27,7 @@ public static class LogglableTargetExtentions
     [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void Log<T>( this ILogglable<T> obj, string message, LogSeverity logSeverity = LogSeverity.Info ) where T : IK10LogCategory, new()
     {
-        K10Log<T>.Log( logSeverity, obj.AddPrefix(message), obj as MonoBehaviour );
+        K10Log<T>.Log( logSeverity, obj.AddPrefix(message, obj as MonoBehaviour), obj as MonoBehaviour );
     }
 
     [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
@@ -40,7 +39,7 @@ public static class LogglableTargetExtentions
     [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void LogError<T>( this ILogglable<T> obj, string message ) where T : IK10LogCategory, new()
     {
-        K10Log<T>.Log( LogSeverity.Error, obj.AddPrefix(message), obj as MonoBehaviour );
+        K10Log<T>.Log( LogSeverity.Error, obj.AddPrefix(message, obj as MonoBehaviour), obj as MonoBehaviour );
     }
 
     [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
@@ -58,19 +57,19 @@ public static class LogglableTargetExtentions
     [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void LogVerbose<T>( this ILogglable<T> obj, string message, LogSeverity logSeverity = LogSeverity.Warning ) where T : IK10LogCategory, new()
     {
-        K10Log<T>.Log( logSeverity, obj.AddPrefix(message), obj as MonoBehaviour, true );
+        K10Log<T>.Log( logSeverity, obj.AddPrefix(message, obj as MonoBehaviour), obj as MonoBehaviour, true );
     }
 
     [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void Log<T>(this ILogglable<T> obj, string message, Object customTarget, LogSeverity logSeverity = LogSeverity.Info) where T : IK10LogCategory, new()
     {
-        K10Log<T>.Log(logSeverity, obj.AddPrefix(message), customTarget, false);
+        K10Log<T>.Log(logSeverity, obj.AddPrefix(message, customTarget), customTarget, false);
     }
 
     [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void LogVerbose<T>(this ILogglable<T> obj, string message, Object customTarget, LogSeverity logSeverity = LogSeverity.Warning) where T : IK10LogCategory, new()
     {
-        K10Log<T>.Log(logSeverity, obj.AddPrefix(message), customTarget, true);
+        K10Log<T>.Log(logSeverity, obj.AddPrefix(message, customTarget), customTarget, true);
     }
 
     [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
@@ -82,13 +81,13 @@ public static class LogglableTargetExtentions
     [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void Log<T>( this ILogglableTarget<T> obj, string message, LogSeverity logSeverity = LogSeverity.Info ) where T : IK10LogCategory, new()
     {
-        K10Log<T>.Log( logSeverity, obj.AddPrefix(message), obj.LogTarget );
+        K10Log<T>.Log( logSeverity, obj.AddPrefix(message, obj.LogTarget), obj.LogTarget );
     }
 
     [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void LogVerbose<T>( this ILogglableTarget<T> obj, string message, LogSeverity logSeverity = LogSeverity.Warning ) where T : IK10LogCategory, new()
     {
-        K10Log<T>.Log( logSeverity, obj.AddPrefix(message), obj.LogTarget, true );
+        K10Log<T>.Log( logSeverity, obj.AddPrefix(message, obj.LogTarget), obj.LogTarget, true );
     }
 
     public static bool CanLog<T>( this ILogglable<T> obj, bool verbose = false ) where T : IK10LogCategory, new()

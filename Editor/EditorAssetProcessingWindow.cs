@@ -374,8 +374,8 @@ public sealed class EditorAssetProcessingWindow : EditorWindow
         sw.Stop();
 
         UnityEngine.Debug.Log($"Processed {transfers.ToStringColored(Numbers)} on {components.ToStringColored(TypeName)} components in {objects.ToStringColored(EventName)} valid objects of {total.ToStringColored(Danger)} total in {$"{sw.Elapsed.TotalMilliseconds}ms".ToStringColored(Negation)}:\n{sb2}\n{sb}");
-		ObjectPool.Return( sb );
-		ObjectPool.Return( sb2 );
+		ObjectPool<StringBuilder>.Return( sb );
+		ObjectPool<StringBuilder>.Return( sb2 );
     }
 
     public static (int transfers, double duration, int objectsCount) RunAssetValidationInAll( Type typeClass, EProcessType searchProcess, StringBuilder sb = null )

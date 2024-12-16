@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Text;
-using System.Text.RegularExpressions;
 using K10;
 using K10.DebugSystem;
 using UnityEngine;
