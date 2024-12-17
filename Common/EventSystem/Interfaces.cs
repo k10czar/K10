@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 
 public interface IEvent : IEventRegister, IEventTrigger { }
-public interface IEvent<T> : IEventRegister<T>, IEventTrigger<T> { }
-public interface IEvent<T, K> : IEventRegister<T, K>, IEventTrigger<T, K> { }
-public interface IEvent<T, K, L> : IEventRegister<T, K, L>, IEventTrigger<T, K, L> { }
+public interface IEvent<T> : IEventRegister<T>, IEventRegister, IEventTrigger<T> { }
+public interface IEvent<T, K> : IEventRegister<T, K>, IEventRegister<T>, IEventRegister, IEventTrigger<T, K> { }
+public interface IEvent<T, K, L> : IEventRegister<T, K, L>, IEventRegister<T, K>, IEventRegister<T>, IEventRegister, IEventTrigger<T, K, L> { }
 
 public interface IEventRegister
 {
