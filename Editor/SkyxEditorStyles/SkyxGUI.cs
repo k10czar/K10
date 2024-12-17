@@ -48,11 +48,11 @@ namespace Skyx.CustomEditor
             if (property.intValue == 0)  DrawHindInlaid(rect, hint);
         }
 
-        public static void DrawFloatField(Rect rect, SerializedProperty property, string inlaidHint, bool alwaysVisible = true)
+        public static void DrawFloatField(Rect rect, SerializedProperty property, string inlaidHint, bool alwaysVisible = true, string overlayHint = null)
         {
             property.floatValue = EditorGUI.FloatField(rect, property.floatValue);
 
-            DrawHintOverlay(rect, inlaidHint);
+            DrawHintOverlay(rect, overlayHint ?? inlaidHint);
             if (property.floatValue == 0 || alwaysVisible) DrawHindInlaid(rect, inlaidHint);
         }
 
