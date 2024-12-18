@@ -294,7 +294,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 		_onInteraction?.Trigger();
 	}
 
-	public void Clear()
+	public virtual void Clear()
 	{
 		var initialState = Free;
 		_semaphores.Clear();

@@ -2,7 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace Skyx.CustomEditor
+namespace Skyx.SkyxEditor
 {
     public static class SkyxLayout
     {
@@ -10,12 +10,13 @@ namespace Skyx.CustomEditor
 
         private static GUIStyle noBackgroundButton;
 
-        public static bool PrimaryButton(string label, params GUILayoutOption[] layouts) => Button(label, SkyxStyles.darkerSecondary, null, layouts);
-        public static bool SecondaryButton(string label, params GUILayoutOption[] layouts) => Button(label, SkyxStyles.secondary, null, layouts);
+        public static bool PrimaryButton(string label, params GUILayoutOption[] layouts) => Button(label, Colors.Console.Dark, null, layouts);
+        public static bool SecondaryButton(string label, params GUILayoutOption[] layouts) => Button(label, Colors.Console.GrayOut, null, layouts);
         public static bool ClearButton(string label) => Button(label, Color.clear);
 
+        public static bool PlainBGButton(string label, Color color) => Button(label, color, SkyxStyles.PlainBGLabel);
         public static bool PlainBGHeaderButton(string label, Color color) => Button(label, color, SkyxStyles.PlainBGHeader);
-        public static bool PlainBGHeaderButton(string label, bool success) => Button(label, success ? SkyxStyles.success : SkyxStyles.danger, SkyxStyles.PlainBGHeader);
+        public static bool PlainBGHeaderButton(string label, bool success) => Button(label, success ? Colors.Console.Success : Colors.Console.Danger, SkyxStyles.PlainBGHeader);
 
         public static bool Button(string label, Color backgroundColor) => Button(label, backgroundColor, null);
 
@@ -37,14 +38,14 @@ namespace Skyx.CustomEditor
         #region Labels
 
         public static void PlainBGLabel(string label, bool isSuccess, string hint = null) => PlainBGLabel(label, BoolToColor(isSuccess), hint: hint);
-        public static void PlainBGLabel(string label) => PlainBGLabel(label, SkyxStyles.desaturatedSecondary);
+        public static void PlainBGLabel(string label) => PlainBGLabel(label, Colors.Console.GrayOut);
 
         public static void PlainBGLabel(string label, Color backgroundColor, bool isHeader = false, string hint = null)
         {
             DrawWithBGColor(backgroundColor, () => GUILayout.Label(new GUIContent(label, hint), isHeader ? SkyxStyles.PlainBGHeader : SkyxStyles.PlainBGLabel));
         }
 
-        private static Color BoolToColor(bool active) => active ? SkyxStyles.transparentSuccess : SkyxStyles.transparentDanger;
+        private static Color BoolToColor(bool active) => active ? Colors.Console.Success.WithAlpha(0.4f) : Colors.Console.Danger.WithAlpha(0.4f);
 
         #endregion
 
@@ -96,19 +97,19 @@ namespace Skyx.CustomEditor
         public static bool ShouldShowBlock(string label, SerializedProperty property)
         {
             var isExpanded = property.isExpanded;
-            var result = ShouldShowBlock(label, ref isExpanded, SkyxStyles.dark);
+            var result = ShouldShowBlock(label, ref isExpanded, Colors.Console.Dark);
             property.isExpanded = result;
 
             return result;
         }
 
         public static bool ShouldShowBlock(string label, ref bool switchValue)
-            => ShouldShowBlock(label, ref switchValue, SkyxStyles.dark);
+            => ShouldShowBlock(label, ref switchValue, Colors.Console.Dark);
 
         public static bool ShouldShowBlock(string label, string saveKey)
         {
             var switchValue = EditorPrefs.GetBool(saveKey);
-            ShouldShowBlock(label, ref switchValue, SkyxStyles.dark);
+            ShouldShowBlock(label, ref switchValue, Colors.Console.Dark);
             EditorPrefs.SetBool(saveKey, switchValue);
 
             return switchValue;

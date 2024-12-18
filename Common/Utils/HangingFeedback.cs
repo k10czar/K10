@@ -166,7 +166,7 @@ public abstract class HangingFeedback : MonoBehaviour
 
 		public void VoidAfterSeconds( float seconds )
 		{
-			ExternalCoroutine.StartCoroutine( VoidAfterSecondsCoroutine( seconds ) );
+			ExternalCoroutine.Play( VoidAfterSecondsCoroutine( seconds ) );
 		}
 
 		private IEnumerator VoidAfterSecondsCoroutine( float seconds )

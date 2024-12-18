@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
 
-namespace Skyx.CustomEditor
+namespace Skyx.SkyxEditor
 {
     public class NewEnumNodeWindow : EditorWindow
     {

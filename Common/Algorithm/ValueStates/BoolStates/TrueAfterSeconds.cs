@@ -20,7 +20,7 @@ public class TrueAfterSeconds : IBoolStateObserver
 
     public TrueAfterSeconds( float defaultBubbleTime )
     {
-        ExternalCoroutine.StartCoroutine( DelayedExpiration( defaultBubbleTime ) );
+        ExternalCoroutine.Play( DelayedExpiration( defaultBubbleTime ) );
     }
 
     private IEnumerator DelayedExpiration( float defaultBubbleTime )

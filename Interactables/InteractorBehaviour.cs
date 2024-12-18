@@ -17,7 +17,7 @@ public interface IInteractionObject : System.IEquatable<IInteractionObject>
 
 namespace K10.Interactables
 {
-    public class InteractorBehaviour : MonoBehaviour, IInteractor, ILogglable<InteractableLogCategory>
+    public class InteractorBehaviour : MonoBehaviour, IInteractor, ILoggable<InteractableLogCategory>
     {
         [SerializeField] Vector3 originOffset = Vector3.up;
         [SerializeField] Transform directionGuide;

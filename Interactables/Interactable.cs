@@ -35,7 +35,7 @@ namespace K10.Interactables
         ColliderBounds = 2,
     }
 
-    public class Interactable : MonoBehaviour, ILogglable<InteractableLogCategory>
+    public class Interactable : MonoBehaviour, ILoggable<InteractableLogCategory>
     {
         [OnlyOnPlay,SerializeField,ReadOnly] BoolState isBeingTargeted = new BoolState();
         [SerializeField] EInteractionTargetingType targetingType = 0;
