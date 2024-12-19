@@ -54,28 +54,16 @@ public static class ColorExtention
 		return Color.HSVToRGB(h, Mathf.Clamp01(s + amount), v);
 	}
 
-	public static Color Revalue( this Color color, float amount )
+	public static Color Enlight( this Color color, float amount )
 	{
 		Color.RGBToHSV(color, out var h, out var s, out var v);
 		return Color.HSVToRGB(h, s, Mathf.Clamp01(v * amount));
 	}
 
-	public static Color AddValue( this Color color, float amount )
-	{
-		Color.RGBToHSV(color, out var h, out var s, out var v);
-		return Color.HSVToRGB(h, s, Mathf.Clamp01(v + amount));
-	}
-
-	public static Color Enlight( this Color color, float amount )
-	{
-		Color.RGBToHSV(color, out var h, out var s, out var v);
-		return Color.HSVToRGB(h, Mathf.Clamp01(s * amount), Mathf.Clamp01(v * amount));
-	}
-
 	public static Color AddLight( this Color color, float amount )
 	{
 		Color.RGBToHSV(color, out var h, out var s, out var v);
-		return Color.HSVToRGB(h, Mathf.Clamp01(s + amount), Mathf.Clamp01(v + amount));
+		return Color.HSVToRGB(h, s, Mathf.Clamp01(v + amount));
 	}
 
 	public static Color WithAlpha( this Color color, float amount )

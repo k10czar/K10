@@ -11,7 +11,7 @@ public class K10DebugSystemWindow : EditorWindow
     static readonly Color FALSE_COLOR = Colors.Crimson.WithAlpha( .4f );
     static readonly Color MORE_COLOR = TRUE_COLOR.WithHue( .1f );
     static readonly Color SECTION_COLOR = Colors.DarkSlateGray.WithHue( .66f );
-    static readonly Color SECTION_HIDDEN_COLOR = Colors.DarkSlateGray.Revalue( .5f );
+    static readonly Color SECTION_HIDDEN_COLOR = Colors.DarkSlateGray.Enlight( .5f );
     static readonly Color MODIFIERS_COLOR = Colors.DarkSlateGray.WithHue( .1666666f );
 
     private ReorderableList debugTargetsList;

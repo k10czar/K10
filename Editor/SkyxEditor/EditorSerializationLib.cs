@@ -59,7 +59,7 @@ namespace Skyx.SkyxEditor
         public static void RemovePropertyFromArray(SerializedProperty root, string name, int index = 0)
         {
             var arrayProp = root.FindPropertyRelative(name);
-            if (arrayProp.arraySize == 0) return;
+            if (arrayProp.arraySize < index + 1) return;
 
             arrayProp.DeleteArrayElementAtIndex(index);
         }
