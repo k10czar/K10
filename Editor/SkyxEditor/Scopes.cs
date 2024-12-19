@@ -52,6 +52,11 @@ namespace Skyx.SkyxEditor
             isExpanded = BoxGUI.BeginFoldout(title, property, headerHeight, roundedBox);
         }
 
+        public FoldoutBoxScope(string title, ref bool isExpandedRef, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
+        {
+            isExpanded = BoxGUI.BeginFoldout(title, ref isExpandedRef, headerHeight, roundedBox);
+        }
+
         protected override void CloseScope()
         {
             if (isExpanded) BoxGUI.EndBox();

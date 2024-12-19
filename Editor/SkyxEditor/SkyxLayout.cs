@@ -109,7 +109,7 @@ namespace Skyx.SkyxEditor
         public static bool ShouldShowBlock(string label, string saveKey)
         {
             var switchValue = EditorPrefs.GetBool(saveKey);
-            ShouldShowBlock(label, ref switchValue, Colors.Console.Dark);
+            ShouldShowBlock(label, ref switchValue, Colors.Console.Dark.Expanded(switchValue));
             EditorPrefs.SetBool(saveKey, switchValue);
 
             return switchValue;
