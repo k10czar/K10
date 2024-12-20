@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+public enum EConsoleColor { Primary, Secondary, Info, Success, Warning, Danger, Support }
 
 public static class Colors
 {
@@ -106,9 +107,6 @@ public static class Colors
     private static string EDITOR_DebugColor( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{name} █  </color>";
     private static string EDITOR_DebugColorCode( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>#{ColorUtility.ToHtmlStringRGB(color)}█</color>";
 #endif
-
-
-    public enum EConsoleColor { Primary, Secondary, Info, Success, Warning, Danger, Support }
 
     public static class Console
     {

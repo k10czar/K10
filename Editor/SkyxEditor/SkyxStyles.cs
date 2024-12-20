@@ -10,7 +10,7 @@ namespace Skyx.SkyxEditor
 
         public static readonly Color defaultSeparatorColor = new(0f, 0f, 0f, 0.3f);
         public static readonly Vector2 defaultSeparatorMargin = new(10f, 10f);
-        public static readonly Vector2 headerSeparatorMargin = new(1f, 4f);
+        public static readonly Vector2 smallSeparatorMargin = new(2f, 2f);
         public static readonly Vector2 noSeparatorMargin = new(-1f, -1f);
 
         public const float DefaultSeparatorSize = 1f;

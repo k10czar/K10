@@ -115,11 +115,11 @@ namespace Skyx.SkyxEditor
             if (indent > 0) EditorGUI.indentLevel -= indent;
         }
 
-        public void DrawList(string propertyName, bool displayHeader = false, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true)
+        public void DrawList(string propertyName)
         {
             if (!TryGet(propertyName, out var property)) return;
 
-            var list = GetReorderableList(property, displayHeader, draggable, displayAddButton, displayRemoveButton);
+            var list = GetReorderableList(property);
             list.DoLayoutList();
         }
 
@@ -160,38 +160,36 @@ namespace Skyx.SkyxEditor
 
         #region Draw Rect
 
-        public void Draw(Rect rect, string propertyName)
+        public void Draw(ref Rect rect, string propertyName, bool slideRect = false)
         {
             if (TryGet(propertyName, out var property))
                 EditorGUI.PropertyField(rect, property);
+
+            if (slideRect) rect.SlideSameRect();
         }
 
-        public void DrawNoLabel(Rect rect, string propertyName)
+        public void DrawNoLabel(ref Rect rect, string propertyName, bool slideRect = true)
         {
             if (TryGet(propertyName, out var property))
                 EditorGUI.PropertyField(rect, property, GUIContent.none);
+
+            if (slideRect) rect.SlideSameRect();
         }
 
-        public string DrawGetString(Rect rect, string propertyName)
-        {
-            if (!TryGet(propertyName, out var property)) return null;
-
-            EditorGUI.PropertyField(rect, property);
-            return property.stringValue;
-        }
-
-        public void DrawList(Rect rect, string propertyName, bool displayHeader = false, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true)
-        {
-            if (!TryGet(propertyName, out var property)) return;
-
-            var list = GetReorderableList(property, displayHeader, draggable, displayAddButton, displayRemoveButton);
-            list.DoList(rect);
-        }
-
-        public void DrawEnum<T>(Rect rect, string propertyName, Colors.EConsoleColor color = Colors.EConsoleColor.Primary, string hint = null) where T: Enum
+        public void DrawEnum<T>(ref Rect rect, string propertyName, EConsoleColor color = EConsoleColor.Primary, string hint = null, bool slideRect = true) where T: Enum
         {
             if (TryGet(propertyName, out var property))
                 EnumTreeGUI.DrawEnum(rect, property, typeof(T), Colors.Console.Get(color), hint);
+
+            if (slideRect) rect.SlideSameRect();
+        }
+
+        public void DrawList(Rect rect, string propertyName)
+        {
+            if (!TryGet(propertyName, out var property)) return;
+
+            var list = GetReorderableList(property);
+            list.DoList(rect);
         }
 
         #endregion
@@ -212,19 +210,26 @@ namespace Skyx.SkyxEditor
 
         private readonly Dictionary<SerializedProperty, ReorderableList> lists = new();
 
-        private ReorderableList GetReorderableList(SerializedProperty property, bool displayHeader = false, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true)
+        private ReorderableList GetReorderableList(SerializedProperty property)
         {
             if (lists.TryGetValue(property, out var list)) return list;
 
-            list = new ReorderableList(property.serializedObject, property, draggable, displayHeader, displayAddButton, displayRemoveButton)
+            Debug.LogError($"ReorderableList for {property} not found!");
+            return null;
+        }
+
+        public void RegisterList(string propertyName, bool displayHeader = false, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true)
+        {
+            if (!TryGet(propertyName, out var property)) return;
+            if (HasList(property)) return;
+
+            var list = new ReorderableList(property.serializedObject, property, draggable, displayHeader, displayAddButton, displayRemoveButton)
             {
                 drawElementCallback = DrawElementCallback,
                 elementHeightCallback = ElementHeightCallback
             };
 
             lists.Add(property, list);
-
-            return list;
 
             void DrawElementCallback(Rect rect, int index, bool isActive, bool isFocused)
             {
@@ -242,10 +247,11 @@ namespace Skyx.SkyxEditor
         public void RegisterList(string propertyName, ReorderableList list)
         {
             if (!TryGet(propertyName, out var property)) return;
-            lists.Add(property, list);
+            lists.TryAdd(property, list);
         }
 
         public bool HasList(string propertyName) => TryGet(propertyName, out var property) && lists.ContainsKey(property);
+        public bool HasList(SerializedProperty property) => lists.ContainsKey(property);
 
         #endregion
 

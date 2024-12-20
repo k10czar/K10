@@ -230,12 +230,15 @@ namespace Skyx.SkyxEditor
             rect.width = endX - rect.x;
         }
 
-        public static void NextLine(ref Rect rect, float startX, float width, float extraMargin = 0)
+        public static void NextLine(ref Rect rect, float startX, float totalWidth, float extraMargin = 0)
         {
             rect.x = startX;
             rect.y += SkyxStyles.FullLineHeight + extraMargin;
-            rect.width = width;
+            rect.width = totalWidth;
         }
+
+        public static void NextDividedLine(ref Rect rect, float startX, float totalWidth, int divideCount)
+            => NextLine(ref rect, startX, DivideRect(totalWidth, divideCount));
 
         public static void NextSameLine(ref Rect rect) => NextLine(ref rect, rect.x, rect.width);
 
@@ -286,7 +289,7 @@ namespace Skyx.SkyxEditor
             rect.y += 3;
         }
 
-        public static void ExtractLineDef(Rect rect, out float startX, out float totalWidth)
+        public static void ExtractLineDef(ref Rect rect, out float startX, out float totalWidth)
         {
             startX = rect.x;
             totalWidth = rect.width;

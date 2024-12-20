@@ -9,12 +9,17 @@ namespace Skyx.SkyxEditor
         protected T Target { get; private set; }
         protected PropertyCollection Properties { get; private set; }
 
+        private bool skipDrawing;
+
+        protected virtual bool ShouldDrawScript => true;
+        protected virtual bool ShouldDrawTitle => false;
         protected virtual bool HasRuntimeVisualization => false;
         protected virtual void DrawRuntimeInfo() {}
 
         private void DrawConfigsInternal()
         {
             DrawScriptFile();
+            DrawTitle();
             DrawConfigs();
         }
 
@@ -22,6 +27,12 @@ namespace Skyx.SkyxEditor
 
         public override void OnInspectorGUI()
         {
+            if (skipDrawing)
+            {
+                EditorGUILayout.HelpBox("Changing playmode...", MessageType.Info);
+                return;
+            }
+
             if (HasRuntimeVisualization && Application.isPlaying)
             {
                 if (SkyxLayout.ShouldShowBlock("Runtime", $"{typeof(T)}Runtime"))
@@ -39,8 +50,16 @@ namespace Skyx.SkyxEditor
             }
         }
 
+        private void DrawTitle()
+        {
+            if (!ShouldDrawTitle) return;
+            SkyxLayout.DrawTitle(target);
+        }
+
         private void DrawScriptFile()
         {
+            if (!ShouldDrawScript) return;
+
             EditorGUI.BeginDisabledGroup(true);
             var script = Target is MonoBehaviour behaviour ? MonoScript.FromMonoBehaviour(behaviour) : MonoScript.FromScriptableObject(Target as ScriptableObject);
             EditorGUILayout.ObjectField(EditorGUIUtility.TrTempContent("Script"), script, typeof(T), false);
@@ -51,15 +70,25 @@ namespace Skyx.SkyxEditor
 
         private void CacheProperties() => Properties = PropertyCollection.Get(serializedObject);
 
+        protected virtual void OnPlayModeStateChanged(PlayModeStateChange playModeStateChange)
+        {
+            skipDrawing = playModeStateChange is PlayModeStateChange.ExitingEditMode or PlayModeStateChange.ExitingPlayMode;
+        }
+
         protected virtual void OnEnable()
         {
             Target = target as T;
             CacheProperties();
+
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
 
-        protected void OnDisable()
+        protected virtual void OnDisable()
         {
             Target = target as T;
+
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
 
             if (serializedObject.targetObject != null)
                 PropertyCollection.Release(serializedObject);

@@ -12,6 +12,7 @@ namespace Skyx.SkyxEditor
 
         public static bool PrimaryButton(string label, params GUILayoutOption[] layouts) => Button(label, Colors.Console.Dark, null, layouts);
         public static bool SecondaryButton(string label, params GUILayoutOption[] layouts) => Button(label, Colors.Console.GrayOut, null, layouts);
+        public static bool DangerButton(string label, params GUILayoutOption[] layouts) => Button(label, Colors.Console.Danger, null, layouts);
         public static bool ClearButton(string label) => Button(label, Color.clear);
 
         public static bool PlainBGButton(string label, Color color) => Button(label, color, SkyxStyles.PlainBGLabel);
@@ -37,6 +38,13 @@ namespace Skyx.SkyxEditor
 
         #region Labels
 
+        public static void DrawTitle(UnityEngine.Object asset)
+        {
+            Separator();
+            GUILayout.Label(ObjectNames.NicifyVariableName(asset.name), SkyxStyles.HugeHeader.LightText());
+            Separator();
+        }
+
         public static void PlainBGLabel(string label, bool isSuccess, string hint = null) => PlainBGLabel(label, BoolToColor(isSuccess), hint: hint);
         public static void PlainBGLabel(string label) => PlainBGLabel(label, Colors.Console.GrayOut);
 
@@ -60,7 +68,6 @@ namespace Skyx.SkyxEditor
             GUILayout.Space(margin.y);
         }
 
-        public static void HeaderSeparator() => Separator(SkyxStyles.headerSeparatorMargin);
         public static void Separator() => Separator(SkyxStyles.defaultSeparatorColor, SkyxStyles.DefaultSeparatorSize, SkyxStyles.defaultSeparatorMargin);
         public static void Separator(Color color, float height) => Separator(color, height, SkyxStyles.defaultSeparatorMargin);
         public static void Separator(Vector2 margin) => Separator(SkyxStyles.defaultSeparatorColor, SkyxStyles.DefaultSeparatorSize, margin);
