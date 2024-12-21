@@ -151,9 +151,18 @@ namespace Skyx.SkyxEditor
             return property.stringValue;
         }
 
-        public void DrawAll(params string[] properties)
+        public void DrawAll(params string[] including)
         {
-            foreach (var entry in properties) Draw(entry);
+            foreach (var entry in including) Draw(entry);
+        }
+
+        public void DrawAllExcept(params string[] except)
+        {
+            foreach (var (key, prop) in properties)
+            {
+                if (except.Contains(key)) continue;
+                Draw(key);
+            }
         }
 
         #endregion
