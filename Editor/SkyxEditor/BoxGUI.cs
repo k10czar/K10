@@ -134,7 +134,7 @@ namespace Skyx.SkyxEditor
 
         public static Rect DrawHeaderWithBorder(ref Rect rect, GUIContent title, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
         {
-            DrawBox(ref rect, roundedBox);
+            DrawBox(rect, roundedBox);
             rect.x += 1;
             rect.y += 1;
             rect.height -= 1;
@@ -158,7 +158,12 @@ namespace Skyx.SkyxEditor
             return headerRect;
         }
 
-        public static void DrawBox(ref Rect rect, bool roundedBox) => GUI.Box(rect, GUIContent.none, SkyxStyles.BoxStyle(roundedBox));
+        public static void DrawBox(Rect rect, bool roundedBox) => DrawBox(rect, roundedBox, GUI.backgroundColor);
+        public static void DrawBox(Rect rect, bool roundedBox, Color color)
+        {
+            using var backgroundColor = new BackgroundColorScope(color);
+            GUI.Box(rect, GUIContent.none, SkyxStyles.BoxStyle(roundedBox));
+        }
 
         #endregion
 
@@ -167,7 +172,7 @@ namespace Skyx.SkyxEditor
         public static void BeginBox(bool roundedBox = true)
         {
             var drawingRect = EditorGUILayout.BeginVertical(SkyxStyles.borderBoxStyle);
-            DrawBox(ref drawingRect, roundedBox);
+            DrawBox(drawingRect, roundedBox);
         }
 
         public static Rect BeginHeaderBox(GUIContent title, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
@@ -176,7 +181,7 @@ namespace Skyx.SkyxEditor
             Rect drawingRect = EditorGUILayout.BeginVertical(SkyxStyles.borderBoxHeaderStyle);
             drawingRect.yMin -= headerHeight + 6f;
 
-            DrawBox(ref drawingRect, roundedBox);
+            DrawBox(drawingRect, roundedBox);
             DrawHeader(headerRect, title);
             return headerRect;
         }
@@ -199,7 +204,7 @@ namespace Skyx.SkyxEditor
                 boxRect.yMax = drawingRect.yMax;
             }
 
-            DrawBox(ref boxRect, roundedBox);
+            DrawBox(boxRect, roundedBox);
             expanded = DrawFoldoutHeader(headerRect, title, expanded);
             return expanded;
         }
@@ -219,7 +224,7 @@ namespace Skyx.SkyxEditor
                 boxRect.yMax = drawingRect.yMax;
             }
 
-            DrawBox(ref boxRect, roundedBox);
+            DrawBox(boxRect, roundedBox);
             property.isExpanded = DrawFoldoutHeader(headerRect, title, property.isExpanded);
             return returnValue;
         }
@@ -237,7 +242,7 @@ namespace Skyx.SkyxEditor
             Rect drawingRect = EditorGUILayout.BeginVertical(SkyxStyles.borderBoxHeaderStyle);
             drawingRect.yMin -= headerHeight + 6f;
 
-            DrawBox(ref drawingRect, roundedBox);
+            DrawBox(drawingRect, roundedBox);
             return DrawToggleHeader(headerRect, title, toggle);
         }
 
@@ -260,7 +265,7 @@ namespace Skyx.SkyxEditor
                 boxRect.yMax = drawingRect.yMax;
             }
 
-            DrawBox(ref boxRect, roundedBox);
+            DrawBox(boxRect, roundedBox);
             DrawFoldoutToggleHeader(headerRect, title, ref expanded, ref toggle);
             foldoutProperty.isExpanded = expanded;
             return expanded;

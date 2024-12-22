@@ -187,6 +187,9 @@ namespace Skyx.SkyxEditor
         public static bool MiniDangerButton(ref Rect rect, string label, string hint)
             => RectButton(ExtractMiniButton(ref rect), label, Colors.Console.Danger, SkyxStyles.ButtonStyle, hint);
 
+        public static bool PlainBGButton(Rect rect, string label, Color color)
+            => RectButton(rect, label, color, SkyxStyles.PlainBGHeader);
+
         #endregion
 
         public static void HintIcon(ref Rect rect, string icon, string hint)
@@ -295,11 +298,12 @@ namespace Skyx.SkyxEditor
             totalWidth = rect.width;
         }
 
-        public static void ApplyBoxMargin(ref Rect rect, ref float startX, ref float totalWidth)
+        public static void ApplyBoxMargin(ref Rect rect, float headerHeight)
         {
-            rect.y += SkyxStyles.BoxMargin;
-            startX += SkyxStyles.BoxMargin;
-            totalWidth -= SkyxStyles.BoxMargin * 2;
+            rect.y += headerHeight + SkyxStyles.ElementsMargin;
+            rect.height -= headerHeight - 2 * SkyxStyles.ElementsMargin;
+            rect.x += SkyxStyles.BoxMargin;
+            rect.width -= SkyxStyles.BoxMargin * 2;
         }
 
         #endregion

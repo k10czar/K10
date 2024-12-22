@@ -25,6 +25,7 @@ namespace Skyx.SkyxEditor
         public const float SmallButtonSize = 22;
         public const float MiniButtonSize = 18;
         public const float HintIconWidth = 20;
+        public const float HeaderButtonSize = 30;
 
         #endregion
 
@@ -46,6 +47,7 @@ namespace Skyx.SkyxEditor
 
         public static GUIStyle DefaultLabel => Style("defaultLabel", EditorStyles.label);
         public static GUIStyle CenterLabel => Style("centerLabel", DefaultLabel, TextAnchor.MiddleCenter);
+        public static GUIStyle RightLabel => Style("rightLabel", DefaultLabel, TextAnchor.MiddleRight);
         public static GUIStyle SmallLabel => Style("smallLabel", EditorStyles.label, SmallFontSize);
         public static GUIStyle BoldStyle => Style("boldLabel", EditorStyles.label, FontStyle.Bold);
         public static GUIStyle CenterBoldStyle => Style("centerBoldLabel", BoldStyle, TextAnchor.MiddleCenter);
@@ -106,15 +108,29 @@ namespace Skyx.SkyxEditor
 
         public const float BoxHeaderHeight = FullLineHeight;
         public const float BoxTotalExtraHeight = BoxHeaderHeight + 2 * LineSpace;
-        public const float BoxMargin = 4;
+        public const float BoxMargin = 5;
+
+        public static readonly Color[] headerColors =
+        {
+            Colors.Console.Dark.AddLight(.02f), // Secondary
+            Colors.Console.Dark.AddLight(-.08f), // Primary
+            Colors.Console.Secondary.AddLight(-.2f), // Info
+            Colors.Avocado.AddLight(-.2f),
+            Colors.Console.Warning.AddLight(-.4f).AddSaturation(-.1f), // Warning
+        };
+
+        public static readonly Color[] boxColors =
+        {
+            Color.clear,
+            Color.white,
+            Colors.Avocado.AddLight(.5f).WithAlpha(.2f),
+            Colors.Console.Secondary.AddLight(1).WithAlpha(.4f),
+            Colors.Console.Danger.AddSaturation(.3f).WithAlpha(.7f),
+        };
+
         public static Color HeaderColor => Colors.Console.DarkBackground;
 
-        // public static GUIStyle BoxStyle(bool isRounded) => new(isRounded ? "HelpBox" : "Tooltip");
-        // public static GUIStyle BoxStyle(bool isRounded) => isRounded ? roundedBox : squaredBox;
-        public static GUIStyle BoxStyle(bool isRounded) => isRounded ? EditorStyles.helpBox : squaredBox;
-
-        public static readonly GUIStyle roundedBox = new("HelpBox");
-        public static readonly GUIStyle squaredBox = new("Tooltip");
+        public static GUIStyle BoxStyle(bool isRounded) => new(isRounded ? "HelpBox" : "Tooltip");
 
         public static readonly GUIStyle borderBoxHeaderStyle = new()
         {

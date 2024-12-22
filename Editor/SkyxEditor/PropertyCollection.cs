@@ -188,9 +188,27 @@ namespace Skyx.SkyxEditor
         public void DrawEnum<T>(ref Rect rect, string propertyName, EConsoleColor color = EConsoleColor.Primary, string hint = null, bool slideRect = true) where T: Enum
         {
             if (TryGet(propertyName, out var property))
-                EnumTreeGUI.DrawEnum(rect, property, typeof(T), Colors.Console.Get(color), hint);
+                EnumTreeGUI.DrawEnum<T>(rect, property, Colors.Console.Get(color), hint);
 
             if (slideRect) rect.SlideSameRect();
+        }
+
+        public void DrawSwitch<T>(ref Rect rect, string propertyName, string hint = null, bool slideRect = true) where T: Enum
+        {
+            if (TryGet(propertyName, out var property))
+                EnumTreeGUI.DrawSwitch<T>(rect, property, hint);
+
+            if (slideRect) rect.SlideSameRect();
+        }
+
+        public bool DrawToggle(ref Rect rect, string propertyName, string label = null, string hint = null, bool slideRect = true)
+        {
+            if (TryGet(propertyName, out var property))
+                SkyxGUI.DrawSuccessToggle(rect, string.IsNullOrEmpty(label) ? property.PrettyName() : label, property, hint);
+
+            if (slideRect) rect.SlideSameRect();
+
+            return property?.boolValue ?? false;
         }
 
         public void DrawList(Rect rect, string propertyName)
@@ -212,6 +230,12 @@ namespace Skyx.SkyxEditor
                 : null;
         }
 
+        public HeaderScope HeaderScope(ref Rect fullRect, string propertyName, bool isBacking = false, string name = null)
+        {
+            return TryGet(propertyName, isBacking, out var property)
+                ? new HeaderScope(ref fullRect, property, string.IsNullOrEmpty(name) ? property.PrettyName() : name)
+                : null;
+        }
 
         #endregion
 

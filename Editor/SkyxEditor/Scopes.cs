@@ -40,29 +40,6 @@ namespace Skyx.SkyxEditor
         }
     }
 
-    public class FoldoutBoxScope : GUI.Scope
-    {
-        public readonly bool isExpanded;
-
-        public FoldoutBoxScope(SerializedProperty property, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
-            : this(property, ObjectNames.NicifyVariableName(property.name), headerHeight, roundedBox) {}
-
-        public FoldoutBoxScope(SerializedProperty property, string title, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
-        {
-            isExpanded = BoxGUI.BeginFoldout(title, property, headerHeight, roundedBox);
-        }
-
-        public FoldoutBoxScope(string title, ref bool isExpandedRef, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
-        {
-            isExpanded = BoxGUI.BeginFoldout(title, ref isExpandedRef, headerHeight, roundedBox);
-        }
-
-        protected override void CloseScope()
-        {
-            if (isExpanded) BoxGUI.EndBox();
-        }
-    }
-
     public class IconSizeScope : GUI.Scope
     {
         private readonly Vector2 prevIconSize;

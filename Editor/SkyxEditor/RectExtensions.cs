@@ -49,8 +49,8 @@ namespace Skyx.SkyxEditor
         public static void ExtractLineDef(this ref Rect rect, out float startX, out float totalWidth)
             => SkyxGUI.ExtractLineDef(ref rect, out startX, out totalWidth);
 
-        public static void ApplyBoxMargin(this ref Rect rect, ref float startX, ref float totalWidth)
-            => SkyxGUI.ApplyBoxMargin(ref rect, ref startX, ref totalWidth);
+        public static void ApplyBoxMargin(this ref Rect rect, float headerHeight)
+            => SkyxGUI.ApplyBoxMargin(ref rect, headerHeight);
 
     }
 }
