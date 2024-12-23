@@ -67,9 +67,9 @@ public static class LoggableTargetExtensions
     }
 
     [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-    public static void LogVerbose<T>(this ILoggable<T> obj, string message, Object customTarget, LogSeverity logSeverity = LogSeverity.Warning) where T : IK10LogCategory, new()
+    public static void LogVerbose<T>(this ILoggable<T> obj, string message, Object customTarget, LogSeverity logSeverity = LogSeverity.Warning, bool isVerbose = true) where T : IK10LogCategory, new()
     {
-        K10Log<T>.Log(logSeverity, obj.AddPrefix(message, customTarget), customTarget, true);
+        K10Log<T>.Log(logSeverity, obj.AddPrefix(message, customTarget), customTarget, isVerbose);
     }
 
     [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
