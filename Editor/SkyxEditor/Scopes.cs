@@ -5,14 +5,14 @@ namespace Skyx.SkyxEditor
 {
     public class SimpleBoxScope : GUI.Scope
     {
-        public SimpleBoxScope(bool roundedBox = true)
+        public SimpleBoxScope()
         {
-            BoxGUI.BeginBox(roundedBox);
+            BoxGUI.BeginBox();
         }
 
-        public SimpleBoxScope(string title, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true)
+        public SimpleBoxScope(string title, float headerHeight = SkyxStyles.BoxHeaderHeight)
         {
-            BoxGUI.BeginHeaderBox(new GUIContent(title), headerHeight, roundedBox);
+            BoxGUI.BeginHeaderBox(new GUIContent(title), headerHeight);
         }
 
         protected override void CloseScope()
@@ -25,11 +25,11 @@ namespace Skyx.SkyxEditor
     {
         private readonly bool disableContent;
 
-        public ToggleBoxScope(GUIContent title, SerializedProperty toggle, float headerHeight = SkyxStyles.BoxHeaderHeight, bool roundedBox = true, bool disableContent = true)
+        public ToggleBoxScope(GUIContent title, SerializedProperty toggle, float headerHeight = SkyxStyles.BoxHeaderHeight, bool disableContent = true)
         {
             this.disableContent = disableContent;
             var value = toggle.boolValue;
-            toggle.boolValue = BoxGUI.BeginToggle(title, ref value, headerHeight, roundedBox);
+            toggle.boolValue = BoxGUI.BeginToggle(title, ref value, headerHeight);
             if (disableContent) GUI.enabled = toggle.boolValue;
         }
 

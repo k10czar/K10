@@ -28,6 +28,12 @@ namespace Skyx.SkyxEditor
         public static void DivideRect(this ref Rect rect, float totalWidth, int elementsCount)
             => SkyxGUI.DivideRect(ref rect, totalWidth, elementsCount);
 
+        public static void DivideVertically(this ref Rect rect, int elementsCount)
+            => SkyxGUI.DivideRectVertically(ref rect, elementsCount);
+
+        public static void SlideSameVertically(this ref Rect rect)
+            => SkyxGUI.SlideSameVertically(ref rect);
+
         public static Rect ExtractRect(this ref Rect rect, float width, bool fromEnd = false)
             => SkyxGUI.ExtractRect(ref rect, width, fromEnd);
 
@@ -48,6 +54,8 @@ namespace Skyx.SkyxEditor
 
         public static void ExtractLineDef(this ref Rect rect, out float startX, out float totalWidth)
             => SkyxGUI.ExtractLineDef(ref rect, out startX, out totalWidth);
+
+        public static void ApplyMargin(this ref Rect rect, float margin) => SkyxGUI.ApplyMargin(ref rect, margin);
 
         public static void ApplyBoxMargin(this ref Rect rect, float headerHeight)
             => SkyxGUI.ApplyBoxMargin(ref rect, headerHeight);

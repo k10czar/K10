@@ -251,7 +251,7 @@ namespace Skyx.SkyxEditor
             return null;
         }
 
-        public void RegisterList(string propertyName, bool displayHeader = false, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true)
+        public void RegisterList(string propertyName, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true)
         {
             if (!TryGet(propertyName, out var property)) return;
             if (HasList(property)) return;

@@ -21,11 +21,12 @@ namespace Skyx.SkyxEditor
         public const float LineSpace = 4;
         public const float FullLineHeight = LineHeight + LineSpace;
         public const float ElementsMargin = 5;
+        public const float ListElementsMargin = 7;
 
         public const float SmallButtonSize = 22;
         public const float MiniButtonSize = 18;
         public const float HintIconWidth = 20;
-        public const float HeaderButtonSize = 30;
+        public const float HeaderButtonSize = 32;
 
         #endregion
 
@@ -106,31 +107,43 @@ namespace Skyx.SkyxEditor
 
         #region Box
 
+        public const float HeaderScopeTotalExtraHeight = HeaderButtonSize + 3 * ElementsMargin;
+
+        public const float ListControlButtonSize = MiniButtonSize;
         public const float BoxHeaderHeight = FullLineHeight;
         public const float BoxTotalExtraHeight = BoxHeaderHeight + 2 * LineSpace;
         public const float BoxMargin = 5;
 
         public static readonly Color[] headerColors =
         {
-            Colors.Console.Dark.AddLight(.02f), // Secondary
-            Colors.Console.Dark.AddLight(-.08f), // Primary
+            Colors.Console.Dark.AddLight(.02f), // Primary
+            Colors.Console.Dark.AddLight(-.08f), // Secondary
             Colors.Console.Secondary.AddLight(-.2f), // Info
-            Colors.Avocado.AddLight(-.2f),
+            Colors.Avocado.AddLight(-.2f), // Success
             Colors.Console.Warning.AddLight(-.4f).AddSaturation(-.1f), // Warning
         };
 
         public static readonly Color[] boxColors =
         {
-            Color.clear,
             Color.white,
-            Colors.Avocado.AddLight(.5f).WithAlpha(.2f),
-            Colors.Console.Secondary.AddLight(1).WithAlpha(.4f),
-            Colors.Console.Danger.AddSaturation(.3f).WithAlpha(.7f),
+            Color.white,
+            Color.white,
+            Color.white,
+            Colors.Console.Warning.AddLight(.2f).WithAlpha(.2f), // Warning
+        };
+
+        public static readonly string[] boxStyles =
+        {
+            "ScriptText", // Primary
+            "HelpBox", // Secondary
+            "SelectionRect", // Info
+            "U2D.createRect", // Success
+            "TE ElementBackground", // Warning
         };
 
         public static Color HeaderColor => Colors.Console.DarkBackground;
 
-        public static GUIStyle BoxStyle(bool isRounded) => new(isRounded ? "HelpBox" : "Tooltip");
+        public static GUIStyle BoxStyle(EConsoleColor color) => new(boxStyles[(int)color]);
 
         public static readonly GUIStyle borderBoxHeaderStyle = new()
         {
@@ -158,7 +171,9 @@ namespace Skyx.SkyxEditor
         public static readonly GUIContent databaseIcon = EditorGUIUtility.TrIconContent("Package Manager");
         public static readonly GUIContent greenLightIcon = EditorGUIUtility.TrIconContent("greenLight");
         public static readonly GUIContent orangeLightIcon = EditorGUIUtility.TrIconContent("orangeLight");
-        public static readonly GUIContent redLightIcon = EditorGUIUtility.TrIconContent("redLight");
+        public static readonly GUIContent downArrowIcon = EditorGUIUtility.TrIconContent("CollabPull");
+        public static readonly GUIContent upArrowIcon = EditorGUIUtility.TrIconContent("CollabPush");
+
 
         public static Texture2D TransparentCheckerTexture
         {

@@ -19,8 +19,6 @@ namespace Skyx.SkyxEditor
 
         private static bool Begin(string title, ref bool isExpandedRef, EConsoleColor color)
         {
-            Debug.LogError($"Indent: {EditorGUI.indentLevel}");
-
             var headerRect = EditorGUILayout.GetControlRect(false, SkyxStyles.HeaderButtonSize);
             var boxRect = headerRect;
 
@@ -44,15 +42,10 @@ namespace Skyx.SkyxEditor
         private static bool Begin(ref Rect initialRect, string title, ref bool isExpandedRef, EConsoleColor color)
         {
             var headerRect = initialRect;
-            headerRect.height = SkyxStyles.HeaderButtonSize - (isExpandedRef ? 1 : 0);
-
-            // if (isExpandedRef)
-            // {
-                headerRect.y += 1;
-                headerRect.height -= 2;
-                headerRect.x += 1;
-                headerRect.width -= 2;
-            // }
+            headerRect.height = SkyxStyles.HeaderButtonSize - 2;
+            headerRect.y += 1;
+            headerRect.x += 1;
+            headerRect.width -= 2;
 
             var boxRect = initialRect;
 
@@ -63,8 +56,8 @@ namespace Skyx.SkyxEditor
 
         private static bool ReallyDraw(Rect headerRect, Rect boxRect, string title, ref bool isExpandedRef, EConsoleColor color)
         {
-            // if (isExpandedRef)
-                BoxGUI.DrawBox(boxRect, color is not EConsoleColor.Secondary, SkyxStyles.boxColors.GetLooping(color));
+            boxRect.height -= SkyxStyles.ElementsMargin;
+            BoxGUI.DrawBox(boxRect, color);
 
             if (SkyxGUI.PlainBGButton(headerRect, title, SkyxStyles.headerColors.GetLooping(color)))
                 isExpandedRef = !isExpandedRef;

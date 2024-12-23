@@ -258,6 +258,13 @@ namespace Skyx.SkyxEditor
             rect.width = DivideRect(totalWidth, elementsCount);
         }
 
+        public static void DivideRectVertically(ref Rect rect, int elementsCount)
+        {
+            rect.height = (rect.height - (SkyxStyles.ElementsMargin * (elementsCount - 1))) / elementsCount;
+        }
+
+        public static void SlideSameVertically(ref Rect rect) => rect.y += rect.height + SkyxStyles.ElementsMargin;
+
         public static Rect ExtractRect(ref Rect rect, float width, bool fromEnd = false)
         {
             if (fromEnd) return ExtractEndRect(ref rect, width);
@@ -296,6 +303,14 @@ namespace Skyx.SkyxEditor
         {
             startX = rect.x;
             totalWidth = rect.width;
+        }
+
+        public static void ApplyMargin(ref Rect rect, float margin)
+        {
+            rect.y += margin;
+            rect.height -= 2 * margin;
+            rect.x += margin;
+            rect.width -= 2 * margin;
         }
 
         public static void ApplyBoxMargin(ref Rect rect, float headerHeight)
