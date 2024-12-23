@@ -19,12 +19,12 @@ namespace Skyx.SkyxEditor
             if (string.IsNullOrEmpty(property.stringValue)) DrawHindInlaid(rect, inlaidHint);
         }
 
-        public static void DrawModifierTextField(Rect rect, SerializedProperty property, string inlaidHint, IEnumerable<string> validValues)
+        public static void DrawModifierTextField(Rect rect, SerializedProperty property, string inlaidHint, IEnumerable<string> validValues, bool allowEmpty = false)
         {
             var isNumber = float.TryParse(property.stringValue, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out _);
 
             var color = string.IsNullOrEmpty(property.stringValue)
-                ? Colors.Console.Warning
+                ? (allowEmpty ? Colors.Console.Success : Colors.Console.Warning)
                 : (validValues.Contains(property.stringValue) || isNumber)
                     ? Colors.Console.Success
                     : Colors.Console.Danger;

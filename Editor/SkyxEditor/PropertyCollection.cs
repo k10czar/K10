@@ -258,6 +258,7 @@ namespace Skyx.SkyxEditor
 
             var list = new ReorderableList(property.serializedObject, property, draggable, displayHeader, displayAddButton, displayRemoveButton)
             {
+                drawHeaderCallback = DrawHeaderCallback,
                 drawElementCallback = DrawElementCallback,
                 elementHeightCallback = ElementHeightCallback
             };
@@ -275,6 +276,8 @@ namespace Skyx.SkyxEditor
                 var target = property.GetArrayElementAtIndex(index);
                 return EditorGUI.GetPropertyHeight(target, true);
             }
+
+            void DrawHeaderCallback(Rect rect) => EditorGUI.LabelField(rect, property.PrettyName());
         }
 
         public void RegisterList(string propertyName, ReorderableList list)
