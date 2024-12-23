@@ -34,10 +34,10 @@ namespace Skyx.SkyxEditor
 
         #region Support Data
 
-        private const int SmallFontSize = 10;
-        private const int DefaultFontSize = 13;
-        private const int BigFontSize = 16;
-        private const int HugeFontSize = 19;
+        public const int SmallFontSize = 10;
+        public const int DefaultFontSize = 13;
+        public const int BigFontSize = 16;
+        public const int HugeFontSize = 19;
 
         private static readonly RectOffset noPadding = new (3, 3, 0, 0);
         private static readonly RectOffset defaultPadding = new (6, 6, 2, 2);
