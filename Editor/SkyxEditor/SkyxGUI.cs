@@ -305,6 +305,12 @@ namespace Skyx.SkyxEditor
             totalWidth = rect.width;
         }
 
+        public static void ApplyHorizontalMargin(ref Rect rect, float margin)
+        {
+            rect.x += margin;
+            rect.width -= 2 * margin;
+        }
+
         public static void ApplyMargin(ref Rect rect, float margin)
         {
             rect.y += margin;

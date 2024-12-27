@@ -14,8 +14,8 @@ namespace Skyx.SkyxEditor
         public static void DrawPrimary(Rect rect, SerializedProperty property, Type enumType, string hint = null) => DrawEnum(rect, property, enumType, Colors.Console.Primary, hint);
         public static void DrawSecondary(Rect rect, SerializedProperty property, Type enumType, string hint = null) => DrawEnum(rect, property, enumType, Colors.Console.Secondary, hint);
 
-        public static void DrawEnum<T>(Rect rect, SerializedProperty property, Color color, string hint = "")
-            => DrawEnum(rect, property, typeof(T), color, hint);
+        public static void DrawEnum<T>(Rect rect, SerializedProperty property, EConsoleColor color, string hint = "")
+            => DrawEnum(rect, property, typeof(T), Colors.Console.Get(color), hint);
 
         public static void DrawEnum(Rect rect, SerializedProperty property, Type enumType, Color color, string hint = "")
         {

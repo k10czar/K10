@@ -16,6 +16,8 @@ namespace Skyx.SkyxEditor
         public static float DrawSize(this GUIStyle style, string text) => style.CalcSize(new GUIContent(text)).x;
 
         public static GUIStyle AlignRight(this GUIStyle style) => new(style) { alignment = TextAnchor.MiddleRight };
+
+        public static GUIStyle Invisible(this GUIStyle style) => new(style) { normal = { textColor = Color.clear } };
     }
 
     public static class ColorExtensions

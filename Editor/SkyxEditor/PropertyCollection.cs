@@ -188,7 +188,7 @@ namespace Skyx.SkyxEditor
         public void DrawEnum<T>(ref Rect rect, string propertyName, EConsoleColor color = EConsoleColor.Primary, string hint = null, bool slideRect = true) where T: Enum
         {
             if (TryGet(propertyName, out var property))
-                EnumTreeGUI.DrawEnum<T>(rect, property, Colors.Console.Get(color), hint);
+                EnumTreeGUI.DrawEnum<T>(rect, property, color, hint);
 
             if (slideRect) rect.SlideSameRect();
         }

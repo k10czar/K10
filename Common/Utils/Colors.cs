@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public enum EConsoleColor { Primary, Secondary, Info, Success, Warning, Danger, Support }
+public enum EConsoleColor { Primary, Secondary, Info, Success, Warning, Danger, Support, Special }
 
 public static class Colors
 {
@@ -139,7 +139,7 @@ public static class Colors
             {
                 if (sequence != null) return sequence;
 
-                sequence = new [] { Primary, Secondary, Info, Success, Warning, Danger, GrayOut };
+                sequence = new [] { Primary, Secondary, Info, Success, Warning, Danger, GrayOut, Special };
 
                 return sequence;
             }
@@ -156,6 +156,7 @@ public static class Colors
         [ConstLike] public static readonly Color Primary = Azure;
         [ConstLike] public static readonly Color Secondary = Cerulean;
         [ConstLike] public static readonly Color Light = Seashell;
+        [ConstLike] public static readonly Color Special = Purple.WithAlpha(.6f);
 
         [ConstLike] public static readonly Color Danger = Crimson;
         [ConstLike] public static readonly Color Negation = OrangeRed;
