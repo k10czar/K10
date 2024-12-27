@@ -7,12 +7,12 @@ using UnityEngine;
 
 public class K10DebugSystemWindow : EditorWindow
 {
-    static readonly Color TRUE_COLOR = Colors.LimeGreen.WithAlpha( .4f );
-    static readonly Color FALSE_COLOR = Colors.Crimson.WithAlpha( .4f );
-    static readonly Color MORE_COLOR = TRUE_COLOR.WithHue( .1f );
-    static readonly Color SECTION_COLOR = Colors.DarkSlateGray.WithHue( .66f );
-    static readonly Color SECTION_HIDDEN_COLOR = Colors.DarkSlateGray.Enlight( .5f );
-    static readonly Color MODIFIERS_COLOR = Colors.DarkSlateGray.WithHue( .1666666f );
+    protected static readonly Color TRUE_COLOR = Colors.LimeGreen.WithAlpha( .4f );
+    protected static readonly Color FALSE_COLOR = Colors.Crimson.WithAlpha( .4f );
+    protected static readonly Color MORE_COLOR = TRUE_COLOR.WithHue( .1f );
+    protected static readonly Color SECTION_COLOR = Colors.DarkSlateGray.WithHue( .66f );
+    protected static readonly Color SECTION_HIDDEN_COLOR = Colors.DarkSlateGray.Enlight( .5f );
+    protected static readonly Color MODIFIERS_COLOR = Colors.DarkSlateGray.WithHue( .1666666f );
 
     private ReorderableList debugTargetsList;
     private Vector2 scrollPos;
@@ -191,15 +191,11 @@ public class K10DebugSystemWindow : EditorWindow
         }
     }
 
-    private void Space()
-    {
-        // SkyxLayout.Space();
-        GUILayout.Space(5);
-    }
+    protected void Space() => GUILayout.Space(5);
 
     protected virtual void DrawCustomTargetControl() {}
 
-    private static bool DrawSection( string name, ref bool isExpanded, params GUILayoutOption[] options )
+    protected static bool DrawSection( string name, ref bool isExpanded, params GUILayoutOption[] options )
     {
         if( Button( name, isExpanded ? SECTION_COLOR : SECTION_HIDDEN_COLOR, K10GuiStyles.bigbuttonFlatStyle, options ) )
             isExpanded = !isExpanded;

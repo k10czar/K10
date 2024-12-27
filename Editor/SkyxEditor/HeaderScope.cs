@@ -41,6 +41,8 @@ namespace Skyx.SkyxEditor
 
         private static bool Begin(ref Rect initialRect, string title, ref bool isExpandedRef, EConsoleColor color)
         {
+            initialRect.height -= SkyxStyles.ElementsMargin;
+
             var headerRect = initialRect;
             headerRect.height = SkyxStyles.HeaderButtonSize - 2;
             headerRect.y += 1;
@@ -56,7 +58,6 @@ namespace Skyx.SkyxEditor
 
         private static bool ReallyDraw(Rect headerRect, Rect boxRect, string title, ref bool isExpandedRef, EConsoleColor color)
         {
-            boxRect.height -= SkyxStyles.ElementsMargin;
             BoxGUI.DrawBox(boxRect, color);
 
             if (SkyxGUI.PlainBGButton(headerRect, title, SkyxStyles.headerColors.GetLooping(color)))

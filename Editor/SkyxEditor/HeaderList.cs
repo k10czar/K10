@@ -19,7 +19,6 @@ namespace Skyx.SkyxEditor
             title = string.IsNullOrEmpty(title) ? property.PrettyName() : title;
             newText = string.IsNullOrEmpty(newText) ? "New Entry" : newText;
 
-            rect.height -= SkyxStyles.ElementsMargin;
             using var scope = new HeaderScope(ref rect, property, title, color);
             if (!scope.isExpanded) return;
 
