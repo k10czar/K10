@@ -134,7 +134,7 @@ namespace Skyx.SkyxEditor
         public static bool MiniToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint, Color onColor, Color offColor, bool useExpandField = false)
             => DrawToggle(ExtractMiniButton(ref rect), onLabel, offLabel, onColor, offColor, toggleProp, hint, useExpandField);
 
-        private static bool DrawToggle(Rect rect, string onLabel, string offLabel, Color onColor, Color offColor, SerializedProperty toggleProp, string hint, bool useExpandField = false)
+        public static bool DrawToggle(Rect rect, string onLabel, string offLabel, Color onColor, Color offColor, SerializedProperty toggleProp, string hint, bool useExpandField = false)
         {
             var isActive = useExpandField ? toggleProp.isExpanded : toggleProp.boolValue;
 

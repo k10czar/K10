@@ -75,7 +75,7 @@ public static class Colors
         }
     }
 
-    public static Color FromSequence<T>(T value, bool isStatus = false, bool loop = false) where T : Enum => FromSequence((int)(object)value);
+    public static Color FromSequence<T>(T value, bool isStatus = false, bool loop = false) where T : Enum => FromSequence((int)(object)value, isStatus, loop);
     public static Color FromSequence(int index, bool isStatus = false, bool loop = false)
     {
         var sequence = isStatus ? StatusSequence : OptionsSequence;
@@ -139,24 +139,19 @@ public static class Colors
             {
                 if (sequence != null) return sequence;
 
-                sequence = new [] { Primary, Secondary, Info, Success, Warning, Danger, GrayOut, Special };
+                sequence = new [] { Primary, Secondary, Info, Success, Warning, Danger, Support, Special };
 
                 return sequence;
             }
         }
 
 
-        public static Color Get<T>(T value, bool isStatus = false, bool loop = false) where T : Enum => Get((int)(object)value);
-        public static Color Get(int index, bool isStatus = false, bool loop = false)
+        public static Color Get<T>(T value, bool loop = false) where T : Enum => Get((int)(object)value, loop);
+        public static Color Get(int index, bool loop = false)
         {
             index = loop ? index % Sequence.Length : Mathf.Clamp(index, 0, Sequence.Length);
             return Sequence[index];
         }
-
-        [ConstLike] public static readonly Color Primary = Azure;
-        [ConstLike] public static readonly Color Secondary = Cerulean;
-        [ConstLike] public static readonly Color Light = Seashell;
-        [ConstLike] public static readonly Color Special = Purple.WithAlpha(.6f);
 
         [ConstLike] public static readonly Color Danger = Crimson;
         [ConstLike] public static readonly Color Negation = OrangeRed;
@@ -183,6 +178,12 @@ public static class Colors
 
         [ConstLike] public static readonly Color SuccessBackground = Avocado;
         [ConstLike] public static readonly Color WarningBackground = Tomato;
+
+        [ConstLike] public static readonly Color Primary = Azure;
+        [ConstLike] public static readonly Color Secondary = Cerulean;
+        [ConstLike] public static readonly Color Light = Seashell;
+        [ConstLike] public static readonly Color Special = Purple.WithAlpha(.6f);
+        [ConstLike] public static readonly Color Support = Silver;
     }
 
     //Red colors
