@@ -117,7 +117,7 @@ namespace Skyx.SkyxEditor
             => DrawToggle(rect, onLabel, offLabel, Colors.Console.Warning, Colors.Console.GrayOut, property, hint);
 
         public static bool DrawChoiceToggle(Rect rect, string onLabel, string offLabel, SerializedProperty property, string hint)
-            => DrawToggle(rect, onLabel, offLabel, Colors.Console.GrayOut, Colors.Console.DarkerGrayOut, property, hint);
+            => DrawToggle(rect, onLabel, offLabel, Colors.Console.Secondary, Colors.Console.Info, property, hint);
 
         public static bool MiniSuccessToggle(ref Rect rect, SerializedProperty toggleProp, string label, string hint)
             => DrawSuccessToggle(ExtractMiniButton(ref rect), label, toggleProp, hint);
@@ -134,7 +134,7 @@ namespace Skyx.SkyxEditor
         public static bool MiniToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint, Color onColor, Color offColor, bool useExpandField = false)
             => DrawToggle(ExtractMiniButton(ref rect), onLabel, offLabel, onColor, offColor, toggleProp, hint, useExpandField);
 
-        public static bool DrawToggle(Rect rect, string onLabel, string offLabel, Color onColor, Color offColor, SerializedProperty toggleProp, string hint, bool useExpandField = false)
+        private static bool DrawToggle(Rect rect, string onLabel, string offLabel, Color onColor, Color offColor, SerializedProperty toggleProp, string hint, bool useExpandField = false)
         {
             var isActive = useExpandField ? toggleProp.isExpanded : toggleProp.boolValue;
 
