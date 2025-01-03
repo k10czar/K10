@@ -53,11 +53,10 @@ public static class K10Log<T> where T : IK10LogCategory, new()
     [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
     public static void Log(LogSeverity severity, string log, Object target = null, bool verbose = false)
     {
-        var notError = ( severity != LogSeverity.Error );
-        if (!K10DebugSystem.CanDebug<T>(verbose) && notError) return;
+        if (severity is not LogSeverity.Error && !K10DebugSystem.CanDebug<T>(verbose)) return;
 
 #if UNITY_EDITOR
-        if (!K10DebugSystem.CanDebugTarget(target as Component, severity) && notError) return;
+        if (!K10DebugSystem.CanDebugTarget(target as Component, severity)) return;
 #endif
 
 #if UNITY_EDITOR
