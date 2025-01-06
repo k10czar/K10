@@ -167,20 +167,31 @@ namespace Skyx.SkyxEditor
 
         #endregion
 
-        #region Draw Rect
+        #region Rect Draw
 
-        public void Draw(ref Rect rect, string propertyName, bool slideRect = false)
+        public void Draw(ref Rect rect, string propertyName, bool slideRect = true)
         {
             if (TryGet(propertyName, out var property))
-                EditorGUI.PropertyField(rect, property);
+                EditorGUI.PropertyField(rect, property, GUIContent.none);
 
             if (slideRect) rect.SlideSameRect();
         }
 
-        public void DrawNoLabel(ref Rect rect, string propertyName, bool slideRect = true)
+        public void DrawFloat(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true)
+            => Draw(ref rect, this[propertyName], this[propertyName].floatValue != 0, inlaidHint, overlayHint, slideRect);
+
+        public void DrawInt(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true)
+            => Draw(ref rect, this[propertyName], this[propertyName].intValue != 0, inlaidHint, overlayHint, slideRect);
+
+        public void DrawString(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true)
+            => Draw(ref rect, this[propertyName], string.IsNullOrEmpty(this[propertyName].stringValue), inlaidHint, overlayHint, slideRect);
+
+        private static void Draw(ref Rect rect, SerializedProperty property, bool hasValue, string inlaidHint = null, string overlayHint = null, bool slideRect = true)
         {
-            if (TryGet(propertyName, out var property))
-                EditorGUI.PropertyField(rect, property, GUIContent.none);
+            EditorGUI.PropertyField(rect, property, GUIContent.none);
+
+            SkyxGUI.DrawHintOverlay(rect, overlayHint ?? inlaidHint);
+            if (!hasValue) SkyxGUI.DrawHindInlaid(rect, inlaidHint);
 
             if (slideRect) rect.SlideSameRect();
         }
@@ -201,7 +212,15 @@ namespace Skyx.SkyxEditor
             if (slideRect) rect.SlideSameRect();
         }
 
-        public bool DrawToggle(ref Rect rect, string propertyName, string label = null, string hint = null, bool slideRect = true)
+        public void DrawObjectField<T>(ref Rect rect, string propertyName, string hint = null, bool slideRect = true) where T: Object
+        {
+            if (TryGet(propertyName, out var property))
+                SkyxGUI.DrawObjectField<T>(rect, property, hint);
+
+            if (slideRect) rect.SlideSameRect();
+        }
+
+        public bool DrawSuccessToggle(ref Rect rect, string propertyName, string label = null, string hint = null, bool slideRect = true)
         {
             if (TryGet(propertyName, out var property))
                 SkyxGUI.DrawSuccessToggle(rect, string.IsNullOrEmpty(label) ? property.PrettyName() : label, property, hint);
@@ -251,7 +270,7 @@ namespace Skyx.SkyxEditor
             return null;
         }
 
-        public void RegisterList(string propertyName, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true)
+        public void RegisterList(string propertyName, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true, ReorderableList.ElementCallbackDelegate customDrawElement = null)
         {
             if (!TryGet(propertyName, out var property)) return;
             if (HasList(property)) return;
@@ -259,7 +278,7 @@ namespace Skyx.SkyxEditor
             var list = new ReorderableList(property.serializedObject, property, draggable, displayHeader, displayAddButton, displayRemoveButton)
             {
                 drawHeaderCallback = DrawHeaderCallback,
-                drawElementCallback = DrawElementCallback,
+                drawElementCallback = customDrawElement ?? DrawElementCallback,
                 elementHeightCallback = ElementHeightCallback
             };
 

@@ -95,7 +95,7 @@ namespace Skyx.SkyxEditor
             EditorGUI.LabelField(rect, new GUIContent(" ", hint));
         }
 
-        private static void DrawHindInlaid(Rect rect, string hint)
+        public static void DrawHindInlaid(Rect rect, string hint)
         {
             if (string.IsNullOrEmpty(hint)) return;
 
