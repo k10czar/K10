@@ -49,8 +49,8 @@ namespace Skyx.SkyxEditor
         public static Rect ExtractHint(this ref Rect rect, bool fromEnd = false)
             => SkyxGUI.ExtractHint(ref rect, fromEnd);
 
-        public static void AdjustRectToListLine(this ref Rect rect)
-            => SkyxGUI.AdjustRectToListLine(ref rect);
+        public static void AdjustRectToListLine(this ref Rect rect, bool applyMargin = true)
+            => SkyxGUI.AdjustRectToListLine(ref rect, applyMargin);
 
         public static void ExtractLineDef(this ref Rect rect, out float startX, out float totalWidth)
             => SkyxGUI.ExtractLineDef(ref rect, out startX, out totalWidth);

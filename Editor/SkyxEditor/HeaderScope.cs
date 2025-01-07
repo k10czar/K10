@@ -21,6 +21,7 @@ namespace Skyx.SkyxEditor
         {
             var headerRect = EditorGUILayout.GetControlRect(false, SkyxStyles.HeaderButtonSize);
             var boxRect = headerRect;
+            ShrinkHeaderRect(ref headerRect);
 
             if (isExpandedRef)
             {
@@ -39,15 +40,20 @@ namespace Skyx.SkyxEditor
             return property.isExpanded;
         }
 
+        private static void ShrinkHeaderRect(ref Rect headerRect)
+        {
+            headerRect.height = SkyxStyles.HeaderButtonSize - 2;
+            headerRect.y += 1;
+            headerRect.x += 1;
+            headerRect.width -= 2;
+        }
+
         private static bool Begin(ref Rect initialRect, string title, ref bool isExpandedRef, EConsoleColor color)
         {
             initialRect.height -= SkyxStyles.ElementsMargin;
 
             var headerRect = initialRect;
-            headerRect.height = SkyxStyles.HeaderButtonSize - 2;
-            headerRect.y += 1;
-            headerRect.x += 1;
-            headerRect.width -= 2;
+            ShrinkHeaderRect(ref headerRect);
 
             var boxRect = initialRect;
 

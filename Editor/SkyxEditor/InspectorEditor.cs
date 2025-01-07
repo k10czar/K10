@@ -23,7 +23,7 @@ namespace Skyx.SkyxEditor
             DrawConfigs();
         }
 
-        protected virtual void DrawConfigs() => base.OnInspectorGUI();
+        protected abstract void DrawConfigs();
 
         public override void OnInspectorGUI()
         {
@@ -69,6 +69,13 @@ namespace Skyx.SkyxEditor
         }
 
         private void CacheProperties() => Properties = PropertyCollection.Get(serializedObject);
+
+        protected void ApplyDirectTargetChanges()
+        {
+            EditorUtility.SetDirty(Target);
+            PropertyCollection.Release(serializedObject);
+            CacheProperties();
+        }
 
         protected virtual void OnPlayModeStateChanged(PlayModeStateChange playModeStateChange)
         {
