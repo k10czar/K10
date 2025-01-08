@@ -13,6 +13,7 @@ namespace Skyx.SkyxEditor
         protected PropertyCollection Properties { get; private set; }
 
         private bool skipDrawing;
+        private bool shouldReset;
 
         protected virtual bool ShouldDrawScript => true;
         protected virtual bool ShouldDrawTitle => false;
@@ -46,8 +47,23 @@ namespace Skyx.SkyxEditor
             SkyxLayout.Space();
         }
 
+        private void TryResetDueToExternalChanges()
+        {
+            if (shouldReset)
+            {
+                PropertyCollection.Release(serializedObject);
+                serializedObject.Update();
+                shouldReset = false;
+            }
+
+            if (Event.current.type is EventType.ContextClick)
+                shouldReset = true;
+        }
+
         public override void OnInspectorGUI()
         {
+            TryResetDueToExternalChanges();
+
             if (skipDrawing)
             {
                 EditorGUILayout.HelpBox("Changing playmode...", MessageType.Info);
