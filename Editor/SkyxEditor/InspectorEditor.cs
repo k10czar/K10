@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using Unity.Profiling;
+using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -6,6 +7,8 @@ namespace Skyx.SkyxEditor
 {
     public abstract class InspectorEditor<T> : Editor where T : Object
     {
+        private static readonly ProfilerMarker drawMarker = new("InspectorEditor.Draw");
+
         protected T Target { get; private set; }
         protected PropertyCollection Properties { get; private set; }
 
@@ -13,17 +16,35 @@ namespace Skyx.SkyxEditor
 
         protected virtual bool ShouldDrawScript => true;
         protected virtual bool ShouldDrawTitle => false;
+        protected virtual bool ShouldDrawSaveFile => false;
         protected virtual bool HasRuntimeVisualization => false;
+
         protected virtual void DrawRuntimeInfo() {}
+        protected abstract void DrawConfigs();
 
         private void DrawConfigsInternal()
         {
+            CacheProperties(false);
+
+            using var profilerMarker = drawMarker.Auto();
+
             DrawScriptFile();
             DrawTitle();
+            DrawSaveFile();
             DrawConfigs();
         }
 
-        protected abstract void DrawConfigs();
+        private void DrawSaveFile()
+        {
+            if (!ShouldDrawSaveFile || !EditorUtility.IsDirty(Target)) return;
+
+            using var _ = new BackgroundColorScope(Colors.Console.Warning);
+
+            if (GUILayout.Button("Save Changes!"))
+                AssetDatabase.SaveAssetIfDirty(Target);
+
+            SkyxLayout.Space();
+        }
 
         public override void OnInspectorGUI()
         {
@@ -44,9 +65,8 @@ namespace Skyx.SkyxEditor
             }
             else
             {
-                CacheProperties();
                 DrawConfigsInternal();
-                if (PropertyCollection.TryApply(serializedObject)) CacheProperties();
+                if (PropertyCollection.TryApply(serializedObject)) CacheProperties(false);
             }
         }
 
@@ -68,13 +88,16 @@ namespace Skyx.SkyxEditor
             SkyxLayout.Space();
         }
 
-        private void CacheProperties() => Properties = PropertyCollection.Get(serializedObject);
+        private void CacheProperties(bool reset)
+        {
+            if (reset) PropertyCollection.Release(serializedObject);
+            Properties = PropertyCollection.Get(serializedObject);
+        }
 
         protected void ApplyDirectTargetChanges()
         {
             EditorUtility.SetDirty(Target);
-            PropertyCollection.Release(serializedObject);
-            CacheProperties();
+            CacheProperties(true);
         }
 
         protected virtual void OnPlayModeStateChanged(PlayModeStateChange playModeStateChange)
@@ -85,7 +108,7 @@ namespace Skyx.SkyxEditor
         protected virtual void OnEnable()
         {
             Target = target as T;
-            CacheProperties();
+            CacheProperties(true);
 
             EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;

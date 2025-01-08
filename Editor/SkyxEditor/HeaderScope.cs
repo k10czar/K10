@@ -11,10 +11,11 @@ namespace Skyx.SkyxEditor
 
         private static bool Begin(string title, SerializedProperty property, EConsoleColor color)
         {
+            var initialExpanded = property.isExpanded;
             var isExpanded = property.isExpanded;
             property.isExpanded = Begin(title, ref isExpanded, color);
 
-            return property.isExpanded;
+            return initialExpanded;
         }
 
         private static bool Begin(string title, ref bool isExpandedRef, EConsoleColor color)
@@ -101,7 +102,7 @@ namespace Skyx.SkyxEditor
 
         protected override void CloseScope()
         {
-            if (isExpanded && usesLayout) BoxGUI.EndBox();
+            if (isExpanded && usesLayout) EditorGUILayout.EndVertical();
         }
     }
 }

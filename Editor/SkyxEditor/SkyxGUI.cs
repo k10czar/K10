@@ -296,7 +296,7 @@ namespace Skyx.SkyxEditor
         public static void AdjustRectToListLine(ref Rect rect, bool applyMargin = true)
         {
             rect.height = SkyxStyles.LineHeight;
-            if (applyMargin) rect.y += 3;
+            if (applyMargin) rect.y += 2;
         }
 
         public static void ExtractLineDef(ref Rect rect, out float startX, out float totalWidth)

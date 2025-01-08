@@ -3,101 +3,158 @@ using UnityEngine;
 using UnityEditor;
 using System.Linq;
 using System;
+using Unity.Profiling;
 using UnityEditorInternal;
 using Object = UnityEngine.Object;
 
 namespace Skyx.SkyxEditor
 {
-    public class PropertyCollection
+    public class PropertyCollection : ILoggableTarget<EditorLogCategory>
     {
         #region Static
 
+        private static readonly ProfilerMarker getCollectionMarker = new("PropertyCollection.Get");
+        private static readonly ProfilerMarker applyCollectionMarker = new("PropertyCollection.Apply");
+
         [ResetedOnLoad] private static readonly Dictionary<string, Dictionary<string, PropertyCollection>> collections = new();
+        [ResetedOnLoad] private static readonly Dictionary<string, Dictionary<string, uint>> previousHashes = new();
 
         private static string GetID(SerializedObject target) => target.targetObject.GetHashCode().ToString();
 
         public static PropertyCollection Get(SerializedObject serializedObject) => Get(serializedObject, "");
         public static PropertyCollection Get(SerializedProperty property) => Get(property.serializedObject, property.propertyPath);
 
-        public static void Release(SerializedObject root) => collections.Remove(GetID(root));
+        public static void Release(SerializedObject root)
+        {
+            var id = GetID(root);
+            collections.Remove(id);
+            previousHashes.Remove(id);
+        }
 
         private static PropertyCollection Get(SerializedObject root, string path)
         {
+            using var profilerMarker = getCollectionMarker.Auto();
+
             var id = GetID(root);
             if (!collections.TryGetValue(id, out var objectCollections))
             {
                 objectCollections = new Dictionary<string, PropertyCollection>();
                 collections.Add(id, objectCollections);
+                previousHashes.Add(id, new Dictionary<string, uint>());
             }
+
+            var hashes = previousHashes[id];
 
             TryApply(root);
 
             if (objectCollections.TryGetValue(path, out var collection))
             {
                 if (collection.IsValid()) return collection;
+
                 objectCollections.Remove(path);
+                hashes.Remove(path);
             }
 
-            UpdateCollections(root);
+            K10Log<EditorLogCategory>.LogVerbose($"Creating new collection for {root.targetObject} @ {path}");
 
             collection = new PropertyCollection(root, path);
             objectCollections.Add(path, collection);
+            hashes[path] = collection.ContentHash;
 
             return collection;
         }
 
         public static bool TryApply(SerializedObject serializedObject)
         {
-            if (!serializedObject.hasModifiedProperties) return false;
+            using var profilerMarker = applyCollectionMarker.Auto();
 
-            serializedObject.ApplyModifiedProperties();
-            ResetCollections(serializedObject);
+            var shouldApply = false;
+            var id = GetID(serializedObject);
+            var hashes = previousHashes[id];
 
-            return true;
-        }
+            if (collections.TryGetValue(id, out var objectCollections))
+            {
+                foreach (var collection in objectCollections.Values)
+                {
+                    if (!collection.IsDirty()) continue;
 
-        private static void UpdateCollections(SerializedObject serializedObject)
-        {
-            serializedObject.Update();
-            ResetCollections(serializedObject);
+                    K10Log<EditorLogCategory>.LogVerbose($"Collection @ '{collection.propertyPath}' was changed!");
+                    shouldApply = true;
+                    break;
+                }
+            }
+            else
+            {
+                var previousHash = hashes.GetValueOrDefault("", uint.MaxValue);
+                var contentHash = serializedObject.GetIterator().contentHash;
+
+                shouldApply = contentHash != previousHash || serializedObject.hasModifiedProperties;
+            }
+
+            if (shouldApply)
+            {
+                K10Log<EditorLogCategory>.Log($"Applying modifications for {serializedObject.targetObject}");
+
+                serializedObject.ApplyModifiedProperties();
+                serializedObject.Update();
+
+                ResetCollections(serializedObject);
+            }
+
+            return shouldApply;
         }
 
         private static void ResetCollections(SerializedObject serializedObject)
         {
-            if (!collections.TryGetValue(GetID(serializedObject), out var objectCollections)) return;
+            var id = GetID(serializedObject);
+
+            if (!collections.TryGetValue(id, out var objectCollections)) return;
+            var hashes = previousHashes[id];
 
             foreach (var (key, collection) in objectCollections.ToList())
             {
-                if (collection.IsValid()) collection.Reset();
-                else objectCollections.Remove(key);
+                if (collection.IsValid())
+                {
+                    if (collection.root == serializedObject)
+                    {
+                        hashes[key] = collection.ContentHash;
+                        continue;
+                    }
+
+                    try
+                    {
+                        collection.Reset(serializedObject);
+                        hashes[key] = collection.ContentHash;
+
+                        K10Log<EditorLogCategory>.LogVerbose($"Collection [{key}] reset: {hashes[key]} >>> {collection.ContentHash}");
+
+                        continue;
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+
+                K10Log<EditorLogCategory>.LogVerbose($"Collection for {serializedObject.targetObject} @ {key} was corrupted! Deleting...");
+                objectCollections.Remove(key);
+                hashes.Remove(key);
             }
         }
 
         #endregion
 
-        private readonly SerializedObject root;
-        private readonly Object owner;
+        private SerializedObject root;
+        private Object owner;
         private readonly string propertyPath;
 
         private readonly Dictionary<string, SerializedProperty> properties = new();
 
         #region Layout Draw
 
-        public SerializedProperty GetRelative(string propertyPath)
+        public void DrawRelative(string fullPath)
         {
-            var paths = propertyPath.Split('.');
-            if (!properties.TryGetValue(paths[0], out var pathProperty)) return null;
-
-            for (int i = 1; i < paths.Length; i++)
-                pathProperty = pathProperty.FindPropertyRelative(paths[i]);
-
-            return pathProperty;
-
-        }
-
-        public void DrawRelative(string propertyPath)
-        {
-            var paths = propertyPath.Split('.');
+            var paths = fullPath.Split('.');
             if (!properties.TryGetValue(paths[0], out SerializedProperty pathProperty)) return;
 
             for (int i = 1; i < paths.Length; i++)
@@ -123,6 +180,17 @@ namespace Skyx.SkyxEditor
             list.DoLayoutList();
         }
 
+        public void DrawDefaultList(string propertyName, bool displayHeader = true)
+        {
+            if (!TryGet(propertyName, out var property)) return;
+
+            if (!HasList(propertyName))
+                RegisterList(propertyName, displayHeader);
+
+            var list = GetReorderableList(property);
+            list.DoLayoutList();
+        }
+
         public void DrawBacking(string propertyName)
         {
             if (TryGetBacking(propertyName, out var property))
@@ -135,22 +203,6 @@ namespace Skyx.SkyxEditor
                 EditorGUILayout.PropertyField(property, new GUIContent(label));
         }
 
-        public bool DrawGetBool(string propertyName)
-        {
-            if (!TryGet(propertyName, out SerializedProperty property)) return false;
-
-            EditorGUILayout.PropertyField(property);
-            return property.boolValue;
-        }
-
-        public string DrawGetString(string propertyName)
-        {
-            if (!TryGet(propertyName, out SerializedProperty property)) return null;
-
-            EditorGUILayout.PropertyField(property);
-            return property.stringValue;
-        }
-
         public void DrawAll(params string[] including)
         {
             foreach (var entry in including) Draw(entry);
@@ -158,7 +210,7 @@ namespace Skyx.SkyxEditor
 
         public void DrawAllExcept(params string[] except)
         {
-            foreach (var (key, prop) in properties)
+            foreach (var key in properties.Keys)
             {
                 if (except.Contains(key)) continue;
                 Draw(key);
@@ -279,7 +331,7 @@ namespace Skyx.SkyxEditor
             {
                 drawHeaderCallback = DrawHeaderCallback,
                 drawElementCallback = customDrawElement ?? DrawElementCallback,
-                elementHeightCallback = ElementHeightCallback
+                elementHeightCallback = ElementHeightCallback,
             };
 
             lists.Add(property, list);
@@ -309,6 +361,8 @@ namespace Skyx.SkyxEditor
         public bool HasList(SerializedProperty property) => lists.ContainsKey(property);
 
         #endregion
+
+        #region Getters
 
         public float GetHeight(params string[] excludeFields)
         {
@@ -347,7 +401,7 @@ namespace Skyx.SkyxEditor
         {
             if (properties.TryGetValue(propertyName, out property)) return true;
 
-            Debug.LogError($"{owner} does not contain {propertyName}", owner);
+            this.LogError($"{owner} does not contain {propertyName}");
             return false;
         }
 
@@ -356,8 +410,29 @@ namespace Skyx.SkyxEditor
             propertyName = $"<{propertyName}>k__BackingField";
             if (properties.TryGetValue(propertyName, out property)) return true;
 
-            Debug.LogError($"{owner} does not contain {propertyName}", owner);
+            this.LogError($"{owner} does not contain {propertyName}");
             return false;
+        }
+
+        public SerializedProperty GetRelative(string fullPath)
+        {
+            var paths = fullPath.Split('.');
+            if (!properties.TryGetValue(paths[0], out var pathProperty)) return null;
+
+            for (int i = 1; i < paths.Length; i++)
+                pathProperty = pathProperty.FindPropertyRelative(paths[i]);
+
+            return pathProperty;
+        }
+
+        #endregion
+
+        private bool IsDirty()
+        {
+            var hashes = previousHashes[GetID(root)];
+            var previousHash = hashes.GetValueOrDefault(propertyPath, uint.MaxValue);
+
+            return ContentHash != previousHash || root.hasModifiedProperties;
         }
 
         private bool IsValid()
@@ -373,13 +448,7 @@ namespace Skyx.SkyxEditor
             }
         }
 
-        private void Reset()
-        {
-            properties.Clear();
-            lists.Clear();
-
-            Setup();
-        }
+        private uint ContentHash => (string.IsNullOrEmpty(propertyPath) ? root.GetIterator() : root.FindProperty(propertyPath)).contentHash;
 
         private void Setup()
         {
@@ -400,6 +469,17 @@ namespace Skyx.SkyxEditor
             while (currentProperty.NextVisible(false));
         }
 
+        private void Reset(SerializedObject newRoot)
+        {
+            properties.Clear();
+            lists.Clear();
+
+            root = newRoot;
+            owner = root.targetObject;
+
+            Setup();
+        }
+
         private PropertyCollection(SerializedObject root, string path)
         {
             this.root = root;
@@ -409,5 +489,7 @@ namespace Skyx.SkyxEditor
 
             Setup();
         }
+
+        public MonoBehaviour LogTarget => (MonoBehaviour) owner;
     }
 }
