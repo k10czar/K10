@@ -20,9 +20,10 @@ namespace Skyx.SkyxEditor
 
         private static bool Begin(string title, ref bool isExpandedRef, EConsoleColor color)
         {
-            var headerRect = EditorGUILayout.GetControlRect(false, SkyxStyles.HeaderButtonSize);
+            var headerRect = EditorGUILayout.GetControlRect(false, SkyxStyles.HeaderHeight());
             var boxRect = headerRect;
-            ShrinkHeaderRect(ref headerRect);
+
+            ShrinkHeaderRect(ref headerRect, SkyxStyles.HeaderHeight());
 
             if (isExpandedRef)
             {
@@ -41,9 +42,9 @@ namespace Skyx.SkyxEditor
             return property.isExpanded;
         }
 
-        private static void ShrinkHeaderRect(ref Rect headerRect)
+        private static void ShrinkHeaderRect(ref Rect headerRect, float headerHeight)
         {
-            headerRect.height = SkyxStyles.HeaderButtonSize - 2;
+            headerRect.height = headerHeight - 2;
             headerRect.y += 1;
             headerRect.x += 1;
             headerRect.width -= 2;
@@ -53,12 +54,13 @@ namespace Skyx.SkyxEditor
         {
             initialRect.height -= SkyxStyles.ElementsMargin;
 
+            var headerHeight = SkyxStyles.HeaderHeight();
             var headerRect = initialRect;
-            ShrinkHeaderRect(ref headerRect);
+            ShrinkHeaderRect(ref headerRect, headerHeight);
 
             var boxRect = initialRect;
 
-            initialRect.ApplyBoxMargin(SkyxStyles.HeaderButtonSize);
+            initialRect.ApplyBoxMargin(headerHeight);
 
             return ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color);
         }
@@ -67,7 +69,7 @@ namespace Skyx.SkyxEditor
         {
             BoxGUI.DrawBox(boxRect, color);
 
-            if (SkyxGUI.PlainBGButton(headerRect, title, SkyxStyles.headerColors.GetLooping(color)))
+            if (SkyxGUI.PlainBGButton(headerRect, title, SkyxStyles.HeaderColor(color)))
                 isExpandedRef = !isExpandedRef;
 
             return isExpandedRef;

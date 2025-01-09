@@ -4,6 +4,13 @@ using UnityEngine;
 
 namespace Skyx.SkyxEditor
 {
+    public enum EHeaderSize
+    {
+        Primary,
+        Secondary,
+        SingleLine,
+    }
+
     public static class SkyxStyles
     {
         #region Constants
@@ -14,8 +21,6 @@ namespace Skyx.SkyxEditor
         public static readonly Vector2 noSeparatorMargin = new(-1f, -1f);
 
         public const float DefaultSeparatorSize = 1f;
-        public const float BigSeparatorSize = 2f;
-        public const float HugeSeparatorSize = 5f;
 
         public const float LineHeight = 18;
         public const float LineSpace = 4;
@@ -26,7 +31,6 @@ namespace Skyx.SkyxEditor
         public const float SmallButtonSize = 22;
         public const float MiniButtonSize = 18;
         public const float HintIconWidth = 20;
-        public const float HeaderButtonSize = 32;
 
         #endregion
 
@@ -107,23 +111,28 @@ namespace Skyx.SkyxEditor
 
         #region Box
 
-        public const float HeaderScopeTotalExtraHeight = HeaderButtonSize + 3 * ElementsMargin;
-
         public const float ListControlButtonSize = MiniButtonSize;
         public const float BoxHeaderHeight = FullLineHeight;
-        public const float BoxTotalExtraHeight = BoxHeaderHeight + 2 * LineSpace;
         public const float BoxMargin = 5;
 
-        public static readonly Color[] headerColors =
+        private static readonly float[] headerHeights =
+        {
+            32,
+            27,
+            FullLineHeight, // 22
+        };
+
+        private static readonly Color[] headerColors =
         {
             Colors.Console.Dark.AddLight(.02f), // Primary
-            Colors.Console.Dark.AddLight(-.08f), // Secondary
+            // Colors.Console.Dark.AddLight(-.08f), // Secondary
+            Colors.Console.DarkBackground,
             Colors.Console.Secondary.AddLight(-.2f), // Info
             Colors.Avocado.AddLight(-.2f), // Success
             Colors.Console.Warning.AddLight(-.4f).AddSaturation(-.1f), // Warning
         };
 
-        public static readonly Color[] boxColors =
+        private static readonly Color[] boxColors =
         {
             Color.white,
             Color.white,
@@ -132,7 +141,7 @@ namespace Skyx.SkyxEditor
             Colors.Console.Warning.AddLight(.2f).WithAlpha(.2f), // Warning
         };
 
-        public static readonly string[] boxStyles =
+        private static readonly string[] boxStyles =
         {
             "ScriptText", // Primary
             "HelpBox", // Secondary
@@ -141,9 +150,15 @@ namespace Skyx.SkyxEditor
             "TE ElementBackground", // Warning
         };
 
-        public static Color HeaderColor => Colors.Console.DarkBackground;
+        public static float HeaderHeight(EHeaderSize size = EHeaderSize.Primary) => headerHeights[(int)size];
+        public static float ScopeTotalExtraHeight(EHeaderSize size = EHeaderSize.Primary) => headerHeights[(int)size] + (3 * ElementsMargin);
+        public static float ClosedScopeHeight(EHeaderSize size = EHeaderSize.Primary) => headerHeights[(int)size] + ElementsMargin;
 
         public static GUIStyle BoxStyle(EConsoleColor color) => new(boxStyles[(int)color]);
+        public static Color HeaderColor(EConsoleColor color) => headerColors[(int)color];
+        public static Color BoxColor(EConsoleColor color) => boxColors[(int)color];
+
+        public static Color DefaultHeaderColor => HeaderColor(EConsoleColor.Secondary);
 
         public static readonly GUIStyle borderBoxHeaderStyle = new()
         {

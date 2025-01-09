@@ -131,8 +131,8 @@ namespace Skyx.SkyxEditor
 
         public static float GetPropertyHeight(SerializedProperty property)
         {
-            if (!property.isExpanded) return SkyxStyles.HeaderButtonSize + SkyxStyles.ElementsMargin;
-            return SkyxStyles.HeaderScopeTotalExtraHeight + GetElementsHeight(property) + NewElementHeight;
+            if (!property.isExpanded) return SkyxStyles.ClosedScopeHeight();
+            return SkyxStyles.ScopeTotalExtraHeight() + GetElementsHeight(property) + NewElementHeight;
         }
     }
 }

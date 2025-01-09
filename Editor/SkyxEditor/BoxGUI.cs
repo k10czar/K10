@@ -58,7 +58,7 @@ namespace Skyx.SkyxEditor
 
         public static void DrawHeader(Rect headerRect, GUIContent title, GUIStyle labelStyle = null)
         {
-            EditorGUI.DrawRect(headerRect, SkyxStyles.HeaderColor);
+            EditorGUI.DrawRect(headerRect, SkyxStyles.DefaultHeaderColor);
 
             Rect labelRect = new Rect(headerRect.x + SkyxStyles.BoxMargin, headerRect.y - 1f, headerRect.width - SkyxStyles.BoxMargin, headerRect.height);
             EditorGUI.LabelField(labelRect, title, labelStyle ?? SkyxStyles.BoldStyle);
@@ -66,7 +66,7 @@ namespace Skyx.SkyxEditor
 
         public static bool DrawToggleHeader(Rect headerRect, GUIContent title, bool toggle)
         {
-            EditorGUI.DrawRect(headerRect, SkyxStyles.HeaderColor);
+            EditorGUI.DrawRect(headerRect, SkyxStyles.DefaultHeaderColor);
 
             Rect toggleRect = new Rect(headerRect.x + SkyxStyles.BoxMargin, headerRect.y, EditorGUIUtility.singleLineHeight, headerRect.height);
             toggle = GUI.Toggle(toggleRect, toggle, new GUIContent("", "Enabled"), EditorStyles.toggle);
@@ -77,34 +77,10 @@ namespace Skyx.SkyxEditor
             return toggle;
         }
 
-        public static bool DrawFoldoutHeader(Rect headerRect, string title, bool expanded)
-        {
-            EditorGUI.DrawRect(headerRect, SkyxStyles.HeaderColor);
-
-            // Define and draw foldout toggle
-            Rect foldoutRect = new Rect(headerRect.x + SkyxStyles.BoxMargin, headerRect.y, SkyxStyles.LineHeight, headerRect.height);
-            GUI.Toggle(foldoutRect, expanded, GUIContent.none, EditorStyles.foldout);
-
-            // Define and draw title label
-            Rect labelRect = new Rect(foldoutRect.xMax, headerRect.y, headerRect.width - foldoutRect.xMax + SkyxStyles.BoxMargin, headerRect.height);
-            EditorGUI.LabelField(labelRect, title, SkyxStyles.BoldStyle);
-
-            // Handle mouse events for foldout interaction
-            headerRect.xMax -= SkyxStyles.LineHeight + EditorGUIUtility.standardVerticalSpacing;
-            Event e = Event.current;
-            if (headerRect.Contains(e.mousePosition) && e.type == EventType.MouseDown && e.button == 0)
-            {
-                expanded = !expanded;
-                e.Use();
-            }
-
-            return expanded;
-        }
-
         public static void DrawFoldoutToggleHeader(Rect headerRect, GUIContent title, ref bool expanded, ref bool toggle)
         {
             // Draw header background
-            EditorGUI.DrawRect(headerRect, SkyxStyles.HeaderColor);
+            EditorGUI.DrawRect(headerRect, SkyxStyles.DefaultHeaderColor);
 
             // Set up initial positions
             Rect foldoutRect = headerRect;
@@ -151,7 +127,7 @@ namespace Skyx.SkyxEditor
 
             using (new IconSizeScope(14))
             {
-                EditorGUI.DrawRect(headerRect, SkyxStyles.HeaderColor);
+                EditorGUI.DrawRect(headerRect, SkyxStyles.DefaultHeaderColor);
                 EditorGUI.LabelField(titleRect, title, EditorStyles.miniBoldLabel);
             }
 
@@ -161,7 +137,7 @@ namespace Skyx.SkyxEditor
         public static void DrawBox(Rect rect) => DrawBox(rect, EConsoleColor.Primary);
         public static void DrawBox(Rect rect, EConsoleColor color)
         {
-            using var scope = new BackgroundColorScope(SkyxStyles.boxColors[(int)color]);
+            using var scope = new BackgroundColorScope(SkyxStyles.BoxColor(color));
             GUI.Box(rect, GUIContent.none, SkyxStyles.BoxStyle(color));
         }
 
@@ -187,49 +163,6 @@ namespace Skyx.SkyxEditor
         }
 
         public static void EndBox() => EditorGUILayout.EndVertical();
-
-        #region Foldout Boxes
-
-        public static bool BeginFoldout(string title, ref bool expanded, float headerHeight = SkyxStyles.BoxHeaderHeight)
-            => BeginFoldout(title, ref expanded, out _, headerHeight);
-
-        public static bool BeginFoldout(string title, ref bool expanded, out Rect headerRect, float headerHeight = SkyxStyles.BoxHeaderHeight)
-        {
-            headerRect = EditorGUILayout.GetControlRect(false, headerHeight + SkyxStyles.BoxMargin);
-            var boxRect = headerRect;
-
-            if (expanded)
-            {
-                Rect drawingRect = EditorGUILayout.BeginVertical(SkyxStyles.borderBoxHeaderStyle);
-                boxRect.yMax = drawingRect.yMax;
-            }
-
-            DrawBox(boxRect);
-            expanded = DrawFoldoutHeader(headerRect, title, expanded);
-            return expanded;
-        }
-
-        public static bool BeginFoldout(string title, SerializedProperty property, float headerHeight = SkyxStyles.BoxHeaderHeight)
-            => BeginFoldout(title, property, out _, headerHeight);
-
-        public static bool BeginFoldout(string title, SerializedProperty property, out Rect headerRect, float headerHeight = SkyxStyles.BoxHeaderHeight)
-        {
-            headerRect = EditorGUILayout.GetControlRect(false, headerHeight + SkyxStyles.BoxMargin);
-            var boxRect = headerRect;
-            var returnValue = property.isExpanded;
-
-            if (property.isExpanded)
-            {
-                var drawingRect = EditorGUILayout.BeginVertical(SkyxStyles.borderBoxHeaderStyle);
-                boxRect.yMax = drawingRect.yMax;
-            }
-
-            DrawBox(boxRect);
-            property.isExpanded = DrawFoldoutHeader(headerRect, title, property.isExpanded);
-            return returnValue;
-        }
-
-        #endregion
 
         #region Toggle Boxes
 
