@@ -161,7 +161,7 @@ namespace Skyx.SkyxEditor
 
         #region Buttons
 
-        public static bool RectButton(Rect rect, string label, Color backgroundColor, GUIStyle style, string hint = null)
+        public static bool RectButton(Rect rect, string label, Color backgroundColor, GUIStyle style = null, string hint = null)
         {
             style ??= SkyxStyles.ButtonStyle;
 
@@ -186,6 +186,9 @@ namespace Skyx.SkyxEditor
 
         public static bool MiniDangerButton(ref Rect rect, string label, string hint)
             => RectButton(ExtractMiniButton(ref rect), label, Colors.Console.Danger, SkyxStyles.ButtonStyle, hint);
+
+        public static bool MiniButton(ref Rect rect, string label, EConsoleColor color, string hint = null)
+            => RectButton(ExtractMiniButton(ref rect), label, Colors.Console.Get(color), SkyxStyles.ButtonStyle, hint);
 
         public static bool PlainBGButton(Rect rect, string label, Color color)
             => RectButton(rect, label, color, SkyxStyles.PlainBGHeader);
