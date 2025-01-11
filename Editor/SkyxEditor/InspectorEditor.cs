@@ -113,6 +113,7 @@ namespace Skyx.SkyxEditor
         protected void ApplyDirectTargetChanges()
         {
             EditorUtility.SetDirty(Target);
+            serializedObject.Update();
             CacheProperties(true);
         }
 

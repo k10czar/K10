@@ -11,11 +11,11 @@ namespace Skyx.SkyxEditor
     {
         #region Property Drawers
 
-        public static void DrawTextField(Rect rect, SerializedProperty property, string inlaidHint)
+        public static void DrawTextField(Rect rect, SerializedProperty property, string inlaidHint, string overlayHint = null)
         {
             property.stringValue = EditorGUI.TextField(rect, property.stringValue);
-            DrawHintOverlay(rect, inlaidHint);
 
+            DrawHintOverlay(rect, overlayHint ?? inlaidHint);
             if (string.IsNullOrEmpty(property.stringValue)) DrawHindInlaid(rect, inlaidHint);
         }
 
