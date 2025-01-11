@@ -175,20 +175,20 @@ namespace Skyx.SkyxEditor
             return result;
         }
 
-        public static bool MiniSuccessButton(ref Rect rect, string label, string hint)
-            => RectButton(ExtractMiniButton(ref rect), label, Colors.Console.Success, SkyxStyles.ButtonStyle, hint);
+        public static bool MiniSuccessButton(ref Rect rect, string label, string hint, bool fromEnd = false)
+            => RectButton(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Success, SkyxStyles.ButtonStyle, hint);
 
-        public static bool MiniEnableButton(ref Rect rect, string label, string hint)
-            => RectButton(ExtractMiniButton(ref rect), label, Colors.Console.Info, SkyxStyles.ButtonStyle, hint);
+        public static bool MiniEnableButton(ref Rect rect, string label, string hint, bool fromEnd = false)
+            => RectButton(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Secondary, SkyxStyles.ButtonStyle, hint);
 
-        public static bool MiniWarningButton(ref Rect rect, string label, string hint)
-            => RectButton(ExtractMiniButton(ref rect), label, Colors.Console.Warning, SkyxStyles.ButtonStyle, hint);
+        public static bool MiniWarningButton(ref Rect rect, string label, string hint, bool fromEnd = false)
+            => RectButton(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Warning, SkyxStyles.ButtonStyle, hint);
 
-        public static bool MiniDangerButton(ref Rect rect, string label, string hint)
-            => RectButton(ExtractMiniButton(ref rect), label, Colors.Console.Danger, SkyxStyles.ButtonStyle, hint);
+        public static bool MiniDangerButton(ref Rect rect, string label, string hint, bool fromEnd = false)
+            => RectButton(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Danger, SkyxStyles.ButtonStyle, hint);
 
-        public static bool MiniButton(ref Rect rect, string label, EConsoleColor color, string hint = null)
-            => RectButton(ExtractMiniButton(ref rect), label, Colors.Console.Get(color), SkyxStyles.ButtonStyle, hint);
+        public static bool MiniButton(ref Rect rect, string label, EConsoleColor color, string hint = null, bool fromEnd = false)
+            => RectButton(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Get(color), SkyxStyles.ButtonStyle, hint);
 
         public static bool PlainBGButton(Rect rect, string label, Color color)
             => RectButton(rect, label, color, SkyxStyles.PlainBGHeader);

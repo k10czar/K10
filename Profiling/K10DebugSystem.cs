@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Object = UnityEngine.Object;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -117,11 +118,17 @@ public static class K10DebugSystem
         EditorPrefs.SetBool(DEBUG_ERRORS_SAVE_KEY, !EditorPrefs.GetBool(DEBUG_ERRORS_SAVE_KEY));
     }
 
-    public static bool CanDebugTarget(this Component targetBehaviour, LogSeverity severity = LogSeverity.Info)
+    public static bool CanDebugTarget(this Object targetObject, LogSeverity severity = LogSeverity.Info)
     {
         if (DebugErrors() && severity is LogSeverity.Error) return true;
 
-        var target = targetBehaviour == null ? null : targetBehaviour.gameObject;
+        GameObject target = targetObject switch
+        {
+            null => null,
+            Component component => component.gameObject,
+            GameObject gameObject => gameObject,
+            _ => throw new NotImplementedException()
+        };
 
         return DebugTargets() switch
         {

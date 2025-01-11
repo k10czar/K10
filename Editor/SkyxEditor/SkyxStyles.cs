@@ -29,7 +29,7 @@ namespace Skyx.SkyxEditor
         public const float ListElementsMargin = 7;
 
         public const float SmallButtonSize = 22;
-        public const float MiniButtonSize = 18;
+        public const float MiniButtonSize = 19;
         public const float HintIconWidth = 20;
 
         #endregion

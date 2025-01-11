@@ -24,7 +24,6 @@ public static class K10Log<T> where T : IK10LogCategory, new()
 {
     static readonly T category = new();
 
-
     public static string Name => category.Name;
     public static T Category => category;
 
@@ -37,26 +36,12 @@ public static class K10Log<T> where T : IK10LogCategory, new()
     public static bool SkipVisuals() => K10DebugSystem.SkipVisuals<T>();
 
     [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-    public static void Log(string log, LogSeverity severity = LogSeverity.Info, Object target = null, bool verbose = false)
-        => Log(severity, log, target, verbose);
-
-    [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-    public static void LogVerbose(string log, Object target = null, LogSeverity severity = LogSeverity.Warning)
-        => Log(severity, log, target, true);
-
-    [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-    public static void LogException(System.Exception exception, Object target = null)
-    {
-        Debug.LogException(exception, target);
-    }
-
-    [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-    public static void Log(LogSeverity severity, string log, Object target = null, bool verbose = false)
+    public static void Log(LogSeverity severity, string log, Object owner = null, Object target = null, bool verbose = false)
     {
         if (severity is not LogSeverity.Error && !K10DebugSystem.CanDebug<T>(verbose)) return;
 
 #if UNITY_EDITOR
-        if (!K10DebugSystem.CanDebugTarget(target as Component, severity)) return;
+        if (!(owner as Component).CanDebugTarget(severity)) return;
 #endif
 
 #if UNITY_EDITOR
@@ -72,22 +57,21 @@ public static class K10Log<T> where T : IK10LogCategory, new()
         log = $"{(verbose?"*":"")}[{category.Name}] {Regex.Replace(log, "<.*?>", string.Empty)}";
 #endif
 
+        target ??= owner;
+
         if (severity == LogSeverity.Error) Debug.LogError(log, target);
         else if (severity == LogSeverity.Warning) Debug.LogWarning(log, target);
         else Debug.Log(log, target);
     }
 
-#if UNITY_EDITOR
-    public static void SetGizmosColor()
-    {
-        GizmosColorManager.New(category.Color);
-    }
+    [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    public static void Log(string log, Object target = null) => Log(LogSeverity.Info, log, target);
 
-    public static void RevertGizmosColor()
-    {
-        GizmosColorManager.Revert();
-    }
-#endif
+    [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    public static void LogVerbose(string log, Object target = null) => Log(LogSeverity.Warning, log, target, target, true);
+
+    [HideInCallstack,System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+    public static void LogException(System.Exception exception, Object target = null) => Debug.LogException(exception, target);
 }
 
 public static class K10Log
