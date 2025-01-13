@@ -25,6 +25,7 @@ namespace Skyx.SkyxEditor
 
         private void DrawConfigsInternal()
         {
+            Target = target as T;
             CacheProperties(false);
 
             using var profilerMarker = drawMarker.Auto();
@@ -127,9 +128,6 @@ namespace Skyx.SkyxEditor
 
         protected virtual void OnEnable()
         {
-            Target = target as T;
-            CacheProperties(true);
-
             EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }

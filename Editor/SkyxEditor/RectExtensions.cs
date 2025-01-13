@@ -49,10 +49,11 @@ namespace Skyx.SkyxEditor
         public static Rect ExtractHint(this ref Rect rect, bool fromEnd = false)
             => SkyxGUI.ExtractHint(ref rect, fromEnd);
 
-        public static void AdjustToListLine(this ref Rect rect, bool applyMargin = true) => SkyxGUI.AdjustRectToListLine(ref rect, applyMargin);
-        public static void AdjustToListAndDivide(this ref Rect rect, int divisions, bool applyMargin = true)
+        public static void AdjustToLine(this ref Rect rect, bool applyMargin = true) => SkyxGUI.AdjustRectToLine(ref rect, applyMargin);
+
+        public static void AdjustToLineAndDivide(this ref Rect rect, int divisions, bool applyMargin = true)
         {
-            SkyxGUI.AdjustRectToListLine(ref rect, applyMargin);
+            SkyxGUI.AdjustRectToLine(ref rect, applyMargin);
             SkyxGUI.DivideRect(ref rect, divisions);
         }
 

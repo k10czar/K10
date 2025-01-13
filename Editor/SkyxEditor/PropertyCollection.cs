@@ -18,6 +18,7 @@ namespace Skyx.SkyxEditor
 
         [ResetedOnLoad] private static readonly Dictionary<string, Dictionary<string, PropertyCollection>> collections = new();
         [ResetedOnLoad] private static readonly Dictionary<string, Dictionary<string, uint>> previousHashes = new();
+        [ResetedOnLoad] private static readonly Dictionary<string, EventType> lastCheckedEvent = new();
 
         private static string GetID(SerializedObject target) => target.targetObject.GetHashCode().ToString();
 
@@ -27,8 +28,13 @@ namespace Skyx.SkyxEditor
         public static void Release(SerializedObject root)
         {
             var id = GetID(root);
+            if (!collections.ContainsKey(id)) return;
+
+            K10Log<EditorLogCategory>.Log($"Releasing PropertyCollections for {root.targetObject}");
+
             collections.Remove(id);
             previousHashes.Remove(id);
+            lastCheckedEvent.Remove(id);
         }
 
         private static PropertyCollection Get(SerializedObject root, string path)
@@ -41,6 +47,7 @@ namespace Skyx.SkyxEditor
                 objectCollections = new Dictionary<string, PropertyCollection>();
                 collections.Add(id, objectCollections);
                 previousHashes.Add(id, new Dictionary<string, uint>());
+                lastCheckedEvent.Add(id, EventType.Ignore);
             }
 
             var hashes = previousHashes[id];
@@ -55,7 +62,7 @@ namespace Skyx.SkyxEditor
                 hashes.Remove(path);
             }
 
-            K10Log<EditorLogCategory>.LogVerbose($"Creating new collection for {root.targetObject} @ {path}");
+            K10Log<EditorLogCategory>.LogVerbose($"Creating new collection for {root.targetObject} @ {(string.IsNullOrEmpty(path) ? "_ROOT_" : path)}");
 
             collection = new PropertyCollection(root, path);
             objectCollections.Add(path, collection);
@@ -70,25 +77,20 @@ namespace Skyx.SkyxEditor
 
             var shouldApply = false;
             var id = GetID(serializedObject);
-            var hashes = previousHashes[id];
+            var lastEvent = lastCheckedEvent[id];
 
-            if (collections.TryGetValue(id, out var objectCollections))
+            if (lastEvent == Event.current.rawType) return false;
+            lastCheckedEvent[id] = Event.current.rawType;
+
+            var objectCollections = collections[id];
+
+            foreach (var collection in objectCollections.Values)
             {
-                foreach (var collection in objectCollections.Values)
-                {
-                    if (!collection.IsDirty()) continue;
+                if (!collection.IsDirty()) continue;
 
-                    K10Log<EditorLogCategory>.LogVerbose($"Collection @ '{collection.propertyPath}' was changed!");
-                    shouldApply = true;
-                    break;
-                }
-            }
-            else
-            {
-                var previousHash = hashes.GetValueOrDefault("", uint.MaxValue);
-                var contentHash = serializedObject.GetIterator().contentHash;
-
-                shouldApply = contentHash != previousHash || serializedObject.hasModifiedProperties;
+                K10Log<EditorLogCategory>.LogVerbose($"Collection @ '{collection.propertyPath}' was changed!");
+                shouldApply = true;
+                break;
             }
 
             if (shouldApply)

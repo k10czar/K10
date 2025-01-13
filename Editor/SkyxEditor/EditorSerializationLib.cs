@@ -37,7 +37,6 @@ namespace Skyx.SkyxEditor
 
         public static SerializedProperty GetPositionsProp(SerializedProperty root, int index = 0) => GetPropertyFromArray(root, "positions", out _, index);
         public static SerializedProperty GetDirectionsProp(SerializedProperty root, int index = 0) => GetPropertyFromArray(root, "directions", out _, index);
-        public static SerializedProperty GetSkillsProp(SerializedProperty root, int index = 0) => GetPropertyFromArray(root, "skills", out _, index);
         public static SerializedProperty GetObjectsProp(SerializedProperty root, int index = 0) => GetPropertyFromArray(root, "objects", out _, index);
         public static SerializedProperty GetColorProp(SerializedProperty root, int index = 0) => GetPropertyFromArray(root, "colors", out _, index);
 

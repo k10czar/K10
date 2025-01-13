@@ -307,7 +307,7 @@ namespace Skyx.SkyxEditor
         public static Rect ExtractMiniButton(ref Rect rect, bool fromEnd = false) => ExtractRect(ref rect, SkyxStyles.MiniButtonSize, fromEnd);
         public static Rect ExtractHint(ref Rect rect, bool fromEnd = false) => ExtractRect(ref rect, SkyxStyles.HintIconWidth, fromEnd);
 
-        public static void AdjustRectToListLine(ref Rect rect, bool applyMargin = true)
+        public static void AdjustRectToLine(ref Rect rect, bool applyMargin = true)
         {
             rect.height = SkyxStyles.LineHeight;
             if (applyMargin) rect.y += 2;

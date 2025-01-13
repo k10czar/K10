@@ -131,7 +131,6 @@ namespace Skyx.SkyxEditor
         {
             Colors.Console.Dark.AddLight(.02f), // Primary
             Colors.Console.Dark.AddLight(-.08f), // Secondary
-            // Colors.Console.DarkBackground,
             Colors.Console.Secondary.AddLight(-.2f), // Info
             Colors.Avocado.AddLight(-.2f), // Success
             Colors.Console.Warning.AddLight(-.4f).AddSaturation(-.1f), // Warning
@@ -140,7 +139,7 @@ namespace Skyx.SkyxEditor
         private static readonly Color[] boxColors =
         {
             Color.white,
-            Color.white,
+            Colors.Console.Dark,
             Color.white,
             Color.white,
             Colors.Console.Warning.AddLight(.2f).WithAlpha(.2f), // Warning

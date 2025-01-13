@@ -158,9 +158,9 @@ public static class Colors
         [ConstLike] public static readonly Color Interfaces = Coral;
         [ConstLike] public static readonly Color TypeName = Khaki;
         [ConstLike] public static readonly Color Names = Gold;
-        [ConstLike] public static readonly Color Info = Goldenrod;
+        [ConstLike] public static readonly Color Info = PaleGreen;
         [ConstLike] public static readonly Color Keyword = LawnGreen;
-        [ConstLike] public static readonly Color Verbs = PaleGreen;
+        [ConstLike] public static readonly Color Verbs = Goldenrod;
         [ConstLike] public static readonly Color Numbers = LightSkyBlue;
         [ConstLike] public static readonly Color Abstraction = Azure;
         [ConstLike] public static readonly Color Fields = MediumSlateBlue;
