@@ -26,7 +26,6 @@ namespace Skyx.SkyxEditor
         public const float LineSpace = 4;
         public const float FullLineHeight = LineHeight + LineSpace;
         public const float ElementsMargin = 5;
-        public const float ListElementsMargin = 7;
 
         public const float SmallButtonSize = 22;
         public const float MiniButtonSize = 19;
@@ -60,7 +59,6 @@ namespace Skyx.SkyxEditor
         public static GUIStyle HugeHeader => Style("hugeHeader", Header, HugeFontSize, padding: hugePadding);
         public static GUIStyle PlainBGLabel => Style("plainBGLabel", CenterBoldStyle, padding: bigPadding, background: EditorGUIUtility.whiteTexture);
         public static GUIStyle PlainBGHeader => Style("plainBGHeader", Header, background: EditorGUIUtility.whiteTexture);
-        public static GUIStyle LeftPlainBGHeader => Style("leftPlainBGHeader", PlainBGHeader, TextAnchor.MiddleLeft);
         public static GUIStyle InlaidHintLabel => Style("InlaidHint", CenterLabel, TextAnchor.MiddleRight);
 
         public static GUIStyle FoldStyle => Style("fold", EditorStyles.foldout, FontStyle.Bold);
@@ -115,18 +113,25 @@ namespace Skyx.SkyxEditor
         public const float BoxHeaderHeight = FullLineHeight;
         public const float BoxMargin = 5;
 
+        private static readonly GUIStyle[] headerText =
+        {
+            PlainBGHeader, // Primary
+            Style("SecondaryHeader", Header, fontSize: 15, background: EditorGUIUtility.whiteTexture), // Secondary
+            Style("SingleLineHeader", CenterBoldStyle, background: EditorGUIUtility.whiteTexture), // SingleLine
+        };
+
         private static readonly float[] headerHeights =
         {
-            32,
-            27,
-            FullLineHeight, // 22
+            32, // Primary
+            28, // Secondary
+            24, // SingleLine
         };
 
         private static readonly Color[] headerColors =
         {
             Colors.Console.Dark.AddLight(.02f), // Primary
-            // Colors.Console.Dark.AddLight(-.08f), // Secondary
-            Colors.Console.DarkBackground,
+            Colors.Console.Dark.AddLight(-.08f), // Secondary
+            // Colors.Console.DarkBackground,
             Colors.Console.Secondary.AddLight(-.2f), // Info
             Colors.Avocado.AddLight(-.2f), // Success
             Colors.Console.Warning.AddLight(-.4f).AddSaturation(-.1f), // Warning
@@ -150,6 +155,7 @@ namespace Skyx.SkyxEditor
             "TE ElementBackground", // Warning
         };
 
+        public static GUIStyle HeaderText(EHeaderSize size = EHeaderSize.Primary) => headerText[(int)size];
         public static float HeaderHeight(EHeaderSize size = EHeaderSize.Primary) => headerHeights[(int)size];
         public static float ScopeTotalExtraHeight(EHeaderSize size = EHeaderSize.Primary) => headerHeights[(int)size] + (3 * ElementsMargin);
         public static float ClosedScopeHeight(EHeaderSize size = EHeaderSize.Primary) => headerHeights[(int)size] + ElementsMargin;

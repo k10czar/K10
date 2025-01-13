@@ -131,8 +131,8 @@ namespace Skyx.SkyxEditor
         public static bool MiniChoiceToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint)
             => DrawChoiceToggle(ExtractMiniButton(ref rect), onLabel, offLabel, toggleProp, hint);
 
-        public static bool MiniToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint, Color onColor, Color offColor, bool useExpandField = false)
-            => DrawToggle(ExtractMiniButton(ref rect), onLabel, offLabel, onColor, offColor, toggleProp, hint, useExpandField);
+        public static bool MiniToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint, Color onColor, Color offColor, bool useExpandField = false, bool fromEnd = false)
+            => DrawToggle(ExtractMiniButton(ref rect, fromEnd), onLabel, offLabel, onColor, offColor, toggleProp, hint, useExpandField);
 
         private static bool DrawToggle(Rect rect, string onLabel, string offLabel, Color onColor, Color offColor, SerializedProperty toggleProp, string hint, bool useExpandField = false)
         {
@@ -160,6 +160,9 @@ namespace Skyx.SkyxEditor
         #endregion
 
         #region Buttons
+
+        public static bool RectButton(Rect rect, string label, EConsoleColor color, EHeaderSize size)
+            => RectButton(rect, label, SkyxStyles.HeaderColor(color), SkyxStyles.HeaderText(size));
 
         public static bool RectButton(Rect rect, string label, Color backgroundColor, GUIStyle style = null, string hint = null)
         {
@@ -206,10 +209,10 @@ namespace Skyx.SkyxEditor
 
         public static void Separator(ref Rect rect, float margin = 4, float size = 1)
         {
-            var separator = new Rect(rect.x, rect.y + rect.height + margin, rect.width, size);
+            var separator = new Rect(rect.x, rect.y + margin, rect.width, size);
             EditorGUI.DrawRect(separator, SkyxStyles.defaultSeparatorColor);
 
-            rect.y += rect.height + 2 * margin + size;
+            rect.y += 2 * margin + size;
         }
 
         public static void ShadowLabel(Rect rect, string label, GUIStyle style)
@@ -220,6 +223,14 @@ namespace Skyx.SkyxEditor
         }
 
         #region Rect Control
+
+        public static Rect GetDividedControlRect(int divisions)
+        {
+            var rect = EditorGUILayout.GetControlRect();
+            rect.DivideRect(divisions);
+
+            return rect;
+        }
 
         public static void SlideRect(ref Rect rect, float newWidth, float margin = SkyxStyles.ElementsMargin)
         {

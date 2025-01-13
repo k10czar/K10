@@ -172,15 +172,7 @@ namespace Skyx.SkyxEditor
             if (indent > 0) EditorGUI.indentLevel -= indent;
         }
 
-        public void DrawList(string propertyName)
-        {
-            if (!TryGet(propertyName, out var property)) return;
-
-            var list = GetReorderableList(property);
-            list.DoLayoutList();
-        }
-
-        public void DrawDefaultList(string propertyName, bool displayHeader = true)
+        public void DrawList(string propertyName, bool displayHeader = true)
         {
             if (!TryGet(propertyName, out var property)) return;
 
@@ -264,6 +256,14 @@ namespace Skyx.SkyxEditor
             if (slideRect) rect.SlideSameRect();
         }
 
+        public void DrawEnumMask<T>(ref Rect rect, string propertyName, EConsoleColor color = EConsoleColor.Primary, string hint = null, bool slideRect = true) where T: Enum
+        {
+            if (TryGet(propertyName, out var property))
+                EnumTreeGUI.DrawEnumMask<T>(rect, property, color, hint);
+
+            if (slideRect) rect.SlideSameRect();
+        }
+
         public void DrawObjectField<T>(ref Rect rect, string propertyName, string hint = null, bool slideRect = true) where T: Object
         {
             if (TryGet(propertyName, out var property))
@@ -282,9 +282,22 @@ namespace Skyx.SkyxEditor
             return property?.boolValue ?? false;
         }
 
-        public void DrawList(Rect rect, string propertyName)
+        public bool DrawMiniToggle(ref Rect rect, string propertyName, EConsoleColor onColor, EConsoleColor offColor = EConsoleColor.Support, string label = null, string hint = null, bool fromEnd = false)
+        {
+            if (!TryGet(propertyName, out var property)) return false;
+
+            label = string.IsNullOrEmpty(label) ? property.PrettyName() : label;
+            SkyxGUI.MiniToggle(ref rect, property, label, label, hint, Colors.Console.Get(onColor), Colors.Console.Get(offColor), false, fromEnd);
+
+            return property.boolValue;
+        }
+
+        public void DrawList(Rect rect, string propertyName, bool displayHeader = true)
         {
             if (!TryGet(propertyName, out var property)) return;
+
+            if (!HasList(propertyName))
+                RegisterList(propertyName, displayHeader);
 
             var list = GetReorderableList(property);
             list.DoList(rect);
@@ -322,19 +335,22 @@ namespace Skyx.SkyxEditor
             return null;
         }
 
-        public void RegisterList(string propertyName, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true, ReorderableList.ElementCallbackDelegate customDrawElement = null)
+        public ReorderableList RegisterList(string propertyName, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true, ReorderableList.ElementCallbackDelegate customDrawElement = null, ReorderableList.AddCallbackDelegate customAdd = null, string header = null)
         {
-            if (!TryGet(propertyName, out var property)) return;
-            if (HasList(property)) return;
+            if (!TryGet(propertyName, out var property)) return null;
+            if (HasList(property)) return null;
 
             var list = new ReorderableList(property.serializedObject, property, draggable, displayHeader, displayAddButton, displayRemoveButton)
             {
                 drawHeaderCallback = DrawHeaderCallback,
                 drawElementCallback = customDrawElement ?? DrawElementCallback,
                 elementHeightCallback = ElementHeightCallback,
+                onAddCallback = customAdd,
             };
 
             lists.Add(property, list);
+
+            return list;
 
             void DrawElementCallback(Rect rect, int index, bool isActive, bool isFocused)
             {
@@ -348,7 +364,7 @@ namespace Skyx.SkyxEditor
                 return EditorGUI.GetPropertyHeight(target, true);
             }
 
-            void DrawHeaderCallback(Rect rect) => EditorGUI.LabelField(rect, property.PrettyName());
+            void DrawHeaderCallback(Rect rect) => EditorGUI.LabelField(rect, header ?? property.PrettyName());
         }
 
         public void RegisterList(string propertyName, ReorderableList list)

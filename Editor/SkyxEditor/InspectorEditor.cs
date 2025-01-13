@@ -37,12 +37,15 @@ namespace Skyx.SkyxEditor
 
         private void DrawSaveFile()
         {
-            if (!ShouldDrawSaveFile || !EditorUtility.IsDirty(Target)) return;
+            if (!ShouldDrawSaveFile) return;
 
-            using var _ = new BackgroundColorScope(Colors.Console.Warning);
+            var dirty = EditorUtility.IsDirty(Target);
+            var color = dirty ? Colors.Console.Warning : Colors.Console.Support;
+            var text = dirty ? "Save Changes!" : "No Changes";
 
-            if (GUILayout.Button("Save Changes!"))
-                AssetDatabase.SaveAssetIfDirty(Target);
+            using var _ = new BackgroundColorScope(color);
+
+            if (GUILayout.Button(text)) AssetDatabase.SaveAssetIfDirty(Target);
 
             SkyxLayout.Space();
         }
