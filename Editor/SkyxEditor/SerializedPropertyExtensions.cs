@@ -11,7 +11,13 @@ namespace Skyx.SkyxEditor
         static readonly Regex isArrayEntryRegex = new(@"\.Array\.data\[\d+\]$", RegexOptions.Compiled);
         static readonly Regex replaceRegex = new(@"\[\d+\]", RegexOptions.Compiled);
 
-        public static T GetValue<T>(this SerializedProperty property) where T : class
+        public static FieldInfo GetFieldInfo(this SerializedProperty property)
+        {
+            var parentType = property.serializedObject.targetObject.GetType();
+            return parentType.GetField(property.propertyPath);
+        }
+
+        public static object GetValue(this SerializedProperty property)
         {
             object obj = property.serializedObject.targetObject;
             string path = property.propertyPath.Replace(".Array.data", "");
@@ -28,8 +34,11 @@ namespace Skyx.SkyxEditor
                 else obj = GetFieldValue(pathPiece, obj);
             }
 
-            return (T)obj;
+            return obj;
         }
+
+        public static T GetValue<T>(this SerializedProperty property) where T : class
+            => GetValue(property) as T;
 
         public static bool SetValue<T>(this SerializedProperty property, T value) where T : class
         {

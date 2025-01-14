@@ -26,6 +26,8 @@ namespace Skyx.SkyxEditor
         public const float LineSpace = 4;
         public const float FullLineHeight = LineHeight + LineSpace;
         public const float ElementsMargin = 5;
+        public const float CompactSpace = 2;
+        public const float CompactListElement = LineHeight + CompactSpace;
 
         public const float SmallButtonSize = 22;
         public const float MiniButtonSize = 19;

@@ -79,6 +79,7 @@ namespace Skyx.SkyxEditor
         }
 
         public static void Space() => EditorGUILayout.Space(SkyxStyles.ElementsMargin);
+        public static void CompactSpace() => EditorGUILayout.Space(SkyxStyles.CompactSpace);
 
         #endregion
 

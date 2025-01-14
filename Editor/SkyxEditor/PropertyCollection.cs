@@ -54,15 +54,10 @@ namespace Skyx.SkyxEditor
 
             TryApply(root);
 
-            if (objectCollections.TryGetValue(path, out var collection))
-            {
-                if (collection.IsValid()) return collection;
+            if (objectCollections.TryGetValue(path, out var collection)) return collection;
 
-                objectCollections.Remove(path);
-                hashes.Remove(path);
-            }
-
-            K10Log<EditorLogCategory>.LogVerbose($"Creating new collection for {root.targetObject} @ {(string.IsNullOrEmpty(path) ? "_ROOT_" : path)}");
+            var isRoot = string.IsNullOrEmpty(path);
+            K10Log<EditorLogCategory>.Log(isRoot ? LogSeverity.Info : LogSeverity.Warning, $"Creating new collection for {root.targetObject} @ {(isRoot ? "_ROOT_" : path)}", verbose: !isRoot);
 
             collection = new PropertyCollection(root, path);
             objectCollections.Add(path, collection);
@@ -86,6 +81,12 @@ namespace Skyx.SkyxEditor
 
             foreach (var collection in objectCollections.Values)
             {
+                if (!collection.IsValid())
+                {
+                    Release(serializedObject);
+                    return true;
+                }
+
                 if (!collection.IsDirty()) continue;
 
                 K10Log<EditorLogCategory>.LogVerbose($"Collection @ '{collection.propertyPath}' was changed!");
@@ -174,12 +175,11 @@ namespace Skyx.SkyxEditor
             if (indent > 0) EditorGUI.indentLevel -= indent;
         }
 
-        public void DrawList(string propertyName, bool displayHeader = true)
+        public void DrawList(string propertyName, bool displayHeader = true, bool isBacking = false)
         {
-            if (!TryGet(propertyName, out var property)) return;
+            var property = Get(propertyName, isBacking);
 
-            if (!HasList(propertyName))
-                RegisterList(propertyName, displayHeader);
+            if (!HasList(property)) RegisterList(property, displayHeader);
 
             var list = GetReorderableList(property);
             list.DoLayoutList();
@@ -223,14 +223,14 @@ namespace Skyx.SkyxEditor
             if (slideRect) rect.SlideSameRect();
         }
 
-        public void DrawFloat(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true)
-            => Draw(ref rect, this[propertyName], this[propertyName].floatValue != 0, inlaidHint, overlayHint, slideRect);
+        public void DrawFloat(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false)
+            => Draw(ref rect, Get(propertyName, isBacking), Get(propertyName, isBacking).floatValue != 0, inlaidHint, overlayHint, slideRect);
 
-        public void DrawInt(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true)
-            => Draw(ref rect, this[propertyName], this[propertyName].intValue != 0, inlaidHint, overlayHint, slideRect);
+        public void DrawInt(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false)
+            => Draw(ref rect, Get(propertyName, isBacking), Get(propertyName, isBacking).intValue != 0, inlaidHint, overlayHint, slideRect);
 
-        public void DrawString(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true)
-            => Draw(ref rect, this[propertyName], string.IsNullOrEmpty(this[propertyName].stringValue), inlaidHint, overlayHint, slideRect);
+        public void DrawString(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false)
+            => Draw(ref rect, Get(propertyName, isBacking), string.IsNullOrEmpty(Get(propertyName, isBacking).stringValue), inlaidHint, overlayHint, slideRect);
 
         private static void Draw(ref Rect rect, SerializedProperty property, bool hasValue, string inlaidHint = null, string overlayHint = null, bool slideRect = true)
         {
@@ -242,51 +242,43 @@ namespace Skyx.SkyxEditor
             if (slideRect) rect.SlideSameRect();
         }
 
-        public void DrawEnum<T>(ref Rect rect, string propertyName, EConsoleColor color = EConsoleColor.Primary, string hint = null, bool slideRect = true) where T: Enum
+        public void DrawEnum<T>(ref Rect rect, string propertyName, EConsoleColor color = EConsoleColor.Primary, string hint = null, bool slideRect = true, bool isBacking = false) where T: Enum
         {
-            if (TryGet(propertyName, out var property))
-                EnumTreeGUI.DrawEnum<T>(rect, property, color, hint);
-
+            EnumTreeGUI.DrawEnum<T>(rect, Get(propertyName, isBacking), color, hint);
             if (slideRect) rect.SlideSameRect();
         }
 
-        public void DrawSwitch<T>(ref Rect rect, string propertyName, string hint = null, bool slideRect = true) where T: Enum
+        public void DrawSwitch<T>(ref Rect rect, string propertyName, string hint = null, bool slideRect = true, bool isBacking = false) where T: Enum
         {
-            if (TryGet(propertyName, out var property))
-                EnumTreeGUI.DrawSwitch<T>(rect, property, hint);
-
+            EnumTreeGUI.DrawSwitch<T>(rect, Get(propertyName, isBacking), hint);
             if (slideRect) rect.SlideSameRect();
         }
 
-        public void DrawEnumMask<T>(ref Rect rect, string propertyName, EConsoleColor color = EConsoleColor.Primary, string hint = null, bool slideRect = true) where T: Enum
+        public void DrawEnumMask<T>(ref Rect rect, string propertyName, EConsoleColor color = EConsoleColor.Primary, string hint = null, bool slideRect = true, bool isBacking = false) where T: Enum
         {
-            if (TryGet(propertyName, out var property))
-                EnumTreeGUI.DrawEnumMask<T>(rect, property, color, hint);
-
+            EnumTreeGUI.DrawEnumMask<T>(rect, Get(propertyName, isBacking), color, hint);
             if (slideRect) rect.SlideSameRect();
         }
 
-        public void DrawObjectField<T>(ref Rect rect, string propertyName, string hint = null, bool slideRect = true) where T: Object
+        public void DrawObjectField<T>(ref Rect rect, string propertyName, string hint = null, bool slideRect = true, bool isBacking = false) where T: Object
         {
-            if (TryGet(propertyName, out var property))
-                SkyxGUI.DrawObjectField<T>(rect, property, hint);
-
+            SkyxGUI.DrawObjectField<T>(rect, Get(propertyName, isBacking), hint);
             if (slideRect) rect.SlideSameRect();
         }
 
-        public bool DrawSuccessToggle(ref Rect rect, string propertyName, string label = null, string hint = null, bool slideRect = true)
+        public bool DrawSuccessToggle(ref Rect rect, string propertyName, string label = null, string hint = null, bool slideRect = true, bool isBacking = false)
         {
-            if (TryGet(propertyName, out var property))
-                SkyxGUI.DrawSuccessToggle(rect, string.IsNullOrEmpty(label) ? property.PrettyName() : label, property, hint);
+            var property = Get(propertyName, isBacking);
+            SkyxGUI.DrawSuccessToggle(rect, string.IsNullOrEmpty(label) ? property.PrettyName() : label, property, hint);
 
             if (slideRect) rect.SlideSameRect();
 
-            return property?.boolValue ?? false;
+            return property.boolValue;
         }
 
-        public bool DrawMiniToggle(ref Rect rect, string propertyName, EConsoleColor onColor, EConsoleColor offColor = EConsoleColor.Support, string label = null, string hint = null, bool fromEnd = false)
+        public bool DrawMiniToggle(ref Rect rect, string propertyName, EConsoleColor onColor, EConsoleColor offColor = EConsoleColor.Support, string label = null, string hint = null, bool fromEnd = false, bool isBacking = false)
         {
-            if (!TryGet(propertyName, out var property)) return false;
+            var property = Get(propertyName, isBacking);
 
             label = string.IsNullOrEmpty(label) ? property.PrettyName() : label;
             SkyxGUI.MiniToggle(ref rect, property, label, label, hint, Colors.Console.Get(onColor), Colors.Console.Get(offColor), false, fromEnd);
@@ -294,12 +286,11 @@ namespace Skyx.SkyxEditor
             return property.boolValue;
         }
 
-        public void DrawList(Rect rect, string propertyName, bool displayHeader = true)
+        public void DrawList(Rect rect, string propertyName, bool displayHeader = true, bool isBacking = false)
         {
-            if (!TryGet(propertyName, out var property)) return;
+            var property = Get(propertyName, isBacking);
 
-            if (!HasList(propertyName))
-                RegisterList(propertyName, displayHeader);
+            if (!HasList(property)) RegisterList(property, displayHeader);
 
             var list = GetReorderableList(property);
             list.DoList(rect);
@@ -337,9 +328,14 @@ namespace Skyx.SkyxEditor
             return null;
         }
 
-        public ReorderableList RegisterList(string propertyName, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true, ReorderableList.ElementCallbackDelegate customDrawElement = null, ReorderableList.AddCallbackDelegate customAdd = null, string header = null)
+        public ReorderableList RegisterList(string propertyName, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true, ReorderableList.ElementCallbackDelegate customDrawElement = null, ReorderableList.AddCallbackDelegate customAdd = null, string header = null, bool isBacking = false)
         {
-            if (!TryGet(propertyName, out var property)) return null;
+            var property = Get(propertyName, isBacking);
+            return RegisterList(property, displayHeader, draggable, displayAddButton, displayRemoveButton, customDrawElement, customAdd, header);
+        }
+
+        public ReorderableList RegisterList(SerializedProperty property, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true, ReorderableList.ElementCallbackDelegate customDrawElement = null, ReorderableList.AddCallbackDelegate customAdd = null, string header = null)
+        {
             if (HasList(property)) return null;
 
             var list = new ReorderableList(property.serializedObject, property, draggable, displayHeader, displayAddButton, displayRemoveButton)
@@ -369,13 +365,9 @@ namespace Skyx.SkyxEditor
             void DrawHeaderCallback(Rect rect) => EditorGUI.LabelField(rect, header ?? property.PrettyName());
         }
 
-        public void RegisterList(string propertyName, ReorderableList list)
-        {
-            if (!TryGet(propertyName, out var property)) return;
-            lists.TryAdd(property, list);
-        }
+        public void RegisterList(string propertyName, ReorderableList list, bool isBacking = false) => lists.TryAdd(Get(propertyName, isBacking), list);
 
-        public bool HasList(string propertyName) => TryGet(propertyName, out var property) && lists.ContainsKey(property);
+        public bool HasList(string propertyName, bool isBacking = false) => lists.ContainsKey(Get(propertyName, isBacking));
         public bool HasList(SerializedProperty property) => lists.ContainsKey(property);
 
         #endregion
@@ -410,6 +402,8 @@ namespace Skyx.SkyxEditor
 
         public SerializedProperty this[string key] => properties[key];
 
+        public SerializedProperty Get(string propertyName, bool isBacking) => properties[isBacking ? $"<{propertyName}>k__BackingField" : propertyName];
+
         public bool TryGet(string propertyName, bool isBacking, out SerializedProperty property)
         {
             return isBacking ? TryGetBacking(propertyName, out property) : TryGet(propertyName, out property);
@@ -430,17 +424,6 @@ namespace Skyx.SkyxEditor
 
             this.LogError($"{owner} does not contain {propertyName}");
             return false;
-        }
-
-        public SerializedProperty GetRelative(string fullPath)
-        {
-            var paths = fullPath.Split('.');
-            if (!properties.TryGetValue(paths[0], out var pathProperty)) return null;
-
-            for (int i = 1; i < paths.Length; i++)
-                pathProperty = pathProperty.FindPropertyRelative(paths[i]);
-
-            return pathProperty;
         }
 
         #endregion

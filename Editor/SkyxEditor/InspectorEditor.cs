@@ -15,7 +15,7 @@ namespace Skyx.SkyxEditor
         private bool skipDrawing;
         private bool shouldReset;
 
-        protected virtual bool ShouldDrawScript => true;
+        protected virtual bool ShouldDrawScript => false;
         protected virtual bool ShouldDrawTitle => false;
         protected virtual bool ShouldDrawSaveFile => false;
         protected virtual bool HasRuntimeVisualization => false;
