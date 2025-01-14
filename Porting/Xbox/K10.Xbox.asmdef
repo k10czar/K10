@@ -10,7 +10,8 @@
         "Editor",
         "GameCoreScarlett",
         "GameCoreXboxOne",
-        "WindowsStandalone64"
+        "WindowsStandalone64",
+        "XboxOne"
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
@@ -18,8 +19,7 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [
-        "MICROSOFT_GDK",
-        "MICROSOFT_GDK_SUPPORT"
+        "MICROSOFT_GDK"
     ],
     "versionDefines": [
         {
