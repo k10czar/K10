@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class GdkGameRuntimeServiceConfigurator : IService, IStartable, ILogglable<GdkLogCategory>
 {
-    [SerializeField,InlineProperties] GdkPlatformSettings _gdkSettings;
+    [SerializeField,InlineProperties] GdkPlatformSettingsData _gdkSettings;
     GdkGameRuntimeService gdkRuntimeManager;
 
     public IGdkRuntimeService MainService => gdkRuntimeManager;

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class GdkPlatformSettings : ScriptableObject, IGdkRuntimeData
+public class GdkPlatformSettingsData : ScriptableObject, IGdkRuntimeData
 {
     [SerializeField] string titleId = "62ab3c24";
     [SerializeField] string scid = "00000000-0000-0000-0000-000062ab3c24";
