@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Object = UnityEngine.Object;
 
 #if UNITY_EDITOR
@@ -177,10 +176,16 @@ public static class K10DebugSystem
     public static bool CanDebugVisuals<T>() where T : IK10LogCategory, new()
         => false;
 
+    public static bool CanDebugVisuals(Type type)
+        => false;
+
     public static bool SkipVisuals<T>() where T : IK10LogCategory, new()
         => true;
 
     public static bool SkipVisuals(Type type)
+        => true;
+
+    public static bool CanDebugTarget(this Object targetObject, LogSeverity severity = LogSeverity.Info)
         => true;
 
     public static bool CanDebugVisuals(string baseName)
