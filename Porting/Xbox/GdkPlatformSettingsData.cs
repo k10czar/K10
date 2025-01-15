@@ -8,5 +8,5 @@ public class GdkPlatformSettingsData : ScriptableObject, IGdkRuntimeData
 
     public string Sandbox => sandbox; 
     public string Scid => scid; 
-    public string TitleId => titleId; 
+    public string TitleId => titleId;
 }
