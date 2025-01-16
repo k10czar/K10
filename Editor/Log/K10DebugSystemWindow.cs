@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using K10.EditorUtils;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditorInternal;
@@ -65,10 +66,10 @@ public class K10DebugSystemWindow : EditorWindow
         GUILayout.EndHorizontal();
     }
 
-    private bool ToggleButton( string name, bool initialState, params GUILayoutOption[] options )
+    protected bool ToggleButton(string label, bool initialState, params GUILayoutOption[] options)
     {
-        GuiBackgroundColorManager.New( BoolToColor( initialState ) );
-        var changed = GUILayout.Button( name, K10GuiStyles.bigbuttonFlatStyle, options );
+        GuiBackgroundColorManager.New(BoolToColor(initialState));
+        var changed = GUILayout.Button(label, K10GuiStyles.bigbuttonFlatStyle, options);
         GuiBackgroundColorManager.Revert();
         dirty |= changed;
         return changed;
@@ -303,44 +304,14 @@ public class K10DebugSystemWindow : EditorWindow
 
 
     #region Define Symbol Manipulation
+
     private void DrawConditionalCompilation()
     {
-        var enabled = HasTargetDefineSymbol(K10Log.ConditionalDirective);
+        var enabled = DefineSymbols.Has(K10Log.ConditionalDirective);
         var text = enabled ? "Log calls Included" : "Log calls Stripped";
         if( ToggleButton( text, enabled ) )
-            ToggleDirective(K10Log.ConditionalDirective);
+            DefineSymbols.Toggle(K10Log.ConditionalDirective);
     }
 
-    private static void ToggleDirective(string symbolName)
-    {
-        var isEnabled = HasTargetDefineSymbol(symbolName);
-        if (isEnabled) RemoveDefineSymbol(symbolName);
-        else AddDefineSymbol(symbolName);
-
-        // EditorPrefs.SetBool(symbolName, !isEnabled);
-
-        UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
-        AssetDatabase.SaveAssets();
-    }
-
-    private static bool HasTargetDefineSymbol(string symbol)
-    {
-        var all = PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.Standalone);
-        return all.Contains(symbol);
-    }
-
-    private static void RemoveDefineSymbol(string symbol)
-    {
-        var all = PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.Standalone);
-        var newSymbols = all.Replace($"{symbol}", "");
-
-        PlayerSettings.SetScriptingDefineSymbols(NamedBuildTarget.Standalone, newSymbols);
-    }
-
-    private static void AddDefineSymbol(string symbol)
-    {
-        var all = PlayerSettings.GetScriptingDefineSymbols(NamedBuildTarget.Standalone);
-        PlayerSettings.SetScriptingDefineSymbols(NamedBuildTarget.Standalone, $"{all};{symbol}");
-    }
     #endregion
 }
