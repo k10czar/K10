@@ -1,3 +1,4 @@
+#if MICROSOFT_GDK_SUPPORT || UNITY_GAMECORE
 using UnityEngine;
 
 public class GdkGameRuntimeServiceConfigurator : IService, IStartable, ILogglable<GdkLogCategory>
@@ -23,3 +24,4 @@ public class GdkGameRuntimeServiceConfigurator : IService, IStartable, ILogglabl
         ServiceLocator.Register( gdkRuntimeManager );
     }
 }
+#endif

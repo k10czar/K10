@@ -1,3 +1,4 @@
+#if MICROSOFT_GDK_SUPPORT || UNITY_GAMECORE
 using UnityEngine;
 
 public class GdkPlatformSettingsData : ScriptableObject, IGdkRuntimeData
@@ -10,3 +11,4 @@ public class GdkPlatformSettingsData : ScriptableObject, IGdkRuntimeData
     public string Scid => scid; 
     public string TitleId => titleId;
 }
+#endif

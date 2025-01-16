@@ -1,3 +1,4 @@
+#if MICROSOFT_GDK_SUPPORT || UNITY_GAMECORE
 using Unity.XGamingRuntime;
 using UnityEngine;
 using System;
@@ -378,3 +379,4 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILogglable<GdkLogCatego
         }
     }
 }
+#endif
