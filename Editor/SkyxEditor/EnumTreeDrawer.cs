@@ -24,10 +24,8 @@ namespace Skyx.SkyxEditor
 
         public static void DrawEnumDropdown(Rect position, SerializedProperty property, Color color, GUIStyle style, Type fieldType)
         {
-            SkyxLayout.SetBackgroundColor(color);
-            position.y += 1;
+            using var backgroundScope = new BackgroundColorScope(color);
             DrawEnumDropdown(position, property, style, fieldType);
-            SkyxLayout.RestoreBackgroundColor();
         }
 
         public static void DrawEnumDropdown<T>(Rect position, T value, Action<object> callback, EConsoleColor color = EConsoleColor.Primary) where T: Enum
@@ -49,6 +47,7 @@ namespace Skyx.SkyxEditor
 
             if (!enumType.IsEnum)
             {
+                Debug.LogError("Calling Draw enum on a non enum type!");
                 EditorGUI.PropertyField(position, property, GUIContent.none);
                 return;
             }

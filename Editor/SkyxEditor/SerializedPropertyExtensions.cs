@@ -8,14 +8,9 @@ namespace Skyx.SkyxEditor
 {
     public static class SerializedPropertyExtension
     {
-        static readonly Regex isArrayEntryRegex = new(@"\.Array\.data\[\d+\]$", RegexOptions.Compiled);
-        static readonly Regex replaceRegex = new(@"\[\d+\]", RegexOptions.Compiled);
-
-        public static FieldInfo GetFieldInfo(this SerializedProperty property)
-        {
-            var parentType = property.serializedObject.targetObject.GetType();
-            return parentType.GetField(property.propertyPath);
-        }
+        private static readonly Regex isArrayEntryRegex = new(@"\.Array\.data\[\d+\]$", RegexOptions.Compiled);
+        private static readonly Regex replaceRegex = new(@"\[\d+\]", RegexOptions.Compiled);
+        private const BindingFlags Bindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
         public static object GetValue(this SerializedProperty property)
         {
@@ -49,7 +44,7 @@ namespace Skyx.SkyxEditor
             {
                 if (fieldStructure[i].Contains("["))
                 {
-                    int index = System.Convert.ToInt32(new string(fieldStructure[i].Where(c => char.IsDigit(c)).ToArray()));
+                    int index = System.Convert.ToInt32(new string(fieldStructure[i].Where(char.IsDigit).ToArray()));
                     obj = GetFieldValueWithIndex(replaceRegex.Replace(fieldStructure[i], ""), obj, index);
                 }
                 else
@@ -61,7 +56,7 @@ namespace Skyx.SkyxEditor
             string fieldName = fieldStructure.Last();
             if (fieldName.Contains("["))
             {
-                int index = System.Convert.ToInt32(new string(fieldName.Where(c => char.IsDigit(c)).ToArray()));
+                int index = System.Convert.ToInt32(new string(fieldName.Where(char.IsDigit).ToArray()));
                 return SetFieldValueWithIndex(replaceRegex.Replace(fieldName, ""), obj, index, value);
             }
             else
@@ -70,15 +65,29 @@ namespace Skyx.SkyxEditor
             }
         }
 
-        private static object GetFieldValue(string fieldName, object obj, BindingFlags bindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy)
+        private static FieldInfo GetField(string fieldName, object obj)
         {
-            var field = obj.GetType().GetField(fieldName, bindings);
+            var currentType = obj.GetType();
+            do
+            {
+                var field = currentType.GetField(fieldName, Bindings);
+                if (field != null) return field;
+
+                currentType = currentType.BaseType;
+            } while (currentType != null);
+
+            return null;
+        }
+
+        private static object GetFieldValue(string fieldName, object obj)
+        {
+            var field = GetField(fieldName, obj);
             return field != null ? field.GetValue(obj) : default;
         }
 
-        private static object GetFieldValueWithIndex(string fieldName, object obj, int index, BindingFlags bindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+        private static object GetFieldValueWithIndex(string fieldName, object obj, int index)
         {
-            var field = obj.GetType().GetField(fieldName, bindings);
+            var field = GetField(fieldName, obj);
             if (field == null) return default;
 
             var list = field.GetValue(obj);
@@ -87,18 +96,18 @@ namespace Skyx.SkyxEditor
             return list is IEnumerable ? ((IList)list)[index] : default;
         }
 
-        public static bool SetFieldValue(string fieldName, object obj, object value, bool includeAllBases = false, BindingFlags bindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+        private static bool SetFieldValue(string fieldName, object obj, object value)
         {
-            FieldInfo field = obj.GetType().GetField(fieldName, bindings);
+            var field = GetField(fieldName, obj);
             if (field == null) return false;
 
             field.SetValue(obj, value);
             return true;
         }
 
-        public static bool SetFieldValueWithIndex(string fieldName, object obj, int index, object value, bool includeAllBases = false, BindingFlags bindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+        private static bool SetFieldValueWithIndex(string fieldName, object obj, int index, object value)
         {
-            FieldInfo field = obj.GetType().GetField(fieldName, bindings);
+            var field = GetField(fieldName, obj);
             if (field == null) return false;
 
             object list = field.GetValue(obj);

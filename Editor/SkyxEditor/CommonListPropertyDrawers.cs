@@ -38,10 +38,17 @@ namespace Skyx.SkyxEditor
             var firstField = SingleEnumEntryPropertyDrawer.GetFieldName(fields, entry.firstType);
             var secondField = SingleEnumEntryPropertyDrawer.GetFieldName(fields, entry.secondType);
 
-            rect.DivideRect(2);
+            rect.AdjustToLineAndDivide(2);
             EnumTreeGUI.DrawEnum(rect, property.FindPropertyRelative(firstField), entry.firstType, Colors.Console.Get(entry.firstColor));
             rect.SlideSameRect();
-            EnumTreeGUI.DrawEnum(rect, property.FindPropertyRelative(secondField), entry.secondType, Colors.Console.Get(entry.secondColor));
+
+            if (entry.secondType.IsEnum)
+                EnumTreeGUI.DrawEnum(rect, property.FindPropertyRelative(secondField), entry.secondType, Colors.Console.Get(entry.secondColor));
+
+            else if (entry.secondType.IsClass)
+                SkyxGUI.DrawObjectField(rect, property.FindPropertyRelative(secondField), entry.secondType, null);
+
+            else throw new Exception("Unknown type");
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => SkyxStyles.CompactListElement;
