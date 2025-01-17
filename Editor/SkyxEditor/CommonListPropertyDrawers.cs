@@ -46,7 +46,8 @@ namespace Skyx.SkyxEditor
                 EnumTreeGUI.DrawEnum(rect, property.FindPropertyRelative(secondField), entry.secondType, Colors.Console.Get(entry.secondColor));
 
             else if (entry.secondType.IsClass)
-                SkyxGUI.DrawObjectField(rect, property.FindPropertyRelative(secondField), entry.secondType, null);
+
+                SkyxGUI.DrawObjectField(rect, property.FindPropertyRelative(secondField), entry.secondType, null, true);
 
             else throw new Exception("Unknown type");
         }

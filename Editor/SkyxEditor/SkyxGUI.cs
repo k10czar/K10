@@ -65,14 +65,12 @@ namespace Skyx.SkyxEditor
         public static void DrawObjectField<T>(Rect rect, SerializedProperty property, string hint)
             => DrawObjectField(rect, property, typeof(T), hint);
 
-        public static void DrawObjectField(Rect rect, SerializedProperty property, Type objType, string hint)
+        public static void DrawObjectField(Rect rect, SerializedProperty property, Type objType, string hint = null, bool allowSceneObjects = false)
         {
             var backgroundColor = property.objectReferenceValue != null ? Colors.Console.Success : Colors.Console.Danger;
-            SkyxLayout.SetBackgroundColor(backgroundColor);
+            using var backgroundScope = new BackgroundColorScope(backgroundColor);
 
-            property.objectReferenceValue = EditorGUI.ObjectField(rect, property.objectReferenceValue, objType, false);
-
-            SkyxLayout.RestoreBackgroundColor();
+            property.objectReferenceValue = EditorGUI.ObjectField(rect, property.objectReferenceValue, objType, allowSceneObjects);
 
             DrawHintOverlay(rect, hint);
         }
