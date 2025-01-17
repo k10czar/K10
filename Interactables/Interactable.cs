@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using K10.DebugSystem;
 using UnityEngine;
 
 public class InteractableLogCategory : IK10LogCategory
@@ -8,8 +9,8 @@ public class InteractableLogCategory : IK10LogCategory
     public Color Color => Colors.DeepPink;
 }
 
-public interface IInteractableInteraction 
-{ 
+public interface IInteractableInteraction
+{
     bool ConsumeEvent { get; }
 }
 
@@ -48,7 +49,7 @@ namespace K10.Interactables
         [SerializeReference,ExtendedDrawer] IInteractableInteraction[] interactions;
         [SerializeReference,ExtendedDrawer] ITriggerable[] targetedReactions;
         [SerializeReference,ExtendedDrawer] ITriggerable[] untargetedReactions;
-        
+
         List<IInteractor> currentInteractors = new List<IInteractor>();
 
 
@@ -57,7 +58,7 @@ namespace K10.Interactables
         public Vector3 Center => transform.position + transform.rotation * offset;
 
         public IBoolStateObserver IsBeingTargeted => isBeingTargeted;
-        
+
         float ScaledMaxDistance => Mathf.Max( transform.lossyScale.x, transform.lossyScale.z ) * maxDistance;
 
         public Vector3 LookPosition => lookPositionOverride != null ? lookPositionOverride.position : transform.position;
@@ -196,7 +197,7 @@ namespace K10.Interactables
                 var dx = origin.x - pos.x;
                 var iMaxDis = interactable.ScaledMaxDistance;
                 var negiMaxDis = -iMaxDis;
-                if( dx > iMaxDis || dx < negiMaxDis ) 
+                if( dx > iMaxDis || dx < negiMaxDis )
                 {
                     interactable.DrawDebug( Color.black );
                     continue;
@@ -209,7 +210,7 @@ namespace K10.Interactables
                 }
 
                 var distSqr = dx * dx + dz * dz;
-                if( distSqr > iMaxDis * iMaxDis ) 
+                if( distSqr > iMaxDis * iMaxDis )
                 {
                     interactable.DrawDebug( Color.gray );
                     continue;
@@ -217,13 +218,13 @@ namespace K10.Interactables
                 if( ( interactable.targetingType & EInteractionTargetingType.Look ) != 0 )
                 {
                     var collider = interactable.lookCollider;
-                    if( collider == null ) 
+                    if( collider == null )
                     {
                         interactable.DrawDebug( Color.red );
                         continue;
                     }
                     var hitted = collider.Raycast( look, out var hit, iMaxDis );
-                    if( !hitted ) 
+                    if( !hitted )
                     {
                         interactable.DrawDebug( Color.blue );
                         continue;
@@ -232,13 +233,13 @@ namespace K10.Interactables
                 if( ( interactable.targetingType & EInteractionTargetingType.ColliderBounds ) != 0 )
                 {
                     var area = interactable.areaTriggerCollider;
-                    if( area == null ) 
+                    if( area == null )
                     {
                         interactable.DrawDebug( Color.red );
                         continue;
                     }
                     var insideBounds = area.bounds.Contains( look.origin );
-                    if( !insideBounds ) 
+                    if( !insideBounds )
                     {
                         interactable.DrawDebug( Colors.Yellow );
                         continue;
@@ -251,7 +252,7 @@ namespace K10.Interactables
                 }
                 if( bestInteractable != null )
                 {
-                    if( distSqr > bestDistanceSqr ) 
+                    if( distSqr > bestDistanceSqr )
                     {
                         interactable.DrawDebug( Color.magenta );
                         DrawRayDebug( Color.magenta, origin, interactable );

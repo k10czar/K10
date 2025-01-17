@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Linq;
 using System;
+using K10.DebugSystem;
 using Unity.Profiling;
 using UnityEditorInternal;
 using Object = UnityEngine.Object;
@@ -491,6 +492,6 @@ namespace Skyx.SkyxEditor
             Setup();
         }
 
-        public MonoBehaviour LogTarget => (MonoBehaviour) owner;
+        public Object LogTarget => owner;
     }
 }

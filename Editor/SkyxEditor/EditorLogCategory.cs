@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using K10.DebugSystem;
+using UnityEngine;
 
 namespace Skyx.SkyxEditor
 {

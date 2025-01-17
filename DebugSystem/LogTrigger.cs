@@ -1,5 +1,6 @@
 using System;
 using System.Text.RegularExpressions;
+using K10.DebugSystem;
 using UnityEngine;
 
 [Serializable]
@@ -16,9 +17,8 @@ public class LogTrigger : ITriggerable
         var log = message;
 
         var notError = ( severity != LogSeverity.Error );
-#if UNITY_EDITOR
-        if (!K10DebugSystem.CanDebug( category.Name, verbose) && notError) return;
-#endif
+
+        if (!K10DebugSystem.CanDebug( category.GetType(), verbose ? EDebugType.Verbose : EDebugType.Default) && notError) return;
 
 #if UNITY_EDITOR
         if (!string.IsNullOrEmpty(category.Name))
@@ -52,9 +52,8 @@ public class LogTrigger<T> : ITriggerable<T>
         var log = message;
 
         var notError = ( severity != LogSeverity.Error );
-#if UNITY_EDITOR
-        if (!K10DebugSystem.CanDebug( category.Name, verbose) && notError) return;
-#endif
+
+        if (!K10DebugSystem.CanDebug(category.GetType(), verbose) && notError) return;
 
 #if UNITY_EDITOR
         if (!string.IsNullOrEmpty(category.Name))

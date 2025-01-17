@@ -1,7 +1,8 @@
+using K10.DebugSystem;
 using UnityEngine;
 
 public interface IInteractor
-{ 
+{
     GameObject TheInteractor { get; }
     IReferenceHolder<IInteractionObject> Object { get; }
     IReferenceHolder<K10.Interactables.Interactable> Target { get; }
@@ -40,7 +41,7 @@ namespace K10.Interactables
         {
             var rot = transform.rotation;
             var origin = transform.position + ( rot * originOffset );
-            
+
             var dirT = directionGuide;
             if( dirT == null ) dirT = transform;
 

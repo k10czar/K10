@@ -1,5 +1,6 @@
 using System.Collections;
 using K10;
+using K10.DebugSystem;
 using UnityEngine;
 
 public class AutomationLogCategory : IK10LogCategory
