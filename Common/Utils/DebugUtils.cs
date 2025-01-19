@@ -5,6 +5,7 @@ using UnityEngine.Animations;
 public static class DebugUtils
 {
 	const float K_DEFAULT_ANGLE_PRECISION = Mathf.PI / 20;
+	static readonly Color DEFAULT_COLOR = Color.green;
 
 	public static void Rect( RectTransform rect, Color color ) 
 	{ 
@@ -213,7 +214,45 @@ public static class DebugUtils
 		Debug.DrawRay(point, Vector3.up * ptSize, color);
 		Debug.DrawRay(point, Vector3.right * ptSize, color);
 	}
-	
+
+    public static void WireBox( Vector3 center ) => WireBox( center, Quaternion.identity, Vector3.one, DEFAULT_COLOR );
+    public static void WireBox( Vector3 center, Quaternion rotation ) => WireBox( center, rotation, Vector3.one, DEFAULT_COLOR );
+    public static void WireBox( Vector3 center, Vector3 dimensions ) => WireBox( center, Quaternion.identity, dimensions, DEFAULT_COLOR );
+    public static void WireBox( Vector3 center, Vector3 dimensions, Color color ) => WireBox( center, Quaternion.identity, dimensions, color );
+    public static void WireBox( Vector3 center, Quaternion rotation, Vector3 dimensions ) => WireBox( center, rotation, dimensions, DEFAULT_COLOR );
+    public static void WireBox( Vector3 center, Quaternion rotation, Vector3 dimensions, Color color )
+    {
+		var f = rotation * Vector3.forward * dimensions.z;
+		var u = rotation * Vector3.up * dimensions.y;
+		var r = rotation * Vector3.right * dimensions.x;
+		var ob = center - ( f + u + r ) * .5f; //Origin Bottom
+		var ot = center - ( f + r - u ) * .5f; //Origin Top
+		var obf = ob + f;
+		var obfr = obf + r;
+		var obr = ob + r;
+		var otf = ot + f;
+		var otfr = otf + r;
+		var otr = ot + r;
+
+		//Bottom Quad
+		Debug.DrawLine( ob, obf, color);
+		Debug.DrawLine( obf, obfr, color);
+		Debug.DrawLine( obfr, obr, color);
+		Debug.DrawLine( obr, ob, color);
+
+		//Top Quad
+		Debug.DrawLine( ot, otf, color);
+		Debug.DrawLine( otf, otfr, color);
+		Debug.DrawLine( otfr, otr, color);
+		Debug.DrawLine( otr, ot, color);
+
+		//Bottom Top edges
+		Debug.DrawLine( ob, ot, color);
+		Debug.DrawLine( obf, otf, color);
+		Debug.DrawLine( obfr, otfr, color);
+		Debug.DrawLine( obr, otr, color);
+    }
+
     public static class Gizmos
 	{
 		public static void Bar( float fill, Vector3 origin )
@@ -257,6 +296,50 @@ public static class DebugUtils
 		{
 			GizmosColorManager.New( color );
 			Bar( fill, origin, size, fillAxis );
+			GizmosColorManager.Revert();
+		}
+
+
+		public static void WireBox( Vector3 center ) => WireBox( center, Quaternion.identity, Vector3.one );
+		public static void WireBox( Vector3 center, Vector3 dimensions ) => WireBox( center, Quaternion.identity, dimensions );
+		public static void WireBox( Vector3 center, Quaternion rotation ) => WireBox( center, rotation, Vector3.one );
+		public static void WireBox( Vector3 center, Quaternion rotation, Vector3 dimensions )
+		{
+			var f = rotation * Vector3.forward * dimensions.z;
+			var u = rotation * Vector3.up * dimensions.y;
+			var r = rotation * Vector3.right * dimensions.x;
+			var ob = center - ( f + u + r ) * .5f; //Origin Bottom
+			var ot = center - ( f + r - u ) * .5f; //Origin Top
+			var obf = ob + f;
+			var obfr = obf + r;
+			var obr = ob + r;
+			var otf = ot + f;
+			var otfr = otf + r;
+			var otr = ot + r;
+
+			//Bottom Quad
+			UnityEngine.Gizmos.DrawLine( ob, obf );
+			UnityEngine.Gizmos.DrawLine( obf, obfr );
+			UnityEngine.Gizmos.DrawLine( obfr, obr );
+			UnityEngine.Gizmos.DrawLine( obr, ob );
+
+			//Top Quad
+			UnityEngine.Gizmos.DrawLine( ot, otf );
+			UnityEngine.Gizmos.DrawLine( otf, otfr );
+			UnityEngine.Gizmos.DrawLine( otfr, otr );
+			UnityEngine.Gizmos.DrawLine( otr, ot );
+
+			//Bottom Top edges
+			UnityEngine.Gizmos.DrawLine( ob, ot );
+			UnityEngine.Gizmos.DrawLine( obf, otf );
+			UnityEngine.Gizmos.DrawLine( obfr, otfr );
+			UnityEngine.Gizmos.DrawLine( obr, otr );
+		}
+
+		public static void WireBox( Vector3 center, Quaternion rotation, Vector3 dimensions, Color color )
+		{
+			GizmosColorManager.New( color );
+			WireBox( center, rotation, dimensions );
 			GizmosColorManager.Revert();
 		}
 	}

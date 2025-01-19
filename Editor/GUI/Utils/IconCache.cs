@@ -38,7 +38,11 @@ public class IconCache : IIconCache
 	Texture2D _icon;
 	public Texture2D Texture { get { return _icon; } }
 
-	void ReadIcon() { _icon = (Texture2D)EditorGUIUtility.Load( "K10DefaultIcons/" + _iconName + ".png" ); }
+	void ReadIcon() 
+	{ 
+		_icon = EditorGUIUtility.Load( _iconName ) as Texture2D;
+		if( _icon == null ) _icon = (Texture2D)EditorGUIUtility.Load( "K10DefaultIcons/" + _iconName + ".png" );
+	}
 	private IconCache( string iconName ) { _iconName = iconName; ReadIcon(); }
 	public void Reset() { ReadIcon(); }
 

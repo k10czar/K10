@@ -5,6 +5,7 @@ using K10.EditorGUIExtention;
 using UnityEditor;
 using UnityEngine;
 
+
 public static class SerializedPropertyExtensions
 {
 	private const float MAGIC_POPUP_SPACE = 15;
@@ -358,7 +359,8 @@ public static class SerializedPropertyExtensions
 		if( script != null )
 		{
 			var size = 18f;
-			if( IconButton.Draw( triggerSummaryRect.RequestRight( size ), "script", 's', null, Colors.Celeste ) ) AssetDatabase.OpenAsset( script );
+			
+			if( IconButton.Draw( triggerSummaryRect.RequestRight( size ), UnityIcons.csScriptIcon ) ) AssetDatabase.OpenAsset( script );
 			triggerSummaryRect = triggerSummaryRect.CutRight( size );
 		}
 

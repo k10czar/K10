@@ -170,6 +170,18 @@ public static class K10UnityExtensions
 
 		return SceneManager.GetActiveScene().name + ":" + name;
 	}
+	
+	public static Transform Ancestor( this Transform t )
+	{
+		if( t == null ) return null;
+
+		while( t.parent != null )
+		{
+			t = t.parent;
+		}
+
+		return t;
+	}
 
 	[MethodImpl( AggrInline )] public static IEventTrigger<T, K, J> UntilLifeTime<T, K, J>( this Component c, IEventTrigger<T, K, J> t ) { return UntilValidator<T, K, J>( c, t ); }
 	[MethodImpl( AggrInline )] public static IEventTrigger<T, K> UntilLifeTime<T, K>( this Component c, IEventTrigger<T, K> t ) { return UntilValidator<T, K>( c, t ); }

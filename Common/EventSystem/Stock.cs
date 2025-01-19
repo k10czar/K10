@@ -28,6 +28,8 @@ public class CatalogedUniqueStock<Key,Value> : ICustomDisposableKill where Value
     public void RemoveEntry( Key key ) { if( _dict.Remove( key ) ) _onEntriesChanged?.Trigger(); }
     public bool TryGetValue( Key key, out Value t ) { return _dict.TryGetValue( key, out t ); }
 
+    public int Count => _dict.Count;
+
 	public override string ToString()
 	{
 		return $"[ {string.Join( ", ", _dict.ToList().ConvertAll( ( kvp ) => $"({kvp.Key.ToStringOrNull()} => {kvp.Value.ToStringOrNull()})" ) )} ]";

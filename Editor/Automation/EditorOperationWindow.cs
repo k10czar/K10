@@ -91,7 +91,7 @@ public sealed class AutomationWindow : EditorWindow
 		var newActice = active;
 		EditorGUILayout.BeginHorizontal();
 		if( !active ) GuiColorManager.New( Color.grey );
-		if( IconButton.Layout( "robot2", 64f, 'A', active ? "Unactivate" : "Activate", Color.yellow ) ) newActice = !active;
+		if( IconButton.Layout( $"SurfaceEffector2D Icon", 48f, 'A', active ? "Unactivate" : "Activate", Color.yellow ) ) newActice = !active;
 		EditorGUILayout.BeginVertical();
 		SeparationLine.Horizontal();
 		EditorGUILayout.BeginHorizontal();

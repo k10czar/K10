@@ -17,6 +17,7 @@ public interface IStateRequesterInteraction
 {
 	void Toggle( object obj );
 	bool Request( object obj, bool increaseRequest = true );
+	void Clear();
 	bool RequestButDoNotIncrease( object obj );
 	void RemoveRequest( object obj );
 	void RequestOn( IBoolStateObserver source );

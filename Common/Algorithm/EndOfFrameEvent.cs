@@ -1,3 +1,4 @@
+using K10;
 using UnityEngine;
 
 public class EndOfFrameEvent : IEventRequest
@@ -13,13 +14,13 @@ public class EndOfFrameEvent : IEventRequest
     {
         if( _requested ) return;
         _requested = true;
-        if( _coroutine == null ) _coroutine = ExternalCoroutine.StartCoroutine( RequestCoroutine() );
+        if( _coroutine == null ) _coroutine = ExternalCoroutine.Play( RequestCoroutine() );
     }
 
     System.Collections.IEnumerator RequestCoroutine()
     {
         yield return COROUTINE_WAIT;
-        if( _requested ) 
+        if( _requested )
         {
             _onEvent.Trigger();
             _requested = false;
@@ -30,7 +31,7 @@ public class EndOfFrameEvent : IEventRequest
     public void Kill()
     {
         _requested = false;
-        if( _coroutine != null ) ExternalCoroutine.StopCoroutine( _coroutine );
+        if( _coroutine != null ) ExternalCoroutine.Stop( _coroutine );
         _onEvent?.Kill();
         _onEvent = null;
         _coroutine = null;

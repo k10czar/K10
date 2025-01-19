@@ -1,6 +1,7 @@
 
 
 using System;
+using K10;
 
 public interface IVoidable
 {
@@ -13,12 +14,12 @@ public static class VoidableExtensions
 {
 	public static void VoidWhenTrue( this IVoidable voidable, System.Func<bool> validationQuery )
 	{
-		ExternalCoroutine.StartCoroutine( UntilCoroutine( voidable, () => !validationQuery() ) );
+		ExternalCoroutine.Play( UntilCoroutine( voidable, () => !validationQuery() ) );
 	}
 
 	public static void VoidWhenFalse( this IVoidable voidable, System.Func<bool> validationQuery )
 	{
-		ExternalCoroutine.StartCoroutine( UntilCoroutine( voidable, validationQuery ) );
+		ExternalCoroutine.Play( UntilCoroutine( voidable, validationQuery ) );
 	}
 
 	private static System.Collections.IEnumerator UntilCoroutine( IVoidable voidable, System.Func<bool> validationQuery )

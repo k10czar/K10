@@ -1,12 +1,12 @@
 using System.Collections;
+using K10;
+using K10.DebugSystem;
 using UnityEngine;
 
 public class AutomationLogCategory : IK10LogCategory
 {
     public string Name => "🤖Automation";
-#if UNITY_EDITOR
     public Color Color => Colors.DodgerBlue;
-#endif
 }
 
 namespace Automation
@@ -28,7 +28,7 @@ namespace Automation
 
 			op.Log($"{"Started".Colorfy(Colors.Console.Verbs)} {op}", log);
 			if( behaviour != null ) return behaviour.StartCoroutine( op.ExecutionCoroutine( log ) );
-			return ExternalCoroutine.StartCoroutine( op.ExecutionCoroutine( log ) );
+			return ExternalCoroutine.Play( op.ExecutionCoroutine( log ) );
 		}
 
         public static IEnumerator ExecutionCoroutine(this IOperation op, bool log )

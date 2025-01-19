@@ -13,19 +13,25 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 {
 	bool _destroyed = false;
 	private EventSlot<GameObject> _onDestroy;
+
+	private EventSlot<GameObject> _onDisable;
+
 	// private EventSlot _onLateDestroy;
 	private BoolState _isActive;
 	private BoolState _isAlive;
 	private Validator _lifetimeValidator;
 
 	IEventRegister IUnityEventsRelay.OnDestroy => OnDestroyEvent;
+
 	// public IEventRegister OnLateDestroy => Lazy.Request( ref _onLateDestroy );
-	public IEventRegister<GameObject> OnDestroyEvent => Lazy.Request( ref _onDestroy );
+	public IEventRegister<GameObject> OnDestroyEvent => Lazy.Request(ref _onDestroy);
+	public IEventRegister<GameObject> Disabled => Lazy.Request(ref _onDisable);
+
 	public IBoolStateObserver IsActive
 	{
 		get
 		{
-			if( _isActive == null ) _isActive = new BoolState( enabled && gameObject.activeInHierarchy );
+			if (_isActive == null) _isActive = new BoolState(enabled && gameObject.activeInHierarchy);
 			return _isActive;
 		}
 	}
@@ -34,11 +40,12 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 	{
 		get
 		{
-			if( _isAlive == null )
+			if (_isAlive == null)
 			{
-				if( _destroyed ) return FalseState.Instance;
-				_isAlive = new BoolState( true );
+				if (_destroyed) return FalseState.Instance;
+				_isAlive = new BoolState(true);
 			}
+
 			return _isAlive;
 		}
 	}
@@ -47,9 +54,9 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 
 	IEventValidator NewLifetimeValidator()
 	{
-		if( _destroyed ) return NullValidator.Instance;
+		if (_destroyed) return NullValidator.Instance;
 		// Debug.Log( $"GameObjectEventsRelay.NewLifetime( {DebugName} ) => {GetStateDebug()}" );
-		_lifetimeValidator = new Validator( this );
+		_lifetimeValidator = new Validator(this);
 		return _lifetimeValidator;
 	}
 
@@ -84,20 +91,22 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 		_isAlive?.SetFalse();
 		_lifetimeValidator?.OnDestroy();
 
-		GcClear.AfterKill( ref _onDestroy );
-		GcClear.AfterKill( ref _isAlive );
-		GcClear.AfterKill( ref _isActive );
-		GcClear.AfterKill( ref _lifetimeValidator );
+		GcClear.AfterKill(ref _onDestroy);
+		GcClear.AfterKill(ref _isAlive);
+		GcClear.AfterKill(ref _isActive);
+		GcClear.AfterKill(ref _lifetimeValidator);
 
 		// _onLateDestroy?.Trigger();
 		// GcClear.AfterKill( ref _onLateDestroy );
 	}
 
 	void OnEnable() => _isActive?.SetTrue();
+
 	void OnDisable()
 	{
 		// Debug.Log( $"GameObjectEventsRelay.OnDisable( {DebugName} ) => {GetStateDebug()}" );
 		_isActive?.SetFalse();
+		_onDisable?.Trigger(gameObject);
 	}
 
 	~GameObjectEventsRelay()
@@ -118,22 +127,22 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 
 		bool _lastValidation = true;
 
-		public IEventRegister OnVoid => Lazy.Request( ref _onVoid );
+		public IEventRegister OnVoid => Lazy.Request(ref _onVoid);
 
-		public Validator( GameObjectEventsRelay objRelay )
+		public Validator(GameObjectEventsRelay objRelay)
 		{
 			_objRelay = objRelay;
 		}
 
 		private bool ValidationCheck()
 		{
-			if( !_lastValidation ) return false;
+			if (!_lastValidation) return false;
 			_lastValidation = _objRelay != null && _objRelay.transform != null && !_destroyed;
-			if( !_lastValidation ) OnDestroy();
+			if (!_lastValidation) OnDestroy();
 			return _lastValidation;
 		}
 
-		public System.Func<bool> CurrentValidationCheck => _currentValidationCheck ?? ( _currentValidationCheck = ValidationCheck );
+		public System.Func<bool> CurrentValidationCheck => _currentValidationCheck ??= ValidationCheck;
 
 		public void Kill()
 		{

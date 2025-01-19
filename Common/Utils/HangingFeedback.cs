@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using K10;
 
 public abstract class HangingFeedback : MonoBehaviour
 {
@@ -165,7 +166,7 @@ public abstract class HangingFeedback : MonoBehaviour
 
 		public void VoidAfterSeconds( float seconds )
 		{
-			ExternalCoroutine.StartCoroutine( VoidAfterSecondsCoroutine( seconds ) );
+			ExternalCoroutine.Play( VoidAfterSecondsCoroutine( seconds ) );
 		}
 
 		private IEnumerator VoidAfterSecondsCoroutine( float seconds )
