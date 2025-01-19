@@ -1,4 +1,6 @@
-﻿public interface IFileAdapter
+﻿using System.Text;
+
+public interface IFileAdapter
 {
 	string GetPersistentDataPath();
 	string GetDebugPersistentDataPath();
@@ -9,6 +11,7 @@
 	void RequestDirectory( string dir );
 	void Delete( string path );
 	void DeleteDir( string path, bool recursive );
+	void Copy( string source, string destination );
 	void SavePlayerPrefs();
 }
 
@@ -53,6 +56,7 @@ public static class FileAdapter
 
 	public static void Delete( string path ) { _implementation.Delete( path ); }
 	public static void DeleteDir( string path, bool recursive ) { _implementation.DeleteDir( path, recursive ); }
+	public static void Copy( string source, string destination ) { _implementation.Copy( source, destination ); }
 
 	public static void SavePlayerPrefs() { _implementation.SavePlayerPrefs(); }
 }
