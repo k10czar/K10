@@ -55,14 +55,25 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 		for( int i = 0; i < _services.Length; i++ )
 		{
 			var service = _services[i];
-			// if( service is IActivatable act )
-			// {
-			// 	if( !act.IsActive.Value ) continue;
-			// 	if( service is IStartableService startable && !startable.IsReady ) startable.Start();
-			// }
+			if( service is IActivatable act && !act.IsActive.Value ) continue;
 			if (service is IUpdatable updatable )
 			{
 				updatable.Update( deltaTime );
+			}
+		}
+	}
+
+	void LateUpdate()
+	{
+		if (_services == null) return;
+		var deltaTime = Time.unscaledDeltaTime;
+		for( int i = 0; i < _services.Length; i++ )
+		{
+			var service = _services[i];
+			if( service is IActivatable act && !act.IsActive.Value ) continue;
+			if (service is ILateUpdatable updatable )
+			{
+				updatable.LateUpdate( deltaTime );
 			}
 		}
 	}

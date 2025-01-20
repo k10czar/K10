@@ -3,7 +3,9 @@ using UnityEngine;
 
 public interface IEditorAssetProcessingProcess
 {
+#if UNITY_EDITOR
 	bool EDITOR_ExecuteAssetValidationProcess();
+#endif
 }
 
 public static class EditorAssetProcessingExtensions
@@ -11,6 +13,7 @@ public static class EditorAssetProcessingExtensions
 	private static Object _currentModifiedAsset;
     public static Object CurrentModifiedAsset => _currentModifiedAsset;
 
+#if UNITY_EDITOR
     public static bool EDITOR_ExecuteAssetValidationProcessOnObject( this IEditorAssetProcessingProcess t )
 	{
 		var old = _currentModifiedAsset;
@@ -87,4 +90,5 @@ public static class EditorAssetProcessingExtensions
 		}
 		return modded;
 	}
+#endif
 }

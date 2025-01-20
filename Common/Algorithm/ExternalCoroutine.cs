@@ -7,8 +7,6 @@ using UnityEngine;
 	public class ExternalCoroutine : MonoBehaviour
 	{
 		private static ExternalCoroutine instance = null;
-		public static ExternalCoroutine Instance => instance;
-
 		public static ExternalCoroutine Instance 
 		{
 			get
