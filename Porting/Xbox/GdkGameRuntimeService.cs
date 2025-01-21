@@ -4,9 +4,20 @@ using UnityEngine;
 using System;
 using System.Collections;
 
+public class GdkUserData
+{
+    public XUserHandle userHandle;
+    public XUserLocalId localId;
+    public ulong userXUID;
+    public string userGamertag;
+    public XblPermissionCheckResult canPlayMultiplayer;
+    public XblContextHandle contextHandle;
+}
+
 public interface IGdkRuntimeService : IService, IGdkRuntimeData
 {
     IBoolStateObserver Initialized { get; }
+    GdkUserData UserData { get; }
 }
 
 public interface IGdkRuntimeData
@@ -33,16 +44,6 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILogglable<GdkLogCatego
         UnknownError
     }
 
-    public struct UserData
-    {
-        public XUserHandle userHandle;
-        public XUserLocalId m_localId;
-        public ulong userXUID;
-        public string userGamertag;
-        public XblPermissionCheckResult canPlayMultiplayer;
-        public XblContextHandle m_context;
-    }
-
     public string Sandbox { get; private set; } = "XDKS.1";
     // Documented as: "Specifies the SCID to be used for Save Game Storage."
     public string Scid { get; private set; } = "00000000-0000-0000-0000-0000FFFFFFFF";
@@ -61,8 +62,9 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILogglable<GdkLogCatego
     public delegate void AddUserCompletedDelegate(UserOpResult result);
     public event EventHandler<XUserChangeEvent> UsersChanged;
 
-    private UserData _userData;
-    public UserData CurrentUserData => _userData;
+    private GdkUserData _userData;
+    public GdkUserData UserData => _userData;
+
     private AddUserCompletedDelegate _currentCompletionDelegate;
     private XUserChangeRegistrationToken _callbackRegistrationToken;
  
@@ -210,7 +212,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILogglable<GdkLogCatego
     //Adding User Silently
     public bool AddDefaultUserSilently(AddUserCompletedDelegate completionDelegate)
     {
-        _userData = new UserData();
+        _userData = new GdkUserData();
         _currentCompletionDelegate = completionDelegate;
         SDK.XUserAddAsync(XUserAddOptions.AddDefaultUserSilently, (Int32 hresult, XUserHandle userHandle) =>
         {
@@ -240,7 +242,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILogglable<GdkLogCatego
 
     public bool AddUserWithUI(AddUserCompletedDelegate completionDelegate)
     {
-        _userData = new UserData();
+        _userData = new GdkUserData();
         _currentCompletionDelegate = completionDelegate;
 
         SDK.XUserAddAsync(XUserAddOptions.None, (Int32 hresult, XUserHandle userHandle) =>
@@ -339,14 +341,14 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILogglable<GdkLogCatego
         if (HR.FAILED(hr))
             Debug.LogError($"Failed to get Gamertag. HR {hr} - {HR.NameOf(hr)}");
 
-        hr = SDK.XUserGetLocalId(_userData.userHandle, out _userData.m_localId);
+        hr = SDK.XUserGetLocalId(_userData.userHandle, out _userData.localId);
         if (HR.FAILED(hr))
             Debug.LogError($"Failed to get LocaId. HR {hr} - {HR.NameOf(hr)}");
     }
 
     private void GetUserMultiplayerPermissions()
     {
-        SDK.XBL.XblPrivacyCheckPermissionAsync(_userData.m_context, XblPermission.PlayMultiplayer,
+        SDK.XBL.XblPrivacyCheckPermissionAsync(_userData.contextHandle, XblPermission.PlayMultiplayer,
             _userData.userXUID, (Int32 hresult, XblPermissionCheckResult result) =>
             {
                 if (HR.SUCCEEDED(hresult))
@@ -358,8 +360,8 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILogglable<GdkLogCatego
 
     private void GetUserContext()
     {
-        int hr = SDK.XBL.XblContextCreateHandle(_userData.userHandle, out _userData.m_context);
-        if (HR.SUCCEEDED(hr) && _userData.m_context != null)
+        int hr = SDK.XBL.XblContextCreateHandle(_userData.userHandle, out _userData.contextHandle);
+        if (HR.SUCCEEDED(hr) && _userData.contextHandle != null)
             Debug.Log("Success XBL and Context");
         else
             Debug.Log("Error creating context");
