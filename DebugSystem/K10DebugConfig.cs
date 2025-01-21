@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using UnityEngine;
 using Application = UnityEngine.Application;
 
@@ -15,8 +16,10 @@ namespace K10.DebugSystem
         public List<string> verbose = new();
         public List<string> visual = new();
 
+        public EDebugTargets targetType = EDebugTargets.All;
+        public List<string> targets = new();
+
         public bool errors = true;
-        public EDebugTargets targets = EDebugTargets.All;
 
         private List<string> GetCorrespondingList(EDebugType debugType) => debugType switch
         {
@@ -59,10 +62,20 @@ namespace K10.DebugSystem
             Save();
         }
 
-        public void ToggleDebugTargets()
+        public void ToggleDebugTargets(string target)
         {
-            var next = ((int) targets + 1) % Enum.GetValues(typeof(EDebugTargets)).Length;
-            targets = (EDebugTargets) next;
+            if (string.IsNullOrEmpty(target)) return;
+
+            if (!targets.Remove(target))
+                targets.Add(target);
+
+            Save();
+        }
+
+        public void ToggleDebugTargetType()
+        {
+            var next = ((int) targetType + 1) % Enum.GetValues(typeof(EDebugTargets)).Length;
+            targetType = (EDebugTargets) next;
             Save();
         }
 
@@ -72,10 +85,23 @@ namespace K10.DebugSystem
             Save();
         }
 
-        public void Save()
+        public async void Save()
         {
             var path = GetPath();
-            File.WriteAllText(path, JsonUtility.ToJson(this, true));
+
+            for (int i = 0; i < 5; i++)
+            {
+                try
+                {
+                    await File.WriteAllTextAsync(path, JsonUtility.ToJson(this, true));
+                    return;
+                }
+                catch (Exception e)
+                {
+                    if (i < 4) await Task.Delay(500);
+                    else Debug.LogError($"Failed to save! {e}");
+                }
+            }
         }
 
         private static string GetPath() => Path.Combine(Application.persistentDataPath, SaveKey);
@@ -87,7 +113,10 @@ namespace K10.DebugSystem
             if (File.Exists(path))
             {
                 var file = File.OpenText(path);
-                return JsonUtility.FromJson<K10DebugConfig>(file.ReadToEnd());
+                var data = JsonUtility.FromJson<K10DebugConfig>(file.ReadToEnd());
+                file.Close();
+
+                return data;
             }
 
             var config = new K10DebugConfig();

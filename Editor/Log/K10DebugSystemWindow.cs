@@ -137,16 +137,16 @@ public class K10DebugSystemWindow : EditorWindow
 
     private void DrawDebugTargets()
     {
-        if ( DrawSection("Debug Targets", ref isDebugOptionsExpanded) ) return;
+        if (DrawSection("Debug Targets", ref isDebugOptionsExpanded)) return;
 
         Space();
         var alwaysPrintErrors = K10DebugSystem.DebugErrors();
         var errorsText = alwaysPrintErrors ? "Always log errors" : "Log only selected";
-        if( Button( errorsText, alwaysPrintErrors ? TRUE_COLOR : FALSE_COLOR, K10GuiStyles.bigbuttonFlatStyle ) )
+        if (Button(errorsText, alwaysPrintErrors ? TRUE_COLOR : FALSE_COLOR, K10GuiStyles.bigbuttonFlatStyle))
             K10DebugSystem.ToggleDebugErrors();
 
         Space();
-        var debugTarget = K10DebugSystem.DebugTargets();
+        var debugTarget = K10DebugSystem.DebugTargetType();
         var color = debugTarget switch
         {
             EDebugTargets.Disabled => FALSE_COLOR,
@@ -154,17 +154,19 @@ public class K10DebugSystemWindow : EditorWindow
             _ => MORE_COLOR,
         };
 
-        if (Button( $"Targets: {debugTarget}", color, K10GuiStyles.bigbuttonFlatStyle ))
-            K10DebugSystem.ToggleDebugTargets();
+        if (Button($"Targets: {debugTarget}", color, K10GuiStyles.bigbuttonFlatStyle))
+            K10DebugSystem.ToggleDebugTargetType();
 
         if (debugTarget < EDebugTargets.OnlySelected) return;
 
+        Space();
+
+        debugTargetsList.DoLayoutList();
+
         DrawCustomTargetControl();
 
-        if (!Application.isPlaying) return;
-
-        TryAddHierarchySelection();
-        debugTargetsList.DoLayoutList();
+        if (Application.isPlaying)
+            TryAddHierarchySelection();
     }
 
     private void TryAddHierarchySelection()
@@ -172,33 +174,31 @@ public class K10DebugSystemWindow : EditorWindow
         if (!GUILayout.Button("Add Hierarchy Selection")) return;
 
         foreach (var obj in Selection.objects)
-        {
-            var newTarget = obj as GameObject;
-            if (!K10DebugSystem.selectedTargets.Contains(newTarget))
-                K10DebugSystem.selectedTargets.Add(newTarget);
-        }
+            K10DebugSystem.ToggleDebugTarget(obj);
     }
 
-    private void DebugTargetsElementDrawer(Rect rect, int index, bool isActive, bool isFocused)
+    private static void DebugTargetsElementDrawer(Rect rect, int index, bool isActive, bool isFocused)
     {
-        var target = (GameObject)EditorGUI.ObjectField(rect, K10DebugSystem.selectedTargets[index], typeof(GameObject), true);
+        var text = K10DebugSystem.DebugTargets()[index];
 
-        if (target != null && !target.scene.IsValid()) return;
+        rect.height = 18;
+        rect.y += 1;
+        var result = EditorGUI.TextField(rect, text);
 
-        K10DebugSystem.selectedTargets[index] = target;
+        if (result != text) K10DebugSystem.DebugTargets()[index] = result;
     }
-
 
     protected virtual void DrawCustomSections() {}
 
     private void OnEnable()
     {
-        debugTargetsList = new ReorderableList(K10DebugSystem.selectedTargets, typeof(GameObject))
+        debugTargetsList = new ReorderableList(K10DebugSystem.DebugTargets(), typeof(string))
         {
             draggable = false,
             displayAdd = false,
             drawHeaderCallback = rect => { EditorGUI.LabelField(rect, "Targets"); },
             drawElementCallback = DebugTargetsElementDrawer,
+            onRemoveCallback = _ => K10DebugSystem.ToggleDebugTarget(K10DebugSystem.DebugTargets()[debugTargetsList.index])
         };
     }
 

@@ -31,53 +31,48 @@ namespace K10.DebugSystem
 
         #region Debug Targets
 
-        public static EDebugTargets DebugTargets() => config.targets;
-        public static void ToggleDebugTargets() => config.ToggleDebugTargets();
+        public static EDebugTargets DebugTargetType() => config.targetType;
+        public static void ToggleDebugTargetType() => config.ToggleDebugTargetType();
+
+        public static List<string> DebugTargets() => config.targets;
+        public static void ToggleDebugTarget(string target) => config.ToggleDebugTargets(target);
+        public static void ToggleDebugTarget(Object target) => config.ToggleDebugTargets(getTargetKey(target));
 
         public static bool DebugErrors() => config.errors;
         public static void ToggleDebugErrors() => config.ToggleDebugErrors();
+
+        public static Func<Object, string> getTargetKey;
+
+        public static string DefaultGetDebugTargetKey(Object target) => target switch
+        {
+            null => null,
+            Component component => component.gameObject.name,
+            GameObject gameObject => gameObject.name,
+            _ => throw new NotImplementedException()
+        };
 
         public static bool CanDebugTarget(Object targetObject, LogSeverity severity = LogSeverity.Info)
         {
             if (DebugErrors() && severity is LogSeverity.Error) return true;
 
-            GameObject target = targetObject switch
-            {
-                null => null,
-                Component component => component.gameObject,
-                GameObject gameObject => gameObject,
-                _ => throw new NotImplementedException()
-            };
+            var key = getTargetKey(targetObject);
 
-            return DebugTargets() switch
+            return DebugTargetType() switch
             {
                 EDebugTargets.Disabled => false,
                 EDebugTargets.All => true,
-                EDebugTargets.OnlySelected => selectedTargets.Contains(target),
-                EDebugTargets.NullAndSelected => target == null || selectedTargets.Contains(target),
+                EDebugTargets.OnlySelected => config.targets.Contains(key),
+                EDebugTargets.NullAndSelected => key == null || config.targets.Contains(key),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
-
-        public static readonly List<GameObject> selectedTargets = new();
-
-        public static void AddTarget(GameObject go) => selectedTargets.Add(go);
-        public static void RemoveTarget(GameObject go) => selectedTargets.Remove(go);
-
-#if UNITY_EDITOR
-        private static void OnPlayModeStateChanged(UnityEditor.PlayModeStateChange playModeStateChange) => selectedTargets.Clear();
-#endif
 
         #endregion
 
         static K10DebugSystem()
         {
             config = K10DebugConfig.Load();
-
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
-            UnityEditor.EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-#endif
+            getTargetKey = DefaultGetDebugTargetKey;
         }
     }
 }
