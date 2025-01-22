@@ -25,9 +25,8 @@ namespace Skyx.SkyxEditor
         {
             style ??= SkyxStyles.ButtonStyle;
 
-            SetBackgroundColor(backgroundColor);
+            using var backgroundScope = new BackgroundColorScope(backgroundColor);
             var result = GUILayout.Button(label, style, layouts);
-            RestoreBackgroundColor();
 
             return result;
         }
@@ -50,7 +49,8 @@ namespace Skyx.SkyxEditor
 
         public static void PlainBGLabel(string label, Color backgroundColor, bool isHeader = false, string hint = null)
         {
-            DrawWithBGColor(backgroundColor, () => GUILayout.Label(new GUIContent(label, hint), isHeader ? SkyxStyles.PlainBGHeader : SkyxStyles.PlainBGLabel));
+            using var backgroundScope = new BackgroundColorScope(backgroundColor);
+            GUILayout.Label(new GUIContent(label, hint), isHeader ? SkyxStyles.PlainBGHeader : SkyxStyles.PlainBGLabel);
         }
 
         private static Color BoolToColor(bool active) => active ? Colors.Console.Success.WithAlpha(0.4f) : Colors.Console.Danger.WithAlpha(0.4f);
@@ -83,33 +83,7 @@ namespace Skyx.SkyxEditor
 
         #endregion
 
-        #region GUI Variables Manipulation
-
-        private static readonly Color DefaultBackgroundColor = GUI.backgroundColor;
-        private static readonly Color DefaultGUIColor = GUI.color;
-        private static readonly float DefaultLabelWidth = EditorGUIUtility.labelWidth;
-
-        public static void SetAllColors(Color color) => GUI.color = color;
-        public static void RestoreAllColors() => GUI.color = DefaultGUIColor;
-
-        public static void SetBackgroundColor(Color color) => GUI.backgroundColor = color;
-        public static void RestoreBackgroundColor() => GUI.backgroundColor = DefaultBackgroundColor;
-
-        public static void SetLabelWidth(float value) => EditorGUIUtility.labelWidth = value;
-        public static void RevertLabelWidth() => EditorGUIUtility.labelWidth = DefaultLabelWidth;
-
-        #endregion
-
         #region Modules
-
-        public static bool ShouldShowBlock(string label, SerializedProperty property)
-        {
-            var isExpanded = property.isExpanded;
-            var result = ShouldShowBlock(label, ref isExpanded, Colors.Console.Dark);
-            property.isExpanded = result;
-
-            return result;
-        }
 
         public static bool ShouldShowBlock(string label, ref bool switchValue)
             => ShouldShowBlock(label, ref switchValue, Colors.Console.Dark);
@@ -143,13 +117,6 @@ namespace Skyx.SkyxEditor
 
             EditorGUILayout.EndVertical();
             EditorGUILayout.EndHorizontal();
-        }
-
-        public static void DrawWithBGColor(Color backgroundColor, Action drawer)
-        {
-            SetBackgroundColor(backgroundColor);
-            drawer();
-            RestoreBackgroundColor();
         }
 
         #endregion

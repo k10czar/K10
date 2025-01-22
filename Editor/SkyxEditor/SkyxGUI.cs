@@ -19,17 +19,33 @@ namespace Skyx.SkyxEditor
             if (string.IsNullOrEmpty(property.stringValue)) DrawHindInlaid(rect, inlaidHint);
         }
 
-        public static void DrawValidatedTextField(Rect rect, SerializedProperty property, string inlaidHint, IEnumerable<string> validValues, bool allowEmpty = false)
+        public static void DrawValidatedTextField(Rect rect, SerializedProperty property, string inlaidHint, string[] validValues, bool allowEmpty = false, string overlayHint = null)
         {
             var isNumber = float.TryParse(property.stringValue, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out _);
 
             var color = string.IsNullOrEmpty(property.stringValue)
                 ? (allowEmpty ? Colors.Console.Success : Colors.Console.Warning)
-                : (validValues.Contains(property.stringValue) || isNumber)
-                    ? Colors.Console.Success
-                    : Colors.Console.Danger;
+                : (validValues.Contains(property.stringValue))
+                    ? Colors.Console.SuccessBackground
+                    : (isNumber ? Colors.Console.Success : Colors.Console.Danger);
 
-            SkyxLayout.DrawWithBGColor(color, () => DrawTextField(rect, property, inlaidHint));
+            using var backgroundColor = new BackgroundColorScope(color);
+
+            var currentIndex = Array.IndexOf(validValues, property.stringValue);
+
+            GUI.Box(rect, GUIContent.none, SkyxStyles.DropDownButton);
+
+            var innerRect = rect;
+            var dropdownRect = innerRect.ExtractEndRect(10);
+
+            var index = EditorGUI.Popup(dropdownRect, currentIndex, validValues, GUIStyle.none.Invisible());
+            if (index != currentIndex) property.stringValue = validValues[index];
+
+            innerRect.ApplyStartMargin();
+            property.stringValue = EditorGUI.TextField(innerRect, GUIContent.none, property.stringValue, SkyxStyles.DefaultLabel);
+
+            DrawHintOverlay(innerRect, overlayHint ?? inlaidHint);
+            if (string.IsNullOrEmpty(property.stringValue)) DrawHindInlaid(innerRect, inlaidHint);
         }
 
         public static void DrawTextAreaField(Rect rect, SerializedProperty property, string hint)
@@ -56,12 +72,6 @@ namespace Skyx.SkyxEditor
             if (property.floatValue == 0 || alwaysVisible) DrawHindInlaid(rect, inlaidHint);
         }
 
-        public static void DrawMaskSelector(Rect rect, SerializedProperty property, string[] possibleValues, string hint)
-        {
-            property.intValue = EditorGUI.MaskField(rect, property.intValue, possibleValues);
-            DrawHintOverlay(rect, hint);
-        }
-
         public static void DrawObjectField<T>(Rect rect, SerializedProperty property, string hint)
             => DrawObjectField(rect, property, typeof(T), hint);
 
@@ -71,17 +81,6 @@ namespace Skyx.SkyxEditor
             using var backgroundScope = new BackgroundColorScope(backgroundColor);
 
             property.objectReferenceValue = EditorGUI.ObjectField(rect, property.objectReferenceValue, objType, allowSceneObjects);
-
-            DrawHintOverlay(rect, hint);
-        }
-
-        public static void DrawColorField(Rect rect, SerializedProperty property,string hint)
-        {
-            SkyxLayout.SetBackgroundColor(Colors.Console.Success);
-
-            property.colorValue = EditorGUI.ColorField(rect, GUIContent.none, property.colorValue, true, true, true);
-
-            SkyxLayout.RestoreBackgroundColor();
 
             DrawHintOverlay(rect, hint);
         }
@@ -166,10 +165,8 @@ namespace Skyx.SkyxEditor
         {
             style ??= SkyxStyles.ButtonStyle;
 
-            SkyxLayout.SetBackgroundColor(backgroundColor);
+            using var backgroundScope = new BackgroundColorScope(backgroundColor);
             var result = GUI.Button(rect, label, style);
-
-            SkyxLayout.RestoreBackgroundColor();
 
             if (!string.IsNullOrEmpty(hint)) DrawHintOverlay(rect, hint);
 
@@ -308,7 +305,7 @@ namespace Skyx.SkyxEditor
         public static void AdjustRectToLine(ref Rect rect, bool applyMargin = true)
         {
             rect.height = SkyxStyles.LineHeight;
-            if (applyMargin) rect.y += 1;
+            if (applyMargin) rect.y += 2;
         }
 
         public static void ExtractLineDef(ref Rect rect, out float startX, out float totalWidth)
@@ -317,10 +314,10 @@ namespace Skyx.SkyxEditor
             totalWidth = rect.width;
         }
 
-        public static void ApplyHorizontalMargin(ref Rect rect, float margin)
+        public static void ApplyStartMargin(ref Rect rect, float margin)
         {
             rect.x += margin;
-            rect.width -= 2 * margin;
+            rect.width -= margin;
         }
 
         public static void ApplyMargin(ref Rect rect, float margin)

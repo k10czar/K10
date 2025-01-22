@@ -33,10 +33,9 @@ namespace Skyx.SkyxEditor
 
         public static void DrawEnumDropdown(Rect position, Type enumType, object enumObj, Action<object> callback, Color color, GUIStyle style)
         {
-            SkyxLayout.SetBackgroundColor(color);
+            using var backgroundScope = new BackgroundColorScope(color);
             position.y += 1;
             DrawEnumDropdown(position, enumType, enumObj, null, callback, style);
-            SkyxLayout.RestoreBackgroundColor();
         }
 
         private static void DrawEnumDropdown(Rect position, SerializedProperty property, GUIStyle style, Type fieldType)

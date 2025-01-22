@@ -73,6 +73,8 @@ namespace Skyx.SkyxEditor
         public static GUIStyle ButtonStyle => Style("button", GUI.skin.button, DefaultFontSize);
         public static GUIStyle BoldButtonStyle => Style("boldButton", ButtonStyle, FontStyle.Bold);
 
+        public static GUIStyle DropDownButton = new GUIStyle("DropDownToggleButton");
+
         #region Styles Management
 
         private static readonly Dictionary<string, GUIStyle> loadedStyles = new();
