@@ -76,6 +76,13 @@ public class GDKFileAdapter : IFileAdapter
 
         _gameSaveHelper.Save(_containerName, path, bytes, OnGameSaved); 
     }
+
+    public void Copy( string source, string destination )
+    {
+        var sourceBytes = ReadAllBytes( source );
+        WriteAllBytes( destination, sourceBytes );
+    }
+    
     private void OnGameSaved(Int32 hresult)
     {
         Debug.Log($"Saved successfully");

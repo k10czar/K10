@@ -3,7 +3,6 @@ using System.Text;
 
 namespace K10
 {
-	[System.Obsolete("Use ObjectPool<T> instead that is thread safe I supose")]
 	public static class ObjectPool
 	{
 		public static void Return<T>(T obj) where T : new() => ObjectPool<T>.Return(obj);
