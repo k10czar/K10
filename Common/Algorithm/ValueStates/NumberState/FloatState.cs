@@ -6,23 +6,25 @@ public class FloatState : INumericValueState<float>, ICustomDisposableKill
 	[SerializeField] float _value;
 	[System.NonSerialized] private EventSlot<float> _onChange;
 
-	public float Value { get { return _value; } set { Setter( value ); } }
+	public float Value { get => _value; set => Setter(value); }
+
 	public float Get() { return _value; }
 
 	public void SetInt( int value ) { Setter( value ); }
 
-	public void Setter( float value )
+	public virtual void Setter(float value)
 	{
 		var diff = _value - value;
-		if( diff < float.Epsilon && diff > FloatHelper.NegativeEpsilon ) return;
+		if (diff is < float.Epsilon and > FloatHelper.NegativeEpsilon) return;
+
 		_value = value;
-		_onChange?.Trigger( value );
+		_onChange?.Trigger(value);
 	}
 
-	public void Increment( float increment )
+	public void Increment(float increment)
 	{
-		if( increment < float.Epsilon && increment > FloatHelper.NegativeEpsilon ) return;
-		Setter( _value + increment );
+		if (increment is < float.Epsilon and > FloatHelper.NegativeEpsilon) return;
+		Setter(_value + increment);
 	}
 
 	public void Kill()
