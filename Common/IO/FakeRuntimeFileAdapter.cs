@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using K10;
 
-public class RuntimeFileAdapter : IFileAdapter
+public class FakeRuntimeFileAdapter : IFileAdapter
 {
 	Dictionary<string,byte[]> files = new();
 
-	public string GetPersistentDataPath() { return "Persistent::"; }
-	public string GetDebugPersistentDataPath() { return "DEBUG_Persistent::"; }
+	public string GetPersistentDataPath() { return "::Persistent::"; }
+	public string GetDebugPersistentDataPath() { return "::DEBUG_Persistent::"; }
 	public bool Exists( string path ) { return files.ContainsKey( path.ToLower() ); }
 	public byte[] ReadAllBytes( string path ) { return files[path.ToLower()].ToArray(); }
 	public void WriteAllBytes( string path, byte[] bytes ) { files[path.ToLower()] = bytes.ToArray(); }
