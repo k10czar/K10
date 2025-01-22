@@ -29,9 +29,9 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 		for (int i = 0; i < collections.Count; i++)
 		{
 			var collection = collections[i];
-			//Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"Before".Colorfy( Keyword )} {"EditorRemoveWrongElements".Colorfy( Verbs )}( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
+			Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"Before".Colorfy( Keyword )} {"EditorRemoveWrongElements".Colorfy( Verbs )}( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
 			collection.EditorRemoveWrongElements();
-			//Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"After".Colorfy( Warning )} {"EditorRemoveWrongElements".Colorfy( Verbs )}( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
+			Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"After".Colorfy( Warning )} {"EditorRemoveWrongElements".Colorfy( Verbs )}( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
 		}
 
 		for (int i = 0; i < elements.Count; i++)
@@ -41,18 +41,18 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 			if (col != null)
 			{
 				var oHso = hso as Object;
-				//Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"Before".Colorfy( Keyword )} of {"EditorRequestMember".Colorfy( Verbs )}( {oHso.NameOrNull()}[{hso.HashID}] ) on Collection {col.ToStringOrNull()}" );
+				Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"Before".Colorfy( Keyword )} of {"EditorRequestMember".Colorfy( Verbs )}( {oHso.NameOrNull()}[{hso.HashID}] ) on Collection {col.ToStringOrNull()}" );
 				col.EditorRequestMember( oHso );
-				//Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"After".Colorfy( Warning )} of {"EditorRequestMember".Colorfy( Verbs )}( {oHso.NameOrNull()}[{hso.HashID}] ) on Collection {col.ToStringOrNull()}" );
+				Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"After".Colorfy( Warning )} of {"EditorRequestMember".Colorfy( Verbs )}( {oHso.NameOrNull()}[{hso.HashID}] ) on Collection {col.ToStringOrNull()}" );
 			}
 		}
 
 		for (int i = 0; i < collections.Count; i++)
 		{
 			var collection = collections[i];
-			//Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"Before".Colorfy( Keyword )} {"EditorCheckConsistency".Colorfy( Verbs )}( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
+			Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"Before".Colorfy( Keyword )} {"EditorCheckConsistency".Colorfy( Verbs )}( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
 			collection.EditorCheckConsistency();
-			//Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"After".Colorfy( Warning )} {"EditorCheckConsistency".Colorfy( Verbs )}( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
+			Debug.Log( $"{"OnPostprocessAllAssets".Colorfy( TypeName )} {"After".Colorfy( Warning )} {"EditorCheckConsistency".Colorfy( Verbs )}( {AssetDatabase.GetAssetPath( collection as Object )} )\n{collection}" );
 		}
 
 		sw.Stop();
@@ -67,7 +67,7 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 		if( movedAssets.Length > 0 ) log += $"\n{$"{movedAssets.Length.ToString().Colorfy( Numbers )} moved assets:".Colorfy( TypeName )}{afterLine}{string.Join( ",\n   -", movedAssets ).Colorfy( Names )}{Colorfy.CloseTag()}";
 		if( movedFromAssetPaths.Length > 0 ) log += $"\n{$"{movedFromAssetPaths.Length.ToString().Colorfy( Numbers )} moved from asset paths:".Colorfy( Interfaces )}{afterLine}{string.Join( ",\n   -", movedFromAssetPaths ).Colorfy( Names )}{Colorfy.CloseTag()}";
 
-		//Debug.Log( log );
+		Debug.Log( log );
 		
 		if( containsTags ) TagsDebug.Instance.Rebuild();
 	}

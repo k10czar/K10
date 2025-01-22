@@ -3,6 +3,7 @@ using Unity.XGamingRuntime;
 using UnityEngine;
 using System;
 using System.Collections;
+using K10.DebugSystem;
 
 public class GdkUserData
 {
@@ -33,7 +34,7 @@ public class GdkLogCategory : IK10LogCategory
     public Color Color => Colors.LawnGreen;
 }
 
-public class GdkGameRuntimeService : IGdkRuntimeService, ILogglable<GdkLogCategory>
+public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategory>
 {
     public enum UserOpResult
     {

@@ -1,7 +1,8 @@
 #if MICROSOFT_GDK_SUPPORT || UNITY_GAMECORE
+using K10.DebugSystem;
 using UnityEngine;
 
-public class GdkGameRuntimeServiceConfigurator : IService, IStartable, ILogglable<GdkLogCategory>
+public class GdkGameRuntimeServiceConfigurator : IService, IStartable, ILoggable<GdkLogCategory>
 {
     [SerializeField,InlineProperties] GdkPlatformSettingsData _gdkSettings;
     GdkGameRuntimeService gdkRuntimeManager;

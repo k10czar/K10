@@ -29,7 +29,7 @@ public static class JsonUtilities
 		var fileName = GenerateLogFileName(suffix1, suffix2, environment);
 		var savePath = GenerateSavePath(fileName, ".json");
 
-		FileAdapter.SaveHasUTF8(savePath, formattedJson);
+		FileAdapter.SaveAsUTF8(savePath, formattedJson);
 #if UNITY_EDITOR
 		Debug.Log(fileName + ": " + formattedJson);
 #endif //UNITY_EDITOR

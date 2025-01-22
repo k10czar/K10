@@ -3,8 +3,8 @@ using System.Reflection;
 using UnityEngine;
 
 public class ToStringAttribute : PropertyAttribute { }
-public class ExtendedDrawerAttribute : PropertyAttribute 
-{ 
+public class ExtendedDrawerAttribute : PropertyAttribute
+{
 	public readonly bool ShowName;
 
 	public ExtendedDrawerAttribute( bool showName = false )
@@ -29,7 +29,7 @@ public class BoxedAttribute : PropertyAttribute
 
 public class OnlyOnPlayAttribute : PropertyAttribute { }
 
-public class RandomizeButtonAttribute : PropertyAttribute 
+public class RandomizeButtonAttribute : PropertyAttribute
 {
 	// public readonly object min = null;
 	// public readonly object max = null;
@@ -41,8 +41,8 @@ public class RandomizeButtonAttribute : PropertyAttribute
 	// }
 }
 
-public class UnitAttribute : PropertyAttribute 
-{ 
+public class UnitAttribute : PropertyAttribute
+{
 	public readonly string UnitName;
 
 	public UnitAttribute( string unitName )
@@ -61,25 +61,40 @@ public class ListingPathAttribute : Attribute
 	}
 }
 
-
-public class OverridingColorAttribute : Attribute
+public class SingleEnumEntry : PropertyAttribute
 {
-	public UnityEngine.Color Color { get; }
+	public readonly Type enumType;
+	public readonly EConsoleColor color;
 
-	public OverridingColorAttribute( UnityEngine.Color color )
+	public SingleEnumEntry(Type enumType, EConsoleColor color = EConsoleColor.Primary)
 	{
-		Color = color;
+		this.enumType = enumType;
+		this.color = color;
 	}
 
-	public static UnityEngine.Color TryGetColorFrom( object obj, UnityEngine.Color defaultColor )
+	public SingleEnumEntry(EConsoleColor color = EConsoleColor.Primary)
 	{
-		return TryGetColorFrom( obj?.GetType(), defaultColor );
+		this.enumType = null;
+		this.color = color;
 	}
+}
 
-	public static UnityEngine.Color TryGetColorFrom( System.Type type, UnityEngine.Color defaultColor )
+public class DoubleEnumEntry : PropertyAttribute
+{
+	public readonly Type firstType;
+	public readonly Type secondType;
+
+	public readonly EConsoleColor firstColor;
+	public readonly EConsoleColor secondColor;
+
+	public static DoubleEnumEntry From<T,U>(EConsoleColor firstColor = EConsoleColor.Primary, EConsoleColor secondColor = EConsoleColor.Support)
+		=> new(typeof(T), typeof(U), firstColor, secondColor);
+
+	public DoubleEnumEntry(Type firstType, Type secondType, EConsoleColor firstColor = EConsoleColor.Primary, EConsoleColor secondColor = EConsoleColor.Support)
 	{
-		var att = type.GetCustomAttribute<OverridingColorAttribute>();
-		if( att == null ) return defaultColor;
-		return att.Color;
+		this.firstType = firstType;
+		this.secondType = secondType;
+		this.firstColor = firstColor;
+		this.secondColor = secondColor;
 	}
 }

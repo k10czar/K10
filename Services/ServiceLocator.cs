@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using K10.DebugSystem;
 using UnityEngine;
 using static Colors.Console;
 
@@ -116,9 +117,9 @@ public static class ServiceLocator
 
 	public static void CallWhenReady<T>(Action callback) where T : IService
 	{
-		if ( services.TryGetValue(typeof(T), out var service) )
+		if (services.TryGetValue(typeof(T), out var service))
 		{
-			if( service is IReadyService readyService ) readyService.IsReady.CallWhenReady(callback);
+			if (service is IReadyService readyService) readyService.IsReady.CallWhenReady(callback);
 			else callback();
 			return;
 		}
@@ -201,7 +202,7 @@ public static class ServiceLocator
 
 		if (onServiceReadyCallbacks.TryGetValue(type, out var readyList))
 		{
-			foreach (var callback in readyList) 
+			foreach (var callback in readyList)
 			{
 				if( service is IReadyService readyService ) readyService.IsReady.CallWhenReady(callback);
 				else callback();

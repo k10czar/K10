@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+public enum EConsoleColor { Primary, Secondary, Info, Success, Warning, Danger, Support, Special }
 
 public static class Colors
 {
@@ -17,7 +18,7 @@ public static class Colors
     public static Color Get(string colorName)
     {
         if( string.IsNullOrEmpty( colorName ) ) return Color.white;
-        if( colorName[0] == '#' ) 
+        if( colorName[0] == '#' )
         {
             ColorUtility.TryParseHtmlString( colorName, out var htmlColor );
             return htmlColor;
@@ -46,44 +47,44 @@ public static class Colors
         }
     }
 
-    [LazyConst] private static List<Color> optionsSequence;
+    [LazyConst] private static Color[] optionsSequence;
 
-    public static List<Color> OptionsSequence
+    public static Color[] OptionsSequence
     {
         get
         {
             if (optionsSequence != null) return optionsSequence;
 
-            optionsSequence = new List<Color> { Azure, Fern, Coral, Cyan, Salmon, Goldenrod, DeepPink, Khaki };
+            optionsSequence = new[] { Azure, Fern, Coral, Cyan, Salmon, Goldenrod, DeepPink, Khaki, Cerulean, Crimson, LawnGreen, MediumSlateBlue, OrangeRed };
 
             return optionsSequence;
         }
     }
 
-    [LazyConst] private static List<Color> statusSequence;
+    [LazyConst] private static Color[] statusSequence;
 
-    public static List<Color> StatusSequence
+    public static Color[] StatusSequence
     {
         get
         {
             if (statusSequence != null) return statusSequence;
 
-            statusSequence = new List<Color> { MintGreen, Orange, LightCoral, OrangeRed };
+            statusSequence = new [] { MintGreen, Orange, LightCoral, OrangeRed };
 
             return statusSequence;
         }
     }
 
-    public static Color FromSequence<T>(T value, bool isStatus = false, bool loop = false) where T : Enum => FromSequence((int)(object)value);
+    public static Color FromSequence<T>(T value, bool isStatus = false, bool loop = false) where T : Enum => FromSequence((int)(object)value, isStatus, loop);
     public static Color FromSequence(int index, bool isStatus = false, bool loop = false)
     {
         var sequence = isStatus ? StatusSequence : OptionsSequence;
-        index = loop ? index % sequence.Count : Mathf.Clamp(index, 0, sequence.Count);
+        index = loop ? index % sequence.Length : Mathf.Clamp(index, 0, sequence.Length);
         return sequence[index];
     }
 
     private const System.Reflection.BindingFlags FLAGS = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
-    
+
 #if UNITY_EDITOR
     [UnityEditor.MenuItem("K10/Colors/Log")]
     private static void EDITOR_Log()
@@ -130,14 +131,36 @@ public static class Colors
             }
         }
 
+        [LazyConst] private static Color[] sequence;
+
+        public static Color[] Sequence
+        {
+            get
+            {
+                if (sequence != null) return sequence;
+
+                sequence = new [] { Primary, Secondary, Info, Success, Warning, Danger, Support, Special };
+
+                return sequence;
+            }
+        }
+
+
+        public static Color Get<T>(T value, bool loop = false) where T : Enum => Get((int)(object)value, loop);
+        public static Color Get(int index, bool loop = false)
+        {
+            index = loop ? index % Sequence.Length : Mathf.Clamp(index, 0, Sequence.Length);
+            return Sequence[index];
+        }
+
         [ConstLike] public static readonly Color Danger = Crimson;
         [ConstLike] public static readonly Color Negation = OrangeRed;
         [ConstLike] public static readonly Color Interfaces = Coral;
         [ConstLike] public static readonly Color TypeName = Khaki;
         [ConstLike] public static readonly Color Names = Gold;
-        [ConstLike] public static readonly Color Info = Goldenrod;
+        [ConstLike] public static readonly Color Info = PaleGreen;
         [ConstLike] public static readonly Color Keyword = LawnGreen;
-        [ConstLike] public static readonly Color Verbs = PaleGreen;
+        [ConstLike] public static readonly Color Verbs = Goldenrod;
         [ConstLike] public static readonly Color Numbers = LightSkyBlue;
         [ConstLike] public static readonly Color Abstraction = Azure;
         [ConstLike] public static readonly Color Fields = MediumSlateBlue;
@@ -146,7 +169,21 @@ public static class Colors
         [ConstLike] public static readonly Color Success = MintGreen;
         [ConstLike] public static readonly Color Warning = Orange;
         [ConstLike] public static readonly Color LightDanger = LightCoral;
+
         [ConstLike] public static readonly Color GrayOut = LightGray;
+        [ConstLike] public static readonly Color DarkerGrayOut = Silver;
+        [ConstLike] public static readonly Color Dark = Charcoal;
+        [ConstLike] public static readonly Color DarkerDark = DarkCharcoal;
+        [ConstLike] public static readonly Color DarkBackground = AlmostBlack.WithAlpha(.4f);
+
+        [ConstLike] public static readonly Color SuccessBackground = Avocado;
+        [ConstLike] public static readonly Color WarningBackground = Tomato;
+
+        [ConstLike] public static readonly Color Primary = Azure;
+        [ConstLike] public static readonly Color Secondary = Cerulean;
+        [ConstLike] public static readonly Color Light = Seashell;
+        [ConstLike] public static readonly Color Special = Purple.WithAlpha(.6f);
+        [ConstLike] public static readonly Color Support = Silver;
     }
 
     //Red colors
@@ -366,6 +403,9 @@ public static class Colors
     [ConstLike] public static readonly Color LightSlateGray = From( 119, 136, 153);
     [ConstLike] public static readonly Color SlateGray = From( 112, 128, 144);
     [ConstLike] public static readonly Color DarkSlateGray = From( 47, 79, 79);
+    [ConstLike] public static readonly Color Charcoal = From( 70, 70, 70);
+    [ConstLike] public static readonly Color DarkCharcoal = From( 60, 60, 60);
+    [ConstLike] public static readonly Color AlmostBlack = From( 25, 25, 25);
     [ConstLike] public static readonly Color Black = From( 0, 0, 0);
 
 
