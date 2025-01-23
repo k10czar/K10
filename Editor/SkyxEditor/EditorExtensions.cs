@@ -24,6 +24,6 @@ namespace Skyx.SkyxEditor
     {
         public static string RGB(this Color color) => ColorUtility.ToHtmlStringRGB(color);
 
-        public static Color Expanded(this Color color, bool isExpanded) => isExpanded ? color.AddLight(-.1f) : color;
+        public static Color Expanded(this Color color, bool isExpanded) => isExpanded ? color.AddLight(-.15f) : color;
     }
 }

@@ -37,11 +37,13 @@ namespace Skyx.SkyxEditor
 
         #region Labels
 
-        public static void DrawTitle(UnityEngine.Object asset)
+        public static bool DrawTitle(UnityEngine.Object asset)
         {
             Separator();
-            GUILayout.Label(ObjectNames.NicifyVariableName(asset.name), SkyxStyles.HugeHeader.LightText());
+            var clicked = GUILayout.Button(ObjectNames.NicifyVariableName(asset.name), SkyxStyles.HugeHeader.LightText());
             Separator();
+
+            return clicked;
         }
 
         public static void PlainBGLabel(string label, bool isSuccess, string hint = null) => PlainBGLabel(label, BoolToColor(isSuccess), hint: hint);

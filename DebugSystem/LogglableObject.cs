@@ -61,6 +61,13 @@ namespace K10.DebugSystem
         }
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        public static void LogError<T>(this ILoggable<T> obj, string message, Object customTarget) where T : IK10LogCategory, new()
+        {
+            var ownerTarget = obj as Object;
+            K10Log<T>.Log(LogSeverity.Error, obj.AddPrefix(message, ownerTarget), ownerTarget, customTarget);
+        }
+
+        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
         public static void LogException<T>(this ILoggable<T> obj, System.Exception exception) where T : IK10LogCategory, new()
         {
             K10Log<T>.LogException(exception, obj as Object);

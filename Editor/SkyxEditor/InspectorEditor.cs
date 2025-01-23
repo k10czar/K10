@@ -1,4 +1,5 @@
-﻿using Unity.Profiling;
+﻿using System;
+using Unity.Profiling;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -93,7 +94,9 @@ namespace Skyx.SkyxEditor
         private void DrawTitle()
         {
             if (!ShouldDrawTitle) return;
-            SkyxLayout.DrawTitle(target);
+
+            if (SkyxLayout.DrawTitle(target))
+                EditorGUIUtility.PingObject(Target);
         }
 
         private void DrawScriptFile()
@@ -134,12 +137,17 @@ namespace Skyx.SkyxEditor
 
         protected virtual void OnDisable()
         {
-            Target = target as T;
-
             EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
 
-            if (serializedObject.targetObject != null)
-                PropertyCollection.Release(serializedObject);
+            try
+            {
+                if (serializedObject.targetObject != null)
+                    PropertyCollection.Release(serializedObject);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
         }
     }
 }
