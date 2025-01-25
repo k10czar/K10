@@ -267,6 +267,9 @@ namespace Skyx.SkyxEditor
             if (slideRect) rect.SlideSameRect();
         }
 
+        public bool DrawSuccessToggle(ref Rect rect, string propertyName, string onLabel, string offLabel, string hint = null, bool slideRect = true, bool isBacking = false)
+            => DrawSuccessToggle(ref rect, propertyName, Get(propertyName, isBacking).boolValue ? onLabel : offLabel, hint, slideRect, isBacking);
+
         public bool DrawSuccessToggle(ref Rect rect, string propertyName, string label = null, string hint = null, bool slideRect = true, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
