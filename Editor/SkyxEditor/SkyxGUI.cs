@@ -193,6 +193,19 @@ namespace Skyx.SkyxEditor
 
         #endregion
 
+        public static string DrawTextFieldWithSuggestions(Rect rect, string currentValue, string[] suggestions)
+        {
+            var currentIndex = Array.IndexOf(suggestions, currentValue);
+
+            var dropdownRect = rect.ExtractEndRect(20);
+
+            // TODO: find a better style :thinkingface:
+            var index = EditorGUI.Popup(dropdownRect, currentIndex, suggestions, SkyxStyles.ButtonStyle);
+            if (index != currentIndex) return suggestions[index];
+
+            return EditorGUI.TextField(rect, GUIContent.none, currentValue);
+        }
+
         public static void HintIcon(ref Rect rect, string icon, string hint)
         {
             var hintRect = ExtractRect(ref rect, SkyxStyles.HintIconWidth);
