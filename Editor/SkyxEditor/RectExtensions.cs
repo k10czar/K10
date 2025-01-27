@@ -16,6 +16,12 @@ namespace Skyx.SkyxEditor
         public static void NextLine(this ref Rect rect, float startX, float width, float extraMargin = 0)
             => SkyxGUI.NextLine(ref rect, startX, width, extraMargin);
 
+        public static void NextLineWithSeparator(this ref Rect rect, float startX, float width, float separatorMargin = 2)
+        {
+            SkyxGUI.NextLine(ref rect, startX, width);
+            SkyxGUI.Separator(ref rect, separatorMargin);
+        }
+
         public static void NextDividedLine(this ref Rect rect, float startX, float totalWidth, int divideCount)
             => SkyxGUI.NextDividedLine(ref rect, startX, totalWidth, divideCount);
 

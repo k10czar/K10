@@ -217,10 +217,10 @@ namespace Skyx.SkyxEditor
 
         public static void Separator(ref Rect rect, float margin = 4, float size = 1)
         {
-            var separator = new Rect(rect.x, rect.y + margin, rect.width, size);
+            var separator = new Rect(rect.x, rect.y, rect.width, size);
             EditorGUI.DrawRect(separator, SkyxStyles.defaultSeparatorColor);
 
-            rect.y += 2 * margin + size;
+            rect.y += margin + size;
         }
 
         public static void ShadowLabel(Rect rect, string label, GUIStyle style)
