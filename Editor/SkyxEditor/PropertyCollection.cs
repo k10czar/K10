@@ -31,7 +31,7 @@ namespace Skyx.SkyxEditor
             var id = GetID(root);
             if (!collections.ContainsKey(id)) return;
 
-            K10Log<EditorLogCategory>.Log($"Releasing PropertyCollections for {root.targetObject}");
+            K10Log<EditorLogCategory>.Log($"Releasing PropertyCollections for {root.targetObject.name}");
 
             collections.Remove(id);
             previousHashes.Remove(id);
@@ -58,7 +58,7 @@ namespace Skyx.SkyxEditor
             if (objectCollections.TryGetValue(path, out var collection)) return collection;
 
             var isRoot = string.IsNullOrEmpty(path);
-            K10Log<EditorLogCategory>.Log(isRoot ? LogSeverity.Info : LogSeverity.Warning, $"Creating new collection for {root.targetObject} @ {(isRoot ? "_ROOT_" : path)}", verbose: !isRoot);
+            K10Log<EditorLogCategory>.Log(isRoot ? LogSeverity.Info : LogSeverity.Warning, $"Creating new collection for {root.targetObject.name} @ {(isRoot ? "_ROOT_" : path)}", verbose: !isRoot);
 
             collection = new PropertyCollection(root, path);
             objectCollections.Add(path, collection);

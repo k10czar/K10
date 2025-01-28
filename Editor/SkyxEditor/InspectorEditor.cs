@@ -26,7 +26,6 @@ namespace Skyx.SkyxEditor
 
         private void DrawConfigsInternal()
         {
-            Target = target as T;
             CacheProperties(false);
 
             using var profilerMarker = drawMarker.Auto();
@@ -75,13 +74,13 @@ namespace Skyx.SkyxEditor
                 return;
             }
 
+            Target = target as T;
+
             if (HasRuntimeVisualization && Application.isPlaying)
             {
-                if (SkyxLayout.ShouldShowBlock("Runtime", $"{typeof(T)}Runtime"))
-                {
-                    DrawRuntimeInfo();
-                    SkyxLayout.Space();
-                }
+                DrawRuntimeInfo();
+                SkyxLayout.Space();
+
                 if (!SkyxLayout.ShouldShowBlock("Configs", $"{typeof(T)}Configs")) DrawConfigsInternal();
             }
             else

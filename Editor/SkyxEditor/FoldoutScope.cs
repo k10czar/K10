@@ -6,14 +6,16 @@ namespace Skyx.SkyxEditor
     public class FoldoutBoxScope : GUI.Scope
     {
         public readonly bool isExpanded;
+        private readonly bool usesLayout;
 
-        private static bool DrawFoldoutHeader(Rect headerRect, string title, bool expanded, EConsoleColor color)
+        private static bool ReallyDraw(Rect headerRect, Rect boxRect, string title, ref bool isExpandedRef, EConsoleColor color, EHeaderSize size)
         {
+            BoxGUI.DrawBox(boxRect, color);
             EditorGUI.DrawRect(headerRect, SkyxStyles.HeaderColor(color));
 
             // Define and draw foldout toggle
             Rect foldoutRect = new Rect(headerRect.x + SkyxStyles.BoxMargin, headerRect.y, SkyxStyles.SmallButtonSize, headerRect.height);
-            GUI.Toggle(foldoutRect, expanded, GUIContent.none, EditorStyles.foldout);
+            GUI.Toggle(foldoutRect, isExpandedRef, GUIContent.none, EditorStyles.foldout);
 
             // Define and draw title label
             Rect labelRect = new Rect(foldoutRect.xMax, headerRect.y, headerRect.width - foldoutRect.xMax + SkyxStyles.BoxMargin, headerRect.height);
@@ -24,41 +26,63 @@ namespace Skyx.SkyxEditor
             Event e = Event.current;
             if (headerRect.Contains(e.mousePosition) && e.type == EventType.MouseDown && e.button == 0)
             {
-                expanded = !expanded;
+                isExpandedRef = !isExpandedRef;
                 e.Use();
             }
 
-            return expanded;
+            return isExpandedRef;
         }
 
-        private static bool BeginFoldout(string title, ref bool expanded, EConsoleColor color, EHeaderSize size)
-            => BeginFoldout(title, ref expanded, out _, color, size);
-
-        private static bool BeginFoldout(string title, ref bool expanded, out Rect headerRect, EConsoleColor color, EHeaderSize size)
+        private static bool GetDrawingRects(string title, ref bool isExpandedRef, EConsoleColor color, EHeaderSize size)
         {
-            headerRect = EditorGUILayout.GetControlRect(false, SkyxStyles.HeaderHeight(size));
+            var headerHeight = SkyxStyles.HeaderHeight(size);
+            var headerRect = EditorGUILayout.GetControlRect(false, headerHeight);
             var boxRect = headerRect;
 
-            var initialExpanded = expanded;
+            BoxGUI.ShrinkHeaderRect(ref headerRect, headerHeight);
 
-            if (expanded)
+            var initialExpanded = isExpandedRef;
+
+            if (isExpandedRef)
             {
                 Rect drawingRect = EditorGUILayout.BeginVertical(SkyxStyles.borderBoxHeaderStyle);
                 boxRect.yMax = drawingRect.yMax;
             }
 
-            BoxGUI.DrawBox(boxRect);
-            expanded = DrawFoldoutHeader(headerRect, title, expanded, color);
+            ReallyDraw(headerRect, boxRect, title, ref initialExpanded, color, size);
 
             return initialExpanded;
         }
 
-        private static bool BeginFoldout(string title, SerializedProperty property, EConsoleColor color, EHeaderSize size)
+        private static bool AdjustAvailableRect(ref Rect initialRect, string title, ref bool isExpandedRef, EConsoleColor color, EHeaderSize size)
         {
-            var expanded = property.isExpanded;
-            property.isExpanded = BeginFoldout(title, ref expanded, out _, color, size);
+            initialRect.height -= SkyxStyles.ElementsMargin;
 
-            return expanded;
+            var headerHeight = SkyxStyles.HeaderHeight(size);
+            var headerRect = initialRect;
+            BoxGUI.ShrinkHeaderRect(ref headerRect, headerHeight);
+
+            var boxRect = initialRect;
+
+            initialRect.ApplyBoxMargin(headerHeight);
+
+            return ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size);
+        }
+
+        private static bool BeginWrapper(string title, SerializedProperty property, EConsoleColor color, EHeaderSize size)
+        {
+            var isExpandedRef = property.isExpanded;
+            property.isExpanded = GetDrawingRects(title, ref isExpandedRef, color, size);
+
+            return isExpandedRef;
+        }
+
+        private static bool BeginWrapper(ref Rect initialRect, string title, SerializedProperty property, EConsoleColor color, EHeaderSize size)
+        {
+            var isExpanded = property.isExpanded;
+            property.isExpanded = AdjustAvailableRect(ref initialRect, title, ref isExpanded, color, size);
+
+            return property.isExpanded;
         }
 
         public FoldoutBoxScope(SerializedProperty property, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
@@ -66,17 +90,25 @@ namespace Skyx.SkyxEditor
 
         public FoldoutBoxScope(SerializedProperty property, string title, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
         {
-            isExpanded = BeginFoldout(title, property, color, size);
+            isExpanded = BeginWrapper(title, property, color, size);
         }
 
         public FoldoutBoxScope(string title, ref bool isExpandedRef, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
         {
-            isExpanded = BeginFoldout(title, ref isExpandedRef, color, size);
+            isExpanded = GetDrawingRects(title, ref isExpandedRef, color, size);
+        }
+
+        public FoldoutBoxScope(ref Rect rect, SerializedProperty property, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
+            : this(ref rect, property, property.PrettyName(), color, size) {}
+
+        public FoldoutBoxScope(ref Rect rect, SerializedProperty property, string title, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
+        {
+            isExpanded = BeginWrapper(ref rect, title, property, color, size);
         }
 
         protected override void CloseScope()
         {
-            if (isExpanded) BoxGUI.EndBox();
+            if (isExpanded && usesLayout) EditorGUILayout.EndVertical();
         }
     }
 }
