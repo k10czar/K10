@@ -97,7 +97,7 @@ namespace Skyx.SkyxEditor
 
             if (shouldApply)
             {
-                K10Log<EditorLogCategory>.Log($"Applying modifications for {serializedObject.targetObject}");
+                K10Log<EditorLogCategory>.Log($"Applying modifications for {serializedObject.targetObject.name}");
 
                 serializedObject.ApplyModifiedProperties();
                 serializedObject.Update();
