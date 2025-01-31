@@ -1,4 +1,5 @@
-﻿#if UNITY_EDITOR
+﻿/********************************************************************************************
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using Skyx.Trees;
@@ -187,3 +188,4 @@ namespace Skyx.SkyxEditor
     }
 }
 #endif
+/********************************************************************************************/
