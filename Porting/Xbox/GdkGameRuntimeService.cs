@@ -26,6 +26,7 @@ public interface IGdkRuntimeData
     string Sandbox { get; }
     string Scid { get; }
     string TitleId { get; }
+    uint TitleIdNumeric { get; }
 }
 
 public class GdkLogCategory : IK10LogCategory
@@ -53,11 +54,12 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     //   title without having to immediately acquire the Id from Partner Center. It is strongly recommended to change
     //   this Id as soon as you get your title building to avoid failures when attempting to do API calls."
     public string TitleId { get; private set; } = "FFFFFFFF";
+    public uint TitleIdNumeric { get; private set; } = 0;
 
     public BoolState InitializedRaw { get; private set; } = new BoolState( false );
     public IBoolStateObserver Initialized => InitializedRaw;
     public GdkGameRuntimeService Instance => ServiceLocator.Get<GdkGameRuntimeService>();
-    private GDKFileAdapter gdkFileAdapter;
+    // private GDKFileAdapter gdkFileAdapter;
     private Coroutine _dispatchCoroutine;
 
     public delegate void AddUserCompletedDelegate(UserOpResult result);
@@ -71,6 +73,8 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
  
     public GdkGameRuntimeService( string titleId = "62ab3c24", string scid = "00000000-0000-0000-0000-000062ab3c24", string sandbox = "" )
     {
+        TitleIdNumeric = uint.Parse(titleId, System.Globalization.NumberStyles.HexNumber);
+		Debug.Log( $"<color=Crimson>GdkGameRuntimeService</color>( {titleId}({TitleIdNumeric}), {scid}, {sandbox} )" );
         if( !string.IsNullOrEmpty(sandbox) ) Sandbox = sandbox;
         TitleId = titleId;
         Scid = scid;
@@ -79,8 +83,8 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         this.Log($"<color=LawnGreen>GDK</color> Sandbox: {Sandbox}");
         InitializeRuntime();
 
-        gdkFileAdapter = new GDKFileAdapter();
-        FileAdapter.SetImplementation(gdkFileAdapter); 
+        // gdkFileAdapter = new GDKFileAdapter();
+        // FileAdapter.SetImplementation(gdkFileAdapter); 
 
         AddUser(AddUserCompleted, false); // TODO: Do silently
 
@@ -299,8 +303,8 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     private void AddUserCompleted(UserOpResult result)
     {
         Debug.Log($"Add user completed {result}");
-        if (result == UserOpResult.Success)
-            gdkFileAdapter.Initialize(_userData.userHandle, Scid);
+        // if (result == UserOpResult.Success)
+        //     gdkFileAdapter.Initialize(_userData.userHandle, Scid);
     }
 
     private UserOpResult GetAllUserInfo(XUserHandle userHandle)

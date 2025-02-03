@@ -18,9 +18,9 @@ public interface IFileAdapter
 public static class FileAdapter
 {
 #if UNITY_EDITOR || UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WP_8 || UNITY_WP_8_1
-	private static IFileAdapter _implementation = new DefaultFileAdapter();
+	private static IFileAdapter _implementation = new FakeRuntimeFileAdapter();
 #else
-	private static IFileAdapter _implementation = new NullFileAdapter();
+	private static IFileAdapter _implementation = new FakeRuntimeFileAdapter();
 #endif
 	
 	public static void SetImplementation(IFileAdapter implementation) { _implementation = implementation; }
