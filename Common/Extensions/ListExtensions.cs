@@ -8,6 +8,10 @@ public static class ListExtensions
     {
 		foreach( var act in list ) act();
     }
+    public static void ExecuteAll<T>( this List<Action<T>> list, T t )
+    {
+		foreach( var act in list ) act( t );
+    }
 
     public static void PutOn<T>( this T t, ICollection<T> list )
     {
