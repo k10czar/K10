@@ -99,7 +99,27 @@ public static class InputActionExtension
         Action<InputAction.CallbackContext> capsule = ( InputAction.CallbackContext context ) => 
         { 
             actionHandler.Trigger( context.ReadValue<T>() );
-            // K10Log<InputLogCategory>.LogVerbose( $"{action.name}.Trigger( {context.ReadValue<T>()} )" );
+            // K10Log<InputLogCategory>.LogVerbose( $"{action.name}.Trigger( {context.ReadValue<T>()}, {context.control} )" );
+        };
+        action.started += capsule;
+        action.performed += capsule;
+        action.canceled += capsule;
+        return () => 
+        {
+            action.started -= capsule;
+            action.performed -= capsule;
+            action.canceled -= capsule;
+        };
+    }
+
+    public static Action RegisterValue<T>( this InputAction action, ITriggerable<T> actionHandler, Func<InputAction.CallbackContext,bool> condition ) where T: struct
+    {
+        K10Log<InputLogCategory>.LogVerbose( $"{action.name}.RegisterValue()" );
+        Action<InputAction.CallbackContext> capsule = ( InputAction.CallbackContext context ) => 
+        { 
+            var value = default( T );
+            if( condition( context ) ) value = context.ReadValue<T>();
+            actionHandler.Trigger( value );
         };
         action.started += capsule;
         action.performed += capsule;
