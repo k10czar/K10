@@ -59,7 +59,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     public BoolState InitializedRaw { get; private set; } = new BoolState( false );
     public IBoolStateObserver Initialized => InitializedRaw;
     public GdkGameRuntimeService Instance => ServiceLocator.Get<GdkGameRuntimeService>();
-    // private GDKFileAdapter gdkFileAdapter;
+    private XGameSaveFilesFileAdapter _gdkFileAdapter;
     private Coroutine _dispatchCoroutine;
 
     public delegate void AddUserCompletedDelegate(UserOpResult result);
@@ -83,10 +83,10 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         this.Log($"<color=LawnGreen>GDK</color> Sandbox: {Sandbox}");
         InitializeRuntime();
 
-        // gdkFileAdapter = new GDKFileAdapter();
-        // FileAdapter.SetImplementation(gdkFileAdapter); 
+        _gdkFileAdapter = new XGameSaveFilesFileAdapter();
+        FileAdapter.SetImplementation(_gdkFileAdapter); 
 
-        AddUser(AddUserCompleted, false); // TODO: Do silently
+        AddUser(AddUserCompleted, true);
 
         // Register for the user change event with the GDK
         SDK.XUserRegisterForChangeEvent(UserChangeEventCallback, out _callbackRegistrationToken);
@@ -303,8 +303,8 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     private void AddUserCompleted(UserOpResult result)
     {
         Debug.Log($"Add user completed {result}");
-        // if (result == UserOpResult.Success)
-        //     gdkFileAdapter.Initialize(_userData.userHandle, Scid);
+        if (result == UserOpResult.Success)
+            _gdkFileAdapter.Initialize(_userData.userHandle, Scid);
     }
 
     private UserOpResult GetAllUserInfo(XUserHandle userHandle)
