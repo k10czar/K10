@@ -17,12 +17,20 @@ using m44 = UnityEngine.Matrix4x4;
 public static class MathAdapter
 {
 	const MethodImplOptions AggrInline = MethodImplOptions.AggressiveInlining;
-	public const float EP2 = float.Epsilon * 2;
+
+	public static readonly v3 right = new v3( 1, 0, 0 );
+	public static readonly v3 left = new v3( -1, 0, 0 );
+	public static readonly v3 up = new v3( 0, 1, 0 );
+	public static readonly v3 down = new v3( 0, -1, 0 );
+	public static readonly v3 forward = new v3( 0, 0, 1 );
+	public static readonly v3 back = new v3( 0, 0, -1 );
 
 #if USE_NEW_MATHEMATICS
 	public const float PI = math.PI;
+	public const float EP2 = math.EPSILON * 2;
 #else
 	public const float PI = Mathf.PI;
+	public const float EP2 = 2 * float.Epsilon;
 #endif
 
 	public const float RadiansToDegrees = 180f / PI;

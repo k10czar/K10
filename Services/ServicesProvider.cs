@@ -110,6 +110,7 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 			if (service == null) continue;
 			ServiceLocator.Unregister(service);
 			if (service is ICustomDisposableKill killable) killable.Kill();
+			if (service is IDisposable disposable) disposable.Dispose();
 			_services[i] = null;
 		}
 		_services = null;
