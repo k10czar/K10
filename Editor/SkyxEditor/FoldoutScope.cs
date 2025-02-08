@@ -49,7 +49,7 @@ namespace Skyx.SkyxEditor
                 boxRect.yMax = drawingRect.yMax;
             }
 
-            ReallyDraw(headerRect, boxRect, title, ref initialExpanded, color, size);
+            ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size);
 
             return initialExpanded;
         }
@@ -90,11 +90,13 @@ namespace Skyx.SkyxEditor
 
         public FoldoutBoxScope(SerializedProperty property, string title, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
         {
+            usesLayout = true;
             isExpanded = BeginWrapper(title, property, color, size);
         }
 
         public FoldoutBoxScope(string title, ref bool isExpandedRef, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
         {
+            usesLayout = true;
             isExpanded = GetDrawingRects(title, ref isExpandedRef, color, size);
         }
 

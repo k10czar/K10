@@ -157,7 +157,7 @@ public class K10DebugSystemWindow : EditorWindow
         if (Button($"Targets: {debugTarget}", color, K10GuiStyles.bigbuttonFlatStyle))
             K10DebugSystem.ToggleDebugTargetType();
 
-        if (debugTarget < EDebugTargets.OnlySelected) return;
+        if (debugTarget < EDebugTargets.ListedTarget) return;
 
         Space();
 

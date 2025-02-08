@@ -6,7 +6,6 @@ namespace Skyx.SkyxEditor
     public class HeaderScope : GUI.Scope
     {
         public readonly bool isExpanded;
-
         private readonly bool usesLayout;
 
         private static bool Begin(string title, SerializedProperty property, EConsoleColor color, EHeaderSize size)

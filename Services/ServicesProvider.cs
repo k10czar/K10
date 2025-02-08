@@ -20,7 +20,7 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 {
 	[ExtendedDrawer, SerializeReference] IService[] _services;
 
-    protected override bool CanDrawGizmos => this.CanLogVisuals();
+    protected override bool CanDrawGizmos => this.CanDebugVisuals();
 
     void Awake()
 	{

@@ -40,7 +40,7 @@ public class TypeListData
         for( int i = 0; i < effectNames.Length; i++ )
         {
             _newGUI[i] = new GUIContent( effectNames[i] );
-        } 
+        }
 
         return _newGUI;
     }
@@ -55,7 +55,7 @@ public class TypeListData
         for( int i = 0; i < guis.Length; i++ )
         {
             _newGUIWithNull[i+1] = guis[i];
-        } 
+        }
 
         return _newGUIWithNull;
     }
@@ -72,11 +72,11 @@ public class TypeListData
             var t = effectTypes[i];
             var pathAtt = t.GetCustomAttribute<ListingPathAttribute>();
             if( pathAtt != null ) _newNames[i] = pathAtt.Path;
-            else 
+            else
             {
                 var assemblyName = t.Assembly.GetName().Name;
-                foreach( var ignore in IGNORED_ASSEMBLY_NAMES ) 
-                    if( assemblyName.StartsWith( ignore ) ) 
+                foreach( var ignore in IGNORED_ASSEMBLY_NAMES )
+                    if( assemblyName.StartsWith( ignore ) )
                         assemblyName = assemblyName.Substring( ignore.Length );
 				if (string.IsNullOrEmpty(assemblyName)) _newNames[i] = t.FullName.Replace(".", "/");
 				else
@@ -93,9 +93,9 @@ public class TypeListData
 					else _newNames[i] = assemblyNameParsed + "/" + nameParsed;
 				}
             }
-            
+
             var str = _newNames[i];
-            if( commonPart == null ) 
+            if( commonPart == null )
             {
                 int id = -1;
                 for( int si = str.Length - 1; si >= 0; si-- ) if( str[si] == '/' ) { id = si; break; }
@@ -128,7 +128,7 @@ public class TypeListData
     public string[] GetNameWithNull()
     {
         if( _newNamesWithNull != null ) return _newNamesWithNull;
-        
+
         var notNullNames = GetNames();
         _newNamesWithNull = new string[notNullNames.Length + 1];
         _newNamesWithNull[0] = ConstsK10.NULL_STRING;
@@ -155,7 +155,7 @@ public class TypeListData
     public Type[] GetTypesWithNull()
     {
         if( _newTypesWithNull != null ) return _newTypesWithNull;
-        
+
         var notNullTypes = GetTypes();
         _newTypesWithNull = new Type[notNullTypes.Length + 1];
         _newTypesWithNull[0] = null;
@@ -184,8 +184,11 @@ public class TypeListData
         }
         return true;
     }
-    
+
+#if UNITY_EDITOR
     float _maxWidth = -1;
+#endif
+
     public float MaxWidth
     {
         get

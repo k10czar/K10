@@ -103,11 +103,16 @@ namespace K10.DebugSystem
 
         #endregion
 
-        #region Can Log
+        #region Can Debug
 
         public static bool CanLog<T>(this ILoggable<T> obj, bool verbose = false) where T : IK10LogCategory, new()
         {
-            return K10DebugSystem.CanDebug<T>(verbose);
+            return K10DebugSystem.CanDebug<T>(verbose) && K10DebugSystem.CanDebugTarget(obj as Object);
+        }
+
+        public static bool CanLog<T>(this ILoggableTarget<T> obj, bool verbose = false) where T : IK10LogCategory, new()
+        {
+            return K10DebugSystem.CanDebug<T>(verbose) && K10DebugSystem.CanDebugTarget(obj.LogTarget);
         }
 
         public static bool CanDebugVisuals<T>(this ILoggable<T> obj) where T : IK10LogCategory, new()
@@ -120,17 +125,10 @@ namespace K10.DebugSystem
             return K10DebugSystem.ShowVisuals<T>() && K10DebugSystem.CanDebugTarget(obj.LogTarget);
         }
 
-        public static bool CanLogVisuals<T>(this ILoggable<T> obj) where T : IK10LogCategory, new()
-        {
-            return K10DebugSystem.ShowVisuals<T>();
-        }
+        public static bool SkipVisuals<T>(this ILoggable<T> obj) where T : IK10LogCategory, new() => !CanDebugVisuals(obj);
+        public static bool SkipVisuals<T>(this ILoggableTarget<T> obj) where T : IK10LogCategory, new() => !CanDebugVisuals(obj);
 
-        public static bool SkipVisuals<T>(this ILoggable<T> behaviour) where T : IK10LogCategory, new()
-        {
-            return K10DebugSystem.SkipVisuals<T>();
-        }
-
-        public static Color LogColor<T>(this ILoggable<T> behaviour) where T : IK10LogCategory, new() => K10Log<T>.Category.Color;
+        public static Color LogColor<T>(this ILoggable<T> obj) where T : IK10LogCategory, new() => K10Log<T>.Category.Color;
 
         #endregion
 

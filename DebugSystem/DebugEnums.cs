@@ -4,8 +4,8 @@
     {
         Disabled,
         All,
-        OnlySelected,
-        NullAndSelected,
+        ListedTarget,
+        ListedAndSelected,
     }
 
     public enum ELogPrefix

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -51,6 +52,14 @@ namespace K10.DebugSystem
             _ => throw new NotImplementedException()
         };
 
+        public static GameObject GetGameObject(Object target) => target switch
+        {
+            null => null,
+            Component component => component.gameObject,
+            GameObject gameObject => gameObject,
+            _ => throw new NotImplementedException()
+        };
+
         public static bool CanDebugTarget(Object targetObject, LogSeverity severity = LogSeverity.Info)
         {
             if (DebugErrors() && severity is LogSeverity.Error) return true;
@@ -61,8 +70,8 @@ namespace K10.DebugSystem
             {
                 EDebugTargets.Disabled => false,
                 EDebugTargets.All => true,
-                EDebugTargets.OnlySelected => config.targets.Contains(key),
-                EDebugTargets.NullAndSelected => key == null || config.targets.Contains(key),
+                EDebugTargets.ListedTarget => config.targets.Contains(key),
+                EDebugTargets.ListedAndSelected => config.targets.Contains(key) && Selection.activeGameObject == GetGameObject(targetObject),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
