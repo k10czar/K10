@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Automation
 {
-	[CreateAssetMenu( fileName = "OperationObject", menuName = "Automation/OperationObject", order = 1 )]
+	[CreateAssetMenu( fileName = "OperationObject", menuName = "K10/Automation/OperationObject", order = 1 )]
     public class OperationObject : ScriptableObject, IOperation
 	{
 		[ExtendedDrawer,SerializeReference] IOperation _operation;
