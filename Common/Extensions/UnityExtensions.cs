@@ -493,6 +493,8 @@ public static class K10UnityExtensions
 	}
 	#endregion Colliders
 
+	[MethodImpl( AggrInline )] public static string NameAndType( this Object obj, string nullString = ConstsK10.NULL_STRING ) => ( obj != null ) ? $"{obj.name}<{obj.TypeNameOrNull()}>" : nullString;
+
 	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, string nullString = ConstsK10.NULL_STRING ) => ( obj != null ) ? $"{obj.name.Colorfy(Colors.Console.Names)}<{obj.TypeNameOrNullColored(Colors.Console.TypeName)}>" : nullString.Colorfy(Colors.Console.Negation);
 	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, Color nameColor, string nullString = ConstsK10.NULL_STRING ) => ( obj != null ) ? $"{obj.name.Colorfy(nameColor)}<{obj.TypeNameOrNullColored(Colors.Console.TypeName)}>" : nullString.Colorfy(Colors.Console.Negation);
 	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, Color nameColor, Color typeColor, string nullString = ConstsK10.NULL_STRING ) => ( obj != null ) ? $"{obj.name.Colorfy(nameColor)}<{obj.TypeNameOrNullColored(typeColor)}>" : nullString.Colorfy(Colors.Console.Negation);
