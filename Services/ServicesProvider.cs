@@ -18,9 +18,17 @@ public class ServiceBehavior : MonoBehaviour
 
 public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSelected, IDrawGizmos, ILoggable<ServicesLogCategory>
 {
+	static List<ServicesProvider> _providers = new();
+
 	[ExtendedDrawer, SerializeReference] IService[] _services;
 
     protected override bool CanDrawGizmos => this.CanLogVisuals();
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void Init()
+	{
+		_providers.Clear();
+	}
 
     void Awake()
 	{
@@ -30,6 +38,7 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 	void Start()
 	{
 		if (_services == null) return;
+		_providers.Add( this );
 		this.Log( $"{this.HierarchyNameOrNullColored(Colors.Console.Fields)} starting services" );
 		for( int i = 0; i < _services.Length; i++ )
 		{
@@ -94,6 +103,23 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 	void OnDestroy()
 	{
 		KillServices();
+		_providers.Remove( this );
+	}
+
+	public static void OnPreRender( Camera cam )
+	{
+		foreach( var prov in _providers ) 
+			prov.ExecuteOnPreRender( cam );
+	}
+
+	void ExecuteOnPreRender( Camera cam )
+	{
+		for( int i = 0; i < _services.Length; i++ )
+		{
+			var service = _services[i];
+			if( service is IActivatable act && !act.IsActive.Value ) continue;
+			if (service is IOnPreRender renderable ) renderable.OnPreRender( cam );
+		}
 	}
 
     protected override IEnumerable<object> GetKomposedDebugableObjects()

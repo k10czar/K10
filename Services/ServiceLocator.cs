@@ -22,12 +22,32 @@ public static class ServiceLocator
 	[ResetedOnLoad] private static readonly Dictionary<Type, List<Action>> onServiceRegisteredCallbacks = new();
 	[ResetedOnLoad] private static readonly Dictionary<Type, List<Action>> onServiceReadyCallbacks = new();
 
+	static EventSlot<float> _onUpdate = null;
+
+	public static IEventRegister<float> OnUpdate
+	{
+		get
+		{
+			if( _onUpdate == null )
+			{
+				_onUpdate = new();
+				var go = new GameObject( "ServiceUpdater" );
+				UnityEngine.Object.DontDestroyOnLoad( go );
+				var relay = go.AddComponent<UpdateRelay>();
+				relay.OnUpdate.Register( _onUpdate );
+			}
+			return _onUpdate;
+		}
+	}
+
 	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
 	public static void Clear()
 	{
 		// Log( $"{"ServiceLocator".Colorfy(TypeName)}.{"Clear".Colorfy(Verbs)}()" );
 		services.Clear();
 		genericServices.Clear();
+		_onUpdate?.Kill();
+		_onUpdate = null;
 	}
 
 	public class GenericsComparer : IEqualityComparer<Type[]>
@@ -78,6 +98,7 @@ public static class ServiceLocator
 		if( serv != null ) return serv;
 		var newServ = new T();
 		Register( newServ );
+		if( newServ is IUpdatable up ) OnUpdate.Register( up.Update );
 		return newServ;
     }
 
