@@ -5,7 +5,7 @@ namespace Skyx.SkyxEditor
 {
     public class EditorLogCategory : IK10LogCategory
     {
-        public string Name => "Editor";
+        public string Name => "🔨Editor";
         public Color Color => Colors.Beige;
     }
 }
