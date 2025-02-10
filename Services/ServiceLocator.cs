@@ -70,6 +70,16 @@ public static class ServiceLocator
 	{
 		return (T)Get(typeof(T));
 	}
+	
+
+    public static T Request<T>() where T : IService, new()
+    {
+		var serv = Get<T>();
+		if( serv != null ) return serv;
+		var newServ = new T();
+		Register( newServ );
+		return newServ;
+    }
 
 	public static IService Get(Type type)
 	{
