@@ -219,7 +219,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     {
         _userData = new GdkUserData();
         _currentCompletionDelegate = completionDelegate;
-        SDK.XUserAddAsync(XUserAddOptions.AddDefaultUserSilently, (Int32 hresult, XUserHandle userHandle) =>
+        SDK.XUserAddAsync(XUserAddOptions.AddDefaultUserAllowingUI, (Int32 hresult, XUserHandle userHandle) =>
         {
             if (HR.SUCCEEDED(hresult) && userHandle != null)
             {
@@ -303,8 +303,10 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     private void AddUserCompleted(UserOpResult result)
     {
         Debug.Log($"Add user completed {result}");
-        if (result == UserOpResult.Success)
-            _gdkFileAdapter.Initialize(_userData.userHandle, Scid);
+        if (result != UserOpResult.Success)
+            Debug.LogError($"Add User Complete failed. UserOpResult = {result}");
+
+        _gdkFileAdapter.Initialize(_userData.userHandle, Scid);
     }
 
     private UserOpResult GetAllUserInfo(XUserHandle userHandle)
