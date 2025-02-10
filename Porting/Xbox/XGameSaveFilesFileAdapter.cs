@@ -26,8 +26,15 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
         );
     }
 
-	public string GetPersistentDataPath() { return _folderPath; }
-	public string GetDebugPersistentDataPath() { return _folderPath + "/Debug"; }
+	public string GetPersistentDataPath() 
+	{ 
+		if (_folderPath == string.Empty)
+			Debug.LogError($"XGameSaveFiles folder not initialized");
+	
+		return _folderPath; 
+	}
+	
+	public string GetDebugPersistentDataPath() { return GetPersistentDataPath() +"/Debug"; }
 	public bool Exists( string path ) { return File.Exists( path ); }
 	public byte[] ReadAllBytes( string path ) { 
 		return Exists( path ) ? File.ReadAllBytes( path ) : Array.Empty<byte>(); 
