@@ -12,6 +12,7 @@ public static class InputActionExtension
         K10Log<InputLogCategory>.LogVerbose( $"{action.name}.RegisterTrigger()" );
         Action<InputAction.CallbackContext> capsule = ( InputAction.CallbackContext context ) => 
         { 
+            // Debug.Log( $"{action.name} {context.control.device.name??"NULL"} {device?.name??"NULL"} {context.control.device != device}" );
             if( device != null && context.control.device != device ) return;
             actionHandler.Trigger();
             // K10Log<InputLogCategory>.LogVerbose( $"{action.name}.Trigger()" );
@@ -53,7 +54,7 @@ public static class InputActionExtension
         { 
             var value = default( T );
             if( device != null && context.control.device != device ) return;
-            if( filterFunc != null && filterFunc ( context ) ) value = context.ReadValue<T>();
+            if( filterFunc == null || filterFunc ( context ) ) value = context.ReadValue<T>();
             actionHandler.Trigger( value );
         };
         action.started += capsule;
