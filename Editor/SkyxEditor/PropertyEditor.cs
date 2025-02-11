@@ -5,11 +5,11 @@ using UnityEngine;
 
 namespace Skyx.SkyxEditor
 {
-    public abstract class PropertyEditor<T> : PropertyDrawer where T : class
+    public abstract class PropertyEditor : PropertyDrawer
     {
         private static readonly ProfilerMarker drawMarker = new("PropertyEditor.Draw");
 
-        protected T GetTarget(SerializedProperty property) => property.GetValue<T>();
+        protected T GetTarget<T>(SerializedProperty property) where T: class => property.GetValue<T>();
         protected PropertyCollection GetProperties(SerializedProperty property) => PropertyCollection.Get(property);
 
         protected virtual float ExtraHeight => 0;
