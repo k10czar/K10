@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 
@@ -12,6 +10,7 @@ public class FakeRuntimePlayerPrefs : IPlayerPrefsAdapter
 
     private Dictionary<string, object> _data = new();
 
+    public FakeRuntimePlayerPrefs() {}
     public FakeRuntimePlayerPrefs(string relativePath)
     {
         _relativePath = relativePath;
@@ -54,7 +53,7 @@ public class FakeRuntimePlayerPrefs : IPlayerPrefsAdapter
 
         using(var stream = new MemoryStream())
         {
-            binaryFormatter.Serialize(stream, this);
+            binaryFormatter.Serialize(stream, _data);
             bytes = stream.ToArray();
         }
 
@@ -71,43 +70,12 @@ public class FakeRuntimePlayerPrefs : IPlayerPrefsAdapter
             return;
 
         var binaryFormatter = new BinaryFormatter();
-        PlayerPrefsSerialization loadedData = new();
-
         using(var stream = new MemoryStream(bytes))
         {
             stream.Read(bytes, 0, bytes.Length);
-            loadedData = (PlayerPrefsSerialization)binaryFormatter.Deserialize(stream);
+            stream.Position = 0;
+            _data = (Dictionary<string, object>)binaryFormatter.Deserialize(stream);
             stream.Flush();
-        }
-
-        _data = loadedData.ToDictionary();
-    }
-
-    [Serializable]
-    private class PlayerPrefsSerialization
-    {
-        private List<string> Keys = new();
-        private List<object> Values = new();
-
-        public PlayerPrefsSerialization() {}
-        public PlayerPrefsSerialization(Dictionary<string, object> data) => FromDictionary(data);
-
-        public void FromDictionary(Dictionary<string, object> data)
-        {
-            Keys = data.Keys.ToList();
-            Values = data.Values.ToList();
-        }
-        
-        public Dictionary<string, object> ToDictionary()
-        {
-            if (Keys.Count != Values.Count)
-                Debug.LogError($"Fake Player Prefs dictionary is inconsistent, has {Keys.Count} keys and {Values.Count} values");
-
-            Dictionary<string, object> dictionary = new();
-            for (int i = 0; i < Keys.Count && i < Values.Count; i++)
-                dictionary.Add(Keys[i], Values[i]);
-
-            return dictionary;
         }
     }
 }
