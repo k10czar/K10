@@ -47,7 +47,8 @@ namespace Skyx.SkyxEditor
 
             if (!enumType.IsEnum)
             {
-                Debug.LogError("Calling Draw enum on a non enum type!");
+                // Debug.LogError($"Calling Draw enum on a non enum type!\n{property.propertyPath}");
+                // KeyCode is enum and is falling here ??? 
                 EditorGUI.PropertyField(position, property, GUIContent.none);
                 return;
             }
