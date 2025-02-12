@@ -67,7 +67,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     { 
         get
         {
-            if( _isInitializedAndLogged == null ) new BoolStateOperations.And( _isInitialized, _isLoggedRaw );
+            if( _isInitializedAndLogged == null ) _isInitializedAndLogged = new BoolStateOperations.And( _isInitialized, _isLoggedRaw );
             return _isInitializedAndLogged;
         } 
     }

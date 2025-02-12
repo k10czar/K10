@@ -36,7 +36,7 @@ public class GDKFileAdapter : IFileAdapter
 
     public string GetPersistentDataPath() { return _persistentDataPath; }
     public string GetDebugPersistentDataPath() { return _debugDataPath; }
-    public void SavePlayerPrefs() { PlayerPrefs.Save(); } // TODO: Make sure it is really working
+    public void SavePlayerPrefs() { PlayerPrefsAdapter.Save(); } // TODO: Make sure it is really working
 
 
     public bool Exists( string path ) 

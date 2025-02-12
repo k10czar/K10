@@ -75,7 +75,7 @@ namespace K10.DebugSystem
         public void Save()
         {
             var path = GetPath();
-            File.WriteAllText(path, JsonUtility.ToJson(this, true));
+            FileAdapter.SaveAsUTF8(path, JsonUtility.ToJson(this, true));
         }
 
         private static string GetPath() => Path.Combine(Application.persistentDataPath, SaveKey);
@@ -84,10 +84,10 @@ namespace K10.DebugSystem
         {
             var path = GetPath();
 
-            if (File.Exists(path))
+            if (FileAdapter.Exists(path))
             {
-                var file = File.OpenText(path);
-                return JsonUtility.FromJson<K10DebugConfig>(file.ReadToEnd());
+                var file = FileAdapter.ReadAsUTF8(path);
+                return JsonUtility.FromJson<K10DebugConfig>(file);
             }
 
             var config = new K10DebugConfig();

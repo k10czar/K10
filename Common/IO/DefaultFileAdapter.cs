@@ -19,7 +19,7 @@ public class DefaultFileAdapter : IFileAdapter
 	public void Delete( string path ) { if( Exists(path) ) File.Delete( path ); }
 	public void DeleteDir( string path, bool recursive ) { if( Directory.Exists(path) ) Directory.Delete( path, recursive ); }
 	public void Copy( string source, string destination ) { File.Copy( source, destination ); }
-	public void SavePlayerPrefs() { PlayerPrefs.Save(); }
+	public void SavePlayerPrefs() { PlayerPrefsAdapter.Save(); }
 }
 
 #endif

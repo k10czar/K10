@@ -15,14 +15,18 @@ public interface IPlayerPrefsAdapter
 
 public static class PlayerPrefsAdapter
 {
+    #if UNITY_GAMECORE
+	private static IPlayerPrefsAdapter _implementation = new FakeRuntimePlayerPrefs();
+    #else
 	private static IPlayerPrefsAdapter _implementation = new DefaultPlayerPrefs();
+    #endif
 	
 	public static void SetImplementation(IPlayerPrefsAdapter implementation) { _implementation = implementation; }
 	
 	public static bool HasKey(string key) => _implementation.HasKey(key);
     public static int GetInt(string key, int defaultValue = default) => _implementation.GetInt(key, defaultValue);
     public static float GetFloat(string key, float defaultValue = default) => _implementation.GetFloat(key, defaultValue);
-    public static string GetString(string key, string defaultValue = default) => _implementation.GetString(key);
+    public static string GetString(string key, string defaultValue = default) => _implementation.GetString(key, defaultValue);
     public static void SetInt(string key, int value) => _implementation.SetInt(key, value);
     public static void SetFloat(string key, float value) => _implementation.SetFloat(key, value);
     public static void SetString(string key, string value) => _implementation.SetString(key, value);
