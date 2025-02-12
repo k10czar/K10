@@ -2,7 +2,6 @@
 {
     public enum EDebugTargets
     {
-        Disabled,
         All,
         ListedTarget,
         ListedAndSelected,

@@ -39,9 +39,6 @@ namespace K10.DebugSystem
         public static void ToggleDebugTarget(string target) => config.ToggleDebugTargets(target);
         public static void ToggleDebugTarget(Object target) => config.ToggleDebugTargets(getTargetKey(target));
 
-        public static bool DebugErrors() => config.errors;
-        public static void ToggleDebugErrors() => config.ToggleDebugErrors();
-
         public static Func<Object, string> getTargetKey;
 
         public static string DefaultGetDebugTargetKey(Object target) => target switch
@@ -52,7 +49,7 @@ namespace K10.DebugSystem
             _ => throw new NotImplementedException()
         };
 
-        public static GameObject GetGameObject(Object target) => target switch
+        private static GameObject GetGameObject(Object target) => target switch
         {
             null => null,
             Component component => component.gameObject,
@@ -62,13 +59,12 @@ namespace K10.DebugSystem
 
         public static bool CanDebugTarget(Object targetObject, LogSeverity severity = LogSeverity.Info)
         {
-            if (DebugErrors() && severity is LogSeverity.Error) return true;
+            if (severity is LogSeverity.Error) return true;
 
             var key = getTargetKey(targetObject);
 
             return DebugTargetType() switch
             {
-                EDebugTargets.Disabled => false,
                 EDebugTargets.All => true,
                 EDebugTargets.ListedTarget => config.targets.Contains(key),
                 EDebugTargets.ListedAndSelected => config.targets.Contains(key) && Selection.activeGameObject == GetGameObject(targetObject),

@@ -122,8 +122,7 @@ namespace Skyx.SkyxEditor
                 else rect.SlideSameVertically();
             }
 
-
-            if (GUI.Button(rect, "X", SkyxStyles.CenterLabel.WarningText()))
+            if (GUI.Button(rect, "X", SkyxStyles.CenterLabel.With(EConsoleColor.Warning)))
             {
                 property.DeleteArrayElementAtIndex(index);
                 return true;

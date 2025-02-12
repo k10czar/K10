@@ -40,7 +40,7 @@ namespace Skyx.SkyxEditor
         public static bool DrawTitle(UnityEngine.Object asset)
         {
             Separator();
-            var clicked = GUILayout.Button(ObjectNames.NicifyVariableName(asset.name), SkyxStyles.HugeHeader.LightText());
+            var clicked = GUILayout.Button(ObjectNames.NicifyVariableName(asset.name), SkyxStyles.HugeHeader.With(Colors.Console.Light));
             Separator();
 
             return clicked;

@@ -67,7 +67,7 @@ namespace Skyx.SkyxEditor
             => SkyxGUI.ExtractLineDef(ref rect, out startX, out totalWidth);
 
         public static void ApplyStartMargin(this ref Rect rect, float margin = SkyxStyles.ElementsMargin) => SkyxGUI.ApplyStartMargin(ref rect, margin);
-        public static void ApplyMargin(this ref Rect rect, float margin) => SkyxGUI.ApplyMargin(ref rect, margin);
+        public static void ApplyMargin(this ref Rect rect, float margin, bool vertical = true, bool horizontal = true) => SkyxGUI.ApplyMargin(ref rect, margin, vertical, horizontal);
 
         public static void ApplyBoxMargin(this ref Rect rect, float headerHeight)
             => SkyxGUI.ApplyBoxMargin(ref rect, headerHeight);

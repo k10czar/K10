@@ -14,7 +14,7 @@ namespace Skyx.SkyxEditor
             EditorGUI.DrawRect(headerRect, SkyxStyles.HeaderColor(color));
 
             // Define and draw foldout toggle
-            Rect foldoutRect = new Rect(headerRect.x + SkyxStyles.BoxMargin, headerRect.y, SkyxStyles.SmallButtonSize, headerRect.height);
+            Rect foldoutRect = new Rect(headerRect.x + SkyxStyles.BoxMargin, headerRect.y, SkyxStyles.MiniButtonSize, headerRect.height);
             GUI.Toggle(foldoutRect, isExpandedRef, GUIContent.none, EditorStyles.foldout);
 
             // Define and draw title label

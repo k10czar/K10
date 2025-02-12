@@ -267,8 +267,15 @@ namespace Skyx.SkyxEditor
             if (slideRect) rect.SlideSameRect();
         }
 
-        public bool DrawSuccessToggle(ref Rect rect, string propertyName, string onLabel, string offLabel, string hint = null, bool slideRect = true, bool isBacking = false)
-            => DrawSuccessToggle(ref rect, propertyName, Get(propertyName, isBacking).boolValue ? onLabel : offLabel, hint, slideRect, isBacking);
+        public bool DrawChoiceToggle(ref Rect rect, string propertyName, string onLabel, string offLabel, string hint = null, bool slideRect = true, bool isBacking = false)
+        {
+            var property = Get(propertyName, isBacking);
+            SkyxGUI.DrawChoiceToggle(rect, onLabel, offLabel, property, hint);
+
+            if (slideRect) rect.SlideSameRect();
+
+            return property.boolValue;
+        }
 
         public bool DrawSuccessToggle(ref Rect rect, string propertyName, string label = null, string hint = null, bool slideRect = true, bool isBacking = false)
         {
@@ -332,19 +339,19 @@ namespace Skyx.SkyxEditor
             return null;
         }
 
-        public ReorderableList RegisterList(string propertyName, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true, ReorderableList.ElementCallbackDelegate customDrawElement = null, ReorderableList.AddCallbackDelegate customAdd = null, string header = null, bool isBacking = false)
+        public ReorderableList RegisterList(string propertyName, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true, ReorderableList.ElementCallbackDelegate customDrawElement = null, ReorderableList.AddCallbackDelegate customAdd = null, ReorderableList.HeaderCallbackDelegate customHeader = null, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
-            return RegisterList(property, displayHeader, draggable, displayAddButton, displayRemoveButton, customDrawElement, customAdd, header);
+            return RegisterList(property, displayHeader, draggable, displayAddButton, displayRemoveButton, customDrawElement, customAdd, customHeader);
         }
 
-        public ReorderableList RegisterList(SerializedProperty property, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true, ReorderableList.ElementCallbackDelegate customDrawElement = null, ReorderableList.AddCallbackDelegate customAdd = null, string header = null)
+        public ReorderableList RegisterList(SerializedProperty property, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true, ReorderableList.ElementCallbackDelegate customDrawElement = null, ReorderableList.AddCallbackDelegate customAdd = null, ReorderableList.HeaderCallbackDelegate customHeader = null)
         {
             if (HasList(property)) return null;
 
             var list = new ReorderableList(property.serializedObject, property, draggable, displayHeader, displayAddButton, displayRemoveButton)
             {
-                drawHeaderCallback = DrawHeaderCallback,
+                drawHeaderCallback = customHeader ?? DrawHeaderCallback,
                 drawElementCallback = customDrawElement ?? DrawElementCallback,
                 elementHeightCallback = ElementHeightCallback,
                 onAddCallback = customAdd,
@@ -366,7 +373,7 @@ namespace Skyx.SkyxEditor
                 return EditorGUI.GetPropertyHeight(target, true);
             }
 
-            void DrawHeaderCallback(Rect rect) => EditorGUI.LabelField(rect, header ?? property.PrettyName());
+            void DrawHeaderCallback(Rect rect) => EditorGUI.LabelField(rect, property.PrettyName());
         }
 
         public void RegisterList(string propertyName, ReorderableList list, bool isBacking = false) => lists.TryAdd(Get(propertyName, isBacking), list);

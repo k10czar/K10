@@ -19,8 +19,6 @@ namespace K10.DebugSystem
         public EDebugTargets targetType = EDebugTargets.All;
         public List<string> targets = new();
 
-        public bool errors = true;
-
         private List<string> GetCorrespondingList(EDebugType debugType) => debugType switch
         {
             EDebugType.Default => log,
@@ -76,12 +74,6 @@ namespace K10.DebugSystem
         {
             var next = ((int) targetType + 1) % Enum.GetValues(typeof(EDebugTargets)).Length;
             targetType = (EDebugTargets) next;
-            Save();
-        }
-
-        public void ToggleDebugErrors()
-        {
-            errors = !errors;
             Save();
         }
 

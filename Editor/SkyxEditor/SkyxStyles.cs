@@ -29,8 +29,8 @@ namespace Skyx.SkyxEditor
         public const float CompactSpace = 2;
         public const float CompactListElement = LineHeight + CompactSpace;
 
-        public const float SmallButtonSize = 22;
-        public const float MiniButtonSize = 19;
+        public const float SmallButtonSize = 60;
+        public const float MiniButtonSize = 20;
         public const float HintIconWidth = 20;
 
         #endregion
@@ -61,7 +61,7 @@ namespace Skyx.SkyxEditor
         public static GUIStyle HugeHeader => Style("hugeHeader", Header, HugeFontSize, padding: hugePadding);
         public static GUIStyle PlainBGLabel => Style("plainBGLabel", CenterBoldStyle, padding: bigPadding, background: EditorGUIUtility.whiteTexture);
         public static GUIStyle PlainBGHeader => Style("plainBGHeader", Header, background: EditorGUIUtility.whiteTexture);
-        public static GUIStyle InlaidHintLabel => Style("InlaidHint", CenterLabel, TextAnchor.MiddleRight);
+        public static GUIStyle InlaidHintLabel => Style("InlaidHint", DefaultLabel, TextAnchor.MiddleRight);
 
         public static GUIStyle FoldStyle => Style("fold", EditorStyles.foldout, FontStyle.Bold);
         public static GUIStyle BigFoldStyle => Style("bigFold", FoldStyle, BigFontSize);

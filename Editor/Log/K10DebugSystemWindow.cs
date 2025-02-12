@@ -140,16 +140,9 @@ public class K10DebugSystemWindow : EditorWindow
         if (DrawSection("Debug Targets", ref isDebugOptionsExpanded)) return;
 
         Space();
-        var alwaysPrintErrors = K10DebugSystem.DebugErrors();
-        var errorsText = alwaysPrintErrors ? "Always log errors" : "Log only selected";
-        if (Button(errorsText, alwaysPrintErrors ? TRUE_COLOR : FALSE_COLOR, K10GuiStyles.bigbuttonFlatStyle))
-            K10DebugSystem.ToggleDebugErrors();
-
-        Space();
         var debugTarget = K10DebugSystem.DebugTargetType();
         var color = debugTarget switch
         {
-            EDebugTargets.Disabled => FALSE_COLOR,
             EDebugTargets.All => TRUE_COLOR,
             _ => MORE_COLOR,
         };

@@ -97,7 +97,7 @@ namespace Skyx.SkyxEditor
             if (string.IsNullOrEmpty(hint)) return;
 
             rect.width -= 5;
-            EditorGUI.LabelField(rect, hint, SkyxStyles.InlaidHintLabel.SecondaryText());
+            EditorGUI.LabelField(rect, hint, SkyxStyles.InlaidHintLabel);
         }
 
         #endregion
@@ -114,7 +114,7 @@ namespace Skyx.SkyxEditor
             => DrawToggle(rect, onLabel, offLabel, Colors.Console.Warning, Colors.Console.GrayOut, property, hint);
 
         public static bool DrawChoiceToggle(Rect rect, string onLabel, string offLabel, SerializedProperty property, string hint)
-            => DrawToggle(rect, onLabel, offLabel, Colors.Console.Secondary, Colors.Console.Info, property, hint);
+            => DrawToggle(rect, onLabel, offLabel, Colors.Console.Special, Colors.Console.Info, property, hint);
 
         public static bool MiniSuccessToggle(ref Rect rect, SerializedProperty toggleProp, string label, string hint, bool fromEnd = false)
             => DrawSuccessToggle(ExtractMiniButton(ref rect, fromEnd), label, toggleProp, hint);
@@ -188,8 +188,8 @@ namespace Skyx.SkyxEditor
         public static bool MiniButton(ref Rect rect, string label, EConsoleColor color, string hint = null, bool fromEnd = false)
             => RectButton(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Get(color), SkyxStyles.ButtonStyle, hint);
 
-        public static bool PlainBGButton(Rect rect, string label, Color color)
-            => RectButton(rect, label, color, SkyxStyles.PlainBGHeader);
+        public static bool PlainBGButton(Rect rect, string label, EConsoleColor color)
+            => RectButton(rect, label, Colors.Console.Get(color), SkyxStyles.PlainBGHeader);
 
         #endregion
 
@@ -225,7 +225,7 @@ namespace Skyx.SkyxEditor
 
         public static void ShadowLabel(Rect rect, string label, GUIStyle style)
         {
-            EditorGUI.LabelField(rect, label, style.DarkText());
+            EditorGUI.LabelField(rect, label, style.Darker());
             rect.x -= 1; rect.y -= 1;
             EditorGUI.LabelField(rect, label, style);
         }
@@ -333,12 +333,19 @@ namespace Skyx.SkyxEditor
             rect.width -= margin;
         }
 
-        public static void ApplyMargin(ref Rect rect, float margin)
+        public static void ApplyMargin(ref Rect rect, float margin, bool vertical, bool horizontal)
         {
-            rect.y += margin;
-            rect.height -= 2 * margin;
-            rect.x += margin;
-            rect.width -= 2 * margin;
+            if (vertical)
+            {
+                rect.y += margin;
+                rect.height -= 2 * margin;
+            }
+
+            if (horizontal)
+            {
+                rect.x += margin;
+                rect.width -= 2 * margin;
+            }
         }
 
         public static void ApplyBoxMargin(ref Rect rect, float headerHeight)
