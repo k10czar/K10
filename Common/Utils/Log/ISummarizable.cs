@@ -12,6 +12,7 @@ public static class SummarizableExtensions
 {
 	public static string TrySummarize( this object obj, string collectionSeparator = ", " )
 	{
+		if( obj == null ) return ConstsK10.NULL_STRING;
 		if( obj is ISummarizable sum ) return sum.Summarize();
 		if( obj is Object uObj ) return uObj.NameAndType();
 		if( obj is IEnumerable collection ) 
@@ -20,7 +21,7 @@ public static class SummarizableExtensions
 			bool first = true;
 			foreach( var item in collection ) 
 			{
-				if( !first ) SB.Append( item );
+				if( !first ) SB.Append( collectionSeparator );
 				SB.Append( item.TrySummarize( collectionSeparator ) );
 				first = false;
 			}

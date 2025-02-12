@@ -29,7 +29,7 @@ public class RuntimeTriggersRegister : MonoBehaviour
 #if UNITY_EDITOR
 		public void EDITOR_OnInspectEdit()
 		{
-			_name = $"Do {_do.TrySummarize()} when {_when.TrySummarize()}";
+			_name = $"When {_when.TrySummarize()} do {_do.TrySummarize()}";
 		}
 #endif
 
