@@ -3,9 +3,9 @@ using UnityEngine;
 public class DefaultPlayerPrefs : IPlayerPrefsAdapter
 {
     public bool HasKey(string key) => PlayerPrefs.HasKey(key);
-    public int GetInt(string key) => PlayerPrefs.GetInt(key);
-    public float GetFloat(string key) => PlayerPrefs.GetFloat(key);
-    public string GetString(string key)  => PlayerPrefs.GetString(key);
+    public int GetInt(string key, int defaultValue = default) => PlayerPrefs.GetInt(key, defaultValue);
+    public float GetFloat(string key, float defaultValue = default) => PlayerPrefs.GetFloat(key, defaultValue);
+    public string GetString(string key, string defaultValue = default)  => PlayerPrefs.GetString(key, defaultValue);
     public void SetInt(string key, int value) => PlayerPrefs.SetInt(key, value);
     public void SetFloat(string key, float value) => PlayerPrefs.SetFloat(key, value);
     public void SetString(string key, string value) => PlayerPrefs.SetString(key, value);

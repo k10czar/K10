@@ -17,24 +17,24 @@ public class FakeRuntimePlayerPrefs : IPlayerPrefsAdapter
     }
 
     public bool HasKey(string key) => _data.ContainsKey(key);
-    public int GetInt(string key) 
+    public int GetInt(string key, int defaultValue = default) 
     {
-        if (!HasKey(key)) return default;
+        if (!HasKey(key)) return defaultValue;
         try { return (int)_data[key]; }
-        catch (Exception) { return default; }
+        catch (Exception) { return defaultValue; }
     }
-    public float GetFloat(string key) 
+    public float GetFloat(string key, float defaultValue = default) 
     {
-        if (!HasKey(key)) return default;
+        if (!HasKey(key)) return defaultValue;
         try { return (float)_data[key]; }
-        catch (Exception) { return default; }
+        catch (Exception) { return defaultValue; }
     }
 
-    public string GetString(string key)
+    public string GetString(string key, string defaultValue = default)
     {
-        if (!HasKey(key)) return default;
+        if (!HasKey(key)) return defaultValue;
         try { return (string)_data[key]; }
-        catch (Exception) { return default; }
+        catch (Exception) { return defaultValue; }
     }
 
     public void SetInt(string key, int value) => _data[key] = value;
