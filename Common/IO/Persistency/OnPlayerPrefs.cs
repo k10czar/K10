@@ -11,7 +11,7 @@ public static class OnPlayerPrefsInt<T> where T : struct, System.IConvertible
 		{
 			if( !inited )
 			{
-				Set( PlayerPrefs.GetInt( typeof( T ).ToString() ) );
+				Set( PlayerPrefsAdapter.GetInt( typeof( T ).ToString() ) );
 				_current.OnChange.Register( UpdatePlayerPrefs );
 				inited = true;
 			}
@@ -21,8 +21,8 @@ public static class OnPlayerPrefsInt<T> where T : struct, System.IConvertible
 
 	private static void UpdatePlayerPrefs( T value )
 	{
-		PlayerPrefs.SetInt( typeof( T ).ToString(), value.ToInt32( null ) );
-		FileAdapter.SavePlayerPrefs();
+		PlayerPrefsAdapter.SetInt( typeof( T ).ToString(), value.ToInt32( null ) );
+		PlayerPrefsAdapter.Save();
 	}
 
 	public static void Set( T value ) { _current.Setter( value ); }
