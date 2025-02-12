@@ -29,7 +29,7 @@ namespace Skyx.SkyxEditor
         }
 
         public static void DrawEnumDropdown<T>(Rect position, T value, Action<object> callback, EConsoleColor color = EConsoleColor.Primary) where T: Enum
-            => DrawEnumDropdown(position, typeof(T), value, callback, Colors.FromSequence(color), SkyxStyles.PopupStyle);
+            => DrawEnumDropdown(position, typeof(T), value, callback, Colors.Console.Get(color), SkyxStyles.PopupStyle);
 
         public static void DrawEnumDropdown(Rect position, Type enumType, object enumObj, Action<object> callback, Color color, GUIStyle style)
         {

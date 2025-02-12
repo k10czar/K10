@@ -61,7 +61,7 @@ namespace Skyx.SkyxEditor
         {
             BoxGUI.DrawBox(boxRect, color);
 
-            if (SkyxGUI.RectButton(headerRect, title, color, size))
+            if (SkyxGUI.HeaderButton(headerRect, title, color, size))
                 isExpandedRef = !isExpandedRef;
 
             return isExpandedRef;

@@ -47,7 +47,7 @@ namespace Skyx.SkyxEditor
             var label = nicify ? ObjectNames.NicifyVariableName(enumNames[currentIndex]) : enumNames[currentIndex];
             var color = Colors.FromSequence(currentIndex);
 
-            var clicked = SkyxGUI.RectButton(rect, label, color, SkyxStyles.ButtonStyle, hint);
+            var clicked = SkyxGUI.Button(rect, label, color, SkyxStyles.ButtonStyle, hint);
 
             if (clicked) property.intValue = (currentIndex + 1) % enumValueCount;
         }
@@ -63,7 +63,7 @@ namespace Skyx.SkyxEditor
 
             var label = names[currentIndex];
 
-            var clicked = SkyxGUI.RectButton(rect, label, color, SkyxStyles.ButtonStyle, hint);
+            var clicked = SkyxGUI.Button(rect, label, color, SkyxStyles.ButtonStyle, hint);
 
             if (clicked) property.intValue = (currentIndex + 1) % enumValueCount;
         }

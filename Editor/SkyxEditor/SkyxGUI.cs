@@ -138,7 +138,7 @@ namespace Skyx.SkyxEditor
             var label = isActive ? onLabel : offLabel;
             var color = isActive ? onColor : offColor;
 
-            var clicked = RectButton(rect, label, color, SkyxStyles.ButtonStyle);
+            var clicked = Button(rect, label, color, SkyxStyles.ButtonStyle);
 
             DrawHintOverlay(rect, hint);
 
@@ -158,10 +158,10 @@ namespace Skyx.SkyxEditor
 
         #region Buttons
 
-        public static bool RectButton(Rect rect, string label, EConsoleColor color, EHeaderSize size)
-            => RectButton(rect, label, SkyxStyles.HeaderColor(color), SkyxStyles.HeaderText(size));
+        public static bool HeaderButton(Rect rect, string label, EConsoleColor color, EHeaderSize size)
+            => Button(rect, label, SkyxStyles.HeaderColor(color), SkyxStyles.HeaderText(size));
 
-        public static bool RectButton(Rect rect, string label, Color backgroundColor, GUIStyle style = null, string hint = null)
+        public static bool Button(Rect rect, string label, Color backgroundColor, GUIStyle style = null, string hint = null)
         {
             style ??= SkyxStyles.ButtonStyle;
 
@@ -174,22 +174,19 @@ namespace Skyx.SkyxEditor
         }
 
         public static bool MiniSuccessButton(ref Rect rect, string label, string hint, bool fromEnd = false)
-            => RectButton(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Success, SkyxStyles.ButtonStyle, hint);
+            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Success, SkyxStyles.ButtonStyle, hint);
 
         public static bool MiniEnableButton(ref Rect rect, string label, string hint, bool fromEnd = false)
-            => RectButton(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Secondary, SkyxStyles.ButtonStyle, hint);
+            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Secondary, SkyxStyles.ButtonStyle, hint);
 
         public static bool MiniWarningButton(ref Rect rect, string label, string hint, bool fromEnd = false)
-            => RectButton(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Warning, SkyxStyles.ButtonStyle, hint);
+            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Warning, SkyxStyles.ButtonStyle, hint);
 
         public static bool MiniDangerButton(ref Rect rect, string label, string hint, bool fromEnd = false)
-            => RectButton(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Danger, SkyxStyles.ButtonStyle, hint);
+            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Danger, SkyxStyles.ButtonStyle, hint);
 
         public static bool MiniButton(ref Rect rect, string label, EConsoleColor color, string hint = null, bool fromEnd = false)
-            => RectButton(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Get(color), SkyxStyles.ButtonStyle, hint);
-
-        public static bool PlainBGButton(Rect rect, string label, EConsoleColor color)
-            => RectButton(rect, label, Colors.Console.Get(color), SkyxStyles.PlainBGHeader);
+            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Get(color), SkyxStyles.ButtonStyle, hint);
 
         #endregion
 
@@ -206,9 +203,9 @@ namespace Skyx.SkyxEditor
             return EditorGUI.TextField(rect, GUIContent.none, currentValue);
         }
 
-        public static void HintIcon(ref Rect rect, string icon, string hint)
+        public static void HintIcon(ref Rect rect, string icon, string hint, bool fromEnd = false)
         {
-            var hintRect = ExtractRect(ref rect, SkyxStyles.HintIconWidth);
+            var hintRect = ExtractRect(ref rect, SkyxStyles.HintIconWidth, fromEnd);
 
             EditorGUI.LabelField(hintRect, $"<b>{icon}</b>", SkyxStyles.CenterBoldStyle);
 
