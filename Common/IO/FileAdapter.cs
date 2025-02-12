@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
 public interface IFileAdapter
 {
@@ -58,5 +59,6 @@ public static class FileAdapter
 	public static void DeleteDir( string path, bool recursive ) { _implementation.DeleteDir( path, recursive ); }
 	public static void Copy( string source, string destination ) { _implementation.Copy( source, destination ); }
 
+	[Obsolete("Use PlayerPrefsAdapter.Save() instead. Also use it for other functions as well.")]
 	public static void SavePlayerPrefs() { _implementation.SavePlayerPrefs(); }
 }
