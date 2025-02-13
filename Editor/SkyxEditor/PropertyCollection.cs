@@ -73,8 +73,8 @@ namespace Skyx.SkyxEditor
 
             var shouldApply = false;
             var id = GetID(serializedObject);
-            var lastEvent = lastCheckedEvent[id];
 
+            lastCheckedEvent.TryGetValue(id, out var lastEvent);
             if (lastEvent == Event.current.rawType) return false;
             lastCheckedEvent[id] = Event.current.rawType;
 
@@ -231,7 +231,7 @@ namespace Skyx.SkyxEditor
             => Draw(ref rect, Get(propertyName, isBacking), Get(propertyName, isBacking).intValue != 0, inlaidHint, overlayHint, slideRect);
 
         public void DrawString(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false)
-            => Draw(ref rect, Get(propertyName, isBacking), string.IsNullOrEmpty(Get(propertyName, isBacking).stringValue), inlaidHint, overlayHint, slideRect);
+            => Draw(ref rect, Get(propertyName, isBacking), !string.IsNullOrEmpty(Get(propertyName, isBacking).stringValue), inlaidHint, overlayHint, slideRect);
 
         private static void Draw(ref Rect rect, SerializedProperty property, bool hasValue, string inlaidHint = null, string overlayHint = null, bool slideRect = true)
         {

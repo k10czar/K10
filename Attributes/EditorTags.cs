@@ -61,25 +61,25 @@ public class ListingPathAttribute : Attribute
 	}
 }
 
-public class SingleEnumEntry : PropertyAttribute
+public class EnumEntry : PropertyAttribute
 {
 	public readonly Type enumType;
 	public readonly EConsoleColor color;
 
-	public SingleEnumEntry(Type enumType, EConsoleColor color = EConsoleColor.Primary)
+	public EnumEntry(Type enumType, EConsoleColor color = EConsoleColor.Primary)
 	{
 		this.enumType = enumType;
 		this.color = color;
 	}
 
-	public SingleEnumEntry(EConsoleColor color = EConsoleColor.Primary)
+	public EnumEntry(EConsoleColor color = EConsoleColor.Primary)
 	{
 		this.enumType = null;
 		this.color = color;
 	}
 }
 
-public class DoubleEnumEntry : PropertyAttribute
+public class EnumAndFieldEntry : PropertyAttribute
 {
 	public readonly Type firstType;
 	public readonly Type secondType;
@@ -87,15 +87,17 @@ public class DoubleEnumEntry : PropertyAttribute
 	public readonly EConsoleColor firstColor;
 	public readonly EConsoleColor secondColor;
 
-	public static DoubleEnumEntry From<T,U>(EConsoleColor firstColor = EConsoleColor.Primary, EConsoleColor secondColor = EConsoleColor.Support)
-		=> new(typeof(T), typeof(U), firstColor, secondColor);
+	public readonly string firstHint;
+	public readonly string secondHint;
 
-	public DoubleEnumEntry(Type firstType, Type secondType, EConsoleColor firstColor = EConsoleColor.Primary, EConsoleColor secondColor = EConsoleColor.Support)
+	public EnumAndFieldEntry(Type firstType, Type secondType, EConsoleColor firstColor = EConsoleColor.Primary, EConsoleColor secondColor = EConsoleColor.Support, string firstHint = null, string secondHint = null)
 	{
 		this.firstType = firstType;
 		this.secondType = secondType;
 		this.firstColor = firstColor;
 		this.secondColor = secondColor;
+		this.firstHint = firstHint;
+		this.secondHint = secondHint;
 	}
 }
 
@@ -107,7 +109,7 @@ public class EnumAndMaskEntry : PropertyAttribute
 	public readonly EConsoleColor firstColor;
 	public readonly EConsoleColor secondColor;
 
-	public static DoubleEnumEntry From<T,U>(EConsoleColor firstColor = EConsoleColor.Primary, EConsoleColor secondColor = EConsoleColor.Support)
+	public static EnumAndFieldEntry From<T,U>(EConsoleColor firstColor = EConsoleColor.Primary, EConsoleColor secondColor = EConsoleColor.Support)
 		=> new(typeof(T), typeof(U), firstColor, secondColor);
 
 	public EnumAndMaskEntry(Type firstType, Type secondType, EConsoleColor firstColor = EConsoleColor.Primary, EConsoleColor secondColor = EConsoleColor.Support)

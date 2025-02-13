@@ -33,5 +33,11 @@ namespace Skyx.SkyxEditor
         {
             return GetProperties(property).GetHeight(ExcludeFieldsFromHeight) + ExtraHeight;
         }
+
+        protected static void ApplyDirectTargetChanges(SerializedProperty property)
+        {
+            EditorUtility.SetDirty(property.serializedObject.targetObject);
+            property.serializedObject.Update();
+        }
     }
 }

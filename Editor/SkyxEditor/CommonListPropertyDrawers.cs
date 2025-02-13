@@ -6,14 +6,14 @@ using UnityEngine;
 
 namespace Skyx.SkyxEditor
 {
-    [CustomPropertyDrawer(typeof(SingleEnumEntry))]
+    [CustomPropertyDrawer(typeof(EnumEntry))]
     public class SingleEnumEntryPropertyDrawer : PropertyDrawer
     {
         public static string GetFieldName(FieldInfo[] fields, Type target) => fields.First(entry => entry.FieldType == target).Name;
 
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
         {
-            var entry = (SingleEnumEntry) attribute;
+            var entry = (EnumEntry) attribute;
 
             var hasTarget = entry.enumType != null;
 
@@ -26,12 +26,12 @@ namespace Skyx.SkyxEditor
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => SkyxStyles.CompactListElement;
     }
 
-    [CustomPropertyDrawer(typeof(DoubleEnumEntry))]
-    public class DoubleEnumEntryPropertyDrawer : PropertyDrawer
+    [CustomPropertyDrawer(typeof(EnumAndFieldEntry))]
+    public class EnumAndFieldEntryPropertyDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
         {
-            var entry = (DoubleEnumEntry) attribute;
+            var entry = (EnumAndFieldEntry) attribute;
 
             var obj = property.GetValue();
             var fields = obj.GetType().GetFields();
@@ -39,14 +39,23 @@ namespace Skyx.SkyxEditor
             var secondField = SingleEnumEntryPropertyDrawer.GetFieldName(fields, entry.secondType);
 
             rect.AdjustToLineAndDivide(2);
-            EnumTreeGUI.DrawEnum(rect, property.FindPropertyRelative(firstField), entry.firstType, Colors.Console.Get(entry.firstColor));
+            EnumTreeGUI.DrawEnum(rect, property.FindPropertyRelative(firstField), entry.firstType, Colors.Console.Get(entry.firstColor), entry.firstHint);
             rect.SlideSameRect();
 
             if (entry.secondType.IsEnum)
-                EnumTreeGUI.DrawEnum(rect, property.FindPropertyRelative(secondField), entry.secondType, Colors.Console.Get(entry.secondColor));
+                EnumTreeGUI.DrawEnum(rect, property.FindPropertyRelative(secondField), entry.secondType, Colors.Console.Get(entry.secondColor), entry.secondHint);
 
             else if (entry.secondType.IsClass)
-                SkyxGUI.DrawObjectField(rect, property.FindPropertyRelative(secondField), entry.secondType, null, true);
+                SkyxGUI.DrawObjectField(rect, property.FindPropertyRelative(secondField), entry.secondType, entry.secondHint, true);
+
+            else if (entry.secondType == typeof(float))
+                SkyxGUI.DrawFloatField(rect, property.FindPropertyRelative(secondField), entry.secondHint);
+
+            else if (entry.secondType == typeof(int))
+                SkyxGUI.DrawIntField(rect, property.FindPropertyRelative(secondField), entry.secondHint);
+
+            else if (entry.secondType == typeof(string))
+                SkyxGUI.DrawTextField(rect, property.FindPropertyRelative(secondField), entry.secondHint);
 
             else throw new Exception("Unknown type");
         }
