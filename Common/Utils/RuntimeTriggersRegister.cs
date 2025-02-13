@@ -1,10 +1,10 @@
-using System.Collections;
-using System.Text;
-using K10;
 using UnityEngine;
 
 public class RuntimeTriggersRegister : MonoBehaviour
 {
+// #if UNITY_EDITOR
+// 	[SerializeField,TextArea] string comment; 
+// #endif
 	[SerializeField] TriggerRegister[] _actions;
 
 	void Start()
@@ -23,8 +23,8 @@ public class RuntimeTriggersRegister : MonoBehaviour
 #if UNITY_EDITOR
 		[SerializeField,HideInInspector] public string _name = "ElementName";
 #endif
-		[ExtendedDrawer(true),SerializeReference] ITriggerable _do;
 		[ExtendedDrawer(true),SerializeReference] IEventBinderReference _when;
+		[ExtendedDrawer(true),SerializeReference] ITriggerable _do;
 
 #if UNITY_EDITOR
 		public void EDITOR_OnInspectEdit()
