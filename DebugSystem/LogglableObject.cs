@@ -92,7 +92,7 @@ namespace K10.DebugSystem
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
         public static void Log<T>(this ILoggableTarget<T> obj, string message, Object customTarget) where T : IK10LogCategory, new()
         {
-            K10Log<T>.Log(LogSeverity.Info, obj.AddPrefix(message, obj.LogTarget), obj.LogTarget);
+            K10Log<T>.Log(LogSeverity.Info, obj.AddPrefix(message, obj.LogTarget), obj.LogTarget, customTarget);
         }
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]

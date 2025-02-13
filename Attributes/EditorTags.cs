@@ -98,3 +98,23 @@ public class DoubleEnumEntry : PropertyAttribute
 		this.secondColor = secondColor;
 	}
 }
+
+public class EnumAndMaskEntry : PropertyAttribute
+{
+	public readonly Type firstType;
+	public readonly Type secondType;
+
+	public readonly EConsoleColor firstColor;
+	public readonly EConsoleColor secondColor;
+
+	public static DoubleEnumEntry From<T,U>(EConsoleColor firstColor = EConsoleColor.Primary, EConsoleColor secondColor = EConsoleColor.Support)
+		=> new(typeof(T), typeof(U), firstColor, secondColor);
+
+	public EnumAndMaskEntry(Type firstType, Type secondType, EConsoleColor firstColor = EConsoleColor.Primary, EConsoleColor secondColor = EConsoleColor.Support)
+	{
+		this.firstType = firstType;
+		this.secondType = secondType;
+		this.firstColor = firstColor;
+		this.secondColor = secondColor;
+	}
+}

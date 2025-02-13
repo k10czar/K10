@@ -69,11 +69,15 @@ namespace Skyx.SkyxEditor
         }
 
         public static void DrawEnumMask<T>(Rect rect, SerializedProperty property, EConsoleColor color = EConsoleColor.Primary, string hint = null) where T : Enum
-        {
-            using var colorScope = new BackgroundColorScope(Colors.Console.Get(color));
-            property.intValue = (int)(object) EditorGUI.EnumFlagsField(rect, (T)(object) property.intValue);
+            => DrawEnumMask(rect, property, typeof(T), color, hint);
 
-            var fullHint = $"[{typeof(T)}] {hint}";
+        public static void DrawEnumMask(Rect rect, SerializedProperty property, Type enumType, EConsoleColor color = EConsoleColor.Primary, string hint = null)
+        {
+            dynamic value = Enum.ToObject(enumType, property.intValue);
+            using var colorScope = new BackgroundColorScope(Colors.Console.Get(color));
+            property.intValue = (int)(object) EditorGUI.EnumFlagsField(rect, value);
+
+            var fullHint = $"[{enumType}] {hint}";
             SkyxGUI.DrawHintOverlay(rect, fullHint);
         }
     }

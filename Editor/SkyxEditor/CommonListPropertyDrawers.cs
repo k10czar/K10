@@ -46,10 +46,31 @@ namespace Skyx.SkyxEditor
                 EnumTreeGUI.DrawEnum(rect, property.FindPropertyRelative(secondField), entry.secondType, Colors.Console.Get(entry.secondColor));
 
             else if (entry.secondType.IsClass)
-
                 SkyxGUI.DrawObjectField(rect, property.FindPropertyRelative(secondField), entry.secondType, null, true);
 
             else throw new Exception("Unknown type");
+        }
+
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => SkyxStyles.CompactListElement;
+    }
+
+    [CustomPropertyDrawer(typeof(EnumAndMaskEntry))]
+    public class EnumAndMaskEntryPropertyDrawer : PropertyDrawer
+    {
+        public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
+        {
+            var entry = (EnumAndMaskEntry) attribute;
+
+            var obj = property.GetValue();
+            var fields = obj.GetType().GetFields();
+            var firstField = SingleEnumEntryPropertyDrawer.GetFieldName(fields, entry.firstType);
+            var secondField = SingleEnumEntryPropertyDrawer.GetFieldName(fields, typeof(int));
+
+            rect.AdjustToLineAndDivide(2);
+            EnumTreeGUI.DrawEnum(rect, property.FindPropertyRelative(firstField), entry.firstType, Colors.Console.Get(entry.firstColor));
+            rect.SlideSameRect();
+
+            EnumTreeGUI.DrawEnumMask(rect, property.FindPropertyRelative(secondField), entry.secondType, entry.secondColor);
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => SkyxStyles.CompactListElement;
