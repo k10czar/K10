@@ -59,16 +59,19 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     private BoolState _isInitialized = new BoolState( false );
     public IBoolStateObserver IsInitialized => _isInitialized;
     
-    private BoolState _isLoggedRaw = new BoolState( false );
-    public IBoolStateObserver IsLogged => _isLoggedRaw;
+    private BoolState _isLogged = new BoolState( false );
+    public IBoolStateObserver IsLogged => _isLogged;
+    
+    private BoolState _isReady = new BoolState( false );
+    public IBoolStateObserver IsReady => _isReady;
 
-    IBoolStateObserver _isInitializedAndLogged = null;
-    public IBoolStateObserver IsInitializedAndLogged 
+    IBoolStateObserver _isReadyToUse = null;
+    public IBoolStateObserver IsFullyInitialized 
     { 
         get
         {
-            if( _isInitializedAndLogged == null ) _isInitializedAndLogged = new BoolStateOperations.And( _isInitialized, _isLoggedRaw );
-            return _isInitializedAndLogged;
+            if( _isReadyToUse == null ) _isReadyToUse = new BoolStateOperations.And( _isInitialized, _isLogged, _isReady );
+            return _isReadyToUse;
         } 
     }
 
@@ -100,6 +103,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
         _gdkFileAdapter = new XGameSaveFilesFileAdapter();
         FileAdapter.SetImplementation(_gdkFileAdapter); 
+        _gdkFileAdapter.IsInitilized.Synchronize( _isReady );
 
         AddUser(AddUserCompleted, true);
 
@@ -322,7 +326,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
             Debug.LogError($"Add User Complete failed. UserOpResult = {result}");
 
         _gdkFileAdapter.Initialize(_userData.userHandle, Scid);
-        _isLoggedRaw.SetTrue();
+        _isLogged.SetTrue();
     }
 
     private UserOpResult GetAllUserInfo(XUserHandle userHandle)

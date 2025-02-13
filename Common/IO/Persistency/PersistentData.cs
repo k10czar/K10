@@ -17,6 +17,8 @@ public class Persistent<T> : IValueCapsule<T> where T : class
 	T _t = null;
 	bool _readed = false;
 
+	public string PathToUse => FileAdapter.persistentDataPath + "/" + _path;
+
 	static Dictionary<string, Persistent<T>> _dict = new Dictionary<string, Persistent<T>>();
 
 	public static Persistent<T> At( string path, T defaultValue = default(T) )
@@ -44,9 +46,9 @@ public class Persistent<T> : IValueCapsule<T> where T : class
 			{
 				_readed = true;
 				_t = _defaultValue;
-				if( FileAdapter.Exists( _path ) )
+				if( FileAdapter.Exists( PathToUse ) )
 				{
-					var readedData = FileAdapter.ReadAllBytes( _path );
+					var readedData = FileAdapter.ReadAllBytes( PathToUse );
 					if( readedData != null )
 						_t = BinaryAdapter.Deserialize<T>( readedData );
 				}
@@ -63,8 +65,8 @@ public class Persistent<T> : IValueCapsule<T> where T : class
 			if( _t == null || !( (T)_t ).Equals( value ) )
 			{
 				_t = value;
-				if( _t == null ) FileAdapter.Delete( _path );
-				else FileAdapter.WriteAllBytes( _path, BinaryAdapter.Serialize( value ) );
+				if( _t == null ) FileAdapter.Delete( PathToUse );
+				else FileAdapter.WriteAllBytes( PathToUse, BinaryAdapter.Serialize( value ) );
 			}
 		}
 	}
@@ -74,6 +76,8 @@ public class PersistentValue<T> : IValueCapsule<T> where T : struct, System.ICom
 {
 	string _path;
 	T? _t = null;
+
+	public string PathToUse => FileAdapter.persistentDataPath + "/" + _path;
 
 	static Dictionary<string, PersistentValue<T>> _dict = new Dictionary<string, PersistentValue<T>>();
 
@@ -111,9 +115,9 @@ public class PersistentValue<T> : IValueCapsule<T> where T : struct, System.ICom
 			if( _t == null )
 			{
 				_t = default( T );
-				if( FileAdapter.Exists( _path ) )
+				if( FileAdapter.Exists( PathToUse ) )
 				{
-					var readedData = FileAdapter.ReadAllBytes( _path );
+					var readedData = FileAdapter.ReadAllBytes( PathToUse );
 					if( readedData != null )
 						_t = BinaryAdapter.Deserialize<T>( readedData );
 				}
@@ -130,9 +134,9 @@ public class PersistentValue<T> : IValueCapsule<T> where T : struct, System.ICom
 			if( _t == null || !( (T)_t ).Equals( value ) )
 			{
 				_t = value;
-				// if( default( T ).Equals( value ) ) FileAdapter.Delete( _path );
+				// if( default( T ).Equals( value ) ) FileAdapter.Delete( PathToUse );
 				// else 
-				FileAdapter.WriteAllBytes( _path, BinaryAdapter.Serialize( value ) );
+				FileAdapter.WriteAllBytes( PathToUse, BinaryAdapter.Serialize( value ) );
 			}
 		}
 	}

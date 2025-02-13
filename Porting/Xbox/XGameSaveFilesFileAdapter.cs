@@ -3,10 +3,13 @@ using System;
 using UnityEngine;
 using System.IO;
 using Unity.XGamingRuntime;
+using UnityEngine.Android;
 
 public class XGameSaveFilesFileAdapter : IFileAdapter
 {
-	public bool Initialized { get; private set; }
+	BoolState _isInitilized = new();
+	public IBoolStateObserver IsInitilized => _isInitilized;
+
 	private string _folderPath;
 
     public void Initialize(XUserHandle userHandle, string scid)
@@ -17,10 +20,15 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 				if (HR.FAILED(hresult))
 				{
 					Debug.LogError($"Couldn't get XGameSaveFiles folder. HResult {hresult} ({HR.NameOf(hresult)})");
+#if UNITY_EDITOR
+					_isInitilized.SetTrue();
+					// TODO-Porting Remove this when is really working on PC 
+#endif
 					return;
 				}
 
 				_folderPath = folderResult;
+				_isInitilized.SetTrue();
                 Debug.Log($"Successfully initialized XGameSaveFiles folder: {folderResult}");
             }
         );
