@@ -9,6 +9,7 @@ namespace Skyx.SkyxEditor
     public abstract class InspectorEditor<T> : Editor where T : Object
     {
         private static readonly ProfilerMarker drawMarker = new("InspectorEditor.Draw");
+        private static bool isConfigsExpanded;
 
         protected T Target { get; private set; }
         protected PropertyCollection Properties { get; private set; }
@@ -81,7 +82,8 @@ namespace Skyx.SkyxEditor
                 DrawRuntimeInfo();
                 SkyxLayout.Space();
 
-                if (!SkyxLayout.ShouldShowBlock("Configs", $"{typeof(T)}Configs")) DrawConfigsInternal();
+                using var scope = new HeaderScope("Configs", ref isConfigsExpanded);
+                if (scope.isExpanded) DrawConfigsInternal();
             }
             else
             {

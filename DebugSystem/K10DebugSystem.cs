@@ -46,6 +46,7 @@ namespace K10.DebugSystem
             null => null,
             Component component => component.gameObject.name,
             GameObject gameObject => gameObject.name,
+            ScriptableObject scriptableObject => scriptableObject.name,
             _ => throw new NotImplementedException()
         };
 

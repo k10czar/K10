@@ -29,6 +29,7 @@ namespace Skyx.SkyxEditor
         public const float CompactSpace = 2;
         public const float CompactListElement = LineHeight + CompactSpace;
 
+        public const float MeidumButtonSize = 100;
         public const float SmallButtonSize = 60;
         public const float MiniButtonSize = 20;
         public const float HintIconWidth = 20;

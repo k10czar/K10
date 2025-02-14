@@ -331,7 +331,7 @@ namespace Skyx.SkyxEditor
 
         private readonly Dictionary<SerializedProperty, ReorderableList> lists = new();
 
-        private ReorderableList GetReorderableList(SerializedProperty property)
+        public ReorderableList GetReorderableList(SerializedProperty property)
         {
             if (lists.TryGetValue(property, out var list)) return list;
 

@@ -46,6 +46,9 @@ namespace Skyx.SkyxEditor
         public static Rect ExtractEndRect(this ref Rect rect, float width)
             => SkyxGUI.ExtractEndRect(ref rect, width);
 
+        public static Rect ExtractMediumButton(this ref Rect rect, bool fromEnd = false)
+            => SkyxGUI.ExtractMediumButton(ref rect, fromEnd);
+
         public static Rect ExtractSmallButton(this ref Rect rect, bool fromEnd = false)
             => SkyxGUI.ExtractSmallButton(ref rect, fromEnd);
 
