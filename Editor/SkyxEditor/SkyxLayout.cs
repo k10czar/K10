@@ -61,7 +61,7 @@ namespace Skyx.SkyxEditor
 
         #region Separators
 
-        public static void Separator(Color color, float height, Vector2 margin)
+        private static void Separator(Color color, float height, Vector2 margin)
         {
             GUILayout.Space(margin.x);
 
@@ -71,9 +71,8 @@ namespace Skyx.SkyxEditor
         }
 
         public static void Separator() => Separator(SkyxStyles.defaultSeparatorColor, SkyxStyles.DefaultSeparatorSize, SkyxStyles.defaultSeparatorMargin);
-        public static void Separator(Color color, float height) => Separator(color, height, SkyxStyles.defaultSeparatorMargin);
-        public static void Separator(Vector2 margin) => Separator(SkyxStyles.defaultSeparatorColor, SkyxStyles.DefaultSeparatorSize, margin);
-        public static void Separator(float height, Vector2 margin) => Separator(SkyxStyles.defaultSeparatorColor, height, margin);
+        public static void SmallSeparator() => Separator(SkyxStyles.defaultSeparatorColor, SkyxStyles.DefaultSeparatorSize, SkyxStyles.smallSeparatorMargin);
+        public static void NoMarginSeparator() => Separator(SkyxStyles.defaultSeparatorColor, SkyxStyles.DefaultSeparatorSize, SkyxStyles.noSeparatorMargin);
 
         public static void GroupSeparator(Rect start, Rect end, Color color, float yOffset = -1, float size = SkyxStyles.DefaultSeparatorSize)
         {

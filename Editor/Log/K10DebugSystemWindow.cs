@@ -172,11 +172,16 @@ public class K10DebugSystemWindow : EditorWindow
 
     private static void DebugTargetsElementDrawer(Rect rect, int index, bool isActive, bool isFocused)
     {
-        var text = K10DebugSystem.DebugTargets()[index];
-
         rect.height = 18;
         rect.y += 1;
-        var result = EditorGUI.TextField(rect, text);
+
+        var endRect = new Rect(rect);
+        rect.width = 25;
+        endRect.x += 30;
+
+        EditorGUI.LabelField(rect, $"{index}", K10GuiStyles.basicCenterStyle);
+        var text = K10DebugSystem.DebugTargets()[index];
+        var result = EditorGUI.TextField(endRect, text);
 
         if (result != text) K10DebugSystem.DebugTargets()[index] = result;
     }
