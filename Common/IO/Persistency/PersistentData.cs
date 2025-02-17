@@ -77,12 +77,13 @@ public class PersistentValue<T> : IValueCapsule<T> where T : struct, System.ICom
 	string _path;
 	T? _t = null;
 
-	public string PathToUse => FileAdapter.persistentDataPath + "/" + _path;
+	public string PathToUse => FullPath( _path );
+
+	static string FullPath( string path ) => FileAdapter.persistentDataPath + "/" + path;
 
 	static Dictionary<string, PersistentValue<T>> _dict = new Dictionary<string, PersistentValue<T>>();
 
-	public static bool Exists( string path ) { return _dict.ContainsKey( path ) || FileAdapter.Exists( path ); }
-
+	public static bool Exists( string path ) { return _dict.ContainsKey( path ) || FileAdapter.Exists( FullPath( path ) ); }
 
 	public static PersistentValue<T> At( string path, T startValue )
 	{
@@ -94,8 +95,7 @@ public class PersistentValue<T> : IValueCapsule<T> where T : struct, System.ICom
 
 	public static PersistentValue<T> At( string path )
 	{
-		PersistentValue<T> val;
-		if( !_dict.TryGetValue( path, out val ) )
+		if( !_dict.TryGetValue( path, out var val ) )
 		{
 			val = new PersistentValue<T>( path );
 			_dict[path] = val;
@@ -115,9 +115,10 @@ public class PersistentValue<T> : IValueCapsule<T> where T : struct, System.ICom
 			if( _t == null )
 			{
 				_t = default( T );
-				if( FileAdapter.Exists( PathToUse ) )
+				var fullPath = PathToUse;
+				if( FileAdapter.Exists( fullPath ) )
 				{
-					var readedData = FileAdapter.ReadAllBytes( PathToUse );
+					var readedData = FileAdapter.ReadAllBytes( fullPath );
 					if( readedData != null )
 						_t = BinaryAdapter.Deserialize<T>( readedData );
 				}
@@ -211,8 +212,6 @@ public class PersistentValueState<T> : ValueState<T>, ISettingsValue where T : s
 	PersistentValue<T> _persistentData;
 
 	static Dictionary<string, PersistentValueState<T>> _dict = new Dictionary<string, PersistentValueState<T>>();
-
-	public static bool Exists( string path ) { return _dict.ContainsKey( path ) || FileAdapter.Exists( path ); }
 
 	public static PersistentValueState<T> At( string path, T startValue = default( T ) )
 	{
