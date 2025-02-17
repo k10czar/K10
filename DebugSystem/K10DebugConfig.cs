@@ -78,7 +78,7 @@ namespace K10.DebugSystem
             FileAdapter.SaveAsUTF8(path, JsonUtility.ToJson(this, true));
         }
 
-        private static string GetPath() => Path.Combine(Application.persistentDataPath, SaveKey);
+        private static string GetPath() => Path.Combine(FileAdapter.persistentDataPath, SaveKey);
 
         public static K10DebugConfig Load()
         {
