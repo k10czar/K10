@@ -24,6 +24,14 @@ public static class MathAdapter
 	public static readonly v3 down = new v3( 0, -1, 0 );
 	public static readonly v3 forward = new v3( 0, 0, 1 );
 	public static readonly v3 back = new v3( 0, 0, -1 );
+	
+    const float DEGREES_MIN = -180;
+    const float DEGREES_MAX = 180;
+    const float DEGREES_DELTA = DEGREES_MAX - DEGREES_MIN;
+	
+    const float RADIANS_MIN = -MathAdapter.PI;
+    const float RADIANS_MAX = MathAdapter.PI;
+    const float RADIANS_DELTA = RADIANS_MAX - RADIANS_MIN;
 
 #if USE_NEW_MATHEMATICS
 	public const float PI = math.PI;
@@ -117,7 +125,26 @@ public static class MathAdapter
 	// [MethodImpl(AggrInline)] public static m44 mul(m44 a, m44 b) => a * b;
 #endif
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl( AggrInline )]
+    public static float lerp(float a, float b, float delta )
+    {
+        var ab = b - a;
+        return a + ( ab * delta );
+    }
+
+	[MethodImpl( AggrInline )]
+    public static float circularLerp(float a, float b, float delta, float min, float range)
+    {
+        var ab = b - a;
+        var val = a + ( ab * delta );
+        if( val < min || val - min > range ) val = ( ( val - min ) % range ) + min;
+        return val;
+    }
+
+	[MethodImpl( AggrInline )] public static float degreesLerp(float a, float b, float delta ) => circularLerp( a, b, delta, DEGREES_MIN, DEGREES_DELTA );
+	[MethodImpl( AggrInline )] public static float radiansLerp(float a, float b, float delta ) => circularLerp( a, b, delta, RADIANS_MIN, RADIANS_DELTA );
+
+	[MethodImpl( AggrInline )]
 	public static v3 To3d( this v2 v2d, v3 origin, v3 v3dAxisX, v3 v3dAxisY) => origin + v2d.x * v3dAxisX + v2d.y * v3dAxisY;
 
 
