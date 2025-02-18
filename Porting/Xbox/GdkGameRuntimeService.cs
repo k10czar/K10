@@ -89,6 +89,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     private AddUserCompletedDelegate _currentCompletionDelegate;
     private XUserChangeRegistrationToken _callbackRegistrationToken;
  
+    // TODO-Porting: Cleanup
     public GdkGameRuntimeService( string titleId = "62ab3c24", string scid = "00000000-0000-0000-0000-000062ab3c24", string sandbox = "" )
     {
         TitleIdNumeric = uint.Parse(titleId, System.Globalization.NumberStyles.HexNumber);
