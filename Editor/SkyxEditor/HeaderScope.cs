@@ -78,8 +78,9 @@ namespace Skyx.SkyxEditor
 
         public HeaderScope(string title, ref bool isExpandedRef, EConsoleColor color = EConsoleColor.Primary, EHeaderSize size = EHeaderSize.Primary)
         {
+            isExpanded = isExpandedRef;
             usesLayout = true;
-            isExpanded = Begin(title, ref isExpandedRef, color, size);
+            Begin(title, ref isExpandedRef, color, size);
         }
 
         public HeaderScope(ref Rect rect, SerializedProperty property, EConsoleColor color = EConsoleColor.Primary, EHeaderSize size = EHeaderSize.Primary)
