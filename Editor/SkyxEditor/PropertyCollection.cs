@@ -19,7 +19,7 @@ namespace Skyx.SkyxEditor
 
         [ResetedOnLoad] private static readonly Dictionary<string, Dictionary<string, PropertyCollection>> collections = new();
         [ResetedOnLoad] private static readonly Dictionary<string, Dictionary<string, uint>> previousHashes = new();
-        [ResetedOnLoad] private static readonly Dictionary<string, EventType> lastCheckedEvent = new();
+        [ResetedOnLoad] private static readonly Dictionary<string, Event> lastCheckedEvent = new();
 
         private static string GetID(SerializedObject target) => target.targetObject.GetHashCode().ToString();
 
@@ -48,7 +48,7 @@ namespace Skyx.SkyxEditor
                 objectCollections = new Dictionary<string, PropertyCollection>();
                 collections.Add(id, objectCollections);
                 previousHashes.Add(id, new Dictionary<string, uint>());
-                lastCheckedEvent.Add(id, EventType.Ignore);
+                lastCheckedEvent.Add(id, null);
             }
 
             var hashes = previousHashes[id];
@@ -74,9 +74,10 @@ namespace Skyx.SkyxEditor
             var shouldApply = false;
             var id = GetID(serializedObject);
 
-            lastCheckedEvent.TryGetValue(id, out var lastEvent);
-            if (lastEvent == Event.current.rawType) return false;
-            lastCheckedEvent[id] = Event.current.rawType;
+            // TODO: Find another way to limit Apply checks
+            // lastCheckedEvent.TryGetValue(id, out var lastEvent);
+            // if (lastEvent != null && lastEvent.Equals(Event.current)) return false;
+            // lastCheckedEvent[id] = Event.current;
 
             var objectCollections = collections[id];
 

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 
 namespace Skyx.SkyxEditor
 {
@@ -45,6 +46,9 @@ namespace Skyx.SkyxEditor
 
         public static Rect ExtractEndRect(this ref Rect rect, float width)
             => SkyxGUI.ExtractEndRect(ref rect, width);
+
+        public static Rect ExtractLabelRect(this ref Rect rect)
+            => SkyxGUI.ExtractRect(ref rect, EditorGUIUtility.labelWidth - SkyxStyles.ElementsMargin, false);
 
         public static Rect ExtractMediumButton(this ref Rect rect, bool fromEnd = false)
             => SkyxGUI.ExtractMediumButton(ref rect, fromEnd);

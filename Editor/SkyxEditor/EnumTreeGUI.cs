@@ -73,7 +73,7 @@ namespace Skyx.SkyxEditor
 
         public static void DrawEnumMask(Rect rect, SerializedProperty property, Type enumType, EConsoleColor color = EConsoleColor.Primary, string hint = null)
         {
-            dynamic value = Enum.ToObject(enumType, property.intValue);
+            var value = (Enum) Enum.ToObject(enumType, property.intValue);
             using var colorScope = new BackgroundColorScope(Colors.Console.Get(color));
             property.intValue = (int)(object) EditorGUI.EnumFlagsField(rect, value);
 
