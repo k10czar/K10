@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Skyx.SkyxEditor
 {
     [CustomPropertyDrawer(typeof(EnumEntry))]
-    public class SingleEnumEntryPropertyDrawer : PropertyDrawer
+    public class EnumEntryPropertyDrawer : PropertyDrawer
     {
         public static string GetFieldName(FieldInfo[] fields, Type target) => fields.First(entry => entry.FieldType == target).Name;
 
@@ -35,8 +35,8 @@ namespace Skyx.SkyxEditor
 
             var obj = property.GetValue();
             var fields = obj.GetType().GetFields();
-            var firstField = SingleEnumEntryPropertyDrawer.GetFieldName(fields, entry.firstType);
-            var secondField = SingleEnumEntryPropertyDrawer.GetFieldName(fields, entry.secondType);
+            var firstField = EnumEntryPropertyDrawer.GetFieldName(fields, entry.firstType);
+            var secondField = EnumEntryPropertyDrawer.GetFieldName(fields, entry.secondType);
 
             rect.AdjustToLineAndDivide(2);
             EnumTreeGUI.DrawEnum(rect, property.FindPropertyRelative(firstField), entry.firstType, Colors.Console.Get(entry.firstColor), entry.firstHint);
@@ -72,8 +72,8 @@ namespace Skyx.SkyxEditor
 
             var obj = property.GetValue();
             var fields = obj.GetType().GetFields();
-            var firstField = SingleEnumEntryPropertyDrawer.GetFieldName(fields, entry.firstType);
-            var secondField = SingleEnumEntryPropertyDrawer.GetFieldName(fields, typeof(int));
+            var firstField = EnumEntryPropertyDrawer.GetFieldName(fields, entry.firstType);
+            var secondField = EnumEntryPropertyDrawer.GetFieldName(fields, typeof(int));
 
             rect.AdjustToLineAndDivide(2);
             EnumTreeGUI.DrawEnum(rect, property.FindPropertyRelative(firstField), entry.firstType, Colors.Console.Get(entry.firstColor));

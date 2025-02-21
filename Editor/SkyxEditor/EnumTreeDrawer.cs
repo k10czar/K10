@@ -112,7 +112,7 @@ namespace Skyx.SkyxEditor
             {
                 if (node.IsValid)
                 {
-                    var isSelected = property?.enumValueFlag == (int)(object)node.Value;
+                    var isSelected = property?.intValue == (int)(object)node.Value;
                     dropdown.AddChild(new TreeAdvancedDropdownItem<T>(node, isSelected));
                     hasValidChildren = true;
                 }

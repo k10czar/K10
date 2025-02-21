@@ -67,6 +67,36 @@ namespace Skyx.SkyxEditor
             return collection;
         }
 
+        private static bool CanEventModifyData(EventType rawType) => rawType switch
+        {
+            EventType.MouseDown => true,
+            EventType.MouseUp => true,
+            EventType.MouseMove => false,
+            EventType.MouseDrag => false,
+            EventType.KeyDown => true,
+            EventType.KeyUp => true,
+            EventType.ScrollWheel => false,
+            EventType.Repaint => false,
+            EventType.Layout => false,
+            EventType.DragUpdated => false,
+            EventType.DragPerform => true,
+            EventType.DragExited => true,
+            EventType.Ignore => false,
+            EventType.Used => true,
+            EventType.ValidateCommand => true,
+            EventType.ExecuteCommand => true,
+            EventType.ContextClick => true,
+            EventType.MouseEnterWindow => false,
+            EventType.MouseLeaveWindow => false,
+            EventType.TouchDown => true,
+            EventType.TouchUp => true,
+            EventType.TouchMove => false,
+            EventType.TouchEnter => false,
+            EventType.TouchLeave => false,
+            EventType.TouchStationary => false,
+            _ => throw new ArgumentOutOfRangeException(nameof(rawType), rawType, null)
+        };
+
         public static bool TryApply(SerializedObject serializedObject)
         {
             using var profilerMarker = applyCollectionMarker.Auto();
@@ -74,7 +104,9 @@ namespace Skyx.SkyxEditor
             var shouldApply = false;
             var id = GetID(serializedObject);
 
-            // TODO: Find another way to limit Apply checks
+            // TODO: Find another way to limit Apply checks to the same object
+            if (!CanEventModifyData(Event.current.rawType)) return false;
+
             // lastCheckedEvent.TryGetValue(id, out var lastEvent);
             // if (lastEvent != null && lastEvent.Equals(Event.current)) return false;
             // lastCheckedEvent[id] = Event.current;
