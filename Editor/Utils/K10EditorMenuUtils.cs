@@ -13,7 +13,9 @@ public static class K10EditorMenuUtils
     static void CaptureScreenshot( int mag ) 
     {
         FileAdapter.RequestDirectory( FOLDER_RELATIVE_PATH );
-        ScreenCapture.CaptureScreenshot( GetCurrentFilePath( mag ) );
+        var filePath = GetCurrentFilePath( mag );
+        ScreenCapture.CaptureScreenshot( filePath, mag );
+        Debug.Log( $"<color=purple>CaptureScreenshot</color>( {mag} ) @ {filePath}" );
     }
 
     [MenuItem("K10/Utils/Capture Screenshot/1x #&1")] static void CaptureScreenshot1x() => CaptureScreenshot(1);
