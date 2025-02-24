@@ -43,6 +43,15 @@ public static class ServiceLocator
 	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
 	public static void Clear()
 	{
+		if( services != null )
+		{
+			foreach( var kvp in services )
+			{
+				var ser = kvp.Value;
+				if( ser is IDisposable disposable ) disposable.Dispose();
+				if( ser is ICustomDisposableKill killable ) killable.Kill();
+			}
+		}		
 		// Log( $"{"ServiceLocator".Colorfy(TypeName)}.{"Clear".Colorfy(Verbs)}()" );
 		services.Clear();
 		genericServices.Clear();
