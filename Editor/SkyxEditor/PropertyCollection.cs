@@ -344,10 +344,10 @@ namespace Skyx.SkyxEditor
 
         #region Scopes
 
-        public FoldoutBoxScope FoldoutScope(string propertyName, bool isBacking = false, string name = null)
+        public FoldoutScope FoldoutScope(string propertyName, bool isBacking = false, string name = null)
         {
             return TryGet(propertyName, isBacking, out var property)
-                ? new FoldoutBoxScope(property, string.IsNullOrEmpty(name) ? property.PrettyName() : name)
+                ? new FoldoutScope(property, string.IsNullOrEmpty(name) ? property.PrettyName() : name)
                 : null;
         }
 

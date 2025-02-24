@@ -19,7 +19,8 @@ namespace Skyx.SkyxEditor
         public static bool PlainBGHeaderButton(string label, Color color) => Button(label, color, SkyxStyles.PlainBGHeader);
         public static bool PlainBGHeaderButton(string label, bool success) => Button(label, success ? Colors.Console.Success : Colors.Console.Danger, SkyxStyles.PlainBGHeader);
 
-        public static bool Button(string label, Color backgroundColor) => Button(label, backgroundColor, null);
+        public static bool Button(string label) => Button(label, Color.white, SkyxStyles.ButtonStyle);
+        public static bool Button(string label, Color backgroundColor) => Button(label, backgroundColor, SkyxStyles.ButtonStyle);
 
         public static bool Button(string label, Color backgroundColor, GUIStyle style, params GUILayoutOption[] layouts)
         {

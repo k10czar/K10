@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Skyx.SkyxEditor
 {
-    public class FoldoutBoxScope : GUI.Scope
+    public class FoldoutScope : GUI.Scope
     {
         public readonly bool isExpanded;
         private readonly bool usesLayout;
@@ -85,25 +85,25 @@ namespace Skyx.SkyxEditor
             return property.isExpanded;
         }
 
-        public FoldoutBoxScope(SerializedProperty property, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
+        public FoldoutScope(SerializedProperty property, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
             : this(property, ObjectNames.NicifyVariableName(property.name), color, size) {}
 
-        public FoldoutBoxScope(SerializedProperty property, string title, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
+        public FoldoutScope(SerializedProperty property, string title, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
         {
             usesLayout = true;
             isExpanded = BeginWrapper(title, property, color, size);
         }
 
-        public FoldoutBoxScope(string title, ref bool isExpandedRef, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
+        public FoldoutScope(string title, ref bool isExpandedRef, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
         {
             usesLayout = true;
             isExpanded = GetDrawingRects(title, ref isExpandedRef, color, size);
         }
 
-        public FoldoutBoxScope(ref Rect rect, SerializedProperty property, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
+        public FoldoutScope(ref Rect rect, SerializedProperty property, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
             : this(ref rect, property, property.PrettyName(), color, size) {}
 
-        public FoldoutBoxScope(ref Rect rect, SerializedProperty property, string title, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
+        public FoldoutScope(ref Rect rect, SerializedProperty property, string title, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
         {
             isExpanded = BeginWrapper(ref rect, title, property, color, size);
         }

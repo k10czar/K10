@@ -227,6 +227,12 @@ namespace Skyx.SkyxEditor
             EditorGUI.LabelField(rect, label, style);
         }
 
+        public static void PlainBGLabel(Rect rect, string label, Color backgroundColor, bool isHeader = false, string hint = null)
+        {
+            using var backgroundScope = new BackgroundColorScope(backgroundColor);
+            EditorGUI.LabelField(rect, new GUIContent(label, hint), isHeader ? SkyxStyles.PlainBGHeader : SkyxStyles.PlainBGLabel);
+        }
+
         #region Rect Control
 
         public static Rect GetDividedControlRect(int divisions)

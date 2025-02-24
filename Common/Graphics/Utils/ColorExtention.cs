@@ -66,6 +66,16 @@ public static class ColorExtention
 		return Color.HSVToRGB(h, s, Mathf.Clamp01(v + amount));
 	}
 
+	public static Color HueShift(this Color color, float amount)
+	{
+		Color.RGBToHSV(color, out var h, out var s, out var v);
+
+		var result = (h + amount) % 1f;
+		if (result < 0) result += 1.0f;
+
+		return Color.HSVToRGB(result, s, v);
+	}
+
 	public static Color WithAlpha( this Color color, float amount )
 	{
 		color.a = amount;
