@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
 public interface IFileAdapter
 {
@@ -20,7 +21,7 @@ public static class FileAdapter
 #if UNITY_EDITOR || UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WP_8 || UNITY_WP_8_1
 	private static IFileAdapter _implementation = new DefaultFileAdapter();
 #else
-	private static IFileAdapter _implementation = new NullFileAdapter();
+	private static IFileAdapter _implementation = new FakeRuntimeFileAdapter();
 #endif
 	
 	public static void SetImplementation(IFileAdapter implementation) { _implementation = implementation; }
@@ -58,5 +59,6 @@ public static class FileAdapter
 	public static void DeleteDir( string path, bool recursive ) { _implementation.DeleteDir( path, recursive ); }
 	public static void Copy( string source, string destination ) { _implementation.Copy( source, destination ); }
 
+	[Obsolete("Use PlayerPrefsAdapter.Save() instead. Also use it for other functions as well.")]
 	public static void SavePlayerPrefs() { _implementation.SavePlayerPrefs(); }
 }

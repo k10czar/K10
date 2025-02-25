@@ -13,11 +13,6 @@ public class GDKFileAdapter : IFileAdapter
     private XGameSaveWrapper _gameSaveHelper;
     private bool _xGameSaveInitialized; // TODO: Set this flag to false on user logout
 
-    public GDKFileAdapter()
-    {
-        var service = ServiceLocator.Get<IGdkRuntimeService>();
-    }
-
     public void Initialize(XUserHandle userHandle, string scid)
     {
         _gameSaveHelper = new XGameSaveWrapper();
@@ -41,7 +36,7 @@ public class GDKFileAdapter : IFileAdapter
 
     public string GetPersistentDataPath() { return _persistentDataPath; }
     public string GetDebugPersistentDataPath() { return _debugDataPath; }
-    public void SavePlayerPrefs() { PlayerPrefs.Save(); } // TODO: Make sure it is really working
+    public void SavePlayerPrefs() { PlayerPrefsAdapter.Save(); } // TODO: Make sure it is really working
 
 
     public bool Exists( string path ) 

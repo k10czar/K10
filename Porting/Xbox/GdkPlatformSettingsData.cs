@@ -10,5 +10,6 @@ public class GdkPlatformSettingsData : ScriptableObject, IGdkRuntimeData
     public string Sandbox => sandbox; 
     public string Scid => scid; 
     public string TitleId => titleId;
+    public uint TitleIdNumeric => uint.Parse(titleId, System.Globalization.NumberStyles.HexNumber);
 }
 #endif

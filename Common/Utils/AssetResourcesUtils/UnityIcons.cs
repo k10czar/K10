@@ -1,4 +1,4 @@
-public class UnityIcons
+public static class UnityIcons
 {
 	public const string ScriptableObjectIcon = "ScriptableObject Icon";
 	public const string _Popup = "_Popup";

@@ -74,20 +74,22 @@ namespace K10.DebugSystem
 
         public void Save()
         {
+#if !UNITY_GAMECORE
             var path = GetPath();
-            File.WriteAllText(path, JsonUtility.ToJson(this, true));
+            FileAdapter.SaveAsUTF8(path, JsonUtility.ToJson(this, true));
+#endif
         }
 
-        private static string GetPath() => Path.Combine(Application.persistentDataPath, SaveKey);
+        private static string GetPath() => Path.Combine(FileAdapter.persistentDataPath, SaveKey);
 
         public static K10DebugConfig Load()
         {
             var path = GetPath();
 
-            if (File.Exists(path))
+            if (FileAdapter.Exists(path))
             {
-                var file = File.OpenText(path);
-                return JsonUtility.FromJson<K10DebugConfig>(file.ReadToEnd());
+                var file = FileAdapter.ReadAsUTF8(path);
+                return JsonUtility.FromJson<K10DebugConfig>(file);
             }
 
             var config = new K10DebugConfig();

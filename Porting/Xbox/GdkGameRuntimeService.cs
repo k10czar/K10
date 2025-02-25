@@ -17,7 +17,7 @@ public class GdkUserData
 
 public interface IGdkRuntimeService : IService, IGdkRuntimeData
 {
-    IBoolStateObserver Initialized { get; }
+    IBoolStateObserver IsInitialized { get; }
     GdkUserData UserData { get; }
 }
 
@@ -26,6 +26,7 @@ public interface IGdkRuntimeData
     string Sandbox { get; }
     string Scid { get; }
     string TitleId { get; }
+    uint TitleIdNumeric { get; }
 }
 
 public class GdkLogCategory : IK10LogCategory
@@ -53,11 +54,30 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     //   title without having to immediately acquire the Id from Partner Center. It is strongly recommended to change
     //   this Id as soon as you get your title building to avoid failures when attempting to do API calls."
     public string TitleId { get; private set; } = "FFFFFFFF";
+    public uint TitleIdNumeric { get; private set; } = 0;
 
-    public BoolState InitializedRaw { get; private set; } = new BoolState( false );
-    public IBoolStateObserver Initialized => InitializedRaw;
+    private BoolState _isInitialized = new BoolState( false );
+    public IBoolStateObserver IsInitialized => _isInitialized;
+    
+    private BoolState _isLogged = new BoolState( false );
+    public IBoolStateObserver IsLogged => _isLogged;
+    
+    private BoolState _isReady = new BoolState( false );
+    public IBoolStateObserver IsReady => _isReady;
+
+    IBoolStateObserver _isReadyToUse = null;
+    public IBoolStateObserver IsFullyInitialized 
+    { 
+        get
+        {
+            if( _isReadyToUse == null ) _isReadyToUse = new BoolStateOperations.And( _isInitialized, _isLogged, _isReady );
+            return _isReadyToUse;
+        } 
+    }
+
+
     public GdkGameRuntimeService Instance => ServiceLocator.Get<GdkGameRuntimeService>();
-    private GDKFileAdapter gdkFileAdapter;
+    private XGameSaveFilesFileAdapter _gdkFileAdapter;
     private Coroutine _dispatchCoroutine;
 
     public delegate void AddUserCompletedDelegate(UserOpResult result);
@@ -69,8 +89,11 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     private AddUserCompletedDelegate _currentCompletionDelegate;
     private XUserChangeRegistrationToken _callbackRegistrationToken;
  
+    // TODO-Porting: Cleanup
     public GdkGameRuntimeService( string titleId = "62ab3c24", string scid = "00000000-0000-0000-0000-000062ab3c24", string sandbox = "" )
     {
+        TitleIdNumeric = uint.Parse(titleId, System.Globalization.NumberStyles.HexNumber);
+		Debug.Log( $"<color=Crimson>GdkGameRuntimeService</color>( {titleId}({TitleIdNumeric}), {scid}, {sandbox} )" );
         if( !string.IsNullOrEmpty(sandbox) ) Sandbox = sandbox;
         TitleId = titleId;
         Scid = scid;
@@ -79,10 +102,11 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         this.Log($"<color=LawnGreen>GDK</color> Sandbox: {Sandbox}");
         InitializeRuntime();
 
-        gdkFileAdapter = new GDKFileAdapter();
-        FileAdapter.SetImplementation(gdkFileAdapter); 
+        _gdkFileAdapter = new XGameSaveFilesFileAdapter();
+        FileAdapter.SetImplementation(_gdkFileAdapter); 
+        _gdkFileAdapter.IsInitilized.Synchronize( _isReady );
 
-        AddUser(AddUserCompleted, false); // TODO: Do silently
+        AddUser(AddUserCompleted, true);
 
         // Register for the user change event with the GDK
         SDK.XUserRegisterForChangeEvent(UserChangeEventCallback, out _callbackRegistrationToken);
@@ -98,7 +122,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         if (HR.FAILED(InitializeGamingRuntime(forceInitialization)) ||
             !InitializeXboxLive(Scid))
         {
-            InitializedRaw.SetFalse();
+            _isInitialized.SetFalse();
             return false;
         }
 
@@ -132,7 +156,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         this.Log($"<color=LawnGreen>GDK</color> Initialized, titleId: {TitleId}, sandboxId: {Sandbox}");
 
         // Done!
-        InitializedRaw.SetTrue();
+        _isInitialized.SetTrue();
         return true;
     }
 
@@ -144,7 +168,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
         this.Log("Initializing XGame Runtime Library.");
 
-        if( Initialized.Value && !forceInitialization )
+        if( IsInitialized.Value && !forceInitialization )
         {
             this.Log("Gaming Runtime already initialized.");
             return 0;
@@ -215,7 +239,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     {
         _userData = new GdkUserData();
         _currentCompletionDelegate = completionDelegate;
-        SDK.XUserAddAsync(XUserAddOptions.AddDefaultUserSilently, (Int32 hresult, XUserHandle userHandle) =>
+        SDK.XUserAddAsync(XUserAddOptions.AddDefaultUserAllowingUI, (Int32 hresult, XUserHandle userHandle) =>
         {
             if (HR.SUCCEEDED(hresult) && userHandle != null)
             {
@@ -299,8 +323,11 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     private void AddUserCompleted(UserOpResult result)
     {
         Debug.Log($"Add user completed {result}");
-        if (result == UserOpResult.Success)
-            gdkFileAdapter.Initialize(_userData.userHandle, Scid);
+        if (result != UserOpResult.Success)
+            Debug.LogError($"Add User Complete failed. UserOpResult = {result}");
+
+        _gdkFileAdapter.Initialize(_userData.userHandle, Scid);
+        _isLogged.SetTrue();
     }
 
     private UserOpResult GetAllUserInfo(XUserHandle userHandle)
