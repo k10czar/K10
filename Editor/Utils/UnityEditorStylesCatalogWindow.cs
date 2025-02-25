@@ -15,7 +15,7 @@ namespace K10.EditorUtils
         bool publicExpanded = true;
         bool nonPublicExpanded = false;
 
-        [MenuItem("K10/Utils/EditorStylesCatalog")] private static void Init() { GetWindow<UnityEditorStylesCatalogWindow>(false, "Unity EditorStyles Catalog").Show(); }
+        [MenuItem("K10/Utils/Editor Styles Catalog")] private static void Init() { GetWindow<UnityEditorStylesCatalogWindow>(false, "Unity EditorStyles Catalog").Show(); }
 
         private void OnGUI()
         {
