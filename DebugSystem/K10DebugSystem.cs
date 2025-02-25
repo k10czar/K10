@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace K10.DebugSystem
 {
@@ -68,7 +71,11 @@ namespace K10.DebugSystem
             {
                 EDebugTargets.All => true,
                 EDebugTargets.ListedTarget => config.targets.Contains(key),
+
+                #if UNITY_EDITOR
                 EDebugTargets.ListedAndSelected => config.targets.Contains(key) && Selection.activeGameObject == GetGameObject(targetObject),
+                #endif
+
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
