@@ -6,6 +6,8 @@ public class ApplicationEventsRelay : MonoBehaviour
     BoolState _isFocused = new();
     BoolState _isPaused = new();
 
+    public static bool HasInstance => Singleton<ApplicationEventsRelay>.IsValid;
+
     public static IEventRegister OnQuit => Eternal<ApplicationEventsRelay>.Instance._onQuit;
     public static IBoolStateObserver IsFocused  => Eternal<ApplicationEventsRelay>.Instance._isFocused;
     public static IBoolStateObserver IsPaused  => Eternal<ApplicationEventsRelay>.Instance._isPaused;
