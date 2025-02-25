@@ -44,7 +44,7 @@ public static class CodeMetrics
 			var ms = log.Value;
 			sb.Append( $"<color=#FF69B4>{code}</color> took <color=#DAA520>{ValueToString(ms)}ms</color>" );
 			callsReport.TryGetValue( code,out var calls );
-			sb.AppendLine( calls > 1 ? $" in {calls} call(s)" : "" );
+			sb.AppendLine( calls > 1 ? $" in {calls} call(s) averaging:<color=#DAA520>{ValueToString(ms/calls)}ms</color>" : "" );
 		}
 		UnityEngine.Debug.Log( sb.ReturnToPoolAndCast() );
 #endif
