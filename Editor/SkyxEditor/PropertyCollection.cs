@@ -18,25 +18,11 @@ namespace Skyx.SkyxEditor
         private static readonly ProfilerMarker applyCollectionMarker = new("PropertyCollection.Apply");
 
         [ResetedOnLoad] private static readonly Dictionary<string, Dictionary<string, PropertyCollection>> collections = new();
-        [ResetedOnLoad] private static readonly Dictionary<string, Dictionary<string, uint>> previousHashes = new();
-        [ResetedOnLoad] private static readonly Dictionary<string, Event> lastCheckedEvent = new();
 
         private static string GetID(SerializedObject target) => target.targetObject.GetHashCode().ToString();
 
         public static PropertyCollection Get(SerializedObject serializedObject) => Get(serializedObject, "");
         public static PropertyCollection Get(SerializedProperty property) => Get(property.serializedObject, property.propertyPath);
-
-        public static void Release(SerializedObject root)
-        {
-            var id = GetID(root);
-            if (!collections.ContainsKey(id)) return;
-
-            K10Log<EditorLogCategory>.Log($"Releasing PropertyCollections for {root.targetObject.name}");
-
-            collections.Remove(id);
-            previousHashes.Remove(id);
-            lastCheckedEvent.Remove(id);
-        }
 
         private static PropertyCollection Get(SerializedObject root, string path)
         {
@@ -47,98 +33,35 @@ namespace Skyx.SkyxEditor
             {
                 objectCollections = new Dictionary<string, PropertyCollection>();
                 collections.Add(id, objectCollections);
-                previousHashes.Add(id, new Dictionary<string, uint>());
-                lastCheckedEvent.Add(id, null);
             }
-
-            var hashes = previousHashes[id];
-
-            TryApply(root);
 
             if (objectCollections.TryGetValue(path, out var collection)) return collection;
 
             var isRoot = string.IsNullOrEmpty(path);
-            K10Log<EditorLogCategory>.Log(isRoot ? LogSeverity.Info : LogSeverity.Warning, $"Creating new collection for {root.targetObject.name} @ {(isRoot ? "_ROOT_" : path)}", verbose: !isRoot);
+            Log($"Creating new collection for {root.targetObject.name} @ {(isRoot ? "_ROOT_" : path)}", isRoot ? LogSeverity.Info : LogSeverity.Warning);
 
             collection = new PropertyCollection(root, path);
             objectCollections.Add(path, collection);
-            hashes[path] = collection.ContentHash;
 
             return collection;
         }
 
-        private static bool CanEventModifyData(EventType rawType) => rawType switch
-        {
-            EventType.MouseDown => true,
-            EventType.MouseUp => true,
-            EventType.MouseMove => false,
-            EventType.MouseDrag => false,
-            EventType.KeyDown => true,
-            EventType.KeyUp => true,
-            EventType.ScrollWheel => false,
-            EventType.Repaint => false,
-            EventType.Layout => false,
-            EventType.DragUpdated => false,
-            EventType.DragPerform => true,
-            EventType.DragExited => true,
-            EventType.Ignore => false,
-            EventType.Used => true,
-            EventType.ValidateCommand => true,
-            EventType.ExecuteCommand => true,
-            EventType.ContextClick => true,
-            EventType.MouseEnterWindow => false,
-            EventType.MouseLeaveWindow => false,
-            EventType.TouchDown => true,
-            EventType.TouchUp => true,
-            EventType.TouchMove => false,
-            EventType.TouchEnter => false,
-            EventType.TouchLeave => false,
-            EventType.TouchStationary => false,
-            _ => throw new ArgumentOutOfRangeException(nameof(rawType), rawType, null)
-        };
-
-        public static bool TryApply(SerializedObject serializedObject)
+        public static void Apply(SerializedObject serializedObject, string reason)
         {
             using var profilerMarker = applyCollectionMarker.Auto();
 
-            var shouldApply = false;
-            var id = GetID(serializedObject);
+            var target = serializedObject.targetObject;
 
-            // TODO: Find another way to limit Apply checks to the same object
-            if (!CanEventModifyData(Event.current.rawType)) return false;
+            LogVerbose($"Applying changes to {target.name}: {reason}");
 
-            // lastCheckedEvent.TryGetValue(id, out var lastEvent);
-            // if (lastEvent != null && lastEvent.Equals(Event.current)) return false;
-            // lastCheckedEvent[id] = Event.current;
+            Undo.RecordObject(target, reason);
 
-            var objectCollections = collections[id];
+            serializedObject.ApplyModifiedProperties();
+            serializedObject.Update();
 
-            foreach (var collection in objectCollections.Values)
-            {
-                if (!collection.IsValid())
-                {
-                    Release(serializedObject);
-                    return true;
-                }
+            EditorUtility.SetDirty(serializedObject.targetObject);
 
-                if (!collection.IsDirty()) continue;
-
-                K10Log<EditorLogCategory>.LogVerbose($"Collection @ '{collection.propertyPath}' was changed!");
-                shouldApply = true;
-                break;
-            }
-
-            if (shouldApply)
-            {
-                K10Log<EditorLogCategory>.Log($"Applying modifications for {serializedObject.targetObject.name}");
-
-                serializedObject.ApplyModifiedProperties();
-                serializedObject.Update();
-
-                ResetCollections(serializedObject);
-            }
-
-            return shouldApply;
+            ResetCollections(serializedObject);
         }
 
         private static void ResetCollections(SerializedObject serializedObject)
@@ -146,24 +69,17 @@ namespace Skyx.SkyxEditor
             var id = GetID(serializedObject);
 
             if (!collections.TryGetValue(id, out var objectCollections)) return;
-            var hashes = previousHashes[id];
 
             foreach (var (key, collection) in objectCollections.ToList())
             {
                 if (collection.IsValid())
                 {
-                    if (collection.root == serializedObject)
-                    {
-                        hashes[key] = collection.ContentHash;
-                        continue;
-                    }
+                    if (collection.root == serializedObject) continue;
 
                     try
                     {
                         collection.Reset(serializedObject);
-                        hashes[key] = collection.ContentHash;
-
-                        K10Log<EditorLogCategory>.LogVerbose($"Collection [{key}] reset: {hashes[key]} >>> {collection.ContentHash}");
+                        LogVerbose($"Collection {key} was reset.");
 
                         continue;
                     }
@@ -173,11 +89,54 @@ namespace Skyx.SkyxEditor
                     }
                 }
 
-                K10Log<EditorLogCategory>.LogVerbose($"Collection for {serializedObject.targetObject} @ {key} was corrupted! Deleting...");
+                LogVerbose($"Collection for {serializedObject.targetObject} @ {key} was corrupted! Deleting...");
                 objectCollections.Remove(key);
-                hashes.Remove(key);
             }
         }
+
+        public static void Release(SerializedObject root)
+        {
+            var id = GetID(root);
+            if (!collections.ContainsKey(id)) return;
+
+            Log($"Releasing PropertyCollections for {root.targetObject.name}");
+
+            collections.Remove(id);
+        }
+
+        private static bool expectingChange;
+
+        public static void SaveAsset(Object target)
+        {
+            expectingChange = true;
+            AssetDatabase.SaveAssetIfDirty(target);
+        }
+
+        public static void AssetsChanged()
+        {
+            if (!expectingChange)
+            {
+                Log("Assets changed! Releasing all collections.");
+                collections.Clear();
+            }
+
+            expectingChange = false;
+        }
+
+        private static void OnUndoRedoPerformed()
+        {
+            LogVerbose("Undo performed!");
+            collections.Clear();
+        }
+
+        static PropertyCollection()
+        {
+            Undo.undoRedoPerformed -= OnUndoRedoPerformed;
+            Undo.undoRedoPerformed += OnUndoRedoPerformed;
+        }
+
+        private static void Log(string log, LogSeverity severity = LogSeverity.Info) => K10Log<EditorLogCategory>.Log(severity, log, verbose: severity is LogSeverity.Warning);
+        private static void LogVerbose(string log) => K10Log<EditorLogCategory>.Log(LogSeverity.Warning, log, verbose: true);
 
         #endregion
 
@@ -189,24 +148,13 @@ namespace Skyx.SkyxEditor
 
         #region Layout Draw
 
-        public void DrawRelative(string fullPath)
+        public void Draw(string propertyName)
         {
-            var paths = fullPath.Split('.');
-            if (!properties.TryGetValue(paths[0], out SerializedProperty pathProperty)) return;
+            if (!TryGet(propertyName, out var property)) return;
 
-            for (int i = 1; i < paths.Length; i++)
-                pathProperty = pathProperty.FindPropertyRelative(paths[i]);
-
-            EditorGUILayout.PropertyField(pathProperty);
-        }
-
-        public void Draw(string propertyName, int indent = 0)
-        {
-            if (!TryGet(propertyName, out SerializedProperty property)) return;
-
-            if (indent > 0) EditorGUI.indentLevel += indent;
+            EditorGUI.BeginChangeCheck();
             EditorGUILayout.PropertyField(property);
-            if (indent > 0) EditorGUI.indentLevel -= indent;
+            if (EditorGUI.EndChangeCheck()) property.Apply();
         }
 
         public void DrawList(string propertyName, bool displayHeader = true, bool isBacking = false)
@@ -221,14 +169,20 @@ namespace Skyx.SkyxEditor
 
         public void DrawBacking(string propertyName)
         {
-            if (TryGetBacking(propertyName, out var property))
-                EditorGUILayout.PropertyField(property);
+            if (!TryGetBacking(propertyName, out var property)) return;
+
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(property);
+            if (EditorGUI.EndChangeCheck()) property.Apply();
         }
 
         public void Draw(string propertyName, string label)
         {
-            if (TryGet(propertyName, out var property))
-                EditorGUILayout.PropertyField(property, new GUIContent(label));
+            if (!TryGet(propertyName, out var property)) return;
+
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(property, new GUIContent(label));
+            if (EditorGUI.EndChangeCheck()) property.Apply();
         }
 
         public void DrawAll(params string[] including)
@@ -252,7 +206,11 @@ namespace Skyx.SkyxEditor
         public void Draw(ref Rect rect, string propertyName, bool slideRect = true)
         {
             if (TryGet(propertyName, out var property))
+            {
+                EditorGUI.BeginChangeCheck();
                 EditorGUI.PropertyField(rect, property, GUIContent.none);
+                if (EditorGUI.EndChangeCheck()) property.Apply();
+            }
 
             if (slideRect) rect.SlideSameRect();
         }
@@ -268,7 +226,9 @@ namespace Skyx.SkyxEditor
 
         private static void Draw(ref Rect rect, SerializedProperty property, bool hasValue, string inlaidHint = null, string overlayHint = null, bool slideRect = true)
         {
+            EditorGUI.BeginChangeCheck();
             EditorGUI.PropertyField(rect, property, GUIContent.none);
+            if (EditorGUI.EndChangeCheck()) property.Apply();
 
             SkyxGUI.DrawHintOverlay(rect, overlayHint ?? inlaidHint);
             if (!hasValue) SkyxGUI.DrawHindInlaid(rect, inlaidHint);
@@ -364,6 +324,9 @@ namespace Skyx.SkyxEditor
 
         private readonly Dictionary<SerializedProperty, ReorderableList> lists = new();
 
+        public bool HasList(string propertyName, bool isBacking = false) => lists.ContainsKey(Get(propertyName, isBacking));
+        public bool HasList(SerializedProperty property) => lists.ContainsKey(property);
+
         public ReorderableList GetReorderableList(SerializedProperty property)
         {
             if (lists.TryGetValue(property, out var list)) return list;
@@ -372,13 +335,15 @@ namespace Skyx.SkyxEditor
             return null;
         }
 
-        public ReorderableList RegisterList(string propertyName, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true, ReorderableList.ElementCallbackDelegate customDrawElement = null, ReorderableList.AddCallbackDelegate customAdd = null, ReorderableList.HeaderCallbackDelegate customHeader = null, bool isBacking = false)
+        public void RegisterList(string propertyName, ReorderableList list, bool isBacking = false) => lists.TryAdd(Get(propertyName, isBacking), list);
+
+        public ReorderableList RegisterList(string propertyName, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true, ReorderableList.ElementCallbackDelegate customDrawElement = null, Action<SerializedProperty> newElementSetup = null, ReorderableList.HeaderCallbackDelegate customHeader = null, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
-            return RegisterList(property, displayHeader, draggable, displayAddButton, displayRemoveButton, customDrawElement, customAdd, customHeader);
+            return RegisterList(property, displayHeader, draggable, displayAddButton, displayRemoveButton, customDrawElement, newElementSetup, customHeader);
         }
 
-        public ReorderableList RegisterList(SerializedProperty property, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true, ReorderableList.ElementCallbackDelegate customDrawElement = null, ReorderableList.AddCallbackDelegate customAdd = null, ReorderableList.HeaderCallbackDelegate customHeader = null)
+        private ReorderableList RegisterList(SerializedProperty property, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true, ReorderableList.ElementCallbackDelegate customDrawElement = null, Action<SerializedProperty> newElementSetup = null, ReorderableList.HeaderCallbackDelegate customHeader = null)
         {
             if (HasList(property)) return null;
 
@@ -387,7 +352,9 @@ namespace Skyx.SkyxEditor
                 drawHeaderCallback = customHeader ?? DrawHeaderCallback,
                 drawElementCallback = customDrawElement ?? DrawElementCallback,
                 elementHeightCallback = ElementHeightCallback,
-                onAddCallback = customAdd,
+                onAddCallback = OnAddCallback,
+                onRemoveCallback = OnRemoveCallback,
+                onReorderCallback = OnReorderCallback,
             };
 
             lists.Add(property, list);
@@ -396,8 +363,11 @@ namespace Skyx.SkyxEditor
 
             void DrawElementCallback(Rect rect, int index, bool isActive, bool isFocused)
             {
-                var target = property.GetArrayElementAtIndex(index);
-                EditorGUI.PropertyField(rect, target);
+                var innerProp = property.GetArrayElementAtIndex(index);
+
+                EditorGUI.BeginChangeCheck();
+                EditorGUI.PropertyField(rect, innerProp, GUIContent.none);
+                if (EditorGUI.EndChangeCheck()) innerProp.Apply();
             }
 
             float ElementHeightCallback(int index)
@@ -407,12 +377,27 @@ namespace Skyx.SkyxEditor
             }
 
             void DrawHeaderCallback(Rect rect) => EditorGUI.LabelField(rect, property.PrettyName());
+
+            void OnAddCallback(ReorderableList thisList)
+            {
+                var index = thisList.selectedIndices.Count > 0 ? Mathf.Min(property.arraySize, thisList.selectedIndices[0] + 1) : property.arraySize;
+                property.InsertArrayElementAtIndex(index);
+                newElementSetup?.Invoke(property.GetArrayElementAtIndex(index));
+                property.Apply($"New array element: {property.propertyPath}");
+            }
+
+            void OnRemoveCallback(ReorderableList thisList)
+            {
+                ReorderableList.defaultBehaviours.DoRemoveButton(thisList);
+                property.Apply($"Remove array element: {property.propertyPath}");
+            }
+
+            void OnReorderCallback(ReorderableList thisList)
+            {
+                // ReorderableList.defaultBehaviours.re(thisList);
+                property.Apply($"Reorder array element: {property.propertyPath}");
+            }
         }
-
-        public void RegisterList(string propertyName, ReorderableList list, bool isBacking = false) => lists.TryAdd(Get(propertyName, isBacking), list);
-
-        public bool HasList(string propertyName, bool isBacking = false) => lists.ContainsKey(Get(propertyName, isBacking));
-        public bool HasList(SerializedProperty property) => lists.ContainsKey(property);
 
         #endregion
 
@@ -472,14 +457,6 @@ namespace Skyx.SkyxEditor
 
         #endregion
 
-        private bool IsDirty()
-        {
-            var hashes = previousHashes[GetID(root)];
-            var previousHash = hashes.GetValueOrDefault(propertyPath, uint.MaxValue);
-
-            return ContentHash != previousHash || root.hasModifiedProperties;
-        }
-
         private bool IsValid()
         {
             try
@@ -493,10 +470,10 @@ namespace Skyx.SkyxEditor
             }
         }
 
-        private uint ContentHash => (string.IsNullOrEmpty(propertyPath) ? root.GetIterator() : root.FindProperty(propertyPath)).contentHash;
-
         private void Setup()
         {
+            root.Update();
+
             var fromObject = string.IsNullOrEmpty(propertyPath);
             var rootProperty = fromObject ? root.GetIterator() : root.FindProperty(propertyPath);
 

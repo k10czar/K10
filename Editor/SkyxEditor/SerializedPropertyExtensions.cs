@@ -126,7 +126,7 @@ namespace Skyx.SkyxEditor
         }
 
         public static bool IsArrayEntry(this SerializedProperty property) => isArrayEntryRegex.IsMatch(property.propertyPath);
-
         public static string PrettyName(this SerializedProperty property) => ObjectNames.NicifyVariableName(property.name);
+        public static void Apply(this SerializedProperty property, string reason = null) => PropertyCollection.Apply(property.serializedObject, reason ?? $"Modified {property.propertyPath}");
     }
 }

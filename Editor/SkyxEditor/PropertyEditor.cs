@@ -22,16 +22,8 @@ namespace Skyx.SkyxEditor
             using var profilerMarker = drawMarker.Auto();
 
             EditorGUI.BeginProperty(rect, label, property);
-
             Draw(rect, property, label);
-            PropertyCollection.TryApply(property.serializedObject);
-
             EditorGUI.EndProperty();
-        }
-
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
-        {
-            return GetProperties(property).GetHeight(ExcludeFieldsFromHeight) + ExtraHeight;
         }
 
         protected static void ApplyDirectTargetChanges(SerializedProperty property)

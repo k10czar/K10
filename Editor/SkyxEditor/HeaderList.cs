@@ -63,6 +63,7 @@ namespace Skyx.SkyxEditor
                 var index = property.arraySize;
                 property.InsertArrayElementAtIndex(index);
                 onNewElement?.Invoke(property.GetArrayElementAtIndex(index));
+                property.Apply($"New array element: {property.propertyPath}");
             }
         }
 
@@ -115,6 +116,7 @@ namespace Skyx.SkyxEditor
                 if (index > 0 && GUI.Button(rect, "▲", SkyxStyles.CenterLabel))
                 {
                     property.MoveArrayElement(index, --index);
+                    property.Apply();
                     return true;
                 }
 
@@ -125,6 +127,7 @@ namespace Skyx.SkyxEditor
             if (GUI.Button(rect, "X", SkyxStyles.CenterLabel.With(EConsoleColor.Warning)))
             {
                 property.DeleteArrayElementAtIndex(index);
+                property.Apply();
                 return true;
             }
 
@@ -136,6 +139,7 @@ namespace Skyx.SkyxEditor
                 if (GUI.Button(rect, "▼", SkyxStyles.CenterLabel))
                 {
                     property.MoveArrayElement(index, ++index);
+                    property.Apply();
                     return true;
                 }
             }

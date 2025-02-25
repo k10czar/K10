@@ -16,6 +16,7 @@ namespace Skyx.SkyxEditor
 
         private bool skipDrawing;
         private bool shouldReset;
+        private bool willMakeDirectChanges;
 
         protected virtual bool ShouldDrawScript => false;
         protected virtual bool ShouldDrawTitle => false;
@@ -41,13 +42,13 @@ namespace Skyx.SkyxEditor
         {
             if (!ShouldDrawSaveFile) return;
 
-            var dirty = EditorUtility.IsDirty(Target);
+            var dirty = EditorUtility.IsDirty(target);
             var color = dirty ? Colors.Console.Warning : Colors.Console.Support;
             var text = dirty ? "Save Changes!" : "No Changes";
 
             using var _ = new BackgroundColorScope(color);
 
-            if (GUILayout.Button(text)) AssetDatabase.SaveAssetIfDirty(Target);
+            if (GUILayout.Button(text)) PropertyCollection.SaveAsset(target);
 
             SkyxLayout.Space();
         }
@@ -88,7 +89,6 @@ namespace Skyx.SkyxEditor
             else
             {
                 DrawConfigsInternal();
-                if (PropertyCollection.TryApply(serializedObject)) CacheProperties(false);
             }
         }
 
@@ -118,10 +118,20 @@ namespace Skyx.SkyxEditor
             Properties = PropertyCollection.Get(serializedObject);
         }
 
+        protected void PrepareForDirectChanges()
+        {
+            willMakeDirectChanges = true;
+            Undo.RecordObject(target, $"Direct changes on {target.name}");
+        }
+
         protected void ApplyDirectTargetChanges()
         {
+            if (!willMakeDirectChanges) Debug.LogError("PrepareForDirectChanges was not called!");
+            willMakeDirectChanges = false;
+
             EditorUtility.SetDirty(Target);
             serializedObject.Update();
+
             CacheProperties(true);
         }
 

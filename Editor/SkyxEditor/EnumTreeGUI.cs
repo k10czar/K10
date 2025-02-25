@@ -7,11 +7,8 @@ namespace Skyx.SkyxEditor
 {
     public static class EnumTreeGUI
     {
-        public static void DrawPrimary<T>(Rect rect, SerializedProperty property, string hint = null) => DrawEnum(rect, property, typeof(T), Colors.Console.Primary, hint);
         public static void DrawSecondary<T>(Rect rect, SerializedProperty property, string hint = null) => DrawEnum(rect, property, typeof(T), Colors.Console.Secondary, hint);
         public static void DrawSupport<T>(Rect rect, SerializedProperty property, string hint = null) => DrawEnum(rect, property, typeof(T), Colors.Console.GrayOut, hint);
-
-        public static void DrawPrimary(Rect rect, SerializedProperty property, Type enumType, string hint = null) => DrawEnum(rect, property, enumType, Colors.Console.Primary, hint);
         public static void DrawSecondary(Rect rect, SerializedProperty property, Type enumType, string hint = null) => DrawEnum(rect, property, enumType, Colors.Console.Secondary, hint);
 
         public static void DrawEnum<T>(Rect rect, SerializedProperty property, EConsoleColor color, string hint = "")
@@ -49,7 +46,11 @@ namespace Skyx.SkyxEditor
 
             var clicked = SkyxGUI.Button(rect, label, color, SkyxStyles.ButtonStyle, hint);
 
-            if (clicked) property.intValue = (currentIndex + 1) % enumValueCount;
+            if (clicked)
+            {
+                property.intValue = (currentIndex + 1) % enumValueCount;
+                property.Apply();
+            }
         }
 
         // Only works with sequenced enums!
@@ -65,7 +66,11 @@ namespace Skyx.SkyxEditor
 
             var clicked = SkyxGUI.Button(rect, label, color, SkyxStyles.ButtonStyle, hint);
 
-            if (clicked) property.intValue = (currentIndex + 1) % enumValueCount;
+            if (clicked)
+            {
+                property.intValue = (currentIndex + 1) % enumValueCount;
+                property.Apply();
+            }
         }
 
         public static void DrawEnumMask<T>(Rect rect, SerializedProperty property, EConsoleColor color = EConsoleColor.Primary, string hint = null) where T : Enum
@@ -75,7 +80,14 @@ namespace Skyx.SkyxEditor
         {
             var value = (Enum) Enum.ToObject(enumType, property.intValue);
             using var colorScope = new BackgroundColorScope(Colors.Console.Get(color));
-            property.intValue = (int)(object) EditorGUI.EnumFlagsField(rect, value);
+
+            var newValue = (int)(object) EditorGUI.EnumFlagsField(rect, value);
+
+            if (newValue != property.intValue)
+            {
+                property.intValue = newValue;
+                property.Apply();
+            }
 
             var fullHint = $"[{enumType}] {hint}";
             SkyxGUI.DrawHintOverlay(rect, fullHint);
