@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Text;
 
 namespace K10
 {
@@ -44,7 +43,7 @@ namespace K10
 		{
 			if( t == null ) return;
 			if( t is System.Collections.IList list ) list.Clear();
-			if( t is StringBuilder sb ) sb.Clear();
+			if( t is System.Text.StringBuilder sb ) sb.Clear();
 			var thread = System.Threading.Thread.CurrentThread;
 			if( !_pools.TryGetValue( thread, out var pool ) )
 			{

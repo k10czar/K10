@@ -7,30 +7,40 @@ namespace K10.EditorUtils
 {
     public class UnityEditorIconsCatalogWindow : EditorWindow
     {
-        // private FieldInfo[] iconNames;
+        private FieldInfo[] iconFields;
         private Texture2D[] icons;
         private Vector2 _scroll;
 
-        bool publicExpanded = true;
-        bool nonPublicExpanded = false;
+        string search = "";
+        bool textureName = false;
 
         [MenuItem("K10/Utils/Editor Icons Catalog")] private static void Init() { GetWindow<UnityEditorIconsCatalogWindow>(false, "Unity Editor Icons Catalog").Show(); }
 
         private void OnGUI()
         {
-            if (icons == null) 
+            if (icons == null || iconFields == null) 
             {
-                var iconNames = typeof(UnityIcons).GetFields(BindingFlags.Static | BindingFlags.Public);
-                icons = iconNames.Select(x => EditorGUIUtility.Load( x.GetValue(null) as string ) as Texture2D ).ToArray();
+                iconFields = typeof(UnityIcons).GetFields(BindingFlags.Static | BindingFlags.Public);
+                icons = iconFields.Select(x => EditorGUIUtility.Load( x.GetValue(null) as string ) as Texture2D ).ToArray();
             }
+
+            GUILayout.BeginHorizontal();
+            search = EditorGUILayout.TextField( search, EditorStyles.toolbarSearchField);
+            if( GUILayout.Button( textureName ? "Texture Name" : "Field Name", EditorStyles.miniButton, GUILayout.Width( 120 ) ) ) textureName = !textureName;
+            GUILayout.EndHorizontal();
 
             _scroll = GUILayout.BeginScrollView(_scroll);
 
-            foreach (var icon in icons)
+            for (int i = 0; i < icons.Length; i++)
             {
+                Texture2D icon = icons[i];
                 if (icon == null) continue;
+                var name = icon.name;
+                var field = iconFields[i];
+                if( !textureName && field != null ) name = field.Name;
+                if( !name.Contains( search ) ) continue;
                 GUILayout.BeginHorizontal();
-                EditorGUILayout.TextField($"{icon.name}", GUILayout.Width(150));
+                EditorGUILayout.TextField(name, GUILayout.Width(250));
                 GUILayout.Label(icon);
                 GUILayout.EndHorizontal();
             }
