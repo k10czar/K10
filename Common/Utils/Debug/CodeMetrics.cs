@@ -37,19 +37,22 @@ public static class CodeMetrics
 	{
 #if LOG_REPORT_ON_QUIT
 		var sb = StringBuilderPool.RequestEmpty();
+		sb.AppendLine( $"<color=#0080FF>CodeMetrics</color> tracked <color=#FF69B4>{tracks}</color> calls that took <color=#DAA520>{ValueToString(totalTime)}ms</color>" );
 		foreach( var log in logReport.OrderBy( log => -log.Value ) )
 		{
 			var code = log.Key;
-			sb.Append( $"<color=#0080FF>CodeMetrics</color>: <color=#FF69B4>{code}</color> took <color=#DAA520>{log.Value:N0}ms</color>" );
+			var ms = log.Value;
+			sb.Append( $"<color=#FF69B4>{code}</color> took <color=#DAA520>{ValueToString(ms)}ms</color>" );
 			callsReport.TryGetValue( code,out var calls );
 			sb.AppendLine( calls > 1 ? $" in {calls} call(s)" : "" );
 		}
-		UnityEngine.Debug.Log( $"<color=#0080FF>CodeMetrics</color> tracked <color=#FF69B4>{tracks}</color> calls that took <color=#DAA520>{totalTime:N0}ms</color>\n{sb}" );
-		sb.ReturnToPool();
+		UnityEngine.Debug.Log( sb.ReturnToPoolAndCast() );
 #endif
 	}
 
-	static void LogAndClear()
+    static string ValueToString(double ms) => ms > 10 ? $"{ms:N0}" : ( ms > 1 ? $"{ms:N1}" : ( ms > .1 ? $"{ms:N2}" : ( ms > .01 ? $"{ms:N3}" : $"{ms:N6}" ) ) );
+
+    static void LogAndClear()
 	{
 		Log();
 		Clear();
@@ -79,7 +82,7 @@ public static class CodeMetrics
 		_inited = true;
 #if LOG_REPORT_ON_QUIT
 		ApplicationEventsRelay.OnQuit.Register( LogAndClear );
-		UnityEngine.Debug.Log( "Registered <color=#0080FF>CodeMetrics</color> Log when ApplcationQuit" );
+		UnityEngine.Debug.Log( "Registered <color=#0080FF>CodeMetrics</color> Log when <color=#FF69B4>ApplcationQuit</color>" );
 #endif
     }
 
@@ -89,7 +92,7 @@ public static class CodeMetrics
 #if CODE_METRICS_ENABLED
 		if( !_currentRunningMetrics.TryGetValue( code, out var sw ) ) return;
 		var ms = sw.ReturnToPoolAndElapsedMs();
-		var logMessage = $"<color=#0080FF>CodeMetrics</color>: <color=#FF69B4>{code}</color> took <color=#DAA520>{ms:N0}ms</color>";
+		var logMessage = $"<color=#0080FF>CodeMetrics</color>: <color=#FF69B4>{code}</color> took <color=#DAA520>{ValueToString(ms)}ms</color>";
 		UnityEngine.Debug.Log( logMessage );
 		_currentRunningMetrics.Remove( code );
 #if LOG_REPORT_ON_QUIT
