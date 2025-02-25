@@ -36,8 +36,11 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 
 	public string GetPersistentDataPath() 
 	{ 
-		if (_folderPath == string.Empty)
+		if ( _folderPath == null)
+		{
 			Debug.LogError($"XGameSaveFiles folder not initialized");
+			_folderPath = Application.persistentDataPath;
+		}
 	
 		return _folderPath; 
 	}
