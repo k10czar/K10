@@ -7,7 +7,6 @@ using UnityEngine;
 [CustomPropertyDrawer( typeof( InlinePropertiesAttribute ) )]
 public class InlinePropertiesDrawer : PropertyDrawer
 {
-	const int buttonWidth = 66;
 	private const string SCRIPT_FIELD = "m_Script";
 	static readonly List<string> ignoreClassFullNames = new List<string> { "TMPro.TMP_FontAsset" };
 
