@@ -35,13 +35,6 @@ public class InlinePropertiesDrawer : PropertyDrawer
 			return;
 		}
 
-		ScriptableObject propertySO = null;
-		if( !property.hasMultipleDifferentValues && property.serializedObject.targetObject != null && property.serializedObject.targetObject is ScriptableObject )
-		{
-			propertySO = (ScriptableObject)property.serializedObject.targetObject;
-		}
-
-		var propertyRect = Rect.zero;
 		var guiContent = new GUIContent( property.displayName );
 		var foldoutRect = new Rect( area.x, area.y, lw, slh );
 		if( property.objectReferenceValue != null && AreAnySubPropertiesVisible( property ) )
@@ -60,20 +53,16 @@ public class InlinePropertiesDrawer : PropertyDrawer
 			EditorGUI.Foldout( foldoutRect, property.isExpanded, guiContent, true, EditorStyles.label );
 		}
 
-		propertyRect = area.CutLeft( lw ).RequestTop( slh );
+		var propertyRect = area.CutLeft( lw ).RequestTop( slh );
 		ScriptableObjectField.Draw( propertyRect, property, type );
 		// property.objectReferenceValue = EditorGUI.ObjectField( propertyRect, GUIContent.none, property.objectReferenceValue, type, false );
 		if( GUI.changed ) property.serializedObject.ApplyModifiedProperties();
 
-		var buttonRect = new Rect( area.x + area.width - buttonWidth, area.y, buttonWidth, slh );
-
-
 		if( property.propertyType == SerializedPropertyType.ObjectReference && property.objectReferenceValue != null )
 		{
-			var data = (ScriptableObject)property.objectReferenceValue;
-
 			if( property.isExpanded )
 			{
+				var data = (ScriptableObject)property.objectReferenceValue;
 
 				EditorGUI.indentLevel++;
 				SerializedObject serializedObject = new SerializedObject( data );
