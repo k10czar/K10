@@ -1,4 +1,4 @@
-#define CODE_METRICS_ENABLED
+#define LOG_ALL_METRICS
 #define LOG_REPORT_ON_QUIT
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,9 @@ using UnityEngine;
 public static class CodeMetrics
 {
     private static bool _inited;
+#if LOG_ALL_METRICS || LOG_REPORT_ON_QUIT
 	static Dictionary<string,Stopwatch> _currentRunningMetrics = new();
+#endif
 #if LOG_REPORT_ON_QUIT
 	static Dictionary<string,double> logReport = new();
 	static Dictionary<string,int> callsReport = new();
@@ -30,7 +32,9 @@ public static class CodeMetrics
 		totalTime = 0;
 		tracks = 0;
 #endif
+#if LOG_ALL_METRICS || LOG_REPORT_ON_QUIT
 		_currentRunningMetrics.Clear();
+#endif
 	}
 
 	static void Log()
@@ -70,7 +74,7 @@ public static class CodeMetrics
     public static void Start( string code )
 	{
 		TryInit();
-#if CODE_METRICS_ENABLED
+#if LOG_ALL_METRICS || LOG_REPORT_ON_QUIT
 		_currentRunningMetrics[code] = StopwatchPool.RequestStarted();
 #endif
 	}
@@ -89,12 +93,15 @@ public static class CodeMetrics
 
     public static void Finish( string code )
 	{
-#if CODE_METRICS_ENABLED
+#if LOG_ALL_METRICS || LOG_REPORT_ON_QUIT
 		if( !_currentRunningMetrics.TryGetValue( code, out var sw ) ) return;
 		var ms = sw.ReturnToPoolAndElapsedMs();
+		_currentRunningMetrics.Remove( code );
+#endif
+#if LOG_ALL_METRICS 
 		var logMessage = $"<color=#0080FF>CodeMetrics</color>: <color=#FF69B4>{code}</color> took <color=#DAA520>{ValueToString(ms)}ms</color>";
 		UnityEngine.Debug.Log( logMessage );
-		_currentRunningMetrics.Remove( code );
+#endif
 #if LOG_REPORT_ON_QUIT
 		tracks++;
 		totalTime += ms;
@@ -102,7 +109,6 @@ public static class CodeMetrics
 		logReport[code] = codeTimeAcc + ms;
 		callsReport.TryGetValue( code, out var calls );
 		callsReport[code] = calls + 1;
-#endif
 #endif
 	}
 }
