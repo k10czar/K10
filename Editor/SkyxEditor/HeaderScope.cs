@@ -12,12 +12,12 @@ namespace Skyx.SkyxEditor
         {
             var initialExpanded = property.isExpanded;
             var isExpanded = property.isExpanded;
-            property.isExpanded = Begin(title, ref isExpanded, color, size);
+            property.isExpanded = Begin(title, ref isExpanded, color, size, property);
 
             return initialExpanded;
         }
 
-        private static bool Begin(string title, ref bool isExpandedRef, EConsoleColor color, EHeaderSize size)
+        private static bool Begin(string title, ref bool isExpandedRef, EConsoleColor color, EHeaderSize size, SerializedProperty property)
         {
             var headerHeight = SkyxStyles.HeaderHeight(size);
             var headerRect = EditorGUILayout.GetControlRect(false, headerHeight);
@@ -31,18 +31,18 @@ namespace Skyx.SkyxEditor
                 boxRect.yMax = drawingRect.yMax;
             }
 
-            return ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size);
+            return ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size, property);
         }
 
         private static bool Begin(ref Rect initialRect, string title, SerializedProperty property, EConsoleColor color, EHeaderSize size)
         {
             var isExpanded = property.isExpanded;
-            property.isExpanded = Begin(ref initialRect, title, ref isExpanded, color, size);
+            property.isExpanded = Begin(ref initialRect, title, ref isExpanded, color, size, property);
 
             return property.isExpanded;
         }
 
-        private static bool Begin(ref Rect initialRect, string title, ref bool isExpandedRef, EConsoleColor color, EHeaderSize size)
+        private static bool Begin(ref Rect initialRect, string title, ref bool isExpandedRef, EConsoleColor color, EHeaderSize size, SerializedProperty property)
         {
             initialRect.height -= SkyxStyles.ElementsMargin;
 
@@ -54,15 +54,29 @@ namespace Skyx.SkyxEditor
 
             initialRect.ApplyBoxMargin(headerHeight);
 
-            return ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size);
+            return ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size, property);
         }
 
-        private static bool ReallyDraw(Rect headerRect, Rect boxRect, string title, ref bool isExpandedRef, EConsoleColor color, EHeaderSize size)
+        private static bool ReallyDraw(Rect headerRect, Rect boxRect, string title, ref bool isExpandedRef, EConsoleColor color, EHeaderSize size, SerializedProperty property)
         {
             BoxGUI.DrawBox(boxRect, color);
 
-            if (SkyxGUI.HeaderButton(headerRect, title, color, size))
-                isExpandedRef = !isExpandedRef;
+            SkyxGUI.PlainBGLabel(headerRect, title, color, size);
+
+            var current = Event.current;
+            if (current.type == EventType.MouseDown && headerRect.Contains(current.mousePosition))
+            {
+                if (current.button == 0)
+                {
+                    isExpandedRef = !isExpandedRef;
+                    current.Use();
+                }
+                else if (current.button == 1 && property != null)
+                {
+                    PropertyContextMenu.Open(property);
+                    current.Use();
+                }
+            }
 
             return isExpandedRef;
         }
@@ -80,7 +94,7 @@ namespace Skyx.SkyxEditor
         {
             isExpanded = isExpandedRef;
             usesLayout = true;
-            Begin(title, ref isExpandedRef, color, size);
+            Begin(title, ref isExpandedRef, color, size, null);
         }
 
         public HeaderScope(ref Rect rect, SerializedProperty property, EConsoleColor color = EConsoleColor.Primary, EHeaderSize size = EHeaderSize.Primary)
@@ -93,7 +107,7 @@ namespace Skyx.SkyxEditor
 
         public HeaderScope(ref Rect rect, string title, ref bool isExpandedRef, EConsoleColor color = EConsoleColor.Primary, EHeaderSize size = EHeaderSize.Primary)
         {
-            isExpanded = Begin(ref rect, title, ref isExpandedRef, color, size);
+            isExpanded = Begin(ref rect, title, ref isExpandedRef, color, size, null);
         }
 
         protected override void CloseScope()

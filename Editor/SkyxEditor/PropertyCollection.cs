@@ -302,24 +302,6 @@ namespace Skyx.SkyxEditor
 
         #endregion
 
-        #region Scopes
-
-        public FoldoutScope FoldoutScope(string propertyName, bool isBacking = false, string name = null)
-        {
-            return TryGet(propertyName, isBacking, out var property)
-                ? new FoldoutScope(property, string.IsNullOrEmpty(name) ? property.PrettyName() : name)
-                : null;
-        }
-
-        public HeaderScope HeaderScope(ref Rect fullRect, string propertyName, bool isBacking = false, string name = null)
-        {
-            return TryGet(propertyName, isBacking, out var property)
-                ? new HeaderScope(ref fullRect, property, string.IsNullOrEmpty(name) ? property.PrettyName() : name)
-                : null;
-        }
-
-        #endregion
-
         #region Lists
 
         private readonly Dictionary<SerializedProperty, ReorderableList> lists = new();
@@ -335,8 +317,6 @@ namespace Skyx.SkyxEditor
             return null;
         }
 
-        public void RegisterList(string propertyName, ReorderableList list, bool isBacking = false) => lists.TryAdd(Get(propertyName, isBacking), list);
-
         public ReorderableList RegisterList(string propertyName, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true, ReorderableList.ElementCallbackDelegate customDrawElement = null, Action<SerializedProperty> newElementSetup = null, ReorderableList.HeaderCallbackDelegate customHeader = null, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
@@ -349,8 +329,8 @@ namespace Skyx.SkyxEditor
 
             var list = new ReorderableList(property.serializedObject, property, draggable, displayHeader, displayAddButton, displayRemoveButton)
             {
-                drawHeaderCallback = customHeader ?? DrawHeaderCallback,
-                drawElementCallback = customDrawElement ?? DrawElementCallback,
+                drawHeaderCallback = DrawHeaderCallback,
+                drawElementCallback = DrawElementCallback,
                 elementHeightCallback = ElementHeightCallback,
                 onAddCallback = OnAddCallback,
                 onRemoveCallback = OnRemoveCallback,
@@ -365,9 +345,15 @@ namespace Skyx.SkyxEditor
             {
                 var innerProp = property.GetArrayElementAtIndex(index);
 
-                EditorGUI.BeginChangeCheck();
-                EditorGUI.PropertyField(rect, innerProp, GUIContent.none);
-                if (EditorGUI.EndChangeCheck()) innerProp.Apply();
+                if (customDrawElement == null)
+                {
+                    EditorGUI.BeginChangeCheck();
+                    EditorGUI.PropertyField(rect, innerProp, GUIContent.none);
+                    if (EditorGUI.EndChangeCheck()) innerProp.Apply();
+                }
+                else customDrawElement(rect, index, isActive, isFocused);
+
+                if (rect.TryUseRightClick()) PropertyContextMenu.Open(innerProp);
             }
 
             float ElementHeightCallback(int index)
@@ -376,7 +362,13 @@ namespace Skyx.SkyxEditor
                 return EditorGUI.GetPropertyHeight(target, true);
             }
 
-            void DrawHeaderCallback(Rect rect) => EditorGUI.LabelField(rect, property.PrettyName());
+            void DrawHeaderCallback(Rect rect)
+            {
+                if (customHeader == null) EditorGUI.LabelField(rect, property.PrettyName());
+                else customHeader(rect);
+
+                if (rect.TryUseRightClick()) PropertyContextMenu.Open(property);
+            }
 
             void OnAddCallback(ReorderableList thisList)
             {
@@ -394,9 +386,16 @@ namespace Skyx.SkyxEditor
 
             void OnReorderCallback(ReorderableList thisList)
             {
-                // ReorderableList.defaultBehaviours.re(thisList);
                 property.Apply($"Reorder array element: {property.propertyPath}");
             }
+        }
+
+        // index = -1 means at end
+        public void InsertArrayElementAtIndex(string propertyName, int index, bool isBacking = false)
+        {
+            var prop = Get(propertyName, isBacking);
+            prop.InsertArrayElementAtIndex(index == -1 ? prop.arraySize : index);
+            prop.Apply();
         }
 
         #endregion

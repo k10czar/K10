@@ -38,10 +38,17 @@ namespace Skyx.SkyxEditor
             var dropdownRect = innerRect.ExtractEndRect(10);
 
             var index = EditorGUI.Popup(dropdownRect, currentIndex, validValues, GUIStyle.none.Invisible());
-            if (index != currentIndex) property.stringValue = validValues[index];
+            if (index != currentIndex)
+            {
+                property.stringValue = validValues[index];
+                property.Apply();
+            }
 
             innerRect.ApplyStartMargin();
+
+            EditorGUI.BeginChangeCheck();
             property.stringValue = EditorGUI.TextField(innerRect, GUIContent.none, property.stringValue, SkyxStyles.DefaultLabel);
+            if (EditorGUI.EndChangeCheck()) property.Apply();
 
             DrawHintOverlay(innerRect, overlayHint ?? inlaidHint);
             if (string.IsNullOrEmpty(property.stringValue)) DrawHindInlaid(innerRect, inlaidHint);
@@ -230,6 +237,12 @@ namespace Skyx.SkyxEditor
         {
             using var backgroundScope = new BackgroundColorScope(backgroundColor);
             EditorGUI.LabelField(rect, new GUIContent(label, hint), isHeader ? SkyxStyles.PlainBGHeader : SkyxStyles.PlainBGLabel);
+        }
+
+        public static void PlainBGLabel(Rect rect, string label, EConsoleColor color, EHeaderSize size)
+        {
+            using var backgroundScope = new BackgroundColorScope(SkyxStyles.HeaderColor(color));
+            EditorGUI.LabelField(rect, label, SkyxStyles.HeaderText(size));
         }
 
         #region Rect Control

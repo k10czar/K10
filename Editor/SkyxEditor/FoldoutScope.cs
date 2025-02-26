@@ -1,4 +1,5 @@
 ﻿using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace Skyx.SkyxEditor
@@ -8,32 +9,34 @@ namespace Skyx.SkyxEditor
         public readonly bool isExpanded;
         private readonly bool usesLayout;
 
-        private static bool ReallyDraw(Rect headerRect, Rect boxRect, string title, ref bool isExpandedRef, EConsoleColor color, EHeaderSize size)
+        private static bool ReallyDraw(Rect headerRect, Rect boxRect, string title, ref bool isExpandedRef, EConsoleColor color, EHeaderSize size, SerializedProperty property)
         {
             BoxGUI.DrawBox(boxRect, color);
-            EditorGUI.DrawRect(headerRect, SkyxStyles.HeaderColor(color));
 
-            // Define and draw foldout toggle
-            Rect foldoutRect = new Rect(headerRect.x + SkyxStyles.BoxMargin, headerRect.y, SkyxStyles.MiniButtonSize, headerRect.height);
-            GUI.Toggle(foldoutRect, isExpandedRef, GUIContent.none, EditorStyles.foldout);
+            var drawingRect = headerRect;
+            drawingRect.ApplyStartMargin(10);
+            GUI.Toggle(drawingRect.ExtractMiniButton(), isExpandedRef, GUIContent.none, EditorStyles.foldout);
+            EditorGUI.LabelField(drawingRect, title, SkyxStyles.BoldStyle);
 
-            // Define and draw title label
-            Rect labelRect = new Rect(foldoutRect.xMax, headerRect.y, headerRect.width - foldoutRect.xMax + SkyxStyles.BoxMargin, headerRect.height);
-            EditorGUI.LabelField(labelRect, title, SkyxStyles.BoldStyle);
-
-            // Handle mouse events for foldout interaction
-            headerRect.xMax -= SkyxStyles.LineHeight + EditorGUIUtility.standardVerticalSpacing;
-            Event e = Event.current;
-            if (headerRect.Contains(e.mousePosition) && e.type == EventType.MouseDown && e.button == 0)
+            var current = Event.current;
+            if (current.type == EventType.MouseDown && headerRect.Contains(current.mousePosition))
             {
-                isExpandedRef = !isExpandedRef;
-                e.Use();
+                if (current.button == 0)
+                {
+                    isExpandedRef = !isExpandedRef;
+                    current.Use();
+                }
+                else if (current.button == 1 && property != null)
+                {
+                    PropertyContextMenu.Open(property);
+                    current.Use();
+                }
             }
 
             return isExpandedRef;
         }
 
-        private static bool GetDrawingRects(string title, ref bool isExpandedRef, EConsoleColor color, EHeaderSize size)
+        private static bool GetDrawingRects(string title, ref bool isExpandedRef, EConsoleColor color, EHeaderSize size, SerializedProperty property)
         {
             var headerHeight = SkyxStyles.HeaderHeight(size);
             var headerRect = EditorGUILayout.GetControlRect(false, headerHeight);
@@ -49,12 +52,12 @@ namespace Skyx.SkyxEditor
                 boxRect.yMax = drawingRect.yMax;
             }
 
-            ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size);
+            ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size, property);
 
             return initialExpanded;
         }
 
-        private static bool AdjustAvailableRect(ref Rect initialRect, string title, ref bool isExpandedRef, EConsoleColor color, EHeaderSize size)
+        private static bool AdjustAvailableRect(ref Rect initialRect, string title, ref bool isExpandedRef, EConsoleColor color, EHeaderSize size, SerializedProperty property)
         {
             initialRect.height -= SkyxStyles.ElementsMargin;
 
@@ -66,13 +69,13 @@ namespace Skyx.SkyxEditor
 
             initialRect.ApplyBoxMargin(headerHeight);
 
-            return ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size);
+            return ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size, property);
         }
 
         private static bool BeginWrapper(string title, SerializedProperty property, EConsoleColor color, EHeaderSize size)
         {
             var isExpandedRef = property.isExpanded;
-            property.isExpanded = GetDrawingRects(title, ref isExpandedRef, color, size);
+            property.isExpanded = GetDrawingRects(title, ref isExpandedRef, color, size, property);
 
             return isExpandedRef;
         }
@@ -80,7 +83,7 @@ namespace Skyx.SkyxEditor
         private static bool BeginWrapper(ref Rect initialRect, string title, SerializedProperty property, EConsoleColor color, EHeaderSize size)
         {
             var isExpanded = property.isExpanded;
-            property.isExpanded = AdjustAvailableRect(ref initialRect, title, ref isExpanded, color, size);
+            property.isExpanded = AdjustAvailableRect(ref initialRect, title, ref isExpanded, color, size, property);
 
             return property.isExpanded;
         }
@@ -97,7 +100,7 @@ namespace Skyx.SkyxEditor
         public FoldoutScope(string title, ref bool isExpandedRef, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
         {
             usesLayout = true;
-            isExpanded = GetDrawingRects(title, ref isExpandedRef, color, size);
+            isExpanded = GetDrawingRects(title, ref isExpandedRef, color, size, null);
         }
 
         public FoldoutScope(ref Rect rect, SerializedProperty property, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)

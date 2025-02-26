@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -125,8 +126,43 @@ namespace Skyx.SkyxEditor
             return false;
         }
 
+        public static object GenerateDefaultValue(this SerializedProperty property)
+        {
+            var type = property.GetValue().GetType();
+
+            if (type == null) throw new ArgumentNullException(nameof(type));
+            if (type == typeof(string)) return string.Empty;
+            if (type.IsArray) return Array.CreateInstance(type.GetElementType()!, 0);
+
+            if (type.IsValueType || type.GetConstructor(Type.EmptyTypes) != null)
+                return Activator.CreateInstance(type);
+
+            throw new InvalidOperationException($"Cannot create an instance of {type.FullName} because it lacks a parameterless constructor. {property.propertyPath}");
+        }
+
+        public static void ExtractArrayElementInfo(this SerializedProperty property, out SerializedProperty parentProperty, out int index)
+        {
+            parentProperty = null;
+            index = -1;
+
+            var path = property.propertyPath;
+
+            var dataIndex = path.LastIndexOf(".Array.data[", StringComparison.Ordinal);
+            if (dataIndex == -1) throw new ArgumentException($"Property is not an array element! {path}");
+
+            var arrayPath = path[..dataIndex];
+            parentProperty = property.serializedObject.FindProperty(arrayPath);
+
+            var start = dataIndex + ".Array.data[".Length;
+            var end = path.LastIndexOf(']');
+
+            if (!int.TryParse(path.Substring(start, end - start), out index))
+                throw new ArgumentException($"Property is not an array element! {path}");
+        }
+
         public static bool IsArrayEntry(this SerializedProperty property) => isArrayEntryRegex.IsMatch(property.propertyPath);
         public static string PrettyName(this SerializedProperty property) => ObjectNames.NicifyVariableName(property.name);
+
         public static void Apply(this SerializedProperty property, string reason = null) => PropertyCollection.Apply(property.serializedObject, reason ?? $"Modified {property.propertyPath}");
     }
 }
