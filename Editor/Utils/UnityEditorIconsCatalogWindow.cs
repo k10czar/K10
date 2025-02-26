@@ -39,7 +39,10 @@ namespace K10.EditorUtils
                 var field = iconFields[i];
                 if( !textureName && field != null ) name = field.Name;
                 if( !name.Contains( search ) ) continue;
-                GUILayout.BeginHorizontal();
+                var odd = i % 2 == 1;
+                if( odd ) GuiColorManager.New( Color.grey );
+                GUILayout.BeginHorizontal( EditorStyles.helpBox );
+                if( odd ) GuiColorManager.Revert();
                 EditorGUILayout.TextField(name, GUILayout.Width(250));
                 GUILayout.Label(icon);
                 GUILayout.EndHorizontal();
