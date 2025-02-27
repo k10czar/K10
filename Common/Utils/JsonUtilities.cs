@@ -24,7 +24,7 @@ public static class JsonUtilities
 
 	public static void LogToJsonFile(this string rawJson, string suffix1 = "", string suffix2 = "", string environment = "")
 	{
-#if !UNITY_GAMECORE
+#if !UNITY_GAMECORE && !MICROSOFT_GDK_SUPPORT
 		var formattedJson = rawJson.FormatAsJson();
 
 		var fileName = GenerateLogFileName(suffix1, suffix2, environment);

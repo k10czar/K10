@@ -74,7 +74,7 @@ namespace K10.DebugSystem
 
         public void Save()
         {
-#if !UNITY_GAMECORE
+#if !UNITY_GAMECORE && !MICROSOFT_GDK_SUPPORT
             var path = GetPath();
             FileAdapter.SaveAsUTF8(path, JsonUtility.ToJson(this, true));
 #endif
