@@ -37,7 +37,7 @@ public static class CodeMetrics
 #endif
 	}
 
-	static void Log()
+	public static void Log()
 	{
 #if LOG_REPORT_ON_QUIT
 		var sb = StringBuilderPool.RequestEmpty();
@@ -91,24 +91,25 @@ public static class CodeMetrics
     }
 
 
-    public static void Finish( string code )
+    public static void Finish( string code, string newName = null )
 	{
 #if LOG_ALL_METRICS || LOG_REPORT_ON_QUIT
 		if( !_currentRunningMetrics.TryGetValue( code, out var sw ) ) return;
 		var ms = sw.ReturnToPoolAndElapsedMs();
 		_currentRunningMetrics.Remove( code );
+		var codeToUse = string.IsNullOrEmpty(newName) ? code : newName;
 #endif
 #if LOG_ALL_METRICS 
-		var logMessage = $"<color=#0080FF>CodeMetrics</color>: <color=#FF69B4>{code}</color> took <color=#DAA520>{ValueToString(ms)}ms</color>";
+		var logMessage = $"<color=#0080FF>CodeMetrics</color>: <color=#FF69B4>{codeToUse}</color> took <color=#DAA520>{ValueToString(ms)}ms</color>";
 		UnityEngine.Debug.Log( logMessage );
 #endif
 #if LOG_REPORT_ON_QUIT
 		tracks++;
 		totalTime += ms;
-		logReport.TryGetValue( code, out var codeTimeAcc );
-		logReport[code] = codeTimeAcc + ms;
-		callsReport.TryGetValue( code, out var calls );
-		callsReport[code] = calls + 1;
+		logReport.TryGetValue( codeToUse, out var codeTimeAcc );
+		logReport[codeToUse] = codeTimeAcc + ms;
+		callsReport.TryGetValue( codeToUse, out var calls );
+		callsReport[codeToUse] = calls + 1;
 #endif
 	}
 }
