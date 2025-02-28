@@ -29,6 +29,8 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 				}
 
 				_folderPath = folderResult + "\\SV";
+				RequestDirectory( _folderPath );
+
 				_isInitilized.SetTrue();
                 Debug.Log($"Successfully initialized XGameSaveFiles folder: {folderResult}");
 
@@ -95,12 +97,7 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 	
 	public string GetDebugPersistentDataPath() { return GetPersistentDataPath() +"/Debug"; }
 	public bool Exists( string path ) { return File.Exists( path ); }
-	public byte[] ReadAllBytes( string path ) { 
-		return Exists( path ) ? File.ReadAllBytes( path ) : Array.Empty<byte>(); 
-	}
-	public void WriteAllBytes( string path, byte[] bytes ) { 
-		File.WriteAllBytes( path, bytes ); 
-	}
+	public byte[] ReadAllBytes( string path ) { return Exists( path ) ? File.ReadAllBytes( path ) : Array.Empty<byte>(); } public void WriteAllBytes( string path, byte[] bytes ) { File.WriteAllBytes( path, bytes ); }
 	public void RequestDirectory( string dir ) { if( !Directory.Exists(dir) ) Directory.CreateDirectory( dir ); }
 	public void Delete( string path ) { if( Exists(path) ) File.Delete( path ); }
 	public void DeleteDir( string path, bool recursive ) { if( Directory.Exists(path) ) Directory.Delete( path, recursive ); }
