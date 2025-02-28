@@ -45,7 +45,7 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 		var foldersCount = 0;
 
 		var path = GetPersistentDataPath();
-		ListFoldersAndFiles( sb, 0, path, ref foldersCount, ref foldersCount );
+		ListFoldersAndFiles( sb, 0, path, ref filesCount, ref foldersCount );
 
 		Debug.Log( $"{path} has Files:{filesCount} Folders:{foldersCount} (Creation) (LastWrite) (LastAccess) \n{sb.ReturnToPoolAndCast()}" );
     }
