@@ -28,7 +28,7 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 					return;
 				}
 
-				_folderPath = folderResult;
+				_folderPath = folderResult + "/SV/";
 				_isInitilized.SetTrue();
                 Debug.Log($"Successfully initialized XGameSaveFiles folder: {folderResult}");
 
