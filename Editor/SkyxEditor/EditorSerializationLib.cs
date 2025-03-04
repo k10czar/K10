@@ -20,10 +20,9 @@ namespace Skyx.SkyxEditor
             return prop;
         }
 
-
-        public static SerializedProperty GetStringsProp(SerializedProperty root, int index = 0, string defaultValue = "")
+        public static SerializedProperty GetStringsProp(SerializedProperty root, int index = 0, string defaultValue = "", string fieldName = "strings")
         {
-            var prop = GetPropertyFromArray(root, "strings", out var createdFields, index);
+            var prop = GetPropertyFromArray(root, fieldName, out var createdFields, index);
             if (createdFields) prop.stringValue = defaultValue;
             return prop;
         }
