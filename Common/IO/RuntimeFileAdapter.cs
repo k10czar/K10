@@ -20,4 +20,12 @@ public class RuntimeFileAdapter : IFileAdapter
 		K10.ObjectPool.Return( toDelete );
 	}
 	public void SavePlayerPrefs() { }
+
+    public void Copy(string source, string destination)
+    {
+		var lowerSourcePath = source.ToLower();
+        if( !files.TryGetValue( lowerSourcePath, out var copy ) ) return;
+		var destinationSourcePath = destination.ToLower();
+		files[destinationSourcePath] = copy;
+    }
 }
