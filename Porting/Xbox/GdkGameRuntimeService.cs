@@ -1,10 +1,24 @@
-using System.Collections;
+#if MICROSOFT_GDK_SUPPORT || UNITY_GAMECORE
 using Unity.XGamingRuntime;
 using UnityEngine;
+using System;
+using System.Collections;
+using K10.DebugSystem;
+
+public class GdkUserData
+{
+    public XUserHandle userHandle;
+    public XUserLocalId localId;
+    public ulong userXUID;
+    public string userGamertag;
+    public XblPermissionCheckResult canPlayMultiplayer;
+    public XblContextHandle contextHandle;
+}
 
 public interface IGdkRuntimeService : IService, IGdkRuntimeData
 {
-    IBoolStateObserver Initialized { get; }
+    IBoolStateObserver IsInitialized { get; }
+    GdkUserData UserData { get; }
 }
 
 public interface IGdkRuntimeData
@@ -12,6 +26,7 @@ public interface IGdkRuntimeData
     string Sandbox { get; }
     string Scid { get; }
     string TitleId { get; }
+    uint TitleIdNumeric { get; }
 }
 
 public class GdkLogCategory : IK10LogCategory
@@ -20,8 +35,17 @@ public class GdkLogCategory : IK10LogCategory
     public Color Color => Colors.LawnGreen;
 }
 
-public class GdkGameRuntimeService : IGdkRuntimeService, ILogglable<GdkLogCategory>
+public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategory>
 {
+    public enum UserOpResult
+    {
+        Success,
+        NoDefaultUser,
+        ResolveUserIssueRequired,
+        UnclearedVetoes,
+        UnknownError
+    }
+
     public string Sandbox { get; private set; } = "XDKS.1";
     // Documented as: "Specifies the SCID to be used for Save Game Storage."
     public string Scid { get; private set; } = "00000000-0000-0000-0000-0000FFFFFFFF";
@@ -30,17 +54,46 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILogglable<GdkLogCatego
     //   title without having to immediately acquire the Id from Partner Center. It is strongly recommended to change
     //   this Id as soon as you get your title building to avoid failures when attempting to do API calls."
     public string TitleId { get; private set; } = "FFFFFFFF";
+    public uint TitleIdNumeric { get; private set; } = 0;
 
-    public BoolState InitializedRaw { get; private set; } = new BoolState( false );
-    public IBoolStateObserver Initialized => InitializedRaw;
+    private BoolState _isInitialized = new BoolState( false );
+    public IBoolStateObserver IsInitialized => _isInitialized;
+    
+    private BoolState _isLogged = new BoolState( false );
+    public IBoolStateObserver IsLogged => _isLogged;
+    
+    private BoolState _isReady = new BoolState( false );
+    public IBoolStateObserver IsReady => _isReady;
+
+    IBoolStateObserver _isReadyToUse = null;
+    public IBoolStateObserver IsFullyInitialized 
+    { 
+        get
+        {
+            if( _isReadyToUse == null ) _isReadyToUse = new BoolStateOperations.And( _isInitialized, _isLogged, _isReady );
+            return _isReadyToUse;
+        } 
+    }
+
+
     public GdkGameRuntimeService Instance => ServiceLocator.Get<GdkGameRuntimeService>();
-
+    private XGameSaveFilesFileAdapter _gdkFileAdapter;
     private Coroutine _dispatchCoroutine;
-    
-    private UserManager m_UserManager;
-    
+
+    public delegate void AddUserCompletedDelegate(UserOpResult result);
+    public event EventHandler<XUserChangeEvent> UsersChanged;
+
+    private GdkUserData _userData;
+    public GdkUserData UserData => _userData;
+
+    private AddUserCompletedDelegate _currentCompletionDelegate;
+    private XUserChangeRegistrationToken _callbackRegistrationToken;
+ 
+    // TODO-Porting: Cleanup
     public GdkGameRuntimeService( string titleId = "62ab3c24", string scid = "00000000-0000-0000-0000-000062ab3c24", string sandbox = "" )
     {
+        TitleIdNumeric = uint.Parse(titleId, System.Globalization.NumberStyles.HexNumber);
+		Debug.Log( $"<color=Crimson>GdkGameRuntimeService</color>( {titleId}({TitleIdNumeric}), {scid}, {sandbox} )" );
         if( !string.IsNullOrEmpty(sandbox) ) Sandbox = sandbox;
         TitleId = titleId;
         Scid = scid;
@@ -49,27 +102,27 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILogglable<GdkLogCatego
         this.Log($"<color=LawnGreen>GDK</color> Sandbox: {Sandbox}");
         InitializeRuntime();
 
-        if (m_UserManager == null)
-        {
-            m_UserManager = new UserManager();
-        }
+        _gdkFileAdapter = new XGameSaveFilesFileAdapter();
+        FileAdapter.SetImplementation(_gdkFileAdapter); 
+        _gdkFileAdapter.IsInitilized.Synchronize( _isReady );
 
-        m_UserManager.UsersChanged += UserManager_UsersChanged;
+        AddUser(AddUserCompleted, true);
+
+        // Register for the user change event with the GDK
+        SDK.XUserRegisterForChangeEvent(UserChangeEventCallback, out _callbackRegistrationToken);
+    }
+
+    ~GdkGameRuntimeService()
+    {
+        SDK.XUserUnregisterForChangeEvent(_callbackRegistrationToken);
     }
     
-    private bool m_UsersChanged;
-
-    private void UserManager_UsersChanged(object sender, XUserChangeEvent e)
-    {
-        m_UsersChanged = true;
-    }
-
     private bool InitializeRuntime(bool forceInitialization = false)
     {
         if (HR.FAILED(InitializeGamingRuntime(forceInitialization)) ||
             !InitializeXboxLive(Scid))
         {
-            InitializedRaw.SetFalse();
+            _isInitialized.SetFalse();
             return false;
         }
 
@@ -103,7 +156,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILogglable<GdkLogCatego
         this.Log($"<color=LawnGreen>GDK</color> Initialized, titleId: {TitleId}, sandboxId: {Sandbox}");
 
         // Done!
-        InitializedRaw.SetTrue();
+        _isInitialized.SetTrue();
         return true;
     }
 
@@ -115,7 +168,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILogglable<GdkLogCatego
 
         this.Log("Initializing XGame Runtime Library.");
 
-        if( Initialized.Value && !forceInitialization )
+        if( IsInitialized.Value && !forceInitialization )
         {
             this.Log("Gaming Runtime already initialized.");
             return 0;
@@ -156,21 +209,204 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILogglable<GdkLogCatego
             {
                 this.Log($"FAILED: XTaskQueueCreate, HResult: 0x{hResult:X}");
                 return;
+
             }
 
             _dispatchCoroutine = ExternalCoroutine.StartCoroutine(DispatchGDKTaskQueue());
         }
     }
-
+    
     private IEnumerator DispatchGDKTaskQueue()
     {
         while (true)
         {
-            if (m_UserManager != null)
-                m_UserManager.Update();
             // We need to execute SDK.XTaskQueueDispatch(0) to pump all GDK events.
             SDK.XTaskQueueDispatch(0);
             yield return null;
         }
     }
+
+    public bool AddUser(AddUserCompletedDelegate completionDelegate, bool silently)
+    {
+        if (silently)
+            return AddDefaultUserSilently( completionDelegate );
+        return AddUserWithUI( completionDelegate );
+    }
+
+    // TODO: Maybe merge with function below
+    //Adding User Silently
+    public bool AddDefaultUserSilently(AddUserCompletedDelegate completionDelegate)
+    {
+        _userData = new GdkUserData();
+        _currentCompletionDelegate = completionDelegate;
+        SDK.XUserAddAsync(XUserAddOptions.AddDefaultUserAllowingUI, (Int32 hresult, XUserHandle userHandle) =>
+        {
+            if (HR.SUCCEEDED(hresult) && userHandle != null)
+            {
+                Debug.Log("AddUser complete " + hresult + " user handle " + userHandle.GetHashCode());
+
+                // Call XUserGetId here to ensure all vetos (privacy consent, gametag banned, etc) have passed
+                UserOpResult result = GetAllUserInfo(userHandle);
+                if (result == UserOpResult.ResolveUserIssueRequired)
+                {
+                    ResolveSigninIssueWithUI(userHandle, _currentCompletionDelegate);
+                }
+                else
+                {
+                    _currentCompletionDelegate(result);
+                }
+            }
+            else if (hresult == HR.E_GAMEUSER_NO_DEFAULT_USER)
+                _currentCompletionDelegate(UserOpResult.NoDefaultUser);
+            else
+                _currentCompletionDelegate(UserOpResult.UnknownError);
+        });
+
+        return true;
+    }
+
+    public bool AddUserWithUI(AddUserCompletedDelegate completionDelegate)
+    {
+        _userData = new GdkUserData();
+        _currentCompletionDelegate = completionDelegate;
+
+        SDK.XUserAddAsync(XUserAddOptions.None, (Int32 hresult, XUserHandle userHandle) =>
+        {
+            if (HR.SUCCEEDED(hresult) && userHandle != null)
+            {
+                Debug.Log("AddUserWithUI complete " + hresult + " user handle " + userHandle.GetHashCode());
+
+                // Call XUserGetId here to ensure all vetos (privacy consent, gametag banned, etc) have passed
+                UserOpResult result = GetAllUserInfo(userHandle);
+                if (result == UserOpResult.ResolveUserIssueRequired)
+                {
+                    ResolveSigninIssueWithUI(userHandle, _currentCompletionDelegate);
+                }
+                else
+                {
+                    _currentCompletionDelegate(result);
+                }
+            }
+            else if (userHandle != null)
+            {
+                // Failed to log in, try to resolve issue
+                ResolveSigninIssueWithUI(userHandle, _currentCompletionDelegate);
+            }
+            else
+            {
+                // TODO: Maybe it is needed to show again? Idk
+                Debug.Log("Got empty user handle back from AddUserWithUI."); 
+                _currentCompletionDelegate(UserOpResult.UnknownError);
+            }
+        });
+
+        return true;
+    }
+
+    //Resolve sign in issue - lauches  UI to sign in users
+    private void ResolveSigninIssueWithUI(XUserHandle userHandle, AddUserCompletedDelegate completionDelegate)
+    {
+        SDK.XUserResolveIssueWithUiUtf16Async(userHandle, null, (Int32 resolveHResult) =>
+        {
+            if (HR.SUCCEEDED(resolveHResult))
+                GetAllUserInfo(userHandle);
+            else
+            {
+                // User has uncleared vetoes.  The game should decide how to handle this,
+                // either by gracefully continuing or dropping user back to title screen to
+                // with "Press 'A' or 'Enter' to continue" to select a new user.
+                completionDelegate(UserOpResult.UnclearedVetoes);
+            }
+        });
+    }
+
+    private void AddUserCompleted(UserOpResult result)
+    {
+        Debug.Log($"Add user completed {result}");
+        if (result != UserOpResult.Success)
+            Debug.LogError($"Add User Complete failed. UserOpResult = {result}");
+
+        _gdkFileAdapter.Initialize(_userData.userHandle, Scid);
+        _isLogged.SetTrue();
+    }
+
+    private UserOpResult GetAllUserInfo(XUserHandle userHandle)
+    {
+        UserOpResult userOpResult = GetUserId(userHandle);
+        if (userOpResult != UserOpResult.Success)
+            return userOpResult;
+
+        GetUserContext();
+        GetBasicInfo();
+        // TODO: This is async, if we are really going to use it, we should wait for its result and check
+        GetUserMultiplayerPermissions(); 
+
+        return userOpResult;
+    }
+
+    // Get User ID
+    private UserOpResult GetUserId(XUserHandle userHandle)
+    {
+        ulong xuid;
+        int hr = SDK.XUserGetId(userHandle, out xuid);
+        if (HR.SUCCEEDED(hr))
+        {
+            _userData.userHandle = userHandle;
+            _userData.userXUID = xuid;
+            return UserOpResult.Success;
+        }
+        else if (hr == HR.E_GAMEUSER_RESOLVE_USER_ISSUE_REQUIRED)
+        {
+            return UserOpResult.ResolveUserIssueRequired;
+        }
+
+        return UserOpResult.UnknownError;
+    }
+
+    private void GetBasicInfo()
+    {
+        int hr = SDK.XUserGetGamertag(_userData.userHandle, XUserGamertagComponent.Classic, out _userData.userGamertag);
+        if (HR.FAILED(hr))
+            Debug.LogError($"Failed to get Gamertag. HR {hr} - {HR.NameOf(hr)}");
+
+        hr = SDK.XUserGetLocalId(_userData.userHandle, out _userData.localId);
+        if (HR.FAILED(hr))
+            Debug.LogError($"Failed to get LocaId. HR {hr} - {HR.NameOf(hr)}");
+    }
+
+    private void GetUserMultiplayerPermissions()
+    {
+        SDK.XBL.XblPrivacyCheckPermissionAsync(_userData.contextHandle, XblPermission.PlayMultiplayer,
+            _userData.userXUID, (Int32 hresult, XblPermissionCheckResult result) =>
+            {
+                if (HR.SUCCEEDED(hresult))
+                    _userData.canPlayMultiplayer = result;
+                else
+                    Debug.Log("Failed to get user multiplayer permission");
+            });
+    }
+
+    private void GetUserContext()
+    {
+        int hr = SDK.XBL.XblContextCreateHandle(_userData.userHandle, out _userData.contextHandle);
+        if (HR.SUCCEEDED(hr) && _userData.contextHandle != null)
+            Debug.Log("Success XBL and Context");
+        else
+            Debug.Log("Error creating context");
+    }
+
+    private void UserChangeEventCallback(IntPtr _, XUserLocalId userLocalId, XUserChangeEvent eventType)
+    {
+        if (eventType == XUserChangeEvent.SignedOut)
+        {
+            Debug.LogWarning("User logging out");
+        }
+
+        if (eventType != XUserChangeEvent.SignedInAgain)
+        {
+            EventHandler<XUserChangeEvent> handler = UsersChanged;
+            handler?.Invoke(this, eventType);
+        }
+    }
 }
+#endif

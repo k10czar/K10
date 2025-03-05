@@ -42,41 +42,30 @@ public static class ColorExtention
 		return FromInt( r, g, b, a );
 	}
 
-	public static Color Saturate( this Color color, float amount ) 
-	{ 
+	public static Color Saturate( this Color color, float amount )
+	{
 		Color.RGBToHSV(color, out var h, out var s, out var v);
 		return Color.HSVToRGB(h, Mathf.Clamp01(s * amount), v);
 	}
 
-	public static Color AddSaturation( this Color color, float amount ) 
-	{ 
+	public static Color AddSaturation( this Color color, float amount )
+	{
 		Color.RGBToHSV(color, out var h, out var s, out var v);
 		return Color.HSVToRGB(h, Mathf.Clamp01(s + amount), v);
 	}
 
-	public static Color Revalue( this Color color, float amount ) 
-	{ 
+	public static Color Enlight( this Color color, float amount )
+	{
 		Color.RGBToHSV(color, out var h, out var s, out var v);
 		return Color.HSVToRGB(h, s, Mathf.Clamp01(v * amount));
 	}
 
-	public static Color AddValue( this Color color, float amount ) 
-	{ 
+	public static Color AddLight( this Color color, float amount )
+	{
 		Color.RGBToHSV(color, out var h, out var s, out var v);
 		return Color.HSVToRGB(h, s, Mathf.Clamp01(v + amount));
 	}
 
-	public static Color Enlight( this Color color, float amount ) 
-	{ 
-		Color.RGBToHSV(color, out var h, out var s, out var v);
-		return Color.HSVToRGB(h, Mathf.Clamp01(s * amount), Mathf.Clamp01(v * amount));
-	}
-
-	public static Color AddLigth( this Color color, float amount ) 
-	{ 
-		Color.RGBToHSV(color, out var h, out var s, out var v);
-		return Color.HSVToRGB(h, Mathf.Clamp01(s + amount), Mathf.Clamp01(v + amount));
-	}
     public static Color WithAlpha1(this Color color)
     {
         return color.WithAlpha(1);
@@ -93,38 +82,38 @@ public static class ColorExtention
 		return color;
 	}
 
-	public static Color WithRed( this Color color, float amount ) 
-	{ 
+	public static Color WithRed( this Color color, float amount )
+	{
 		color.r = amount;
 		return color;
 	}
 
-	public static Color WithGreen( this Color color, float amount ) 
-	{ 
+	public static Color WithGreen( this Color color, float amount )
+	{
 		color.g = amount;
 		return color;
 	}
 
-	public static Color WithBlue( this Color color, float amount ) 
-	{ 
+	public static Color WithBlue( this Color color, float amount )
+	{
 		color.b = amount;
 		return color;
 	}
 
-	public static Color WithHue( this Color color, float amount ) 
-	{ 
+	public static Color WithHue( this Color color, float amount )
+	{
 		Color.RGBToHSV(color, out var h, out var s, out var v);
 		return Color.HSVToRGB(amount, s, v);
 	}
 
-	public static Color WithSaturation( this Color color, float amount ) 
-	{ 
+	public static Color WithSaturation( this Color color, float amount )
+	{
 		Color.RGBToHSV(color, out var h, out var s, out var v);
 		return Color.HSVToRGB(h, amount, v);
 	}
 
-	public static Color WithValue( this Color color, float amount ) 
-	{ 
+	public static Color WithValue( this Color color, float amount )
+	{
 		Color.RGBToHSV(color, out var h, out var s, out var v);
 		return Color.HSVToRGB(h, s, amount);
 	}

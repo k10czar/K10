@@ -1,8 +1,10 @@
+#if MICROSOFT_GDK_SUPPORT || UNITY_GAMECORE
+using K10.DebugSystem;
 using UnityEngine;
 
-public class GdkGameRuntimeServiceConfigurator : IService, IStartable, ILogglable<GdkLogCategory>
+public class GdkGameRuntimeServiceConfigurator : IService, IStartable, ILoggable<GdkLogCategory>
 {
-    [SerializeField,InlineProperties] GdkPlatformSettings _gdkSettings;
+    [SerializeField,InlineProperties] GdkPlatformSettingsData _gdkSettings;
     GdkGameRuntimeService gdkRuntimeManager;
 
     public IGdkRuntimeService MainService => gdkRuntimeManager;
@@ -23,3 +25,4 @@ public class GdkGameRuntimeServiceConfigurator : IService, IStartable, ILogglabl
         ServiceLocator.Register( gdkRuntimeManager );
     }
 }
+#endif

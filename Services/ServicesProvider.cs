@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using K10.DebugSystem;
 using UnityEngine;
 
 public class ServiceBehavior : MonoBehaviour
@@ -15,10 +16,10 @@ public class ServiceBehavior : MonoBehaviour
 	}
 }
 
-public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSelected, IDrawGizmos, ILogglable<ServicesLogCategory>
+public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSelected, IDrawGizmos, ILoggable<ServicesLogCategory>
 {
 	[ExtendedDrawer, SerializeReference] IService[] _services;
-	
+
     protected override bool CanDrawGizmos => this.CanLogVisuals();
 
     void Awake()
@@ -41,7 +42,7 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 				{
 					startable.Start();
 				}
-				catch( Exception e ) 
+				catch( Exception e )
 				{
 					this.LogException( e );
 				}
@@ -56,14 +57,25 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 		for( int i = 0; i < _services.Length; i++ )
 		{
 			var service = _services[i];
-			// if( service is IActivatable act )
-			// {
-			// 	if( !act.IsActive.Value ) continue;
-			// 	if( service is IStartableService startable && !startable.IsReady ) startable.Start();
-			// }
+			if( service is IActivatable act && !act.IsActive.Value ) continue;
 			if (service is IUpdatable updatable )
 			{
 				updatable.Update( deltaTime );
+			}
+		}
+	}
+
+	void LateUpdate()
+	{
+		if (_services == null) return;
+		var deltaTime = Time.unscaledDeltaTime;
+		for( int i = 0; i < _services.Length; i++ )
+		{
+			var service = _services[i];
+			if( service is IActivatable act && !act.IsActive.Value ) continue;
+			if (service is ILateUpdatable updatable )
+			{
+				updatable.LateUpdate( deltaTime );
 			}
 		}
 	}
