@@ -157,8 +157,19 @@ namespace Skyx.SkyxEditor
             return clicked;
         }
 
-        public static bool ExpandButton(ref Rect rect, SerializedProperty isExpandedProp)
-            => MiniToggle(ref rect, isExpandedProp, "⇓", ">", "Expand", Colors.Console.GrayOut, Colors.Console.DarkerGrayOut, true);
+        public static void ExpandButton(ref Rect rect, SerializedProperty isExpandedProp)
+        {
+            var extracted = ExtractMiniButton(ref rect);
+
+            var label = isExpandedProp.isExpanded ? "⇓" : ">";
+            var backgroundColor = isExpandedProp.isExpanded ? Colors.Console.GrayOut : Colors.Console.DarkerGrayOut;
+
+            using var backgroundScope = new BackgroundColorScope(backgroundColor);
+            EditorGUI.LabelField(extracted, label, SkyxStyles.ButtonStyle);
+
+            var clicked = extracted.TryUseClick(false);
+            if (clicked) isExpandedProp.isExpanded = !isExpandedProp.isExpanded;
+        }
 
         #endregion
 

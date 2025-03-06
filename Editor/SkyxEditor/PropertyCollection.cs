@@ -353,7 +353,7 @@ namespace Skyx.SkyxEditor
                 }
                 else customDrawElement(rect, index, isActive, isFocused);
 
-                if (rect.TryUseRightClick()) PropertyContextMenu.Open(innerProp);
+                if (rect.TryUseClick(true)) PropertyContextMenu.Open(innerProp);
             }
 
             float ElementHeightCallback(int index)
@@ -367,7 +367,7 @@ namespace Skyx.SkyxEditor
                 if (customHeader == null) EditorGUI.LabelField(rect, property.PrettyName());
                 else customHeader(rect);
 
-                if (rect.TryUseRightClick()) PropertyContextMenu.Open(property);
+                if (rect.TryUseClick(true)) PropertyContextMenu.Open(property);
             }
 
             void OnAddCallback(ReorderableList thisList)

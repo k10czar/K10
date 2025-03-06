@@ -79,10 +79,12 @@ namespace Skyx.SkyxEditor
         public static void ApplyBoxMargin(this ref Rect rect, float headerHeight)
             => SkyxGUI.ApplyBoxMargin(ref rect, headerHeight);
 
-        public static bool TryUseRightClick(this ref Rect rect)
+        public static bool TryUseClick(this ref Rect rect, bool isRightClick)
         {
             var current = Event.current;
-            if (current.type == EventType.MouseDown && current.button == 1 && rect.Contains(current.mousePosition))
+            var target = isRightClick ? 1 : 0;
+
+            if (current.type == EventType.MouseDown && current.button == target && rect.Contains(current.mousePosition))
             {
                 current.Use();
                 return true;
