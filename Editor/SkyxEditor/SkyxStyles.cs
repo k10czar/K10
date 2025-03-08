@@ -72,6 +72,7 @@ namespace Skyx.SkyxEditor
         public static GUIStyle HeaderPopupStyle => Style("HeaderPopup", BoldPopupStyle, TextAnchor.MiddleCenter, BigFontSize);
 
         public static GUIStyle ButtonStyle => Style("button", GUI.skin.button, DefaultFontSize);
+        public static GUIStyle MiniButtonStyle => Style("button", GUI.skin.button, padding: noPadding);
         public static GUIStyle BoldButtonStyle => Style("boldButton", ButtonStyle, FontStyle.Bold);
 
         public static GUIStyle DropDownButton = new("DropDownToggleButton");

@@ -13,13 +13,13 @@ namespace Skyx.SkyxEditor
         public static bool PrimaryButton(string label, params GUILayoutOption[] layouts) => Button(label, Colors.Console.Dark, null, layouts);
         public static bool SecondaryButton(string label, params GUILayoutOption[] layouts) => Button(label, Colors.Console.GrayOut, null, layouts);
         public static bool DangerButton(string label, params GUILayoutOption[] layouts) => Button(label, Colors.Console.Danger, null, layouts);
-        public static bool ClearButton(string label) => Button(label, Color.clear);
 
         public static bool PlainBGButton(string label, Color color) => Button(label, color, SkyxStyles.PlainBGLabel);
         public static bool PlainBGHeaderButton(string label, Color color) => Button(label, color, SkyxStyles.PlainBGHeader);
         public static bool PlainBGHeaderButton(string label, bool success) => Button(label, success ? Colors.Console.Success : Colors.Console.Danger, SkyxStyles.PlainBGHeader);
 
         public static bool Button(string label) => Button(label, Color.white, SkyxStyles.ButtonStyle);
+        public static bool Button(string label, EConsoleColor color) => Button(label, Colors.Console.Get(color), SkyxStyles.ButtonStyle);
         public static bool Button(string label, Color backgroundColor) => Button(label, backgroundColor, SkyxStyles.ButtonStyle);
 
         public static bool Button(string label, Color backgroundColor, GUIStyle style, params GUILayoutOption[] layouts)

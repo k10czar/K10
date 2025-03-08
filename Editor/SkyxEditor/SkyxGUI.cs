@@ -120,7 +120,7 @@ namespace Skyx.SkyxEditor
             => DrawToggle(rect, onLabel, offLabel, Colors.Console.Warning, Colors.Console.GrayOut, property, hint);
 
         public static bool DrawChoiceToggle(Rect rect, string onLabel, string offLabel, SerializedProperty property, string hint)
-            => DrawToggle(rect, onLabel, offLabel, Colors.Console.Special, Colors.Console.Info, property, hint);
+            => DrawToggle(rect, onLabel, offLabel, Colors.Console.Success, Colors.Console.Info, property, hint);
 
         public static bool MiniSuccessToggle(ref Rect rect, SerializedProperty toggleProp, string label, string hint, bool fromEnd = false)
             => DrawSuccessToggle(ExtractMiniButton(ref rect, fromEnd), label, toggleProp, hint);
@@ -178,6 +178,9 @@ namespace Skyx.SkyxEditor
         public static bool HeaderButton(Rect rect, string label, EConsoleColor color, EHeaderSize size)
             => Button(rect, label, SkyxStyles.HeaderColor(color), SkyxStyles.HeaderText(size));
 
+        public static bool Button(Rect rect, string label, EConsoleColor color, string hint = null)
+            => Button(rect, label, Colors.Console.Get(color), SkyxStyles.ButtonStyle, hint);
+
         public static bool Button(Rect rect, string label, Color backgroundColor, GUIStyle style = null, string hint = null)
         {
             style ??= SkyxStyles.ButtonStyle;
@@ -191,19 +194,19 @@ namespace Skyx.SkyxEditor
         }
 
         public static bool MiniSuccessButton(ref Rect rect, string label, string hint, bool fromEnd = false)
-            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Success, SkyxStyles.ButtonStyle, hint);
+            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Success, SkyxStyles.MiniButtonStyle, hint);
 
         public static bool MiniEnableButton(ref Rect rect, string label, string hint, bool fromEnd = false)
-            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Secondary, SkyxStyles.ButtonStyle, hint);
+            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Secondary, SkyxStyles.MiniButtonStyle, hint);
 
         public static bool MiniWarningButton(ref Rect rect, string label, string hint, bool fromEnd = false)
-            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Warning, SkyxStyles.ButtonStyle, hint);
+            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Warning, SkyxStyles.MiniButtonStyle, hint);
 
         public static bool MiniDangerButton(ref Rect rect, string label, string hint, bool fromEnd = false)
-            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Danger, SkyxStyles.ButtonStyle, hint);
+            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Danger, SkyxStyles.MiniButtonStyle, hint);
 
         public static bool MiniButton(ref Rect rect, string label, EConsoleColor color, string hint = null, bool fromEnd = false)
-            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Get(color), SkyxStyles.ButtonStyle, hint);
+            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Get(color), SkyxStyles.MiniButtonStyle, hint);
 
         #endregion
 

@@ -55,7 +55,7 @@ public static class Colors
         {
             if (optionsSequence != null) return optionsSequence;
 
-            optionsSequence = new[] { Azure, Fern, Coral, Cyan, Salmon, Goldenrod, DeepPink, Khaki, Cerulean, Crimson, LawnGreen, MediumSlateBlue, OrangeRed };
+            optionsSequence = new[] { Cyan, Yellow, Salmon, LawnGreen, Cerulean, Goldenrod, MediumSlateBlue, Khaki, DeepPink, Crimson, Azure, Fern, Coral, OrangeRed };
 
             return optionsSequence;
         }
