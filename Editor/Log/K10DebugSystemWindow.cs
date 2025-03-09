@@ -40,8 +40,12 @@ public class K10DebugSystemWindow : EditorWindow
     private void DrawGameSystemDebugEnablers(IK10LogCategory category)
     {
         var inspectorWidth = EditorGUIUtility.currentViewWidth;
-        var elementWidth = (inspectorWidth - 46) / 3f;
-        var width = GUILayout.Width(elementWidth);
+        var rightWidth = (inspectorWidth - 64);
+        var elementWidth = Mathf.Min( rightWidth / 4f, 92 );
+
+        var verW = GUILayout.Width( elementWidth );
+        var visW = GUILayout.Width( elementWidth );
+        var catW = GUILayout.Width( rightWidth - ( 2 * elementWidth ) );
 
         var categoryName = category.Name;
         var categoryType = category.GetType();
@@ -53,18 +57,18 @@ public class K10DebugSystemWindow : EditorWindow
         if (GUILayout.Button(GUIContent.none, K10GuiStyles.bigbuttonFlatStyle, GUILayout.Width(20)))
         {
             var on = K10DebugSystem.CanDebug(categoryType);
-            K10DebugSystem.SetCategory(categoryType, EDebugType.Default, !on);
-            K10DebugSystem.SetCategory(categoryType, EDebugType.Verbose, !on);
+            K10DebugSystem.SetCategory(categoryType, EDebugType.Default, !on, false);
+            K10DebugSystem.SetCategory(categoryType, EDebugType.Verbose, !on, false);
             K10DebugSystem.SetCategory(categoryType, EDebugType.Visual, !on);
         }
 
         GuiBackgroundColorManager.Revert();
         GUILayout.Space(4);
-        if (ToggleButton(categoryName, K10DebugSystem.CanDebug(categoryType), width)) K10DebugSystem.ToggleCategory(categoryType, EDebugType.Default);
+        if (ToggleButton(categoryName, K10DebugSystem.CanDebug(categoryType), catW )) K10DebugSystem.ToggleCategory(categoryType, EDebugType.Default);
         GUILayout.Space(4);
-        if (ToggleButton("Verbose", K10DebugSystem.CanDebug(categoryType, EDebugType.Verbose), width)) K10DebugSystem.ToggleCategory(categoryType, EDebugType.Verbose);
+        if (ToggleButton("Verbose", K10DebugSystem.CanDebug(categoryType, EDebugType.Verbose), verW)) K10DebugSystem.ToggleCategory(categoryType, EDebugType.Verbose);
         GUILayout.Space(4);
-        if (ToggleButton("Visuals", K10DebugSystem.CanDebug(categoryType, EDebugType.Visual), width)) K10DebugSystem.ToggleCategory(categoryType, EDebugType.Visual);
+        if (ToggleButton("Visuals", K10DebugSystem.CanDebug(categoryType, EDebugType.Visual), visW)) K10DebugSystem.ToggleCategory(categoryType, EDebugType.Visual);
         GUILayout.Space(4);
         GUILayout.EndHorizontal();
     }

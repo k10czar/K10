@@ -19,12 +19,12 @@ namespace Skyx.SkyxEditor
 
         public static void DrawEnum(Rect rect, SerializedProperty property, Type enumType, Color color, string hint = "")
         {
-            EnumTreeDrawer.DrawEnumDropdown(
-                rect,
-                property,
-                color,
-                SkyxStyles.PopupStyle,
-                enumType);
+            // EnumTreeDrawer.DrawEnumDropdown(
+            //     rect,
+            //     property,
+            //     color,
+            //     SkyxStyles.PopupStyle,
+            //     enumType);
 
             var value = Enum.ToObject(enumType, property.intValue);
             var fullHint = $"[{enumType.Name}.{value}] {hint}";

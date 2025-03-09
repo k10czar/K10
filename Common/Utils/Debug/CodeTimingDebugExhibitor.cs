@@ -1,6 +1,7 @@
+using System;
 using UnityEngine;
 
-[DefaultExecutionOrder(CodeTimingDebugExhibitor.EXECUTION_ORDER)]
+[DefaultExecutionOrder(EXECUTION_ORDER)]
 public abstract class CodeTimingDebugExhibitor : MonoBehaviour
 {
 	public const int EXECUTION_ORDER = 20000;
@@ -8,18 +9,21 @@ public abstract class CodeTimingDebugExhibitor : MonoBehaviour
 	protected float timer;
 
 	[SerializeField] protected float tickInterval = 0.0f;
+	[ExtendedDrawer(true),SerializeReference] IEventBinderReference _deepToogle;
 
 	protected abstract void SetLog( string log );
 	protected abstract void OnEnableChange( bool enabled );
 
-	void OnEnable()
+    void OnEnable()
 	{
 		CodeTimingDebug.Enable();
+		_deepToogle?.Register( CodeTimingDebug.ToogleDeep );
 	}
 
 	void OnDisable()
 	{
 		CodeTimingDebug.Disable();
+		_deepToogle?.Unregister( CodeTimingDebug.ToogleDeep );
 	}
 
 	void LateUpdate()
