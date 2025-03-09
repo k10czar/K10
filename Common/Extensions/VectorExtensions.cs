@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Runtime.CompilerServices;
-using Unity.Mathematics;
 
 public static class VectorExtensions
 {
@@ -52,18 +51,18 @@ public static class VectorExtensions
     public static Vector3 RandomShake( this Vector3 v, float maxMag )
     {
         var randonOffsetMag = UnityEngine.Random.Range( 0, maxMag );
-        var randonAngZ = UnityEngine.Random.Range( 0, math.PI2 );
-        var randonAngY = UnityEngine.Random.Range( 0, math.PI2 );
+        var randonAngZ = UnityEngine.Random.Range( 0, MathAdapter.PI2 );
+        var randonAngY = UnityEngine.Random.Range( 0, MathAdapter.PI2 );
         return Shake( v, randonOffsetMag, randonAngZ, randonAngY );
     }
 
     [MethodImpl( ConstsK10.AggrInline )]
     public static Vector3 Shake( this Vector3 v, float mag, float angleZ, float angleY )
     {        
-        var cosZ = math.cos( angleZ );
-        var sinZ = math.sin( angleZ );
-        var cosY = math.cos( angleY );
-        var sinY = math.sin( angleY );
+        var cosZ = MathAdapter.cos( angleZ );
+        var sinZ = MathAdapter.sin( angleZ );
+        var cosY = MathAdapter.cos( angleY );
+        var sinY = MathAdapter.sin( angleY );
 
         var offX = mag * cosY * cosZ;
         var offY = mag * cosY * sinZ;

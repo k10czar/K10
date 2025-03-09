@@ -40,6 +40,7 @@ public static class MathAdapter
 	public const float PI = Mathf.PI;
 	public const float EP2 = 2 * float.Epsilon;
 #endif
+	public const float PI2 = 2*PI;
 
 	public const float RadiansToDegrees = 180f / PI;
 	public const float DegreesToRadians = 1 / RadiansToDegrees;

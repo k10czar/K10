@@ -1,4 +1,3 @@
-using Unity.Mathematics;
 
 public interface IValueInterpolationDataAccess<T>
 {
