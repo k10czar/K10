@@ -4,6 +4,20 @@ using UnityEngine;
 
 public static class ListExtensions
 {
+    public static void ExecuteAll( this List<Action> list )
+    {
+		foreach( var act in list ) act();
+    }
+    public static void ExecuteAll<T>( this List<Action<T>> list, T t )
+    {
+		foreach( var act in list ) act( t );
+    }
+
+    public static void PutOn<T>( this T t, ICollection<T> list )
+    {
+        list.Add( t );
+    }
+
 	public static T GetClamped<T>(this IList<T> list, int index) => list[Mathf.Min(index, list.Count - 1)];
 
 	public static T GetClampedOrDefault<T>(this IList<T> list, int index)

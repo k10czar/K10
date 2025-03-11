@@ -44,7 +44,7 @@ namespace K10.DebugSystem
             Save();
         }
 
-        public void SetDebug(Type categoryType, EDebugType debugType, bool value)
+        public void SetDebug(Type categoryType, EDebugType debugType, bool value, bool save = true)
         {
             var list = GetCorrespondingList(debugType);
             var target = categoryType.Name;
@@ -56,7 +56,7 @@ namespace K10.DebugSystem
             }
             else list.Remove(target);
 
-            Save();
+            if( save ) Save();
         }
 
         public void ToggleDebugTargets()

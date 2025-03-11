@@ -21,6 +21,7 @@ namespace Automation
 		public void Awake()
 		{
 			if( _onlyEditor && !IS_EDITOR ) return;
+			if( _moment == null ) return;
 			var moment = _moment.GetEventOrInstant();
 			Log( $"{"Starting".Colorfy( Colors.Console.Verbs )} OperationRunner and registered to run in {moment}", _log);
 			moment.Register( TryExecuteOperationNoReturn );
