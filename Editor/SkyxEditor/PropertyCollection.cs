@@ -203,14 +203,13 @@ namespace Skyx.SkyxEditor
 
         #region Rect Draw
 
-        public void Draw(ref Rect rect, string propertyName, bool slideRect = true)
+        public void Draw(ref Rect rect, string propertyName, bool slideRect = true, bool isBacking = false)
         {
-            if (TryGet(propertyName, out var property))
-            {
-                EditorGUI.BeginChangeCheck();
-                EditorGUI.PropertyField(rect, property, GUIContent.none);
-                if (EditorGUI.EndChangeCheck()) property.Apply();
-            }
+            var property = Get(propertyName, isBacking);
+
+            EditorGUI.BeginChangeCheck();
+            EditorGUI.PropertyField(rect, property, GUIContent.none);
+            if (EditorGUI.EndChangeCheck()) property.Apply();
 
             if (slideRect) rect.SlideSameRect();
         }

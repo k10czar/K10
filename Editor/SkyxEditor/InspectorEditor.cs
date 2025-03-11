@@ -96,7 +96,7 @@ namespace Skyx.SkyxEditor
             SkyxLayout.Space();
         }
 
-        private void CacheProperties(bool reset)
+        protected void CacheProperties(bool reset)
         {
             if (reset) PropertyCollection.Release(serializedObject);
             Properties = PropertyCollection.Get(serializedObject);
@@ -118,6 +118,8 @@ namespace Skyx.SkyxEditor
 
             CacheProperties(true);
         }
+
+        protected void ApplyPropertyChanges(string reason = null) => PropertyCollection.Apply(serializedObject, reason ?? $"Modified {serializedObject}");
 
         protected virtual void OnPlayModeStateChanged(PlayModeStateChange playModeStateChange)
         {
