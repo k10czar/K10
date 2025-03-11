@@ -49,7 +49,7 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 		var path = GetPersistentDataPath();
 		ListFoldersAndFiles( sb, 0, path, ref filesCount, ref foldersCount );
 
-		Debug.Log( $"{path} has Files:{filesCount} Folders:{foldersCount} (Creation) (LastWrite) (LastAccess) \n{sb.ReturnToPoolAndCast()}" );
+		Debug.Log( $"{path} has Files:{filesCount} Folders:{foldersCount} {{Creation}} (LastWrite) [LastAccess] \n{sb.ReturnToPoolAndCast()}" );
     }
 
 	void ListFoldersAndFiles( System.Text.StringBuilder sb, int level, string path, ref int filesCount, ref int foldersCount, string indentation = "    " )
@@ -61,7 +61,7 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 
 		var lastBar = path.Length - 2;
 		for( ; lastBar > 0; lastBar-- ) if( path[lastBar] == '/' || path[lastBar] == '\\' ) break;
-		sb.AppendLine( $"{path.Substring(lastBar)} ({pathCreation:dd MMM yy HH:mm:ss}) ({pathLastAccess:dd MMM yy HH:mm:ss}) ({pathLastWrite:dd MMM yy HH:mm:ss})" );
+		sb.AppendLine( $"{path.Substring(lastBar)} {{{pathCreation:dd MMM yy HH:mm:ss}}} ({pathLastAccess:dd MMM yy HH:mm:ss}) [{pathLastWrite:dd MMM yy HH:mm:ss}]" );
 
 		level++;
 
