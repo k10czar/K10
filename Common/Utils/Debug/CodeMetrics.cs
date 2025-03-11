@@ -49,7 +49,7 @@ public static class CodeMetrics
 		if( !Application.isPlaying ) return;
 		_inited = true;
 #if LOG_REPORT_ON_QUIT
-		ApplicationEventsRelay.OnQuit.Register( _fullReport.DebugLog );
+		ApplicationEventsRelay.IsSuspended.RegisterOnTrue( _fullReport.DebugLog );
 		UnityEngine.Debug.Log( "Registered <color=#0080FF>CodeMetrics</color> Log when <color=#FF69B4>ApplcationQuit</color>" );
 #endif
     }
