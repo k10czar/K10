@@ -19,10 +19,6 @@ public interface IGdkRuntimeService : IService, IGdkRuntimeData
 {
     IBoolStateObserver IsInitialized { get; }
     GdkUserData UserData { get; }
-    GXDKAppLocalDeviceId ActiveControllerDeviceId { get; }
-
-    void SetActiveController(GXDKAppLocalDeviceId deviceId);
-    void PairControllerToUser();
 }
 
 public interface IGdkRuntimeData
@@ -69,15 +65,19 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     private BoolState _isReady = new BoolState( false );
     public IBoolStateObserver IsReady => _isReady;
 
+#if UNITY_GAMECORE
     private GXDKAppLocalDeviceId _activeControllerDeviceId;
     public GXDKAppLocalDeviceId ActiveControllerDeviceId => _activeControllerDeviceId;
+#endif
     
     private XUserDeviceAssociationChangedRegistrationToken _deviceAssociationChangedRegistrationToken;
     private EventSlot<XUserDeviceAssociationChange> _onDeviceAssiociationChanged = new();
     public IEventRegister<XUserDeviceAssociationChange> OnDeviceAssiociationChanged => _onDeviceAssiociationChanged;
 
+#if UNITY_GAMECORE
     private EventSlot<GXDKAppLocalDeviceId> _onUpdatedActiveController = new();
     public IEventRegister<GXDKAppLocalDeviceId> OnUpdatedActiveController => _onUpdatedActiveController;
+#endif
 
     IBoolStateObserver _isReadyToUse = null;
     public IBoolStateObserver IsFullyInitialized 
@@ -359,6 +359,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         _isLogged.SetTrue();
     }
 
+#if UNITY_GAMECORE
     public void PairControllerToUser()
     {
         if (_showingPairControllerUI)
@@ -385,6 +386,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         _activeControllerDeviceId = deviceId;
         _onUpdatedActiveController.Trigger(ActiveControllerDeviceId);
     }
+#endif
 
     private UserOpResult GetAllUserInfo(XUserHandle userHandle)
     {
