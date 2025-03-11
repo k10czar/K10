@@ -19,6 +19,10 @@ public interface IGdkRuntimeService : IService, IGdkRuntimeData
 {
     IBoolStateObserver IsInitialized { get; }
     GdkUserData UserData { get; }
+    GXDKAppLocalDeviceId ActiveControllerDeviceId { get; }
+
+    void SetActiveController(GXDKAppLocalDeviceId deviceId);
+    void PairControllerToUser();
 }
 
 public interface IGdkRuntimeData
@@ -65,6 +69,16 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     private BoolState _isReady = new BoolState( false );
     public IBoolStateObserver IsReady => _isReady;
 
+    private GXDKAppLocalDeviceId _activeControllerDeviceId;
+    public GXDKAppLocalDeviceId ActiveControllerDeviceId => _activeControllerDeviceId;
+    
+    private XUserDeviceAssociationChangedRegistrationToken _deviceAssociationChangedRegistrationToken;
+    private EventSlot<XUserDeviceAssociationChange> _onDeviceAssiociationChanged = new();
+    public IEventRegister<XUserDeviceAssociationChange> OnDeviceAssiociationChanged => _onDeviceAssiociationChanged;
+
+    private EventSlot<GXDKAppLocalDeviceId> _onUpdatedActiveController = new();
+    public IEventRegister<GXDKAppLocalDeviceId> OnUpdatedActiveController => _onUpdatedActiveController;
+
     IBoolStateObserver _isReadyToUse = null;
     public IBoolStateObserver IsFullyInitialized 
     { 
@@ -88,6 +102,8 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
     private AddUserCompletedDelegate _currentCompletionDelegate;
     private XUserChangeRegistrationToken _callbackRegistrationToken;
+    private bool _showingPairControllerUI;
+
  
     // TODO-Porting: Cleanup
     public GdkGameRuntimeService( string titleId = "62ab3c24", string scid = "00000000-0000-0000-0000-000062ab3c24", string sandbox = "" )
@@ -110,11 +126,24 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
         // Register for the user change event with the GDK
         SDK.XUserRegisterForChangeEvent(UserChangeEventCallback, out _callbackRegistrationToken);
+        SDK.XUserRegisterForDeviceAssociationChanged(
+            new XTaskQueueHandle(System.IntPtr.Zero),
+            IntPtr.Zero,
+            HandleDeviceAssociationChange,
+            out _deviceAssociationChangedRegistrationToken
+        );	
     }
+
 
     ~GdkGameRuntimeService()
     {
         SDK.XUserUnregisterForChangeEvent(_callbackRegistrationToken);
+        SDK.XUserUnregisterForDeviceAssociationChanged(_deviceAssociationChangedRegistrationToken, true);
+    }
+
+    private void HandleDeviceAssociationChange(IntPtr context, ref XUserDeviceAssociationChange change)
+    {
+        _onDeviceAssiociationChanged.Trigger(change);
     }
     
     private bool InitializeRuntime(bool forceInitialization = false)
@@ -328,6 +357,33 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
         _gdkFileAdapter.Initialize(_userData.userHandle, Scid);
         _isLogged.SetTrue();
+    }
+
+    public void PairControllerToUser()
+    {
+        if (_showingPairControllerUI)
+            return;
+
+        _showingPairControllerUI = true;
+
+        SDK.XUserFindControllerForUserWithUiAsync(UserData.userHandle, (Int32 Hresult, APP_LOCAL_DEVICE_ID deviceId) =>
+        {
+            _showingPairControllerUI = false;
+
+            if (HR.FAILED(Hresult))
+            {
+                PairControllerToUser();
+                return;
+            }
+
+            SetActiveController(new GXDKAppLocalDeviceId(deviceId.Value));
+        });
+    }
+
+    public void SetActiveController(GXDKAppLocalDeviceId deviceId)
+    {
+        _activeControllerDeviceId = deviceId;
+        _onUpdatedActiveController.Trigger(ActiveControllerDeviceId);
     }
 
     private UserOpResult GetAllUserInfo(XUserHandle userHandle)
