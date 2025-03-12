@@ -268,7 +268,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     {
         _userData = new GdkUserData();
         _currentCompletionDelegate = completionDelegate;
-        SDK.XUserAddAsync(XUserAddOptions.AddDefaultUserAllowingUI, (Int32 hresult, XUserHandle userHandle) =>
+        SDK.XUserAddAsync(XUserAddOptions.AddDefaultUserSilently, (Int32 hresult, XUserHandle userHandle) =>
         {
             if (HR.SUCCEEDED(hresult) && userHandle != null)
             {
