@@ -103,6 +103,11 @@ namespace Skyx.SkyxEditor
             isExpanded = GetDrawingRects(title, ref isExpandedRef, color, size, null);
         }
 
+        public FoldoutScope(ref Rect rect, string title, ref bool isExpandedRef, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
+        {
+            isExpanded = AdjustAvailableRect(ref rect, title, ref isExpandedRef, color, size, null);
+        }
+
         public FoldoutScope(ref Rect rect, SerializedProperty property, EConsoleColor color = EConsoleColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
             : this(ref rect, property, property.PrettyName(), color, size) {}
 

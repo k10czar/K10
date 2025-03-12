@@ -232,12 +232,12 @@ namespace Skyx.SkyxEditor
             if (!string.IsNullOrEmpty(hint)) DrawHintOverlay(hintRect, hint);
         }
 
-        public static void Separator(ref Rect rect, float margin = 4, float size = 1)
+        public static void Separator(ref Rect rect, float margin = 3, float size = 1)
         {
-            var separator = new Rect(rect.x, rect.y, rect.width, size);
+            var separator = new Rect(rect.x, rect.y + margin, rect.width, size);
             EditorGUI.DrawRect(separator, SkyxStyles.defaultSeparatorColor);
 
-            rect.y += margin + size;
+            rect.y += margin + size + margin;
         }
 
         public static void ShadowLabel(Rect rect, string label, GUIStyle style)

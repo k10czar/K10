@@ -12,9 +12,6 @@ namespace Skyx.SkyxEditor
         protected T GetTarget<T>(SerializedProperty property) where T: class => property.GetValue<T>();
         protected PropertyCollection GetProperties(SerializedProperty property) => PropertyCollection.Get(property);
 
-        protected virtual float ExtraHeight => 0;
-        protected virtual string[] ExcludeFieldsFromHeight { get; } = Array.Empty<string>();
-
         protected abstract void Draw(Rect rect, SerializedProperty property, GUIContent label);
 
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)

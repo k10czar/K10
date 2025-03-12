@@ -203,34 +203,34 @@ namespace Skyx.SkyxEditor
 
         #region Rect Draw
 
-        public void Draw(ref Rect rect, string propertyName, bool slideRect = true, bool isBacking = false)
+        public void Draw(ref Rect rect, string propertyName, bool slideRect = true, bool isBacking = false, bool drawLabel = false)
         {
             var property = Get(propertyName, isBacking);
 
             EditorGUI.BeginChangeCheck();
-            EditorGUI.PropertyField(rect, property, GUIContent.none);
+            EditorGUI.PropertyField(rect, property, drawLabel ? null : GUIContent.none);
             if (EditorGUI.EndChangeCheck()) property.Apply();
 
             if (slideRect) rect.SlideSameRect();
         }
 
-        public void DrawFloat(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false)
-            => Draw(ref rect, Get(propertyName, isBacking), Get(propertyName, isBacking).floatValue != 0, inlaidHint, overlayHint, slideRect);
+        public void DrawFloat(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false, bool alwaysDrawInlaid = false)
+            => Draw(ref rect, Get(propertyName, isBacking), Get(propertyName, isBacking).floatValue != 0, inlaidHint, overlayHint, slideRect, alwaysDrawInlaid);
 
-        public void DrawInt(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false)
-            => Draw(ref rect, Get(propertyName, isBacking), Get(propertyName, isBacking).intValue != 0, inlaidHint, overlayHint, slideRect);
+        public void DrawInt(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false, bool alwaysDrawInlaid = false)
+            => Draw(ref rect, Get(propertyName, isBacking), Get(propertyName, isBacking).intValue != 0, inlaidHint, overlayHint, slideRect, alwaysDrawInlaid);
 
-        public void DrawString(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false)
-            => Draw(ref rect, Get(propertyName, isBacking), !string.IsNullOrEmpty(Get(propertyName, isBacking).stringValue), inlaidHint, overlayHint, slideRect);
+        public void DrawString(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false, bool alwaysDrawInlaid = false)
+            => Draw(ref rect, Get(propertyName, isBacking), !string.IsNullOrEmpty(Get(propertyName, isBacking).stringValue), inlaidHint, overlayHint, slideRect, alwaysDrawInlaid);
 
-        private static void Draw(ref Rect rect, SerializedProperty property, bool hasValue, string inlaidHint = null, string overlayHint = null, bool slideRect = true)
+        private static void Draw(ref Rect rect, SerializedProperty property, bool hasValue, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool alwaysDrawInlaid = false)
         {
             EditorGUI.BeginChangeCheck();
             EditorGUI.PropertyField(rect, property, GUIContent.none);
             if (EditorGUI.EndChangeCheck()) property.Apply();
 
             SkyxGUI.DrawHintOverlay(rect, overlayHint ?? inlaidHint);
-            if (!hasValue) SkyxGUI.DrawHindInlaid(rect, inlaidHint);
+            if (alwaysDrawInlaid || !hasValue) SkyxGUI.DrawHindInlaid(rect, inlaidHint);
 
             if (slideRect) rect.SlideSameRect();
         }
