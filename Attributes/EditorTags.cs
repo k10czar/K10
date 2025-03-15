@@ -120,3 +120,5 @@ public class EnumAndMaskEntry : PropertyAttribute
 		this.secondColor = secondColor;
 	}
 }
+
+public class LocalPosition : PropertyAttribute {}
