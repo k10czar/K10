@@ -7,8 +7,8 @@ using Unity.Collections;
 
 public static class NativeArrayExtensions
 {
-	// [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static NativeArray<T> ToNativeArray<T>( this IList<T> collection, Allocator allocator ) where T : struct
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static NativeArray<T> ToNativeArray<T>( this IList<T> collection, Allocator allocator = Allocator.Persistent ) where T : struct
     {
         var count = collection.Count;
         var natArray = new NativeArray<T>( count, allocator, NativeArrayOptions.UninitializedMemory );
@@ -16,10 +16,19 @@ public static class NativeArrayExtensions
         return natArray;
     }
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static NativeArray<int> CountTo( int count, Allocator allocator = Allocator.Persistent )
+    {
+        var natArray = new NativeArray<int>( count, allocator, NativeArrayOptions.UninitializedMemory );
+        for( int i = 0; i < count; i++ ) natArray[i] = i;
+        return natArray;
+    }
+
     // public static NativeArray<T> CombineToNativeArray<T>( this List<List<T>> collection, Allocator allocator, out NativeArray<int> indexes, out NativeArray<int> counts ) where T : struct
     //     => CombineToNativeArray<T>( (IList<IList<T>>) collection, allocator, out indexes, out counts );
 
-    public static NativeArray<T> CombineToNativeArray<T>( this List<List<T>> collection, Allocator allocator, out NativeArray<int> indexes, out NativeArray<int> counts ) where T : struct
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static NativeArray<T> CombineToNativeArray<T>( this List<List<T>> collection, out NativeArray<int> indexes, out NativeArray<int> counts, Allocator allocator = Allocator.Persistent ) where T : struct
     {
         var count = 0;
         var arrays = collection.Count;
