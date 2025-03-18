@@ -9,34 +9,75 @@ namespace Skyx.SkyxEditor
         public static SerializedProperty GetBooleansProp(SerializedProperty root, int index = 0, bool defaultValue = false)
         {
             var prop = GetPropertyFromArray(root, "booleans", out var createdFields, index);
-            if (createdFields) prop.boolValue = defaultValue;
+
+            if (createdFields)
+            {
+                prop.boolValue = defaultValue;
+                prop.Apply();
+            }
+
             return prop;
         }
 
         public static SerializedProperty GetNumbersProp(SerializedProperty root, int index = 0, int defaultValue = 0)
         {
             var prop = GetPropertyFromArray(root, "numbers", out var createdFields, index);
-            if (createdFields) prop.intValue = defaultValue;
+
+            if (createdFields)
+            {
+                prop.intValue = defaultValue;
+                prop.Apply();
+            }
+
             return prop;
         }
 
         public static SerializedProperty GetStringsProp(SerializedProperty root, int index = 0, string defaultValue = "", string fieldName = "strings")
         {
             var prop = GetPropertyFromArray(root, fieldName, out var createdFields, index);
-            if (createdFields) prop.stringValue = defaultValue;
+
+            if (createdFields)
+            {
+                prop.stringValue = defaultValue;
+                prop.Apply();
+            }
+
             return prop;
         }
 
         public static SerializedProperty GetFloatsProp(SerializedProperty root, int index = 0, float defaultValue = 0)
         {
             var prop = GetPropertyFromArray(root, "floats", out var createdFields, index);
-            if (createdFields) prop.floatValue = defaultValue;
+
+            if (createdFields)
+            {
+                prop.floatValue = defaultValue;
+                prop.Apply();
+            }
+
             return prop;
         }
 
-        public static SerializedProperty GetPositionsProp(SerializedProperty root, int index = 0) => GetPropertyFromArray(root, "positions", out _, index);
-        public static SerializedProperty GetDirectionsProp(SerializedProperty root, int index = 0) => GetPropertyFromArray(root, "directions", out _, index);
-        public static SerializedProperty GetObjectsProp(SerializedProperty root, int index = 0) => GetPropertyFromArray(root, "objects", out _, index);
+        public static SerializedProperty GetPositionsProp(SerializedProperty root, int index = 0)
+        {
+            var prop = GetPropertyFromArray(root, "positions", out var createdFields, index);
+            if (createdFields) prop.Apply();
+            return prop;
+        }
+
+        public static SerializedProperty GetDirectionsProp(SerializedProperty root, int index = 0)
+        {
+            var prop = GetPropertyFromArray(root, "directions", out var createdFields, index);
+            if (createdFields) prop.Apply();
+            return prop;
+        }
+
+        public static SerializedProperty GetObjectsProp(SerializedProperty root, int index = 0)
+        {
+            var prop = GetPropertyFromArray(root, "objects", out var createdFields, index);
+            if (createdFields) prop.Apply();
+            return prop;
+        }
 
         private static SerializedProperty GetPropertyFromArray(SerializedProperty root, string name, out bool createdFields, int index = 0)
         {
@@ -59,12 +100,14 @@ namespace Skyx.SkyxEditor
             if (arrayProp.arraySize < index + 1) return;
 
             arrayProp.DeleteArrayElementAtIndex(index);
+            arrayProp.Apply();
         }
 
         public static void AddPropertyToArray(SerializedProperty root, string name)
         {
             var arrayProp = root.FindPropertyRelative(name);
             arrayProp.InsertArrayElementAtIndex(arrayProp.arraySize);
+            arrayProp.Apply();
         }
 
         #endregion
