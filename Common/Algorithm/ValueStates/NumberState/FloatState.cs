@@ -14,14 +14,14 @@ public class FloatState : INumericValueState<float>, ICustomDisposableKill
 	public void Setter( float value )
 	{
 		var diff = _value - value;
-		if( diff < float.Epsilon && diff > FloatHelper.NegativeEpsilon ) return;
+		if( diff < MathAdapter.EP2 && diff > MathAdapter.NEP2 ) return;
 		_value = value;
 		_onChange?.Trigger( value );
 	}
 
 	public void Increment( float increment )
 	{
-		if( increment < float.Epsilon && increment > FloatHelper.NegativeEpsilon ) return;
+		if( increment < MathAdapter.EP2 && increment > MathAdapter.NEP2 ) return;
 		Setter( _value + increment );
 	}
 
