@@ -18,7 +18,7 @@ public static class MathAdapter
 {
 	const MethodImplOptions AggrInline = MethodImplOptions.AggressiveInlining;
 	public const float EP2 = float.Epsilon * 2;
-	public const float NEP2 = -EP2;
+	public const float NEG_EP2 = -EP2;
 
 #if USE_NEW_MATHEMATICS
 	public const float PI = math.PI;
