@@ -29,7 +29,7 @@ namespace Skyx.SkyxEditor
         public const float CompactSpace = 2;
         public const float CompactListElement = LineHeight + CompactSpace;
 
-        public const float MeidumButtonSize = 100;
+        public const float MediumButtonSize = 110;
         public const float SmallButtonSize = 60;
         public const float MiniButtonSize = 20;
         public const float HintIconWidth = 20;
@@ -140,6 +140,9 @@ namespace Skyx.SkyxEditor
             Colors.Console.Secondary.AddLight(-.2f), // Info
             Colors.Avocado.AddLight(-.2f), // Success
             Colors.Console.Warning.AddLight(-.4f).AddSaturation(-.1f), // Warning
+            Color.clear, // Danger
+            Color.clear, // Support
+            Color.clear, // Special
         };
 
         private static readonly Color[] boxColors =
@@ -149,6 +152,9 @@ namespace Skyx.SkyxEditor
             Color.white,
             Color.white,
             Colors.Console.Warning.AddLight(.2f).WithAlpha(.2f), // Warning
+            Color.white,
+            Color.white,
+            Color.white,
         };
 
         private static readonly string[] boxStyles =
@@ -158,6 +164,9 @@ namespace Skyx.SkyxEditor
             "SelectionRect", // Info
             "U2D.createRect", // Success
             "TE ElementBackground", // Warning
+            "flow node 6", // Danger
+            "TE BoxBackground", // Support
+            "ProgressBarBar", // Special
         };
 
         public static GUIStyle HeaderText(EHeaderSize size = EHeaderSize.Primary) => headerText[(int)size];

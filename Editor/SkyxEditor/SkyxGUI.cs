@@ -340,7 +340,7 @@ namespace Skyx.SkyxEditor
             return newRect;
         }
 
-        public static Rect ExtractMediumButton(ref Rect rect, bool fromEnd = false) => ExtractRect(ref rect, SkyxStyles.MeidumButtonSize, fromEnd);
+        public static Rect ExtractMediumButton(ref Rect rect, bool fromEnd = false) => ExtractRect(ref rect, SkyxStyles.MediumButtonSize, fromEnd);
         public static Rect ExtractSmallButton(ref Rect rect, bool fromEnd = false) => ExtractRect(ref rect, SkyxStyles.SmallButtonSize, fromEnd);
         public static Rect ExtractMiniButton(ref Rect rect, bool fromEnd = false) => ExtractRect(ref rect, SkyxStyles.MiniButtonSize, fromEnd);
         public static Rect ExtractHint(ref Rect rect, bool fromEnd = false) => ExtractRect(ref rect, SkyxStyles.HintIconWidth, fromEnd);

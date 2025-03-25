@@ -1,5 +1,4 @@
 ﻿using System;
-using K10.DebugSystem;
 using Unity.Plastic.Newtonsoft.Json;
 using Unity.Plastic.Newtonsoft.Json.Linq;
 using UnityEditor;
@@ -57,8 +56,7 @@ namespace Skyx.SkyxEditor
 
         private static void OnCopy()
         {
-            var value = selectedProperty.GetValue();
-            var json = JsonConvert.SerializeObject(value, GetSerializationSettings());
+            var json = selectedProperty.GetJson();
 
             if (string.IsNullOrEmpty(json) || json == "{}" || !IsValidJson(json))
             {
@@ -73,8 +71,6 @@ namespace Skyx.SkyxEditor
                 copiedType = selectedType;
                 copiedDisplayInfo = selectedDisplayInfo;
                 EditorGUIUtility.systemCopyBuffer = json;
-
-                Log($"Copied data to clipboard from {copiedDisplayInfo}\n{json}");
             }
         }
 
@@ -95,13 +91,7 @@ namespace Skyx.SkyxEditor
         private static void OnPaste()
         {
             if (!CanPaste) return;
-
-            PrepareForChanges($"Pasted data from clipboard to {selectedDisplayInfo}");
-
-            var deserializedObject = JsonConvert.DeserializeObject(EditorGUIUtility.systemCopyBuffer, copiedType, GetSerializationSettings());
-            selectedProperty.SetValue(deserializedObject);
-
-            ApplyDirectChanges($"Pasted data from clipboard to {selectedDisplayInfo}");
+            selectedProperty.SetValueFromJson(EditorGUIUtility.systemCopyBuffer, copiedType, $"Pasted data from clipboard to {selectedDisplayInfo}");
         }
 
         private static void OnInsertElementAbove()
@@ -110,13 +100,13 @@ namespace Skyx.SkyxEditor
             parent.InsertArrayElementAtIndex(index);
             parent.Apply();
 
-            PrepareForChanges($"Insert element above {selectedDisplayInfo}");
+            selectedProperty.PrepareForChanges($"Insert element above {selectedDisplayInfo}");
 
             var newElement = parent.GetArrayElementAtIndex(index);
             var defaultValue = selectedProperty.GenerateDefaultValue();
             newElement.SetValue(defaultValue);
 
-            ApplyDirectChanges($"Insert element above {selectedDisplayInfo}");
+            selectedProperty.ApplyDirectChanges($"Insert element above {selectedDisplayInfo}");
         }
 
         private static void OnInsertElementBelow()
@@ -125,12 +115,12 @@ namespace Skyx.SkyxEditor
             parent.InsertArrayElementAtIndex(index);
             parent.Apply();
 
-            PrepareForChanges($"Insert element below {selectedDisplayInfo}");
+            selectedProperty.PrepareForChanges($"Insert element below {selectedDisplayInfo}");
 
             var newElement = parent.GetArrayElementAtIndex(index + 1);
             newElement.SetValue(selectedProperty.GenerateDefaultValue());
 
-            ApplyDirectChanges($"Insert element below {selectedDisplayInfo}");
+            selectedProperty.ApplyDirectChanges($"Insert element below {selectedDisplayInfo}");
         }
 
         private static void OnDuplicateElement()
@@ -154,25 +144,5 @@ namespace Skyx.SkyxEditor
         private static void OnCopyGUID()
         {
         }
-
-        private static void PrepareForChanges(string reason) => Undo.RecordObject(selectedProperty.serializedObject.targetObject, reason);
-
-        private static void ApplyDirectChanges(string reason)
-        {
-            EditorUtility.SetDirty(selectedProperty.serializedObject.targetObject);
-            selectedProperty.serializedObject.Update();
-            PropertyCollection.Release(selectedProperty.serializedObject);
-
-            Log(reason);
-        }
-
-        private static JsonSerializerSettings GetSerializationSettings() => new()
-        {
-            ContractResolver = new SerializeFieldContractResolver(),
-            Converters = { new UnityObjectConverter() }
-        };
-
-        private static void Log(string log, LogSeverity severity = LogSeverity.Info) => K10Log<EditorLogCategory>.Log(severity, log, verbose: severity is LogSeverity.Warning);
-        private static void LogVerbose(string log) => K10Log<EditorLogCategory>.Log(LogSeverity.Warning, log, verbose: true);
     }
 }

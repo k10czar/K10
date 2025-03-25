@@ -3,6 +3,7 @@ using System.Collections;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Unity.Plastic.Newtonsoft.Json;
 using UnityEditor;
 
 namespace Skyx.SkyxEditor
@@ -164,5 +165,46 @@ namespace Skyx.SkyxEditor
         public static string PrettyName(this SerializedProperty property) => ObjectNames.NicifyVariableName(property.name);
 
         public static void Apply(this SerializedProperty property, string reason = null) => PropertyCollection.Apply(property.serializedObject, reason ?? $"Modified {property.propertyPath}");
+
+        public static void PrepareForChanges(this SerializedProperty property, string reason) => Undo.RecordObject(property.serializedObject.targetObject, reason);
+
+        public static void ApplyDirectChanges(this SerializedProperty property, string reason)
+        {
+            EditorUtility.SetDirty(property.serializedObject.targetObject);
+            property.serializedObject.Update();
+            PropertyCollection.Release(property.serializedObject);
+        }
+
+        #region JSON Manipulation
+
+        public static void CopyValue<T>(this SerializedProperty property, T value, string reason) where T : class
+        {
+            var json = JsonConvert.SerializeObject(value, GetSerializationSettings());
+            SetValueFromJson(property, json, typeof(T), reason);
+        }
+
+        public static string GetJson(this SerializedProperty property)
+        {
+            var value = property.GetValue();
+            return JsonConvert.SerializeObject(value, GetSerializationSettings());
+        }
+
+        public static void SetValueFromJson(this SerializedProperty property, string json, Type valueType, string reason)
+        {
+            PrepareForChanges(property, reason);
+
+            var deserializedObject = JsonConvert.DeserializeObject(json, valueType, GetSerializationSettings());
+            SetValue(property, deserializedObject);
+
+            ApplyDirectChanges(property, reason);
+        }
+
+        private static JsonSerializerSettings GetSerializationSettings() => new()
+        {
+            ContractResolver = new SerializeFieldContractResolver(),
+            Converters = { new UnityObjectConverter() }
+        };
+
+        #endregion
     }
 }
