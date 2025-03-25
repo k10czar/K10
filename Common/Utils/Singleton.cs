@@ -20,6 +20,14 @@ public class OnlyOnPlaymodeObject : MonoBehaviour
 
 #endif
 
+public abstract class Singleton
+{
+	public static void SayHello<T>( T candidate ) where T : UnityEngine.Component
+	{
+		Singleton<T>.SayHello( candidate );
+	}
+}
+
 
 public abstract class Singleton<T> where T : UnityEngine.Component
 {
