@@ -25,6 +25,7 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
     void Awake()
 	{
 		RegisterServices();
+		LogOwners = new UnityEngine.Object[] { this };
 	}
 
 	void Start()
@@ -102,5 +103,5 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 		_services = null;
 	}
 
-	public UnityEngine.Object LogTarget => null;
+	public UnityEngine.Object[] LogOwners { get; private set; }
 }

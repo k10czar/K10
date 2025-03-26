@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace K10.DebugSystem
 {
@@ -11,20 +13,15 @@ namespace K10.DebugSystem
 
         public static string Name => category.Name;
         public static T Category => category;
-
         public static Color Color => category.Color;
         public static Color SecondaryColor => category.SecondaryColor;
-        public static ELogPrefix PrefixType => category.PrefixType;
 
-        public static bool Can(bool verbose = false) => K10DebugSystem.CanDebug<T>();
-        public static bool Skip(bool verbose = false) => !K10DebugSystem.CanDebug<T>();
-        public static bool SkipVisuals() => K10DebugSystem.SkipVisuals<T>();
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-        public static void Log(LogSeverity severity, string log, Object owner = null, Object target = null, bool verbose = false)
+        public static void Log(LogSeverity severity, string log, bool verbose, Object consoleTarget, IEnumerable<Object> owners)
         {
-            if (severity is not LogSeverity.Error && !K10DebugSystem.CanDebug<T>(verbose)) return;
-            if (!K10DebugSystem.CheckDebugOwners(owner)) return;
+            if (severity != LogSeverity.Error && (!K10DebugSystem.CanDebug<T>(verbose) || !K10DebugSystem.CheckDebugOwners(owners)))
+                return;
 
 #if UNITY_EDITOR
             if (!string.IsNullOrEmpty(category.Name))
@@ -36,24 +33,22 @@ namespace K10.DebugSystem
 
             log = K10Log.ReplaceColorsNames(log);
 #else
-            log = $"{(verbose?"*":"")}[{category.Name}] {Regex.Replace(log, "<.*?>", string.Empty)}";
+            log = $"[{category.Name}] {Regex.Replace(log, "<.*?>", string.Empty)}";
 #endif
 
-            target ??= owner;
-
-            if (severity == LogSeverity.Error) Debug.LogError(log, target);
-            else if (severity == LogSeverity.Warning) Debug.LogWarning(log, target);
-            else Debug.Log(log, target);
+            if (severity == LogSeverity.Error) Debug.LogError(log, consoleTarget);
+            else if (severity == LogSeverity.Warning) Debug.LogWarning(log, consoleTarget);
+            else Debug.Log(log, consoleTarget);
         }
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-        public static void Log(string log, Object target = null) => Log(LogSeverity.Info, log, target);
+        public static void Log(LogSeverity severity, string log) => Log(severity, log, severity is LogSeverity.Warning, null, Array.Empty<Object>());
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-        public static void LogVerbose(string log, Object target = null) => Log(LogSeverity.Warning, log, target, target, true);
+        public static void Log(string log, Object consoleTarget = null) => Log(LogSeverity.Info, log, false, consoleTarget, new[] { consoleTarget });
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-        public static void LogException(System.Exception exception, Object target = null) => Debug.LogException(exception, target);
+        public static void LogVerbose(string log, Object consoleTarget = null) => Log(LogSeverity.Warning, log, true, consoleTarget, new[] { consoleTarget });
     }
 
     public static class K10Log

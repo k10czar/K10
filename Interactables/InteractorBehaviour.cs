@@ -1,5 +1,7 @@
+using System;
 using K10.DebugSystem;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 public interface IInteractor
 {
@@ -77,6 +79,11 @@ namespace K10.Interactables
             DebugUtils.Circle( origin, dir, dirT.up, .2f, this.LogColor(), true );
         }
 
-        public Object LogTarget => this;
+        private void Awake()
+        {
+            LogOwners = new Object[] { this };
+        }
+
+        public Object[] LogOwners { get; private set; }
     }
 }

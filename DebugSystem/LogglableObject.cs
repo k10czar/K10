@@ -1,20 +1,12 @@
+using System.Linq;
 using UnityEngine;
 
 namespace K10.DebugSystem
 {
     public interface ILoggable<T> where T : IK10LogCategory, new()
     {
-        Object LogTarget { get; }
-
-        string AddPrefix(string message, Object target) => $"{GetPrefix(target)}{message}";
-
-        string GetPrefix(Object target) => K10Log<T>.PrefixType switch
-        {
-            ELogPrefix.None => "",
-            ELogPrefix.Name => $"<b>{target.name} |</b> ",
-            ELogPrefix.ToString => $"<b>{target} |</b> ",
-            _ => throw new System.ArgumentOutOfRangeException()
-        };
+        Object[] LogOwners { get; }
+        Object MainLogOwner => LogOwners[0];
     }
 
     public static class LoggableTargetExtensions
@@ -24,45 +16,43 @@ namespace K10.DebugSystem
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
         public static void Log<T>(this ILoggable<T> obj, string message) where T : IK10LogCategory, new()
         {
-            K10Log<T>.Log(LogSeverity.Info, obj.AddPrefix(message, obj.LogTarget), obj.LogTarget);
+            K10Log<T>.Log(LogSeverity.Info, message, false, obj.MainLogOwner, obj.LogOwners);
+        }
+
+        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        public static void Log<T>(this ILoggable<T> obj, string message, Object consoleTarget) where T : IK10LogCategory, new()
+        {
+            K10Log<T>.Log(LogSeverity.Info, message, false, consoleTarget, obj.LogOwners.Append(consoleTarget));
         }
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
         public static void LogVerbose<T>(this ILoggable<T> obj, string message, bool isVerbose = true) where T : IK10LogCategory, new()
         {
-            K10Log<T>.Log(LogSeverity.Warning, obj.AddPrefix(message, obj.LogTarget), obj.LogTarget, obj.LogTarget, isVerbose);
+            K10Log<T>.Log(LogSeverity.Warning, message, isVerbose, obj.MainLogOwner, obj.LogOwners);
         }
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-        public static void Log<T>(this ILoggable<T> obj, string message, Object customTarget) where T : IK10LogCategory, new()
+        public static void LogVerbose<T>(this ILoggable<T> obj, string message, Object consoleTarget, bool isVerbose = true) where T : IK10LogCategory, new()
         {
-            K10Log<T>.Log(LogSeverity.Info, obj.AddPrefix(message, obj.LogTarget), obj.LogTarget, customTarget);
-        }
-
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-        public static void LogVerbose<T>(this ILoggable<T> obj, string message, Object customTarget, bool isVerbose = true) where T : IK10LogCategory, new()
-        {
-            K10Log<T>.Log(LogSeverity.Warning, obj.AddPrefix(message, obj.LogTarget), obj.LogTarget, customTarget, isVerbose);
+            K10Log<T>.Log(LogSeverity.Warning, message, isVerbose, consoleTarget, obj.LogOwners.Append(consoleTarget));
         }
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
         public static void LogError<T>(this ILoggable<T> obj, string message) where T : IK10LogCategory, new()
         {
-            var ownerTarget = obj as Object;
-            K10Log<T>.Log(LogSeverity.Error, obj.AddPrefix(message, ownerTarget), ownerTarget);
+            K10Log<T>.Log(LogSeverity.Error, message, false, obj.MainLogOwner, null);
         }
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-        public static void LogError<T>(this ILoggable<T> obj, string message, Object customTarget) where T : IK10LogCategory, new()
+        public static void LogError<T>(this ILoggable<T> obj, string message, Object consoleTarget) where T : IK10LogCategory, new()
         {
-            var ownerTarget = obj as Object;
-            K10Log<T>.Log(LogSeverity.Error, obj.AddPrefix(message, ownerTarget), ownerTarget, customTarget);
+            K10Log<T>.Log(LogSeverity.Error, message, false, consoleTarget, null);
         }
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
         public static void LogException<T>(this ILoggable<T> obj, System.Exception exception) where T : IK10LogCategory, new()
         {
-            K10Log<T>.LogException(exception, obj as Object);
+            Debug.LogException(exception, obj.MainLogOwner);
         }
 
         #endregion
@@ -71,12 +61,12 @@ namespace K10.DebugSystem
 
         public static bool CanLog<T>(this ILoggable<T> obj, bool verbose = false) where T : IK10LogCategory, new()
         {
-            return K10DebugSystem.CanDebug<T>(verbose) && K10DebugSystem.CheckDebugOwners(obj.LogTarget);
+            return K10DebugSystem.CanDebug<T>(verbose) && K10DebugSystem.CheckDebugOwners(obj.LogOwners);
         }
 
         public static bool CanDebugVisuals<T>(this ILoggable<T> obj) where T : IK10LogCategory, new()
         {
-            return K10DebugSystem.ShowVisuals<T>() && K10DebugSystem.CheckDebugOwners(obj.LogTarget);
+            return K10DebugSystem.ShowVisuals<T>() && K10DebugSystem.CheckDebugOwners(obj.LogOwners);
         }
 
         public static bool SkipVisuals<T>(this ILoggable<T> obj) where T : IK10LogCategory, new() => !CanDebugVisuals(obj);

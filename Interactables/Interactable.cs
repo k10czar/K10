@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using K10.DebugSystem;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 public class InteractableLogCategory : IK10LogCategory
 {
@@ -72,6 +73,7 @@ namespace K10.Interactables
         void Start()
         {
             isBeingTargeted.Synchronize(OnIsTargetedChange);
+            LogOwners = new Object[] { this };
         }
 
         void OnEnable()
@@ -296,6 +298,6 @@ namespace K10.Interactables
             DrawDebug( this.LogColor() );
         }
 
-        public UnityEngine.Object LogTarget => this;
+        public Object[] LogOwners { get; private set; }
     }
 }

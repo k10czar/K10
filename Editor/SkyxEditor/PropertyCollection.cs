@@ -135,8 +135,8 @@ namespace Skyx.SkyxEditor
             Undo.undoRedoPerformed += OnUndoRedoPerformed;
         }
 
-        private static void Log(string log, LogSeverity severity = LogSeverity.Info) => K10Log<EditorLogCategory>.Log(severity, log, verbose: severity is LogSeverity.Warning);
-        private static void LogVerbose(string log) => K10Log<EditorLogCategory>.Log(LogSeverity.Warning, log, verbose: true);
+        private static void Log(string log, LogSeverity severity = LogSeverity.Info) => K10Log<EditorLogCategory>.Log(severity, log);
+        private static void LogVerbose(string log) => K10Log<EditorLogCategory>.LogVerbose(log);
 
         #endregion
 
@@ -508,8 +508,10 @@ namespace Skyx.SkyxEditor
             propertyPath = path;
 
             Setup();
+
+            LogOwners = new Object[] { owner };
         }
 
-        public Object LogTarget => owner;
+        public Object[] LogOwners { get; }
     }
 }

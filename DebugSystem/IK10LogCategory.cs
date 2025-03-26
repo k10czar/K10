@@ -7,7 +7,6 @@ namespace K10.DebugSystem
         string Name { get; }
         Color Color { get; }
         Color SecondaryColor => Color.AddLight(-.1f);
-        ELogPrefix PrefixType => ELogPrefix.None;
     }
 
     public class TempLogCategory : IK10LogCategory
