@@ -16,8 +16,8 @@ namespace K10.DebugSystem
         public List<string> verbose = new();
         public List<string> visual = new();
 
-        public EDebugTargets targetType = EDebugTargets.All;
-        public List<string> targets = new();
+        public EDebugOwnerBehaviour ownerBehaviour = EDebugOwnerBehaviour.Ignore;
+        public List<string> validOwners = new();
 
         private List<string> GetCorrespondingList(EDebugType debugType) => debugType switch
         {
@@ -60,20 +60,20 @@ namespace K10.DebugSystem
             Save();
         }
 
-        public void ToggleDebugTargets(string target)
+        public void ToggleValidOwner(string target)
         {
             if (string.IsNullOrEmpty(target)) return;
 
-            if (!targets.Remove(target))
-                targets.Add(target);
+            if (!validOwners.Remove(target))
+                validOwners.Add(target);
 
             Save();
         }
 
-        public void ToggleDebugTargetType()
+        public void ToggleOwnerBehaviour()
         {
-            var next = ((int) targetType + 1) % Enum.GetValues(typeof(EDebugTargets)).Length;
-            targetType = (EDebugTargets) next;
+            var next = ((int) ownerBehaviour + 1) % Enum.GetValues(typeof(EDebugOwnerBehaviour)).Length;
+            ownerBehaviour = (EDebugOwnerBehaviour) next;
             Save();
         }
 

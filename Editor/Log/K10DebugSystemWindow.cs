@@ -15,11 +15,11 @@ public class K10DebugSystemWindow : EditorWindow
     protected static readonly Color SECTION_HIDDEN_COLOR = Colors.DarkSlateGray.Enlight( .5f );
     protected static readonly Color MODIFIERS_COLOR = Colors.DarkSlateGray.WithHue( .1666666f );
 
-    private ReorderableList debugTargetsList;
+    private ReorderableList validOwnersList;
     private Vector2 scrollPos;
 
     private bool isGameSystemsExpanded = true;
-    private bool isDebugOptionsExpanded;
+    private bool isDebugOwnersExpanded;
 
     bool dirty = false;
 
@@ -137,40 +137,38 @@ public class K10DebugSystemWindow : EditorWindow
 
     private void DrawDebugTargets()
     {
-        if (DrawSection("Debug Targets", ref isDebugOptionsExpanded)) return;
+        if (DrawSection("Debug Owners", ref isDebugOwnersExpanded)) return;
 
         Space();
-        var debugTarget = K10DebugSystem.DebugTargetType();
-        var color = debugTarget switch
-        {
-            EDebugTargets.All => TRUE_COLOR,
-            _ => MORE_COLOR,
-        };
+        var behaviour = K10DebugSystem.DebugOwnerBehaviour;
+        var color = behaviour is EDebugOwnerBehaviour.Ignore ? TRUE_COLOR : MORE_COLOR;
 
-        if (Button($"Targets: {debugTarget}", color, K10GuiStyles.bigbuttonFlatStyle))
-            K10DebugSystem.ToggleDebugTargetType();
+        if (Button(ObjectNames.NicifyVariableName(behaviour.ToString()), color, K10GuiStyles.bigbuttonFlatStyle))
+            K10DebugSystem.ToggleOwnerBehaviour();
 
-        if (debugTarget < EDebugTargets.ListedTarget) return;
+        if (behaviour is EDebugOwnerBehaviour.Ignore) return;
 
         Space();
-
-        debugTargetsList.DoLayoutList();
 
         DrawCustomTargetControl();
 
-        if (Application.isPlaying)
-            TryAddHierarchySelection();
+        if (Application.isPlaying) TryAddHierarchySelection();
+
+        validOwnersList.DoLayoutList();
     }
 
-    private void TryAddHierarchySelection()
+    private static void TryAddHierarchySelection()
     {
-        if (!GUILayout.Button("Add Hierarchy Selection")) return;
+        if (GUILayout.Button("Add Hierarchy Selection"))
+        {
+            foreach (var obj in Selection.objects)
+                K10DebugSystem.ToggleValidOwner(obj);
+        }
 
-        foreach (var obj in Selection.objects)
-            K10DebugSystem.ToggleDebugTarget(obj);
+        Space();
     }
 
-    private static void DebugTargetsElementDrawer(Rect rect, int index, bool isActive, bool isFocused)
+    private static void DrawValidOwnerElement(Rect rect, int index, bool isActive, bool isFocused)
     {
         rect.height = 18;
         rect.y += 1;
@@ -180,23 +178,21 @@ public class K10DebugSystemWindow : EditorWindow
         endRect.x += 30;
 
         EditorGUI.LabelField(rect, $"{index}", K10GuiStyles.basicCenterStyle);
-        var text = K10DebugSystem.DebugTargets()[index];
-        var result = EditorGUI.TextField(endRect, text);
-
-        if (result != text) K10DebugSystem.DebugTargets()[index] = result;
+        var text = K10DebugSystem.ValidOwners[index];
+        EditorGUI.LabelField(endRect, text);
     }
 
     protected virtual void DrawCustomSections() {}
 
     private void OnEnable()
     {
-        debugTargetsList = new ReorderableList(K10DebugSystem.DebugTargets(), typeof(string))
+        validOwnersList = new ReorderableList(K10DebugSystem.ValidOwners, typeof(string))
         {
             draggable = false,
             displayAdd = false,
-            drawHeaderCallback = rect => { EditorGUI.LabelField(rect, "Targets"); },
-            drawElementCallback = DebugTargetsElementDrawer,
-            onRemoveCallback = _ => K10DebugSystem.ToggleDebugTarget(K10DebugSystem.DebugTargets()[debugTargetsList.index])
+            drawHeaderCallback = rect => { EditorGUI.LabelField(rect, "Valid Owners"); },
+            drawElementCallback = DrawValidOwnerElement,
+            onRemoveCallback = _ => K10DebugSystem.ToggleValidOwner(K10DebugSystem.ValidOwners[validOwnersList.index])
         };
     }
 

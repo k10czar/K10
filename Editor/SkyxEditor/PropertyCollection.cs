@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 
 namespace Skyx.SkyxEditor
 {
-    public class PropertyCollection : ILoggableTarget<EditorLogCategory>
+    public class PropertyCollection : ILoggable<EditorLogCategory>
     {
         #region Static
 

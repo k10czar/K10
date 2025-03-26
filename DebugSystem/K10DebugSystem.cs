@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
-
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace K10.DebugSystem
 {
@@ -33,18 +30,18 @@ namespace K10.DebugSystem
         public static void ToggleCategory(Type categoryType, EDebugType debugType) => config.ToggleDebug(categoryType, debugType);
         public static void SetCategory(Type categoryType, EDebugType debugType, bool value) => config.SetDebug(categoryType, debugType, value);
 
-        #region Debug Targets
+        #region Debug Owners
 
-        public static EDebugTargets DebugTargetType() => config.targetType;
-        public static void ToggleDebugTargetType() => config.ToggleDebugTargetType();
+        public static Func<Object, string> getOwnerKey;
 
-        public static List<string> DebugTargets() => config.targets;
-        public static void ToggleDebugTarget(string target) => config.ToggleDebugTargets(target);
-        public static void ToggleDebugTarget(Object target) => config.ToggleDebugTargets(getTargetKey(target));
+        public static EDebugOwnerBehaviour DebugOwnerBehaviour => config.ownerBehaviour;
+        public static void ToggleOwnerBehaviour() => config.ToggleOwnerBehaviour();
 
-        public static Func<Object, string> getTargetKey;
+        public static List<string> ValidOwners => config.validOwners;
+        public static void ToggleValidOwner(string target) => config.ToggleValidOwner(target);
+        public static void ToggleValidOwner(Object target) => config.ToggleValidOwner(getOwnerKey(target));
 
-        public static string DefaultGetDebugTargetKey(Object target) => target switch
+        public static string DefaultGetOwnerKey(Object target) => target switch
         {
             null => null,
             Component component => component.gameObject.name,
@@ -61,19 +58,25 @@ namespace K10.DebugSystem
             _ => throw new NotImplementedException()
         };
 
-        public static bool CanDebugTarget(Object targetObject, LogSeverity severity = LogSeverity.Info)
+        #if UNITY_EDITOR
+        private static bool IsSelection(Object candidate) => UnityEditor.Selection.activeGameObject == GetGameObject(candidate);
+        #endif
+
+        public static bool CheckDebugOwners(params Object[] requesters)
         {
-            if (severity is LogSeverity.Error) return true;
+            if (DebugOwnerBehaviour is EDebugOwnerBehaviour.Ignore) return true;
 
-            var key = getTargetKey(targetObject);
+            var count = config.validOwners.Count;
+            var keys = requesters.Select(getOwnerKey);
+            var intersectCount = config.validOwners.Intersect(keys).Count();
 
-            return DebugTargetType() switch
+            return DebugOwnerBehaviour switch
             {
-                EDebugTargets.All => true,
-                EDebugTargets.ListedTarget => config.targets.Contains(key),
+                EDebugOwnerBehaviour.AnyOwnerListed => intersectCount > 0,
+                EDebugOwnerBehaviour.AllOwnersListed => intersectCount == count,
 
                 #if UNITY_EDITOR
-                EDebugTargets.ListedAndSelected => config.targets.Contains(key) && Selection.activeGameObject == GetGameObject(targetObject),
+                EDebugOwnerBehaviour.AnyListedAndSelected => intersectCount > 0 && requesters.Any(IsSelection),
                 #endif
 
                 _ => throw new ArgumentOutOfRangeException()
@@ -85,7 +88,7 @@ namespace K10.DebugSystem
         static K10DebugSystem()
         {
             config = K10DebugConfig.Load();
-            getTargetKey = DefaultGetDebugTargetKey;
+            getOwnerKey = DefaultGetOwnerKey;
         }
     }
 }

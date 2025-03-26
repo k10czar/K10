@@ -24,7 +24,7 @@ namespace K10.DebugSystem
         public static void Log(LogSeverity severity, string log, Object owner = null, Object target = null, bool verbose = false)
         {
             if (severity is not LogSeverity.Error && !K10DebugSystem.CanDebug<T>(verbose)) return;
-            if (!K10DebugSystem.CanDebugTarget(owner, severity)) return;
+            if (!K10DebugSystem.CheckDebugOwners(owner)) return;
 
 #if UNITY_EDITOR
             if (!string.IsNullOrEmpty(category.Name))

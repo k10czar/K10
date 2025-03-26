@@ -295,5 +295,7 @@ namespace K10.Interactables
             if( Application.isPlaying ) return;
             DrawDebug( this.LogColor() );
         }
+
+        public UnityEngine.Object LogTarget => this;
     }
 }

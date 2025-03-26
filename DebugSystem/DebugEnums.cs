@@ -1,10 +1,11 @@
 ﻿namespace K10.DebugSystem
 {
-    public enum EDebugTargets
+    public enum EDebugOwnerBehaviour
     {
-        All,
-        ListedTarget,
-        ListedAndSelected,
+        Ignore,
+        AnyOwnerListed,
+        AllOwnersListed,
+        AnyListedAndSelected,
     }
 
     public enum ELogPrefix

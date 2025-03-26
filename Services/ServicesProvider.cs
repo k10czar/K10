@@ -101,4 +101,6 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 		}
 		_services = null;
 	}
+
+	public UnityEngine.Object LogTarget => null;
 }

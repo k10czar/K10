@@ -76,5 +76,7 @@ namespace K10.Interactables
             var dir = dirT.forward;
             DebugUtils.Circle( origin, dir, dirT.up, .2f, this.LogColor(), true );
         }
+
+        public Object LogTarget => this;
     }
 }
