@@ -40,7 +40,7 @@ public class K10DebugSystemWindow : EditorWindow
     private void DrawGameSystemDebugEnablers(IK10LogCategory category)
     {
         var inspectorWidth = EditorGUIUtility.currentViewWidth;
-        var elementWidth = (inspectorWidth - 46) / 3f;
+        var elementWidth = (inspectorWidth - 60) / 3f;
         var width = GUILayout.Width(elementWidth);
 
         var categoryName = category.Name;
@@ -65,7 +65,6 @@ public class K10DebugSystemWindow : EditorWindow
         if (ToggleButton("Verbose", K10DebugSystem.CanDebug(categoryType, EDebugType.Verbose), width)) K10DebugSystem.ToggleCategory(categoryType, EDebugType.Verbose);
         GUILayout.Space(4);
         if (ToggleButton("Visuals", K10DebugSystem.CanDebug(categoryType, EDebugType.Visual), width)) K10DebugSystem.ToggleCategory(categoryType, EDebugType.Visual);
-        GUILayout.Space(4);
         GUILayout.EndHorizontal();
     }
 
@@ -135,7 +134,7 @@ public class K10DebugSystemWindow : EditorWindow
         return changed;
     }
 
-    private void DrawDebugTargets()
+    private void DrawDebugOwners()
     {
         if (DrawSection("Debug Owners", ref isDebugOwnersExpanded)) return;
 
@@ -151,15 +150,14 @@ public class K10DebugSystemWindow : EditorWindow
         Space();
 
         DrawCustomTargetControl();
-
-        if (Application.isPlaying) TryAddHierarchySelection();
+        TryAddCurrentSelection();
 
         validOwnersList.DoLayoutList();
     }
 
-    private static void TryAddHierarchySelection()
+    private static void TryAddCurrentSelection()
     {
-        if (GUILayout.Button("Add Hierarchy Selection"))
+        if (GUILayout.Button("Add Current Selection"))
         {
             foreach (var obj in Selection.objects)
                 K10DebugSystem.ToggleValidOwner(obj);
@@ -204,7 +202,7 @@ public class K10DebugSystemWindow : EditorWindow
 
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
-        DrawDebugTargets();
+        DrawDebugOwners();
         Space();
         DrawGameSystem();
         DrawCustomSections();
