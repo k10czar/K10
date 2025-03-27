@@ -19,12 +19,12 @@ using v4 = UnityEngine.Vector4;
 
 public static class MathExtensions
 {
-    [MethodImpl(Optimizations.INLINING)]
+    [MethodImpl(Optimizations.INLINE_IF_CAN)]
     public static v4 Float4At(this IList<float> array, int startId) => new v4(array[startId], array[startId + 1], array[startId + 2], array[startId + 3]);
 
-    [MethodImpl(Optimizations.INLINING)]
+    [MethodImpl(Optimizations.INLINE_IF_CAN)]
     public static v3 Float3At(this IList<float> array, int startId) => new v3(array[startId], array[startId + 1], array[startId + 2]);
 
-    [MethodImpl(Optimizations.INLINING)]
+    [MethodImpl(Optimizations.INLINE_IF_CAN)]
     public static v2 Float2At(this IList<float> array, int startId) => new v2(array[startId], array[startId + 1]);
 }

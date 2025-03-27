@@ -1,12 +1,12 @@
-#define AGGRESSIVE_INLINING
+// #define DO_NOT_OPTIMIZE
 using System.Runtime.CompilerServices;
 
 public static class Optimizations
 {
-    public const MethodImplOptions INLINING = 
-#if AGGRESSIVE_INLINING
-        MethodImplOptions.AggressiveInlining;
-#else
+    public const MethodImplOptions INLINE_IF_CAN = 
+#if DO_NOT_OPTIMIZE
         MethodImplOptions.NoInlining;
+#else
+        MethodImplOptions.AggressiveInlining;
 #endif
 }
