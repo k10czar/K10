@@ -20,6 +20,7 @@ namespace Skyx.SkyxEditor
         protected virtual bool ShouldDrawScript => false;
         protected virtual bool ShouldDrawTitle => false;
         protected virtual bool ShouldDrawSaveFile => false;
+        protected virtual bool ShouldDrawReserialize => false;
         protected virtual bool HasRuntimeVisualization => false;
 
         protected virtual void DrawRuntimeInfo() {}
@@ -41,13 +42,29 @@ namespace Skyx.SkyxEditor
         {
             if (!ShouldDrawSaveFile) return;
 
-            var dirty = EditorUtility.IsDirty(target);
-            var color = dirty ? Colors.Console.Warning : Colors.Console.Support;
-            var text = dirty ? "Save Changes!" : "No Changes";
-
-            using var _ = new BackgroundColorScope(color);
-
-            if (GUILayout.Button(text)) PropertyCollection.SaveAsset(target);
+            if (EditorUtility.IsDirty(target))
+            {
+                if (SkyxLayout.Button("Save Changes!", EConsoleColor.Warning))
+                    PropertyCollection.SaveAsset(target);
+            }
+            else if (ShouldDrawReserialize)
+            {
+                if (SkyxLayout.Button("Reserialize", EConsoleColor.Special))
+                {
+                    if (EditorUtility.DisplayDialog("Are you sure?", $"Reserialize {target.name} entries?", "Yes", "No"))
+                    {
+                        var path = AssetDatabase.GetAssetPath(target);
+                        AssetDatabase.ForceReserializeAssets(new [] { path });
+                        PropertyCollection.SaveAsset(target);
+                    }
+                }
+            }
+            else
+            {
+                EditorGUI.BeginDisabledGroup(true);
+                GUILayout.Button("No Changes");
+                EditorGUI.EndDisabledGroup();
+            }
 
             SkyxLayout.Space();
         }
