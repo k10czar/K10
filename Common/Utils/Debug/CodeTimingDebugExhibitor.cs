@@ -17,13 +17,18 @@ public abstract class CodeTimingDebugExhibitor : MonoBehaviour
     void OnEnable()
 	{
 		CodeTimingDebug.Enable();
-		_deepToogle?.Register( CodeTimingDebug.ToogleDeep );
+		_deepToogle?.Register( TryToggleDeep );
 	}
 
 	void OnDisable()
 	{
 		CodeTimingDebug.Disable();
-		_deepToogle?.Unregister( CodeTimingDebug.ToogleDeep );
+		_deepToogle?.Unregister( TryToggleDeep );
+	}
+
+	void TryToggleDeep()
+	{
+		CodeTimingDebug.ToogleDeep();
 	}
 
 	void LateUpdate()

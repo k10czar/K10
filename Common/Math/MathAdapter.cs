@@ -19,7 +19,6 @@ using v4 = UnityEngine.Vector4;
 
 public static class MathAdapter
 {
-	const MethodImplOptions AggrInline = MethodImplOptions.AggressiveInlining;
 	public const float EP2 = float.Epsilon * 2;
 	public const float NEG_EP2 = -EP2;
 	

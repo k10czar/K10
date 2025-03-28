@@ -15,11 +15,6 @@
     "defineConstraints": [],
     "versionDefines": [
         {
-            "name": "com.unity.mathematics",
-            "expression": "0",
-            "define": "USE_NEW_MATHEMATICS"
-        },
-        {
             "name": "com.unity.microsoft.gdk",
             "expression": "0",
             "define": "MICROSOFT_GDK"
