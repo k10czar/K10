@@ -178,6 +178,8 @@ public static class Colors
 
         [ConstLike] public static readonly Color SuccessBackground = Avocado;
         [ConstLike] public static readonly Color WarningBackground = Tomato;
+        [ConstLike] public static readonly Color SpecialBackground = From(62, 45, 64);
+        [ConstLike] public static readonly Color SpecialSelectedBackground = From(75, 40, 75);
 
         [ConstLike] public static readonly Color Primary = Azure;
         [ConstLike] public static readonly Color Secondary = Cerulean;

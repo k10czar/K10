@@ -305,6 +305,8 @@ namespace Skyx.SkyxEditor
 
         private readonly Dictionary<SerializedProperty, ReorderableList> lists = new();
 
+        public delegate bool IsElementHighlighted(SerializedProperty elementProperty);
+
         public bool HasList(string propertyName, bool isBacking = false) => lists.ContainsKey(Get(propertyName, isBacking));
         public bool HasList(SerializedProperty property) => lists.ContainsKey(property);
 
@@ -316,13 +318,32 @@ namespace Skyx.SkyxEditor
             return null;
         }
 
-        public ReorderableList RegisterList(string propertyName, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true, ReorderableList.ElementCallbackDelegate customDrawElement = null, Action<SerializedProperty> newElementSetup = null, ReorderableList.HeaderCallbackDelegate customHeader = null, bool isBacking = false)
+        public ReorderableList RegisterList(
+            string propertyName,
+            bool displayHeader = true,
+            bool draggable = true,
+            bool displayAddButton = true,
+            bool displayRemoveButton = true,
+            ReorderableList.ElementCallbackDelegate customDrawElement = null,
+            Action<SerializedProperty> newElementSetup = null,
+            ReorderableList.HeaderCallbackDelegate customHeader = null,
+            IsElementHighlighted isElementHighlighted = null,
+            bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
-            return RegisterList(property, displayHeader, draggable, displayAddButton, displayRemoveButton, customDrawElement, newElementSetup, customHeader);
+            return RegisterList(property, displayHeader, draggable, displayAddButton, displayRemoveButton, customDrawElement, newElementSetup, customHeader, isElementHighlighted);
         }
 
-        private ReorderableList RegisterList(SerializedProperty property, bool displayHeader = true, bool draggable = true, bool displayAddButton = true, bool displayRemoveButton = true, ReorderableList.ElementCallbackDelegate customDrawElement = null, Action<SerializedProperty> newElementSetup = null, ReorderableList.HeaderCallbackDelegate customHeader = null)
+        private ReorderableList RegisterList(
+            SerializedProperty property,
+            bool displayHeader = true,
+            bool draggable = true,
+            bool displayAddButton = true,
+            bool displayRemoveButton = true,
+            ReorderableList.ElementCallbackDelegate customDrawElement = null,
+            Action<SerializedProperty> newElementSetup = null,
+            ReorderableList.HeaderCallbackDelegate customHeader = null,
+            IsElementHighlighted isElementHighlighted = null)
         {
             if (HasList(property)) return null;
 
@@ -334,11 +355,19 @@ namespace Skyx.SkyxEditor
                 onAddCallback = OnAddCallback,
                 onRemoveCallback = OnRemoveCallback,
                 onReorderCallback = OnReorderCallback,
+                drawElementBackgroundCallback = DrawElementBackgroundCallback,
             };
 
             lists.Add(property, list);
 
             return list;
+
+            void DrawElementBackgroundCallback(Rect rect, int index, bool isActive, bool isFocused)
+            {
+                if (isElementHighlighted != null && index >= 0 && isElementHighlighted(property.GetArrayElementAtIndex(index)))
+                    EditorGUI.DrawRect(rect, isActive ? Colors.Console.SpecialSelectedBackground : Colors.Console.SpecialBackground);
+                else ReorderableList.defaultBehaviours.DrawElementBackground(rect, index, isActive, isFocused, draggable);
+            }
 
             void DrawElementCallback(Rect rect, int index, bool isActive, bool isFocused)
             {
