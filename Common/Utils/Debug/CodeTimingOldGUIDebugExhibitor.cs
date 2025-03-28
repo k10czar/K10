@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Text.RegularExpressions;
 
-[DefaultExecutionOrder(CodeTimingDebugExhibitor.EXECUTION_ORDER)]
+[DefaultExecutionOrder(EXECUTION_ORDER)]
 public sealed class CodeTimingOldGUIDebugExhibitor : CodeTimingDebugExhibitor
 {
 	[SerializeField] Rect _rect = new Rect( 0, 0, 400, 600 );

@@ -58,7 +58,7 @@ public static class CodeMetrics
 	{
 #if LOG_ALL_METRICS || LOG_REPORT_ON_SUSPEND
 		if( !_currentRunningMetrics.TryGetValue( code, out var sw ) ) return;
-		var ms = sw.ReturnToPoolAndElapsedMs();
+		var ms = sw.ReturnToPoolAndGetElapsedMs();
 		_currentRunningMetrics.Remove( code );
 		var codeToUse = string.IsNullOrEmpty(newNameToUse) ? code : newNameToUse;
 #endif

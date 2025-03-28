@@ -22,12 +22,41 @@ public static class ServiceLocator
 	[ResetedOnLoad] private static readonly Dictionary<Type, List<Action>> onServiceRegisteredCallbacks = new();
 	[ResetedOnLoad] private static readonly Dictionary<Type, List<Action>> onServiceReadyCallbacks = new();
 
+	static EventSlot<float> _onUpdate = null;
+
+	public static IEventRegister<float> OnUpdate
+	{
+		get
+		{
+			if( _onUpdate == null )
+			{
+				_onUpdate = new();
+				var go = new GameObject( "ServiceUpdater" );
+				UnityEngine.Object.DontDestroyOnLoad( go );
+				var relay = go.AddComponent<UpdateRelay>();
+				relay.OnUpdate.Register( _onUpdate );
+			}
+			return _onUpdate;
+		}
+	}
+
 	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
 	public static void Clear()
 	{
+		if( services != null )
+		{
+			foreach( var kvp in services )
+			{
+				var ser = kvp.Value;
+				if( ser is IDisposable disposable ) disposable.Dispose();
+				if( ser is ICustomDisposableKill killable ) killable.Kill();
+			}
+		}		
 		// Log( $"{"ServiceLocator".Colorfy(TypeName)}.{"Clear".Colorfy(Verbs)}()" );
 		services.Clear();
 		genericServices.Clear();
+		_onUpdate?.Kill();
+		_onUpdate = null;
 	}
 
 	public class GenericsComparer : IEqualityComparer<Type[]>
@@ -70,6 +99,17 @@ public static class ServiceLocator
 	{
 		return (T)Get(typeof(T));
 	}
+	
+
+    public static T Request<T>() where T : IService, new()
+    {
+		var serv = Get<T>();
+		if( serv != null ) return serv;
+		var newServ = new T();
+		Register( newServ );
+		if( newServ is IUpdatable up ) OnUpdate.Register( up.Update );
+		return newServ;
+    }
 
 	public static IService Get(Type type)
 	{

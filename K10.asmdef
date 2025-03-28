@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "GUID:d8b63aba1907145bea998dd612889d6b",
-        "GUID:c3394204debbc8d43b7332e4edf990e3"
+        "GUID:c3394204debbc8d43b7332e4edf990e3",
+        "GUID:5ee1933b8c8d484ea7cb408c3d679e50"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -12,6 +13,17 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.mathematics",
+            "expression": "0",
+            "define": "USE_NEW_MATHEMATICS"
+        },
+        {
+            "name": "com.unity.microsoft.gdk",
+            "expression": "0",
+            "define": "MICROSOFT_GDK"
+        }
+    ],
     "noEngineReferences": false
 }

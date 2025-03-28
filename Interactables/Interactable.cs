@@ -38,7 +38,7 @@ namespace K10.Interactables
 
     public class Interactable : MonoBehaviour, ILoggable<InteractableLogCategory>
     {
-        [OnlyOnPlay,SerializeField,ReadOnly] BoolState isBeingTargeted = new BoolState();
+        [OnlyOnPlay,SerializeField,BlockEdit] BoolState isBeingTargeted = new BoolState();
         [SerializeField] EInteractionTargetingType targetingType = 0;
         [Boxed,SerializeReference,ExtendedDrawer(true)] IValidator<IInteractor> condition;
         [SerializeField] Vector3 offset;

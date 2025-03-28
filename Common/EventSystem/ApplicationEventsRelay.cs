@@ -1,4 +1,4 @@
-#define LOG_EVENTS
+// #define LOG_EVENTS
 using UnityEngine;
 
 public class ApplicationEventsRelay : MonoBehaviour

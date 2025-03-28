@@ -31,6 +31,8 @@ public static class DebugUtils
 	{
 		var cam = Camera.main;
 
+		if( cam == null ) return;
+
 		DebugUtils.Circle( pos, cam.transform.right, cam.transform.forward, radius, color, false );
 		DebugUtils.Circle( pos, forward, up, radius, color, false );
 	}

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using K10;
 
 public static class CollectionExtensions
 {
@@ -10,6 +11,12 @@ public static class CollectionExtensions
             if( element is T ) return true;
         }
         return false;
+    }
+
+    public static void ClearAndReturnToPool<T,K>( this K collection ) where K : ICollection<T>, new()
+    {
+        collection.Clear();
+        ObjectPool.Return( collection );
     }
 
     public static bool ContainsElementsFromType( this System.Collections.IEnumerable collection, System.Type typeOfElements )
