@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -79,45 +80,18 @@ public class EnumEntry : PropertyAttribute
 	}
 }
 
-public class EnumAndFieldEntry : PropertyAttribute
+public class SingleLineDrawer : PropertyAttribute
 {
-	public readonly Type firstType;
-	public readonly Type secondType;
+	public readonly (string, EConsoleColor, string)[] fields;
 
-	public readonly EConsoleColor firstColor;
-	public readonly EConsoleColor secondColor;
-
-	public readonly string firstHint;
-	public readonly string secondHint;
-
-	public EnumAndFieldEntry(Type firstType, Type secondType, EConsoleColor firstColor = EConsoleColor.Primary, EConsoleColor secondColor = EConsoleColor.Support, string firstHint = null, string secondHint = null)
+	public SingleLineDrawer(params (string, EConsoleColor, string)[] fields)
 	{
-		this.firstType = firstType;
-		this.secondType = secondType;
-		this.firstColor = firstColor;
-		this.secondColor = secondColor;
-		this.firstHint = firstHint;
-		this.secondHint = secondHint;
+		this.fields = fields;
 	}
-}
 
-public class EnumAndMaskEntry : PropertyAttribute
-{
-	public readonly Type firstType;
-	public readonly Type secondType;
-
-	public readonly EConsoleColor firstColor;
-	public readonly EConsoleColor secondColor;
-
-	public static EnumAndFieldEntry From<T,U>(EConsoleColor firstColor = EConsoleColor.Primary, EConsoleColor secondColor = EConsoleColor.Support)
-		=> new(typeof(T), typeof(U), firstColor, secondColor);
-
-	public EnumAndMaskEntry(Type firstType, Type secondType, EConsoleColor firstColor = EConsoleColor.Primary, EConsoleColor secondColor = EConsoleColor.Support)
+	public SingleLineDrawer(params string[] fieldNames)
 	{
-		this.firstType = firstType;
-		this.secondType = secondType;
-		this.firstColor = firstColor;
-		this.secondColor = secondColor;
+		fields = fieldNames.Select((entry, index) => (entry, (EConsoleColor)index, "")).ToArray();
 	}
 }
 

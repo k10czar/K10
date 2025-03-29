@@ -106,6 +106,31 @@ namespace Skyx.SkyxEditor
             EditorGUI.LabelField(rect, hint, SkyxStyles.InlaidHintLabel);
         }
 
+        public static void Draw(Rect rect, SerializedProperty property, Type targetType, EConsoleColor color, string hint)
+        {
+            if (targetType.IsEnum)
+            {
+                var hasFlagsAttribute = targetType.IsDefined(typeof(FlagsAttribute), inherit: false);
+
+                if (hasFlagsAttribute) EnumTreeGUI.DrawEnumMask(rect, property, targetType, color);
+                else EnumTreeGUI.DrawEnum(rect, property, targetType, Colors.Console.Get(color), hint);
+            }
+
+            else if (targetType.IsClass)
+                DrawObjectField(rect, property, targetType, hint, true);
+
+            else if (targetType == typeof(float))
+                DrawFloatField(rect, property, hint);
+
+            else if (targetType == typeof(int))
+                DrawIntField(rect, property, hint);
+
+            else if (targetType == typeof(string))
+                DrawTextField(rect, property, hint);
+
+            else throw new Exception("Unknown type");
+        }
+
         #endregion
 
         #region Toggles
