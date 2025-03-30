@@ -25,19 +25,26 @@ public class CodeOrchestrator : MonoBehaviour
 	List<IOrchestratedLateUpdate> _lateUpdatables = new();
 	List<IOrchestratedFixedUpdate> _fixedUpdatables = new();
 
-	static CodeOrchestrator _sceneOrchestration;
-	static CodeOrchestrator _eternalOrchestration;
+	// EventSlot _onDestroy;
+	// public IEventRegister OnDestroy => _onDestroy ??= new();
+
+	static CodeOrchestrator _sceneOrchestrator;
+	static CodeOrchestrator _eternalOrchestrator;
 
 	public static CodeOrchestrator Scene
 	{
 		get
 		{
-			if( _sceneOrchestration == null )
+			if( _sceneOrchestrator == null )
 			{
-				GameObject obj = new GameObject( $"SceneCodeOrchestration" );
-				_sceneOrchestration = obj.AddComponent<CodeOrchestrator>();
+				GameObject obj = new GameObject( $"SceneCodeOrchestrator" );
+				_sceneOrchestrator = obj.AddComponent<CodeOrchestrator>();
+				// var buildOrchestrator = _sceneOrchestrator;
+				// _sceneOrchestrator.OnDestroy.Register( () => {
+				// 	if( buildOrchestrator == _sceneOrchestrator ) _sceneOrchestrator = null;
+				// } );
 			}
-			return _sceneOrchestration;
+			return _sceneOrchestrator;
 		}
 	}
 
@@ -45,12 +52,12 @@ public class CodeOrchestrator : MonoBehaviour
 	{
 		get
 		{
-			if( _eternalOrchestration == null )
+			if( _eternalOrchestrator == null )
 			{
 				GameObject obj = new GameObject( $"EternalCodeOrchestration" );
-				_eternalOrchestration = obj.AddComponent<CodeOrchestrator>();
+				_eternalOrchestrator = obj.AddComponent<CodeOrchestrator>();
 			}
-			return _eternalOrchestration;
+			return _eternalOrchestrator;
 		}
 	}
 
