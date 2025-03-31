@@ -62,24 +62,6 @@ public class ListingPathAttribute : Attribute
 	}
 }
 
-public class EnumEntry : PropertyAttribute
-{
-	public readonly Type enumType;
-	public readonly EConsoleColor color;
-
-	public EnumEntry(Type enumType, EConsoleColor color = EConsoleColor.Primary)
-	{
-		this.enumType = enumType;
-		this.color = color;
-	}
-
-	public EnumEntry(EConsoleColor color = EConsoleColor.Primary)
-	{
-		this.enumType = null;
-		this.color = color;
-	}
-}
-
 public class SingleLineDrawer : PropertyAttribute
 {
 	public readonly (string, EConsoleColor, string)[] fields;

@@ -28,7 +28,7 @@ namespace K10.DebugSystem
             {
                 var color = category.Color;
                 if (verbose) color = color.AddSaturation(-0.22f);
-                log = $"<b><color={color.ToHexRGB()}>[{category.Name}]</color></b> {log}";
+                log = $"<b><color={color.ToHexRGB()}>[{category.Name}]</color></b> {log}\nOwners: {string.Join(", ", owners)}";
             }
 
             log = K10Log.ReplaceColorsNames(log);

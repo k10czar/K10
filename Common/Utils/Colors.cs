@@ -1,12 +1,11 @@
 #if UNITY_EDITOR
 using K10.Reflection.Extensions;
 #endif
-using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public enum EConsoleColor { Primary, Secondary, Info, Success, Warning, Danger, Support, Special }
+public enum EConsoleColor { Primary, Secondary, Info, Success, Warning, Danger, Support, Special, Disabled }
 
 public static class Colors
 {

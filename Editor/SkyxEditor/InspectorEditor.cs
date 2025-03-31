@@ -69,11 +69,27 @@ namespace Skyx.SkyxEditor
             SkyxLayout.Space();
         }
 
+        private bool IsValid()
+        {
+            if (serializedObject.targetObject == null || target == null) return false;
+
+            if (target is Component component) return component.gameObject != null;
+            if (target is GameObject gameObject) return gameObject != null;
+
+            return true;
+        }
+
         public override void OnInspectorGUI()
         {
             if (skipDrawing)
             {
                 EditorGUILayout.HelpBox("Changing playmode...", MessageType.Info);
+                return;
+            }
+
+            if (!IsValid())
+            {
+                EditorGUILayout.HelpBox("GameObject was destroyed.", MessageType.Warning);
                 return;
             }
 

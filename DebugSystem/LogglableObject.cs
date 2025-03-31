@@ -40,13 +40,13 @@ namespace K10.DebugSystem
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
         public static void LogError<T>(this ILoggable<T> obj, string message) where T : IK10LogCategory, new()
         {
-            K10Log<T>.Log(LogSeverity.Error, message, false, obj.MainLogOwner, null);
+            K10Log<T>.Log(LogSeverity.Error, message, false, obj.MainLogOwner, obj.LogOwners);
         }
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
         public static void LogError<T>(this ILoggable<T> obj, string message, Object consoleTarget) where T : IK10LogCategory, new()
         {
-            K10Log<T>.Log(LogSeverity.Error, message, false, consoleTarget, null);
+            K10Log<T>.Log(LogSeverity.Error, message, false, consoleTarget, obj.LogOwners.Append(consoleTarget));
         }
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]

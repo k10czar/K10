@@ -62,8 +62,6 @@ namespace K10.DebugSystem
         private static bool IsSelection(Object candidate) => UnityEditor.Selection.activeGameObject == GetGameObject(candidate);
         #endif
 
-        public static bool CheckDebugOwner(params Object[] requesters) => CheckDebugOwners(requesters);
-
         public static bool CheckDebugOwners(IEnumerable<Object> requesters)
         {
             if (DebugOwnerBehaviour is EDebugOwnerBehaviour.Ignore) return true;
