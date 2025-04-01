@@ -12,12 +12,12 @@ namespace Skyx.SkyxEditor
             var att = (SingleLineDrawer) attribute;
 
             var objType = property.GetValue().GetType();
-            rect.AdjustToLineAndDivide(att.fields.Length);
+            rect.AdjustToLineAndDivide(att.drawInfos.Length);
 
-            foreach (var (fieldName, color, hint) in att.fields)
+            foreach (var drawInfo in att.drawInfos)
             {
-                var info = objType.GetField(fieldName);
-                SkyxGUI.Draw(rect, property.FindPropertyRelative(fieldName), info.FieldType, color, hint);
+                var info = objType.GetField(drawInfo.fieldName);
+                SkyxGUI.Draw(rect, property.FindPropertyRelative(drawInfo.fieldName), info.FieldType, drawInfo);
                 rect.SlideSameRect();
             }
         }
@@ -41,21 +41,21 @@ namespace Skyx.SkyxEditor
 
                 if (selectingAnchor)
                 {
-                    if (SkyxGUI.MiniButton(ref rect, "📋", EConsoleColor.Warning, "Copy local position from selected object", true))
+                    if (SkyxGUI.MiniButton(ref rect, "📋", EColor.Warning, "Copy local position from selected object", true))
                     {
                         property.vector3Value = Selection.activeTransform.localPosition;
                         property.Apply();
                     }
 
-                    if (SkyxGUI.MiniButton(ref rect, "📌", EConsoleColor.Support, "Set local position on selected object", true))
+                    if (SkyxGUI.MiniButton(ref rect, "📌", EColor.Support, "Set local position on selected object", true))
                         Selection.activeTransform.localPosition = property.vector3Value;
 
-                    if (SkyxGUI.MiniButton(ref rect, "❌", EConsoleColor.Support, "Delete helping Anchor", true))
+                    if (SkyxGUI.MiniButton(ref rect, "❌", EColor.Support, "Delete helping Anchor", true))
                         Object.DestroyImmediate(Selection.activeObject);
                 }
                 else
                 {
-                    if (SkyxGUI.MiniButton(ref rect, "⊙", EConsoleColor.Support, "Create helping anchor", true))
+                    if (SkyxGUI.MiniButton(ref rect, "⊙", EColor.Support, "Create helping anchor", true))
                     {
                         var newObj = new GameObject("[HelpingAnchor]");
                         newObj.transform.parent = sourceTransform;

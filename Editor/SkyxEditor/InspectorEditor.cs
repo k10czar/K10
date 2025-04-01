@@ -44,12 +44,12 @@ namespace Skyx.SkyxEditor
 
             if (EditorUtility.IsDirty(target))
             {
-                if (SkyxLayout.Button("Save Changes!", EConsoleColor.Warning))
+                if (SkyxLayout.Button("Save Changes!", EColor.Warning))
                     PropertyCollection.SaveAsset(target);
             }
             else if (ShouldDrawReserialize)
             {
-                if (SkyxLayout.Button("Reserialize", EConsoleColor.Special))
+                if (SkyxLayout.Button("Reserialize", EColor.Special))
                 {
                     if (EditorUtility.DisplayDialog("Are you sure?", $"Reserialize {target.name} entries?", "Yes", "No"))
                     {

@@ -106,27 +106,36 @@ namespace Skyx.SkyxEditor
             EditorGUI.LabelField(rect, hint, SkyxStyles.InlaidHintLabel);
         }
 
-        public static void Draw(Rect rect, SerializedProperty property, Type targetType, EConsoleColor color, string hint)
+        public static void Draw(Rect rect, SerializedProperty property, Type targetType, FieldDrawInfo drawInfo)
         {
+            if (targetType == typeof(int))
+            {
+                if (targetType != drawInfo.requestedType)
+                    EnumTreeGUI.DrawEnumMask(rect, property, drawInfo.requestedType, drawInfo.color);
+
+                else DrawIntField(rect, property, drawInfo.hint);
+
+                return;
+            }
+
+            Debug.Assert(targetType == drawInfo.requestedType || drawInfo.requestedType == null, $"Draw info type mismatch! {drawInfo.requestedType} != {targetType}");
+
             if (targetType.IsEnum)
             {
                 var hasFlagsAttribute = targetType.IsDefined(typeof(FlagsAttribute), inherit: false);
 
-                if (hasFlagsAttribute) EnumTreeGUI.DrawEnumMask(rect, property, targetType, color);
-                else EnumTreeGUI.DrawEnum(rect, property, targetType, Colors.Console.Get(color), hint);
+                if (hasFlagsAttribute) EnumTreeGUI.DrawEnumMask(rect, property, targetType, drawInfo.color);
+                else EnumTreeGUI.DrawEnum(rect, property, targetType, drawInfo.color.Get(), drawInfo.hint);
             }
 
             else if (targetType.IsClass)
-                DrawObjectField(rect, property, targetType, hint, true);
+                DrawObjectField(rect, property, targetType, drawInfo.hint, true);
 
             else if (targetType == typeof(float))
-                DrawFloatField(rect, property, hint);
-
-            else if (targetType == typeof(int))
-                DrawIntField(rect, property, hint);
+                DrawFloatField(rect, property, drawInfo.hint);
 
             else if (targetType == typeof(string))
-                DrawTextField(rect, property, hint);
+                DrawTextField(rect, property, drawInfo.hint);
 
             else throw new Exception("Unknown type");
         }
@@ -200,11 +209,11 @@ namespace Skyx.SkyxEditor
 
         #region Buttons
 
-        public static bool HeaderButton(Rect rect, string label, EConsoleColor color, EHeaderSize size)
+        public static bool HeaderButton(Rect rect, string label, EColor color, EHeaderSize size)
             => Button(rect, label, SkyxStyles.HeaderColor(color), SkyxStyles.HeaderText(size));
 
-        public static bool Button(Rect rect, string label, EConsoleColor color, string hint = null)
-            => Button(rect, label, Colors.Console.Get(color), SkyxStyles.ButtonStyle, hint);
+        public static bool Button(Rect rect, string label, EColor color, string hint = null)
+            => Button(rect, label, color.Get(), SkyxStyles.ButtonStyle, hint);
 
         public static bool Button(Rect rect, string label, Color backgroundColor, GUIStyle style = null, string hint = null)
         {
@@ -230,8 +239,8 @@ namespace Skyx.SkyxEditor
         public static bool MiniDangerButton(ref Rect rect, string label, string hint, bool fromEnd = false)
             => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Danger, SkyxStyles.MiniButtonStyle, hint);
 
-        public static bool MiniButton(ref Rect rect, string label, EConsoleColor color, string hint = null, bool fromEnd = false)
-            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Get(color), SkyxStyles.MiniButtonStyle, hint);
+        public static bool MiniButton(ref Rect rect, string label, EColor color, string hint = null, bool fromEnd = false)
+            => Button(ExtractMiniButton(ref rect, fromEnd), label, color.Get(), SkyxStyles.MiniButtonStyle, hint);
 
         #endregion
 
@@ -278,7 +287,7 @@ namespace Skyx.SkyxEditor
             EditorGUI.LabelField(rect, new GUIContent(label, hint), isHeader ? SkyxStyles.PlainBGHeader : SkyxStyles.PlainBGLabel);
         }
 
-        public static void PlainBGLabel(Rect rect, string label, EConsoleColor color, EHeaderSize size)
+        public static void PlainBGLabel(Rect rect, string label, EColor color, EHeaderSize size)
         {
             using var backgroundScope = new BackgroundColorScope(SkyxStyles.HeaderColor(color));
             EditorGUI.LabelField(rect, label, SkyxStyles.HeaderText(size));

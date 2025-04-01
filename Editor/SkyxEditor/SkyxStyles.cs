@@ -174,11 +174,11 @@ namespace Skyx.SkyxEditor
         public static float ScopeTotalExtraHeight(EHeaderSize size = EHeaderSize.Primary) => headerHeights[(int)size] + (3 * ElementsMargin);
         public static float ClosedScopeHeight(EHeaderSize size = EHeaderSize.Primary) => headerHeights[(int)size] + ElementsMargin;
 
-        public static GUIStyle BoxStyle(EConsoleColor color) => new(boxStyles[(int)color]);
-        public static Color HeaderColor(EConsoleColor color) => headerColors[(int)color];
-        public static Color BoxColor(EConsoleColor color) => boxColors[(int)color];
+        public static GUIStyle BoxStyle(EColor color) => new(boxStyles[(int)color]);
+        public static Color HeaderColor(EColor color) => headerColors[(int)color];
+        public static Color BoxColor(EColor color) => boxColors[(int)color];
 
-        public static Color DefaultHeaderColor => HeaderColor(EConsoleColor.Secondary);
+        public static Color DefaultHeaderColor => HeaderColor(EColor.Secondary);
 
         public static readonly GUIStyle borderBoxHeaderStyle = new()
         {

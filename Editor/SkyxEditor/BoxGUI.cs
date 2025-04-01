@@ -134,8 +134,8 @@ namespace Skyx.SkyxEditor
             return headerRect;
         }
 
-        public static void DrawBox(Rect rect) => DrawBox(rect, EConsoleColor.Primary);
-        public static void DrawBox(Rect rect, EConsoleColor color)
+        public static void DrawBox(Rect rect) => DrawBox(rect, EColor.Primary);
+        public static void DrawBox(Rect rect, EColor color)
         {
             using var scope = new BackgroundColorScope(SkyxStyles.BoxColor(color));
             GUI.Box(rect, GUIContent.none, SkyxStyles.BoxStyle(color));

@@ -11,13 +11,13 @@ namespace Skyx.SkyxEditor
         private const float NewElementHeight = SkyxStyles.FullLineHeight;
         public const float HorizontalThreshold = SkyxStyles.ListControlButtonSize * 3;
 
-        public static void DrawLayout(SerializedProperty property, EConsoleColor color = EConsoleColor.Primary, EHeaderSize size = EHeaderSize.Primary, string title = null, string newText = null, OnNewElementCallback onNewElement = null)
+        public static void DrawLayout(SerializedProperty property, EColor color = EColor.Primary, EHeaderSize size = EHeaderSize.Primary, string title = null, string newText = null, OnNewElementCallback onNewElement = null)
         {
             var rect = EditorGUILayout.GetControlRect(false, GetPropertyHeight(property, false, size));
             Draw(ref rect, property, color, size, title, newText, onNewElement, false);
         }
 
-        public static void Draw(ref Rect rect, SerializedProperty property, EConsoleColor color = EConsoleColor.Primary, EHeaderSize size = EHeaderSize.Primary, string title = null, string newText = null, OnNewElementCallback onNewElement = null, bool resetHeight = true)
+        public static void Draw(ref Rect rect, SerializedProperty property, EColor color = EColor.Primary, EHeaderSize size = EHeaderSize.Primary, string title = null, string newText = null, OnNewElementCallback onNewElement = null, bool resetHeight = true)
         {
             if (resetHeight) rect.height = GetPropertyHeight(property, true);
 
@@ -105,7 +105,7 @@ namespace Skyx.SkyxEditor
 
             rect.height = (isHorizontal ? 1 : count) * SkyxStyles.ListControlButtonSize;
 
-            BoxGUI.DrawBox(rect, EConsoleColor.Secondary);
+            BoxGUI.DrawBox(rect, EColor.Secondary);
             rect.ApplyMargin(3);
 
             if (isHorizontal) rect.DivideRect(count);
@@ -124,7 +124,7 @@ namespace Skyx.SkyxEditor
                 else rect.SlideSameVertically();
             }
 
-            if (GUI.Button(rect, "X", SkyxStyles.CenterLabel.With(EConsoleColor.Warning)))
+            if (GUI.Button(rect, "X", SkyxStyles.CenterLabel.With(EColor.Warning)))
             {
                 property.DeleteArrayElementAtIndex(index);
                 property.Apply();

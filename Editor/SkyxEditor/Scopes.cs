@@ -72,6 +72,12 @@ namespace Skyx.SkyxEditor
     {
         private readonly Color prevColor;
 
+        public BackgroundColorScope(EColor color)
+        {
+            prevColor = GUI.backgroundColor;
+            GUI.backgroundColor = color.Get();
+        }
+
         public BackgroundColorScope(Color backgroundColor)
         {
             prevColor = GUI.backgroundColor;

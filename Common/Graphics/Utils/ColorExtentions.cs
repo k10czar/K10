@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 
-public static class ColorExtention
+public static class ColorExtentions
 {
 	#region Extention
 	public static ColorHSV ToHSV( this Color color ) { return new ColorHSV( color ); }

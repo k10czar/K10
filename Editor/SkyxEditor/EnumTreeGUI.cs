@@ -11,8 +11,8 @@ namespace Skyx.SkyxEditor
         public static void DrawSupport<T>(Rect rect, SerializedProperty property, string hint = null) => DrawEnum(rect, property, typeof(T), Colors.Console.GrayOut, hint);
         public static void DrawSecondary(Rect rect, SerializedProperty property, Type enumType, string hint = null) => DrawEnum(rect, property, enumType, Colors.Console.Secondary, hint);
 
-        public static void DrawEnum<T>(Rect rect, SerializedProperty property, EConsoleColor color, string hint = "")
-            => DrawEnum(rect, property, typeof(T), Colors.Console.Get(color), hint);
+        public static void DrawEnum<T>(Rect rect, SerializedProperty property, EColor color, string hint = "")
+            => DrawEnum(rect, property, typeof(T), color.Get(), hint);
 
         public static void DrawEnum(Rect rect, SerializedProperty property, Type enumType, Color color, string hint = "")
         {
@@ -59,7 +59,7 @@ namespace Skyx.SkyxEditor
             var currentIndex = property.intValue;
             var enumValueCount = names.Length;
 
-            colorSequence ??= Colors.OptionsSequence;
+            colorSequence ??= Colors.EColorSequence;
             var color = colorSequence[currentIndex];
 
             var label = names[currentIndex];
@@ -73,13 +73,13 @@ namespace Skyx.SkyxEditor
             }
         }
 
-        public static void DrawEnumMask<T>(Rect rect, SerializedProperty property, EConsoleColor color = EConsoleColor.Primary, string hint = null) where T : Enum
+        public static void DrawEnumMask<T>(Rect rect, SerializedProperty property, EColor color = EColor.Primary, string hint = null) where T : Enum
             => DrawEnumMask(rect, property, typeof(T), color, hint);
 
-        public static void DrawEnumMask(Rect rect, SerializedProperty property, Type enumType, EConsoleColor color = EConsoleColor.Primary, string hint = null)
+        public static void DrawEnumMask(Rect rect, SerializedProperty property, Type enumType, EColor color = EColor.Primary, string hint = null)
         {
             var value = (Enum) Enum.ToObject(enumType, property.intValue);
-            using var colorScope = new BackgroundColorScope(Colors.Console.Get(color));
+            using var colorScope = new BackgroundColorScope(color.Get());
 
             var newValue = (int)(object) EditorGUI.EnumFlagsField(rect, value);
 

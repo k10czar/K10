@@ -235,7 +235,7 @@ namespace Skyx.SkyxEditor
             if (slideRect) rect.SlideSameRect();
         }
 
-        public void DrawEnum<T>(ref Rect rect, string propertyName, EConsoleColor color = EConsoleColor.Primary, string hint = null, bool slideRect = true, bool isBacking = false) where T: Enum
+        public void DrawEnum<T>(ref Rect rect, string propertyName, EColor color = EColor.Primary, string hint = null, bool slideRect = true, bool isBacking = false) where T: Enum
         {
             EnumTreeGUI.DrawEnum<T>(rect, Get(propertyName, isBacking), color, hint);
             if (slideRect) rect.SlideSameRect();
@@ -247,7 +247,7 @@ namespace Skyx.SkyxEditor
             if (slideRect) rect.SlideSameRect();
         }
 
-        public void DrawEnumMask<T>(ref Rect rect, string propertyName, EConsoleColor color = EConsoleColor.Primary, string hint = null, bool slideRect = true, bool isBacking = false) where T: Enum
+        public void DrawEnumMask<T>(ref Rect rect, string propertyName, EColor color = EColor.Primary, string hint = null, bool slideRect = true, bool isBacking = false) where T: Enum
         {
             EnumTreeGUI.DrawEnumMask<T>(rect, Get(propertyName, isBacking), color, hint);
             if (slideRect) rect.SlideSameRect();
@@ -279,12 +279,12 @@ namespace Skyx.SkyxEditor
             return property.boolValue;
         }
 
-        public bool DrawMiniToggle(ref Rect rect, string propertyName, EConsoleColor onColor, EConsoleColor offColor = EConsoleColor.Support, string label = null, string hint = null, bool fromEnd = false, bool isBacking = false)
+        public bool DrawMiniToggle(ref Rect rect, string propertyName, EColor onColor, EColor offColor = EColor.Support, string label = null, string hint = null, bool fromEnd = false, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
 
             label = string.IsNullOrEmpty(label) ? property.PrettyName() : label;
-            SkyxGUI.MiniToggle(ref rect, property, label, label, hint, Colors.Console.Get(onColor), Colors.Console.Get(offColor), false, fromEnd);
+            SkyxGUI.MiniToggle(ref rect, property, label, label, hint, onColor.Get(), offColor.Get(), false, fromEnd);
 
             return property.boolValue;
         }

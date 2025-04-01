@@ -1,6 +1,4 @@
 using System;
-using System.Linq;
-using System.Reflection;
 using UnityEngine;
 
 public class ToStringAttribute : PropertyAttribute { }
@@ -59,21 +57,6 @@ public class ListingPathAttribute : Attribute
 	public ListingPathAttribute( string path )
 	{
 		Path = path;
-	}
-}
-
-public class SingleLineDrawer : PropertyAttribute
-{
-	public readonly (string, EConsoleColor, string)[] fields;
-
-	public SingleLineDrawer(params (string, EConsoleColor, string)[] fields)
-	{
-		this.fields = fields;
-	}
-
-	public SingleLineDrawer(params string[] fieldNames)
-	{
-		fields = fieldNames.Select((entry, index) => (entry, (EConsoleColor)index, "")).ToArray();
 	}
 }
 

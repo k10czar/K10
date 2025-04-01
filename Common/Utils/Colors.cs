@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public enum EConsoleColor { Primary, Secondary, Info, Success, Warning, Danger, Support, Special, Disabled }
+public enum EColor { Primary, Secondary, Info, Success, Warning, Danger, Support, Special, Disabled }
 
 public static class Colors
 {
@@ -46,41 +46,17 @@ public static class Colors
         }
     }
 
-    [LazyConst] private static Color[] optionsSequence;
+    [LazyConst] private static Color[] eColorSequence;
+    public static Color[] EColorSequence => eColorSequence ??= new [] { Console.Primary, Console.Secondary, Console.Info, Console.Success, Console.Warning, Console.Danger, Console.Support, Console.Special };
 
-    public static Color[] OptionsSequence
+    public static Color FromSequence<T>(T value, bool loop = false) where T : Enum => FromSequence((int)(object)value, loop);
+    public static Color FromSequence(int index, bool loop = false)
     {
-        get
-        {
-            if (optionsSequence != null) return optionsSequence;
-
-            optionsSequence = new[] { Cyan, Yellow, Salmon, LawnGreen, Cerulean, Goldenrod, MediumSlateBlue, Khaki, DeepPink, Crimson, Azure, Fern, Coral, OrangeRed };
-
-            return optionsSequence;
-        }
+        index = loop ? index % EColorSequence.Length : Mathf.Clamp(index, 0, EColorSequence.Length);
+        return EColorSequence[index];
     }
 
-    [LazyConst] private static Color[] statusSequence;
-
-    public static Color[] StatusSequence
-    {
-        get
-        {
-            if (statusSequence != null) return statusSequence;
-
-            statusSequence = new [] { MintGreen, Orange, LightCoral, OrangeRed };
-
-            return statusSequence;
-        }
-    }
-
-    public static Color FromSequence<T>(T value, bool isStatus = false, bool loop = false) where T : Enum => FromSequence((int)(object)value, isStatus, loop);
-    public static Color FromSequence(int index, bool isStatus = false, bool loop = false)
-    {
-        var sequence = isStatus ? StatusSequence : OptionsSequence;
-        index = loop ? index % sequence.Length : Mathf.Clamp(index, 0, sequence.Length);
-        return sequence[index];
-    }
+    public static Color Get(this EColor color) => FromSequence(color);
 
     private const System.Reflection.BindingFlags FLAGS = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
 
@@ -128,28 +104,6 @@ public static class Colors
                 }
                 return ALL_COLORS;
             }
-        }
-
-        [LazyConst] private static Color[] sequence;
-
-        public static Color[] Sequence
-        {
-            get
-            {
-                if (sequence != null) return sequence;
-
-                sequence = new [] { Primary, Secondary, Info, Success, Warning, Danger, Support, Special };
-
-                return sequence;
-            }
-        }
-
-
-        public static Color Get<T>(T value, bool loop = false) where T : Enum => Get((int)(object)value, loop);
-        public static Color Get(int index, bool loop = false)
-        {
-            index = loop ? index % Sequence.Length : Mathf.Clamp(index, 0, Sequence.Length);
-            return Sequence[index];
         }
 
         [ConstLike] public static readonly Color Danger = Crimson;
