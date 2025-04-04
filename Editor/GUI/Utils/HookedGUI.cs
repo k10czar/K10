@@ -1,3 +1,4 @@
+// #define DEBUG_POSITIONS
 using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.CompilerServices;
@@ -43,7 +44,18 @@ public static class HookedGUI
 	}
 
 	static Vector2 _pos = new Vector2( Screen.width / 2, Screen.height / 2 );
-	static Vector2 _cursorSize = new Vector2( 24, 24 );
+	static Vector2 _cursorSize = new Vector2( 42, 42 );
+
+	static Vector2 _cursorSize1 = new Vector2( _cursorSize.x, _cursorSize.y * .125f );
+	static Vector2 _cursorSize2 = new Vector2( _cursorSize.x * .75f, _cursorSize.y * .25f );
+	static Vector2 _cursorSize3 = new Vector2( _cursorSize.x * .5f, _cursorSize.y * .375f );
+	static Vector2 _cursorSize4 = new Vector2( _cursorSize.x * .25f, _cursorSize.y );
+
+	static Vector2 _cursorOffset1 = new Vector2( - _cursorSize.x * .5f, _cursorSize.y  * .375f );
+	static Vector2 _cursorOffset2 = new Vector2( - _cursorSize.x * .375f, _cursorSize.y  * .25f );
+	static Vector2 _cursorOffset3 = new Vector2( - _cursorSize.x * .25f, _cursorSize.y  * .125f );
+	static Vector2 _cursorOffset4 = new Vector2( - _cursorSize.x * .125f, 0 );
+
 	static Vector2 _lastMousePos;
     static List<Vector2> _scrollsStack = new();
 	static bool _delayedClick = false;
@@ -67,13 +79,30 @@ public static class HookedGUI
 		_aditionallScrollDelta = aditionallScrollDelta;
 	}
 
-    static readonly GUIContent CursorContent = new GUIContent( "⬆" ); //GUIContent.none;
+    // static readonly GUIContent CursorContent = new GUIContent( "⬆" ); //GUIContent.none;
+    static readonly GUIContent CursorContent = GUIContent.none;
+
+    
+
     public static void DrawCursor()
     {
         var cPos = GuiCursorPosition;
-        cPos.Set( cPos.x - _cursorSize.x * .5f, cPos.y - _cursorSize.y * .5f );
-        GUI.Label( new Rect( cPos, _cursorSize ), CursorContent, K10GuiStyles.buttonStyle );
+        var s = _cursorSize;
+		GuiColorManager.New( Colors.Black );
+        GUI.Box( new Rect( cPos +_cursorOffset1, _cursorSize1 ), CursorContent, K10GuiStyles.buttonStyle );
+        GuiColorManager.Revert();
+		GuiColorManager.New( Colors.Red );
+        GUI.Box( new Rect( cPos + _cursorOffset2, _cursorSize2 ), CursorContent, K10GuiStyles.buttonStyle );
+        GuiColorManager.Revert();
+		GuiColorManager.New( Colors.Orange );
+        GUI.Box( new Rect( cPos + _cursorOffset3, _cursorSize3 ), CursorContent, K10GuiStyles.buttonStyle );
+        GuiColorManager.Revert();
+		GuiColorManager.New( Colors.Yellow );
+        GUI.Box( new Rect( cPos + _cursorOffset4, _cursorSize4 ), CursorContent, K10GuiStyles.buttonStyle );
+        GuiColorManager.Revert();
+#if DEBUG_POSITIONS
         GUI.Label( new Rect( cPos, new Vector2( 250, 50 ) ), $"{GuiCursorPosition}" );
+#endif
     }
 
     [MethodImpl(Optimizations.INLINE_IF_CAN)]
@@ -112,7 +141,9 @@ public static class HookedGUI
 
         clicked |= GUI.Button(rt, buttonText, buttonStyle);
         
+#if DEBUG_POSITIONS
         GUI.Button( rt, $"({rt.x:N0},{rt.y:N0})[{rt.width:N0},{rt.height:N0}]", buttonStyle );
+#endif
 
         if( hovering ) GuiColorManager.Revert();
         
@@ -144,29 +175,46 @@ public static class HookedGUI
         Rect rt = GUILayoutUtility.GetRect( GUIContent.none, GUI.skin.scrollView );
         scroll = GUILayout.BeginScrollView( scroll );
 
+        if( rt.Contains( GuiCursorPosition ) ) AddScroll( ref scroll );
+
         var pos = scroll - rt.position;
         pos.y -= 15;
         _scrollsStack.Add( pos );
+    }
 
-        if( rt.Contains( GuiCursorPosition ) ) scroll -= _aditionallScrollDelta;
+    static void AddScroll( ref Vector2 scroll )
+    {
+        scroll.x = scroll.x + _aditionallScrollDelta.x;
+        scroll.y = scroll.y - _aditionallScrollDelta.y;
     }
 
     public static void EndScrollView()
     {
         GUI.EndScrollView();
-        // var stack = _scrollsStack;
-        // stack.RemoveAt( stack.Count - 1 );
+        var stack = _scrollsStack;
+        stack.RemoveAt( stack.Count - 1 );
+        
+        var data = _debugStack[_debugStack.Count - 1];
+#if DEBUG_POSITIONS
+        GUI.Label( data.r, $"({data.r.x:N0},{data.r.y:N0})[{data.r.width:N0},{data.r.height:N0}]\n{data.s:N0}\n({data.v.x:N0},{data.v.y:N0})[{data.v.width:N0},{data.v.height:N0}]" );
+#endif
+
+        _debugStack.RemoveAt( _debugStack.Count - 1 );
     }
+
+    static List<(Rect r,Vector2 s,Rect v)> _debugStack = new();
 
     public static Vector2 BeginScrollView( Rect rect, Vector2 scroll, Rect viewRect, bool alwaysShowHorizontal, bool alwaysShowVertical )
     {
         scroll = GUI.BeginScrollView( rect, scroll, viewRect, alwaysShowHorizontal, alwaysShowVertical );
 
-        // var pos = scroll - rect.position;
-        // pos.y -= 15;
-        // _scrollsStack.Add( pos );
+        if( rect.Contains( GuiCursorPosition ) ) AddScroll( ref scroll );
 
-        if( rect.Contains( GuiCursorPosition ) ) scroll -= _aditionallScrollDelta;
+        var pos = scroll + viewRect.position - rect.position;
+        pos.y -= 15;
+        _scrollsStack.Add( pos );
+
+        _debugStack.Add( (rect, scroll, viewRect) );
 
         return scroll;
     }
