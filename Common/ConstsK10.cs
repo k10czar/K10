@@ -10,8 +10,8 @@ public static class ConstsK10
 
 #if UNITY_EDITOR
 	// Ever Debug on Unity Editor
-	public const string DEBUG_CONDITIONAL = "UNITY_EDITOR";
+	public const string CODE_METRICS_CONDITIONAL = "UNITY_EDITOR";
 #else
-	public const string DEBUG_CONDITIONAL = "DEBUG";
+	public const string CODE_METRICS_CONDITIONAL = "CODE_METRICS";
 #endif
 }

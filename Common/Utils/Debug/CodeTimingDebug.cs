@@ -57,10 +57,10 @@ public static class CodeTimingDebug
 	static bool enabled = false;
 	static bool deep = false;
 
-	[Conditional(ConstsK10.DEBUG_CONDITIONAL)]
+	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
     public static void ToogleDeep() => deep = !deep;
 
-	[Conditional(ConstsK10.DEBUG_CONDITIONAL)]
+	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
     public static void Enable() 
 	{ 
 		// #if UNITY_EDITOR || CHEATS_ENABLED
@@ -70,7 +70,7 @@ public static class CodeTimingDebug
 		// #endif
 	}
 	
-	[Conditional(ConstsK10.DEBUG_CONDITIONAL)]
+	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
 	public static void Disable() 
 	{ 
 		if( !enabled ) return;
@@ -86,7 +86,7 @@ public static class CodeTimingDebug
 
 	private static Stopwatch _logStopwatch = new Stopwatch();
 	
-	[Conditional(ConstsK10.DEBUG_CONDITIONAL)]
+	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
 	public static void LogDeepStart( string tag )
 	{
 		if( !enabled ) return;
@@ -95,7 +95,7 @@ public static class CodeTimingDebug
 	}
 
 
-	[Conditional(ConstsK10.DEBUG_CONDITIONAL)]
+	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
 	public static void LogStart( string tag )
 	{
 		if( !enabled ) return;
@@ -106,7 +106,7 @@ public static class CodeTimingDebug
 		sw.Start();
 	}
 	
-	[Conditional(ConstsK10.DEBUG_CONDITIONAL)]
+	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
 	public static void LogDeepEnd( string tag )
 	{
 		if( !enabled ) return;
@@ -114,7 +114,7 @@ public static class CodeTimingDebug
 		LogEnd( tag );
 	}
 
-	[Conditional(ConstsK10.DEBUG_CONDITIONAL)]
+	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
 	public static void LogEnd( string tag )
 	{
 		if( !enabled ) return;
@@ -140,7 +140,7 @@ public static class CodeTimingDebug
 		// return elapsed;
 	}
 
-	[Conditional(ConstsK10.DEBUG_CONDITIONAL)]
+	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
 	public static void ClearUnusedData()
 	{
 		_watches.Clear();
