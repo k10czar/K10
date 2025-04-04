@@ -18,6 +18,11 @@
             "name": "com.unity.microsoft.gdk",
             "expression": "0",
             "define": "MICROSOFT_GDK"
+        },
+        {
+            "name": "com.unity.mathematics",
+            "expression": "0",
+            "define": "TRY_USE_NEW_MATH"
         }
     ],
     "noEngineReferences": false
