@@ -153,7 +153,7 @@ public static class HookedGUI
     [MethodImpl(Optimizations.INLINE_IF_CAN)]
     public static bool LayoutButton( string text, params GUILayoutOption[] options )
     {
-        return LayoutButton( new GUIContent( text ), K10GuiStyles.buttonStyle, options );
+        return LayoutButton( new GUIContent( text ), GUI.skin.button, options );
     }
 
     [MethodImpl(Optimizations.INLINE_IF_CAN)]
