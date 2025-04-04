@@ -89,16 +89,16 @@ public static class HookedGUI
         var cPos = GuiCursorPosition;
         var s = _cursorSize;
 		GuiColorManager.New( Colors.Black );
-        GUI.Box( new Rect( cPos +_cursorOffset1, _cursorSize1 ), CursorContent, K10GuiStyles.buttonStyle );
+        GUI.Box( new Rect( cPos +_cursorOffset1, _cursorSize1 ), CursorContent, GUI.skin.button );
         GuiColorManager.Revert();
 		GuiColorManager.New( Colors.Red );
-        GUI.Box( new Rect( cPos + _cursorOffset2, _cursorSize2 ), CursorContent, K10GuiStyles.buttonStyle );
+        GUI.Box( new Rect( cPos + _cursorOffset2, _cursorSize2 ), CursorContent, GUI.skin.button );
         GuiColorManager.Revert();
 		GuiColorManager.New( Colors.Orange );
-        GUI.Box( new Rect( cPos + _cursorOffset3, _cursorSize3 ), CursorContent, K10GuiStyles.buttonStyle );
+        GUI.Box( new Rect( cPos + _cursorOffset3, _cursorSize3 ), CursorContent, GUI.skin.button );
         GuiColorManager.Revert();
 		GuiColorManager.New( Colors.Yellow );
-        GUI.Box( new Rect( cPos + _cursorOffset4, _cursorSize4 ), CursorContent, K10GuiStyles.buttonStyle );
+        GUI.Box( new Rect( cPos + _cursorOffset4, _cursorSize4 ), CursorContent, GUI.skin.button );
         GuiColorManager.Revert();
 #if DEBUG_POSITIONS
         GUI.Label( new Rect( cPos, new Vector2( 250, 50 ) ), $"{GuiCursorPosition}" );
@@ -108,7 +108,7 @@ public static class HookedGUI
     [MethodImpl(Optimizations.INLINE_IF_CAN)]
     public static bool Button( Rect rt, string text )
     {
-        return Button( rt, new GUIContent( text ), K10GuiStyles.buttonStyle );
+        return Button( rt, new GUIContent( text ), GUI.skin.button );
     }
 
     [MethodImpl(Optimizations.INLINE_IF_CAN)]
