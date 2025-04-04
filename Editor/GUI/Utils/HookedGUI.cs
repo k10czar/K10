@@ -73,6 +73,7 @@ public static class HookedGUI
         var cPos = GuiCursorPosition;
         cPos.Set( cPos.x - _cursorSize.x * .5f, cPos.y - _cursorSize.y * .5f );
         GUI.Label( new Rect( cPos, _cursorSize ), CursorContent, K10GuiStyles.buttonStyle );
+        GUI.Label( new Rect( cPos, new Vector2( 250, 50 ) ), $"{GuiCursorPosition}" );
     }
 
     [MethodImpl(Optimizations.INLINE_IF_CAN)]
@@ -110,6 +111,8 @@ public static class HookedGUI
 		}
 
         clicked |= GUI.Button(rt, buttonText, buttonStyle);
+        
+        GUI.Button( rt, $"({rt.x:N0},{rt.y:N0})[{rt.width:N0},{rt.height:N0}]", buttonStyle );
 
         if( hovering ) GuiColorManager.Revert();
         
@@ -145,25 +148,25 @@ public static class HookedGUI
         pos.y -= 15;
         _scrollsStack.Add( pos );
 
-        if( rt.Contains( GuiCursorPosition ) ) scroll += _aditionallScrollDelta;
+        if( rt.Contains( GuiCursorPosition ) ) scroll -= _aditionallScrollDelta;
     }
 
     public static void EndScrollView()
     {
         GUI.EndScrollView();
-        var stack = _scrollsStack;
-        stack.RemoveAt( stack.Count - 1 );
+        // var stack = _scrollsStack;
+        // stack.RemoveAt( stack.Count - 1 );
     }
 
     public static Vector2 BeginScrollView( Rect rect, Vector2 scroll, Rect viewRect, bool alwaysShowHorizontal, bool alwaysShowVertical )
     {
         scroll = GUI.BeginScrollView( rect, scroll, viewRect, alwaysShowHorizontal, alwaysShowVertical );
 
-        var pos = scroll - rect.position;
-        pos.y -= 15;
-        _scrollsStack.Add( pos );
+        // var pos = scroll - rect.position;
+        // pos.y -= 15;
+        // _scrollsStack.Add( pos );
 
-        if( rect.Contains( GuiCursorPosition ) ) scroll += _aditionallScrollDelta;
+        if( rect.Contains( GuiCursorPosition ) ) scroll -= _aditionallScrollDelta;
 
         return scroll;
     }
