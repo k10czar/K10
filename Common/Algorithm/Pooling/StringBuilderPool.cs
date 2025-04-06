@@ -10,6 +10,13 @@ public static class StringBuilderPool
 		return stringBuilder;
 	}
 
+	public static StringBuilder RequestWith( string firstLine )
+	{
+		var stringBuilder = RequestEmpty();
+		stringBuilder.AppendLine( firstLine );
+		return stringBuilder;
+	}
+
 	public static void ReturnAndClear( StringBuilder stringBuilder)
 	{
 		stringBuilder.Clear();
