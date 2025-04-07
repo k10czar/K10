@@ -1,5 +1,3 @@
-using System.Reflection;
-using UnityEditor;
 using UnityEngine;
 
 public static class TypeListDataExtension
@@ -18,7 +16,7 @@ public static class TypeListDataExtension
             var texture = type.EditorGetIcon();
             if( texture != null ) guis[i] = new GUIContent( effectNames[i], texture );
             else guis[i] = new GUIContent( effectNames[i] );
-        } 
+        }
 
         return guis;
     }

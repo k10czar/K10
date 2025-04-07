@@ -77,38 +77,11 @@ public class K10DebugSystemWindow : EditorWindow
         return changed;
     }
 
-    List<IDebugCategory> categories = null;
-    IEnumerable<IDebugCategory> Categories
-    {
-        get
-        {
-            if( categories == null )
-            {
-                categories = new List<IDebugCategory>();
-                foreach( var catType in TypeListDataCache.GetFrom( typeof( IDebugCategory ) ).GetTypes() )
-                {
-                    if( catType == typeof(TempDebugCategory) ) continue;
-                    try
-                    {
-                        var instance = catType.CreateInstance();
-                        var cat = instance as IDebugCategory;
-                        if( cat != null ) categories.Add( cat );
-                    }
-                    catch( Exception ex )
-                    {
-                        Debug.LogError( $"{catType.ToStringOrNullColored( Colors.Console.TypeName )}: {ex.Message}" );
-                    }
-                }
-            }
-            return categories;
-        }
-    }
-
     private void DrawGameSystem()
     {
         if( DrawSection( "Game Systems", ref isGameSystemsExpanded ) ) return;
 
-        foreach ( var cat in Categories )
+        foreach ( var cat in K10DebugSystem.Categories )
         {
             Space();
             DrawGameSystemDebugEnablers( cat );

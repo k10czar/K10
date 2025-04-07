@@ -11,6 +11,33 @@ namespace K10.DebugSystem
         private static readonly Type tempCategory = typeof(TempDebugCategory);
         private static readonly K10DebugConfig config;
 
+        private static List<IDebugCategory> categories;
+        public static IEnumerable<IDebugCategory> Categories
+        {
+            get
+            {
+                if (categories != null) return categories;
+
+                categories = new List<IDebugCategory>();
+
+                foreach (var catType in TypeListDataCache.GetFrom(typeof(IDebugCategory)).GetTypes())
+                {
+                    if (catType == typeof(TempDebugCategory)) continue;
+
+                    try
+                    {
+                        categories.Add((IDebugCategory) catType.CreateInstance());
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"{catType.ToStringOrNullColored(Colors.Console.TypeName)}: {ex.Message}");
+                    }
+                }
+
+                return categories;
+            }
+        }
+
         #region Debug Type
 
         public static bool CanDebug<T>(EDebugType debugType = EDebugType.Default) where T : IDebugCategory, new()

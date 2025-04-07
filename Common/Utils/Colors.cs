@@ -46,6 +46,8 @@ public static class Colors
         }
     }
 
+    #region EColor Usages
+
     [LazyConst] private static Color[] eColorSequence;
     public static Color[] EColorSequence => eColorSequence ??= new [] { Console.Primary, Console.Secondary, Console.Info, Console.Success, Console.Warning, Console.Danger, Console.Support, Console.Special };
 
@@ -57,6 +59,8 @@ public static class Colors
     }
 
     public static Color Get(this EColor color) => FromSequence(color);
+
+    #endregion
 
     private const System.Reflection.BindingFlags FLAGS = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
 
@@ -140,6 +144,8 @@ public static class Colors
         [ConstLike] public static readonly Color Special = Purple.WithAlpha(.6f);
         [ConstLike] public static readonly Color Support = Silver;
     }
+
+    #region Colors Declarations
 
     //Red colors
     [ConstLike] public static readonly Color LightSalmon = From( 255, 160, 122);
@@ -363,8 +369,9 @@ public static class Colors
     [ConstLike] public static readonly Color AlmostBlack = From( 25, 25, 25);
     [ConstLike] public static readonly Color Black = From( 0, 0, 0);
 
-
     //Old Dark Tones
     [ConstLike] public static readonly Color OliveDrabCamouflage = From( 84, 79, 61 );
     [ConstLike] public static readonly Color BlackOlive = From( 59, 60, 54 );
+
+    #endregion
 }
