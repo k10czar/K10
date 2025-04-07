@@ -11,13 +11,13 @@ namespace Skyx.SkyxEditor
         private const float NewElementHeight = SkyxStyles.FullLineHeight;
         public const float HorizontalThreshold = SkyxStyles.ListControlButtonSize * 3;
 
-        public static void DrawLayout(SerializedProperty property, EColor color = EColor.Primary, EHeaderSize size = EHeaderSize.Primary, string title = null, string newText = null, OnNewElementCallback onNewElement = null)
+        public static void DrawLayout(SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, string title = null, string newText = null, OnNewElementCallback onNewElement = null)
         {
             var rect = EditorGUILayout.GetControlRect(false, GetPropertyHeight(property, false, size));
             Draw(ref rect, property, color, size, title, newText, onNewElement, false);
         }
 
-        public static void Draw(ref Rect rect, SerializedProperty property, EColor color = EColor.Primary, EHeaderSize size = EHeaderSize.Primary, string title = null, string newText = null, OnNewElementCallback onNewElement = null, bool resetHeight = true)
+        public static void Draw(ref Rect rect, SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, string title = null, string newText = null, OnNewElementCallback onNewElement = null, bool resetHeight = true)
         {
             if (resetHeight) rect.height = GetPropertyHeight(property, true);
 
@@ -156,7 +156,7 @@ namespace Skyx.SkyxEditor
             return total;
         }
 
-        public static float GetPropertyHeight(SerializedProperty property, bool isHeaderless, EHeaderSize size = EHeaderSize.Primary)
+        public static float GetPropertyHeight(SerializedProperty property, bool isHeaderless, EElementSize size = EElementSize.Primary)
         {
             if (!isHeaderless && !property.isExpanded) return SkyxStyles.ClosedScopeHeight(size);
 

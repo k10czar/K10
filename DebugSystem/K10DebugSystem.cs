@@ -8,17 +8,19 @@ namespace K10.DebugSystem
 {
     public static class K10DebugSystem
     {
-        private static readonly Type tempCategory = typeof(TempLogCategory);
+        private static readonly Type tempCategory = typeof(TempDebugCategory);
         private static readonly K10DebugConfig config;
 
-        public static bool CanDebug<T>(EDebugType debugType = EDebugType.Default) where T : IK10LogCategory, new()
+        #region Debug Type
+
+        public static bool CanDebug<T>(EDebugType debugType = EDebugType.Default) where T : IDebugCategory, new()
             => CanDebug(typeof(T), debugType);
 
-        public static bool CanDebug<T>(bool verbose) where T : IK10LogCategory, new() => CanDebug(typeof(T), verbose ? EDebugType.Verbose : EDebugType.Default);
-        public static bool SkipDebug<T>(EDebugType debugType = EDebugType.Default) where T : IK10LogCategory, new() => !CanDebug<T>(debugType);
+        public static bool CanDebug<T>(bool verbose) where T : IDebugCategory, new() => CanDebug(typeof(T), verbose ? EDebugType.Verbose : EDebugType.Default);
+        public static bool SkipDebug<T>(EDebugType debugType = EDebugType.Default) where T : IDebugCategory, new() => !CanDebug<T>(debugType);
 
-        public static bool ShowVisuals<T>() where T : IK10LogCategory, new() => CanDebug<T>(EDebugType.Visual);
-        public static bool SkipVisuals<T>() where T : IK10LogCategory, new() => !ShowVisuals<T>();
+        public static bool ShowVisuals<T>() where T : IDebugCategory, new() => CanDebug<T>(EDebugType.Visual);
+        public static bool SkipVisuals<T>() where T : IDebugCategory, new() => !ShowVisuals<T>();
 
         public static bool CanDebug(Type categoryType, bool verbose) => CanDebug(categoryType, verbose ? EDebugType.Verbose : EDebugType.Default);
 
@@ -29,6 +31,8 @@ namespace K10.DebugSystem
 
         public static void ToggleCategory(Type categoryType, EDebugType debugType) => config.ToggleDebug(categoryType, debugType);
         public static void SetCategory(Type categoryType, EDebugType debugType, bool value) => config.SetDebug(categoryType, debugType, value);
+
+        #endregion
 
         #region Debug Owners
 
@@ -82,6 +86,13 @@ namespace K10.DebugSystem
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
+
+        #endregion
+
+        #region Custom Debug Flags
+
+        public static bool CanDebugFlag(string flag) => config.CanDebugFlag(flag);
+        public static void ToggleFlag(string flag) => config.ToggleCustomFlag(flag);
 
         #endregion
 

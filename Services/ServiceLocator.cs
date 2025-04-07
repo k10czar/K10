@@ -6,7 +6,7 @@ using K10.DebugSystem;
 using UnityEngine;
 using static Colors.Console;
 
-public class ServicesLogCategory : IK10LogCategory
+public class ServicesLogCategory : IDebugCategory
 {
     public string Name => "💂Services";
     public Color Color => Colors.Orange;

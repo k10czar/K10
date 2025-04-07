@@ -9,7 +9,7 @@ namespace Skyx.SkyxEditor
         public readonly bool isExpanded;
         private readonly bool usesLayout;
 
-        private static bool ReallyDraw(Rect headerRect, Rect boxRect, string title, ref bool isExpandedRef, EColor color, EHeaderSize size, SerializedProperty property)
+        private static bool ReallyDraw(Rect headerRect, Rect boxRect, string title, ref bool isExpandedRef, EColor color, EElementSize size, SerializedProperty property)
         {
             BoxGUI.DrawBox(boxRect, color);
 
@@ -36,7 +36,7 @@ namespace Skyx.SkyxEditor
             return isExpandedRef;
         }
 
-        private static bool GetDrawingRects(string title, ref bool isExpandedRef, EColor color, EHeaderSize size, SerializedProperty property)
+        private static bool GetDrawingRects(string title, ref bool isExpandedRef, EColor color, EElementSize size, SerializedProperty property)
         {
             var headerHeight = SkyxStyles.HeaderHeight(size);
             var headerRect = EditorGUILayout.GetControlRect(false, headerHeight);
@@ -57,7 +57,7 @@ namespace Skyx.SkyxEditor
             return initialExpanded;
         }
 
-        private static bool AdjustAvailableRect(ref Rect initialRect, string title, ref bool isExpandedRef, EColor color, EHeaderSize size, SerializedProperty property)
+        private static bool AdjustAvailableRect(ref Rect initialRect, string title, ref bool isExpandedRef, EColor color, EElementSize size, SerializedProperty property)
         {
             initialRect.height -= SkyxStyles.ElementsMargin;
 
@@ -72,7 +72,7 @@ namespace Skyx.SkyxEditor
             return ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size, property);
         }
 
-        private static bool BeginWrapper(string title, SerializedProperty property, EColor color, EHeaderSize size)
+        private static bool BeginWrapper(string title, SerializedProperty property, EColor color, EElementSize size)
         {
             var isExpandedRef = property.isExpanded;
             property.isExpanded = GetDrawingRects(title, ref isExpandedRef, color, size, property);
@@ -80,7 +80,7 @@ namespace Skyx.SkyxEditor
             return isExpandedRef;
         }
 
-        private static bool BeginWrapper(ref Rect initialRect, string title, SerializedProperty property, EColor color, EHeaderSize size)
+        private static bool BeginWrapper(ref Rect initialRect, string title, SerializedProperty property, EColor color, EElementSize size)
         {
             var isExpanded = property.isExpanded;
             property.isExpanded = AdjustAvailableRect(ref initialRect, title, ref isExpanded, color, size, property);
@@ -88,30 +88,30 @@ namespace Skyx.SkyxEditor
             return property.isExpanded;
         }
 
-        public FoldoutScope(SerializedProperty property, EColor color = EColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
+        public FoldoutScope(SerializedProperty property, EColor color = EColor.Secondary, EElementSize size = EElementSize.SingleLine)
             : this(property, ObjectNames.NicifyVariableName(property.name), color, size) {}
 
-        public FoldoutScope(SerializedProperty property, string title, EColor color = EColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
+        public FoldoutScope(SerializedProperty property, string title, EColor color = EColor.Secondary, EElementSize size = EElementSize.SingleLine)
         {
             usesLayout = true;
             isExpanded = BeginWrapper(title, property, color, size);
         }
 
-        public FoldoutScope(string title, ref bool isExpandedRef, EColor color = EColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
+        public FoldoutScope(string title, ref bool isExpandedRef, EColor color = EColor.Secondary, EElementSize size = EElementSize.SingleLine)
         {
             usesLayout = true;
             isExpanded = GetDrawingRects(title, ref isExpandedRef, color, size, null);
         }
 
-        public FoldoutScope(ref Rect rect, string title, ref bool isExpandedRef, EColor color = EColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
+        public FoldoutScope(ref Rect rect, string title, ref bool isExpandedRef, EColor color = EColor.Secondary, EElementSize size = EElementSize.SingleLine)
         {
             isExpanded = AdjustAvailableRect(ref rect, title, ref isExpandedRef, color, size, null);
         }
 
-        public FoldoutScope(ref Rect rect, SerializedProperty property, EColor color = EColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
+        public FoldoutScope(ref Rect rect, SerializedProperty property, EColor color = EColor.Secondary, EElementSize size = EElementSize.SingleLine)
             : this(ref rect, property, property.PrettyName(), color, size) {}
 
-        public FoldoutScope(ref Rect rect, SerializedProperty property, string title, EColor color = EColor.Secondary, EHeaderSize size = EHeaderSize.SingleLine)
+        public FoldoutScope(ref Rect rect, SerializedProperty property, string title, EColor color = EColor.Secondary, EElementSize size = EElementSize.SingleLine)
         {
             isExpanded = BeginWrapper(ref rect, title, property, color, size);
         }

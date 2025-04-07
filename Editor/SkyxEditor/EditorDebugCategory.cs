@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Skyx.SkyxEditor
 {
-    public class EditorLogCategory : IK10LogCategory
+    public class EditorDebugCategory : IDebugCategory
     {
         public string Name => "Editor";
         public Color Color => Colors.Beige;

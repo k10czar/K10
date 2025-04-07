@@ -209,8 +209,8 @@ namespace Skyx.SkyxEditor
 
         #region Buttons
 
-        public static bool HeaderButton(Rect rect, string label, EColor color, EHeaderSize size)
-            => Button(rect, label, SkyxStyles.HeaderColor(color), SkyxStyles.HeaderText(size));
+        public static bool HeaderButton(Rect rect, string label, EColor color, EElementSize size)
+            => Button(rect, label, color.Get(), size.GetButton());
 
         public static bool Button(Rect rect, string label, EColor color, string hint = null)
             => Button(rect, label, color.Get(), SkyxStyles.ButtonStyle, hint);
@@ -287,7 +287,7 @@ namespace Skyx.SkyxEditor
             EditorGUI.LabelField(rect, new GUIContent(label, hint), isHeader ? SkyxStyles.PlainBGHeader : SkyxStyles.PlainBGLabel);
         }
 
-        public static void PlainBGLabel(Rect rect, string label, EColor color, EHeaderSize size)
+        public static void PlainBGLabel(Rect rect, string label, EColor color, EElementSize size)
         {
             using var backgroundScope = new BackgroundColorScope(SkyxStyles.HeaderColor(color));
             EditorGUI.LabelField(rect, label, SkyxStyles.HeaderText(size));

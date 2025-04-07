@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
 namespace Skyx.SkyxEditor
 {
-    public enum EHeaderSize
+    public enum EElementSize
     {
         Primary,
         Secondary,
@@ -72,10 +73,19 @@ namespace Skyx.SkyxEditor
         public static GUIStyle HeaderPopupStyle => Style("HeaderPopup", BoldPopupStyle, TextAnchor.MiddleCenter, BigFontSize);
 
         public static GUIStyle ButtonStyle => Style("button", GUI.skin.button, DefaultFontSize);
+        public static GUIStyle HeaderButtonStyle => Style("HeaderButton", GUI.skin.button, BigFontSize, padding: bigPadding);
         public static GUIStyle MiniButtonStyle => Style("button", GUI.skin.button, padding: noPadding);
         public static GUIStyle BoldButtonStyle => Style("boldButton", ButtonStyle, FontStyle.Bold);
 
         public static GUIStyle DropDownButton = new("DropDownToggleButton");
+
+        public static GUIStyle GetButton(this EElementSize size) => size switch
+        {
+            EElementSize.Primary => HeaderButtonStyle,
+            EElementSize.Secondary => HeaderButtonStyle,
+            EElementSize.SingleLine => ButtonStyle,
+            _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
+        };
 
         #region Styles Management
 
@@ -169,10 +179,10 @@ namespace Skyx.SkyxEditor
             "ProgressBarBar", // Special
         };
 
-        public static GUIStyle HeaderText(EHeaderSize size = EHeaderSize.Primary) => headerText[(int)size];
-        public static float HeaderHeight(EHeaderSize size = EHeaderSize.Primary) => headerHeights[(int)size];
-        public static float ScopeTotalExtraHeight(EHeaderSize size = EHeaderSize.Primary) => headerHeights[(int)size] + (3 * ElementsMargin);
-        public static float ClosedScopeHeight(EHeaderSize size = EHeaderSize.Primary) => headerHeights[(int)size] + ElementsMargin;
+        public static GUIStyle HeaderText(EElementSize size = EElementSize.Primary) => headerText[(int)size];
+        public static float HeaderHeight(EElementSize size = EElementSize.Primary) => headerHeights[(int)size];
+        public static float ScopeTotalExtraHeight(EElementSize size = EElementSize.Primary) => headerHeights[(int)size] + (3 * ElementsMargin);
+        public static float ClosedScopeHeight(EElementSize size = EElementSize.Primary) => headerHeights[(int)size] + ElementsMargin;
 
         public static GUIStyle BoxStyle(EColor color) => new(boxStyles[(int)color]);
         public static Color HeaderColor(EColor color) => headerColors[(int)color];

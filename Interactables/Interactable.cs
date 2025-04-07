@@ -4,7 +4,7 @@ using K10.DebugSystem;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-public class InteractableLogCategory : IK10LogCategory
+public class InteractableLogCategory : IDebugCategory
 {
     public string Name => "🤏Interactables";
     public Color Color => Colors.DeepPink;

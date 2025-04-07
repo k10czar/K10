@@ -8,18 +8,12 @@
         AnyListedAndSelected,
     }
 
-    public enum ELogPrefix
-    {
-        None,
-        Name,
-        ToString,
-    }
-
     public enum EDebugType
     {
         Default,
         Verbose,
         Visual,
+        InGame,
     }
 
     public enum LogSeverity

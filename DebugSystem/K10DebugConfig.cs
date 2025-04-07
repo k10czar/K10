@@ -15,15 +15,19 @@ namespace K10.DebugSystem
         public List<string> log = new();
         public List<string> verbose = new();
         public List<string> visual = new();
+        public List<string> inGame = new();
 
         public EDebugOwnerBehaviour ownerBehaviour = EDebugOwnerBehaviour.Ignore;
         public List<string> validOwners = new();
+
+        public List<string> customFlags = new();
 
         private List<string> GetCorrespondingList(EDebugType debugType) => debugType switch
         {
             EDebugType.Default => log,
             EDebugType.Verbose => verbose,
             EDebugType.Visual => visual,
+            EDebugType.InGame => inGame,
 
             _ => throw new ArgumentOutOfRangeException(nameof(debugType), debugType, null)
         };
@@ -74,6 +78,16 @@ namespace K10.DebugSystem
         {
             var next = ((int) ownerBehaviour + 1) % Enum.GetValues(typeof(EDebugOwnerBehaviour)).Length;
             ownerBehaviour = (EDebugOwnerBehaviour) next;
+            Save();
+        }
+
+        public bool CanDebugFlag(string flag) => customFlags.Contains(flag);
+
+        public void ToggleCustomFlag(string flag)
+        {
+            if (!validOwners.Remove(flag))
+                validOwners.Add(flag);
+
             Save();
         }
 

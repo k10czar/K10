@@ -37,7 +37,7 @@ public class K10DebugSystemWindow : EditorWindow
 		}
 	}
 
-    private void DrawGameSystemDebugEnablers(IK10LogCategory category)
+    private void DrawGameSystemDebugEnablers(IDebugCategory category)
     {
         var inspectorWidth = EditorGUIUtility.currentViewWidth;
         var elementWidth = (inspectorWidth - 60) / 3f;
@@ -77,21 +77,21 @@ public class K10DebugSystemWindow : EditorWindow
         return changed;
     }
 
-    List<IK10LogCategory> categories = null;
-    IEnumerable<IK10LogCategory> Categories
+    List<IDebugCategory> categories = null;
+    IEnumerable<IDebugCategory> Categories
     {
         get
         {
             if( categories == null )
             {
-                categories = new List<IK10LogCategory>();
-                foreach( var catType in TypeListDataCache.GetFrom( typeof( IK10LogCategory ) ).GetTypes() )
+                categories = new List<IDebugCategory>();
+                foreach( var catType in TypeListDataCache.GetFrom( typeof( IDebugCategory ) ).GetTypes() )
                 {
-                    if( catType == typeof(TempLogCategory) ) continue;
+                    if( catType == typeof(TempDebugCategory) ) continue;
                     try
                     {
                         var instance = catType.CreateInstance();
-                        var cat = instance as IK10LogCategory;
+                        var cat = instance as IDebugCategory;
                         if( cat != null ) categories.Add( cat );
                     }
                     catch( Exception ex )

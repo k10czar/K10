@@ -9,7 +9,7 @@ public class LogTrigger : ITriggerable
     [SerializeField,TextArea(3,10)] public string message;
     [SerializeField] public bool verbose = false;
     [SerializeField] public LogSeverity severity = LogSeverity.Info;
-    [SerializeReference,ExtendedDrawer] public IK10LogCategory category = K10Log<TempLogCategory>.Category;
+    [SerializeReference,ExtendedDrawer] public IDebugCategory category = K10Log<TempDebugCategory>.Category;
 
     public void Trigger()
     {
@@ -45,7 +45,7 @@ public class LogTrigger<T> : ITriggerable<T>
     [SerializeField,TextArea(3,10)] public string message;
     [SerializeField] public bool verbose = false;
     [SerializeField] public LogSeverity severity = LogSeverity.Info;
-    [SerializeReference,ExtendedDrawer] public IK10LogCategory category = K10Log<TempLogCategory>.Category;
+    [SerializeReference,ExtendedDrawer] public IDebugCategory category = K10Log<TempDebugCategory>.Category;
 
     public void Trigger( T t )
     {

@@ -3,7 +3,7 @@ using K10;
 using K10.DebugSystem;
 using UnityEngine;
 
-public class AutomationLogCategory : IK10LogCategory
+public class AutomationLogCategory : IDebugCategory
 {
     public string Name => "🤖Automation";
     public Color Color => Colors.DodgerBlue;

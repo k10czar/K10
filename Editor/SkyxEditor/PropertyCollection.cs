@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 
 namespace Skyx.SkyxEditor
 {
-    public class PropertyCollection : ILoggable<EditorLogCategory>
+    public class PropertyCollection : ILoggable<EditorDebugCategory>
     {
         #region Static
 
@@ -135,8 +135,8 @@ namespace Skyx.SkyxEditor
             Undo.undoRedoPerformed += OnUndoRedoPerformed;
         }
 
-        private static void Log(string log, LogSeverity severity = LogSeverity.Info) => K10Log<EditorLogCategory>.Log(severity, log);
-        private static void LogVerbose(string log) => K10Log<EditorLogCategory>.LogVerbose(log);
+        private static void Log(string log, LogSeverity severity = LogSeverity.Info) => K10Log<EditorDebugCategory>.Log(severity, log);
+        private static void LogVerbose(string log) => K10Log<EditorDebugCategory>.LogVerbose(log);
 
         #endregion
 
