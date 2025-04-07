@@ -85,8 +85,8 @@ namespace K10.DebugSystem
 
         public void ToggleCustomFlag(string flag)
         {
-            if (!validOwners.Remove(flag))
-                validOwners.Add(flag);
+            if (!customFlags.Remove(flag))
+                customFlags.Add(flag);
 
             Save();
         }

@@ -49,7 +49,7 @@ public static class Colors
     #region EColor Usages
 
     [LazyConst] private static Color[] eColorSequence;
-    public static Color[] EColorSequence => eColorSequence ??= new [] { Console.Primary, Console.Secondary, Console.Info, Console.Success, Console.Warning, Console.Danger, Console.Support, Console.Special };
+    public static Color[] EColorSequence => eColorSequence ??= new [] { Console.Primary, Console.Secondary, Console.Info, Console.Success, Console.Warning, Console.Danger, Console.Support, Console.Special, Console.Disabled };
 
     public static Color FromSequence<T>(T value, bool loop = false) where T : Enum => FromSequence((int)(object)value, loop);
     public static Color FromSequence(int index, bool loop = false)
@@ -143,6 +143,7 @@ public static class Colors
         [ConstLike] public static readonly Color Light = Seashell;
         [ConstLike] public static readonly Color Special = Purple.WithAlpha(.6f);
         [ConstLike] public static readonly Color Support = Silver;
+        [ConstLike] public static readonly Color Disabled = DarkGray.WithAlpha(.5f);
     }
 
     #region Colors Declarations
