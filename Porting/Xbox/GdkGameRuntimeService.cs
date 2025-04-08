@@ -71,6 +71,8 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 #endif
     
     private XUserDeviceAssociationChangedRegistrationToken _deviceAssociationChangedRegistrationToken;
+    private XGameInviteRegistrationToken _inviteRegistrationToken;
+
     private EventSlot<XUserDeviceAssociationChange> _onDeviceAssiociationChanged = new();
     public IEventRegister<XUserDeviceAssociationChange> OnDeviceAssiociationChanged => _onDeviceAssiociationChanged;
 
@@ -132,6 +134,13 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
             HandleDeviceAssociationChange,
             out _deviceAssociationChangedRegistrationToken
         );	
+        SDK.XGameInviteRegisterForEvent(
+            (IntPtr context, string inviteUri) =>
+            {
+                Debug.Log($"Received invite: {inviteUri}");
+            },
+            out _inviteRegistrationToken
+        );
     }
 
 
@@ -139,6 +148,11 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     {
         SDK.XUserUnregisterForChangeEvent(_callbackRegistrationToken);
         SDK.XUserUnregisterForDeviceAssociationChanged(_deviceAssociationChangedRegistrationToken, true);
+        SDK.XGameInviteUnregisterForEvent(_inviteRegistrationToken);
+
+        SDK.XUserCloseHandle(UserData.userHandle);
+        SDK.XBL.XblContextCloseHandle(UserData.contextHandle);
+        Debug.Log($"Running GDKGameRuntimeService destructor");
     }
 
     private void HandleDeviceAssociationChange(IntPtr context, ref XUserDeviceAssociationChange change)
@@ -357,6 +371,57 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
         _gdkFileAdapter.Initialize(_userData.userHandle, Scid);
         _isLogged.SetTrue();
+
+        ExternalCoroutine.StartCoroutine(DoActivityStuff());
+    }
+
+    IEnumerator DoActivityStuff()
+    {
+        Debug.Log($"Starting stuff");
+        yield return new WaitForSeconds(3f);
+        Debug.Log($"Really Starting stuff");
+        
+        var info  = new XblMultiplayerActivityInfo();
+        info.ConnectionString = "ConnectionString";
+        info.JoinRestriction = XblMultiplayerActivityJoinRestriction.Public;
+        info.MaxPlayers = 4;
+        info.CurrentPlayers = 1;
+        info.GroupId = "PartyID";
+        info.Platform = XblMultiplayerActivityPlatform.All;
+
+        SDK.XBL.XblMultiplayerActivitySetActivityAsync(UserData.contextHandle, info, true,
+            (Int32 hresult) => 
+            {
+                if (HR.SUCCEEDED(hresult))
+                    Debug.Log($"Successfully Set Activity");
+                else
+                    Debug.Log($"Couldn't Set activity. HR {hresult}");
+
+                SDK.XGameUiShowMultiplayerActivityGameInviteAsync(UserData.userHandle, (hresult) => {
+                    Debug.Log($"Showing UI");
+                });
+
+                // UInt64[] xboxUserIdList = new UInt64[4];
+                // SDK.XBL.XblMultiplayerActivityGetActivityAsync(UserData.contextHandle, xboxUserIdList, 
+                //     (Int32 hresult, XblMultiplayerActivityInfo[] results) =>
+                //     {
+                //         if (results != null)
+                //         {
+                //             foreach (var info in results)
+                //                 Debug.Log("result ai " + info.ConnectionString);
+                //         }
+
+                //         foreach (var xuser in xboxUserIdList)
+                //             Debug.Log($"Found user {xuser}");
+
+                //         SDK.XGameUiShowMultiplayerActivityGameInviteAsync(UserData.userHandle, (hresult) => {
+                //             Debug.Log($"Showing UI");
+                //         });
+                //     }
+                // );
+            }
+        );
+
     }
 
 #if UNITY_GAMECORE
@@ -426,6 +491,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         int hr = SDK.XUserGetGamertag(_userData.userHandle, XUserGamertagComponent.Classic, out _userData.userGamertag);
         if (HR.FAILED(hr))
             Debug.LogError($"Failed to get Gamertag. HR {hr} - {HR.NameOf(hr)}");
+        Debug.Log($"Gamertag = {_userData.userGamertag}");
 
         hr = SDK.XUserGetLocalId(_userData.userHandle, out _userData.localId);
         if (HR.FAILED(hr))
