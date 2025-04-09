@@ -11,7 +11,6 @@ public class GdkUserData
     public XUserLocalId localId;
     public ulong userXUID;
     public string userGamertag;
-    public XblPermissionCheckResult canPlayMultiplayer;
     public XblContextHandle contextHandle;
 }
 
@@ -461,8 +460,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
         GetUserContext();
         GetBasicInfo();
-        // TODO: This is async, if we are really going to use it, we should wait for its result and check
-        GetUserMultiplayerPermissions(); 
+        GetUserPrivileges(); 
 
         return userOpResult;
     }
@@ -498,16 +496,21 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
             Debug.LogError($"Failed to get LocaId. HR {hr} - {HR.NameOf(hr)}");
     }
 
-    private void GetUserMultiplayerPermissions()
+    private void GetUserPrivileges()
     {
-        SDK.XBL.XblPrivacyCheckPermissionAsync(_userData.contextHandle, XblPermission.PlayMultiplayer,
-            _userData.userXUID, (Int32 hresult, XblPermissionCheckResult result) =>
-            {
-                if (HR.SUCCEEDED(hresult))
-                    _userData.canPlayMultiplayer = result;
-                else
-                    Debug.Log("Failed to get user multiplayer permission");
-            });
+        // TODO-Porting: Check which privileges are needed and actually store them in UserData
+
+        XUserPrivilegeDenyReason denyReason;
+        SDK.XUserCheckPrivilege(UserData.userHandle, XUserPrivilegeOptions.None, XUserPrivilege.Multiplayer, out bool hasMultiplayerPrivilege, out denyReason);
+        SDK.XUserCheckPrivilege(UserData.userHandle, XUserPrivilegeOptions.None, XUserPrivilege.CrossPlay, out bool hasCrossplayPrivilege, out denyReason);
+        SDK.XUserCheckPrivilege(UserData.userHandle, XUserPrivilegeOptions.None, XUserPrivilege.UserGeneratedContent, out bool hasUGCPrivilege, out denyReason);
+
+        // TODO-Porting: Remove, should not be needed since we are removing the chat
+        SDK.XUserCheckPrivilege(UserData.userHandle, XUserPrivilegeOptions.None, XUserPrivilege.Communications, out bool hasCommunicationsPrivilege, out denyReason);
+
+        // TODO-Porting: Check what those privileges actually mean
+        SDK.XUserCheckPrivilege(UserData.userHandle, XUserPrivilegeOptions.None, XUserPrivilege.MultiplayerParties, out bool hasMultiplayerPartiesPrivilege, out denyReason);
+        SDK.XUserCheckPrivilege(UserData.userHandle, XUserPrivilegeOptions.None, XUserPrivilege.Sessions, out bool hasSessionsPrivilege, out denyReason);
     }
 
     private void GetUserContext()
