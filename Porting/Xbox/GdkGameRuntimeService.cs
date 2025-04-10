@@ -133,13 +133,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
             HandleDeviceAssociationChange,
             out _deviceAssociationChangedRegistrationToken
         );	
-        SDK.XGameInviteRegisterForEvent(
-            (IntPtr context, string inviteUri) =>
-            {
-                Debug.Log($"Received invite: {inviteUri}");
-            },
-            out _inviteRegistrationToken
-        );
+        SDK.XGameInviteRegisterForEvent(InviteEventHandler, out _inviteRegistrationToken);
     }
 
 
@@ -535,5 +529,85 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
             handler?.Invoke(this, eventType);
         }
     }
+
+
+    private const string INVITE_ACTION_KEY = "://";
+    private const string SENDER_KEY = "sender=";
+    private const string INVITED_USER_KEY = "invitedUser=";
+    private const string CONNECTION_STRING_KEY = "connectionString=";
+    private const string JOINER_KEY = "joinerXuid=";
+    private const string JOINEE_KEY = "joineeXuid=";
+    private const string ACCEPT_INVITE_KEY = "inviteAccept/";
+    private const string JOIN_ACTIVITY_KEY = "activityJoin/";
+
+    private void InviteEventHandler(IntPtr context, string inviteUri)
+    {
+        // example invite string URI:
+        // Accept invite
+        // ms-xbl-6cf217a8://inviteAccept/?invitedUser=2814623999559850&sender=2814652139982289&connectionString=ConnectionString
+        // ms-xbl-<titleId>://inviteAccept?invitedUser=<xuid>&sender=<xuid>&connectionString=<connectionString>
+
+        // Activity Join
+        // ms-xbl-6cf217a8://activityJoin/?joinerXuid=2814623999559850&connectionString=ConnectionString&joineeXuid=2814652139982289
+
+
+        Debug.Log($"Invite URI: {inviteUri}");
+
+        int inviteActionStart = inviteUri.IndexOf(INVITE_ACTION_KEY) + INVITE_ACTION_KEY.Length;
+        int inviteActionEnd = inviteUri.IndexOf("?", inviteActionStart);
+        string inviteAction = inviteUri.Substring(inviteActionStart, inviteActionEnd - inviteActionStart);
+
+        string userInPartyKey, invitedUserKey;
+        switch (inviteAction)
+        {
+            case ACCEPT_INVITE_KEY:
+                userInPartyKey = SENDER_KEY;
+                invitedUserKey = INVITED_USER_KEY;
+                break;
+                
+            case JOIN_ACTIVITY_KEY:
+                userInPartyKey = JOINEE_KEY;
+                invitedUserKey = JOINER_KEY;
+                break;
+            
+            default:
+                Debug.LogError($"Found unhandled invite action: {inviteAction}");
+                return;
+        }
+
+
+        int userInPartyStart = inviteUri.IndexOf(userInPartyKey) + userInPartyKey.Length;
+        int userInPartyEnd = inviteUri.IndexOf("&", userInPartyStart);
+        userInPartyEnd = (userInPartyEnd == -1) ? inviteUri.Length : userInPartyEnd;
+        string userInParty = inviteUri.Substring(userInPartyStart, userInPartyEnd - userInPartyStart);
+
+        int invitedUserStart = inviteUri.IndexOf(invitedUserKey) + invitedUserKey.Length;
+        int invitedUserEnd = inviteUri.IndexOf("&", invitedUserStart);
+        invitedUserEnd = (invitedUserEnd == -1) ? inviteUri.Length : invitedUserEnd;
+        string invitedUser = inviteUri.Substring(invitedUserStart, invitedUserEnd - invitedUserStart);
+
+        int connectionStringStart = inviteUri.IndexOf(CONNECTION_STRING_KEY) + CONNECTION_STRING_KEY.Length;
+        int connectionStringEnd = inviteUri.IndexOf("&", connectionStringStart);
+        connectionStringEnd = (connectionStringEnd == -1) ? inviteUri.Length : connectionStringEnd;
+        string connectionString = inviteUri.Substring(connectionStringStart, connectionStringEnd - connectionStringStart);
+
+        HandleInviteReceived(UInt64.Parse(userInParty), UInt64.Parse(invitedUser), connectionString);
+    }
+
+    private void HandleInviteReceived(ulong userInParty, ulong invitedUser, string connectionString)
+    {
+        Debug.Log($"Handling Invite from {userInParty} to {invitedUser} with connection string {connectionString}");
+        Debug.Log($"Invite to {invitedUser} == {UserData.userXUID} ? {invitedUser == UserData.userXUID}");
+
+        // TODO? we are responding to an invite so we do not need to listen anymore
+        // TODO: Check Privileges
+        // var hasMultiplayerPrivileges = XboxLive.HasMultiplayerPrivileges;
+        // var hasMultiplayerInvite = XboxLive.HasMultiplayerInvite;
+
+        // TODO: Check if is already logged in
+
+        // JoinInviteButton.interactable = hasMultiplayerPrivileges && hasMultiplayerInvite;
+    }
+
 }
 #endif
