@@ -14,8 +14,11 @@ namespace Skyx.SkyxEditor
         public static bool SecondaryButton(string label, params GUILayoutOption[] layouts) => Button(label, Colors.Console.GrayOut, null, layouts);
         public static bool DangerButton(string label, params GUILayoutOption[] layouts) => Button(label, Colors.Console.Danger, null, layouts);
 
-        public static bool PlainBGButton(string label, EColor color) => Button(label, SkyxStyles.HeaderColor(color), SkyxStyles.PlainBGLabel);
-        public static bool PlainBGButton(string label, Color color) => Button(label, color, SkyxStyles.PlainBGLabel);
+        public static bool PlainBGButton(string label, EColor color, EElementSize size = EElementSize.SingleLine)
+            => Button(label, SkyxStyles.HeaderColor(color), size.GetPlainBG());
+
+        public static bool PlainBGButton(string label, Color color, EElementSize size = EElementSize.SingleLine)
+            => Button(label, color, size.GetPlainBG());
 
         public static bool PlainBGHeaderButton(string label, EColor color) => Button(label, color.Get(), SkyxStyles.PlainBGHeader);
         public static bool PlainBGHeaderButton(string label, Color color) => Button(label, color, SkyxStyles.PlainBGHeader);
@@ -58,6 +61,12 @@ namespace Skyx.SkyxEditor
         {
             using var backgroundScope = new BackgroundColorScope(backgroundColor);
             GUILayout.Label(new GUIContent(label, hint), isHeader ? SkyxStyles.PlainBGHeader : SkyxStyles.PlainBGLabel);
+        }
+
+        public static void PlainBGLabel(string label, EColor color, EElementSize size, string hint = null)
+        {
+            using var _ = new BackgroundColorScope(color.Get());
+            GUILayout.Label(new GUIContent(label, hint), size.GetPlainBG());
         }
 
         private static Color BoolToColor(bool active) => active ? Colors.Console.Success.WithAlpha(0.4f) : Colors.Console.Danger.WithAlpha(0.4f);

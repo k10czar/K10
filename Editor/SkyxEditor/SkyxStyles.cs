@@ -87,6 +87,14 @@ namespace Skyx.SkyxEditor
             _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
         };
 
+        public static GUIStyle GetPlainBG(this EElementSize size) => size switch
+        {
+            EElementSize.Primary => PlainBGHeader,
+            EElementSize.Secondary => PlainBGHeader,
+            EElementSize.SingleLine => PlainBGLabel,
+            _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
+        };
+
         #region Styles Management
 
         private static readonly Dictionary<string, GUIStyle> loadedStyles = new();
