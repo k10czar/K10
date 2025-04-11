@@ -95,6 +95,22 @@ namespace Skyx.SkyxEditor
             _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
         };
 
+        public static GUIStyle GetPlainBG(this EElementSize size, EColor color) => GetPlainBG(size).With(color.GetPlainBGLabelColor());
+
+        public static Color GetPlainBGLabelColor(this EColor color) => color switch
+        {
+            EColor.Primary => Colors.LightGray,
+            EColor.Secondary => Colors.LightGray,
+            EColor.Info => Colors.AlmostBlack,
+            EColor.Success => Colors.AlmostBlack,
+            EColor.Warning => Colors.LightGray,
+            EColor.Danger => Colors.LightGray,
+            EColor.Support => Colors.LightGray,
+            EColor.Special => Colors.LightGray,
+            EColor.Disabled => Colors.LightGray,
+            _ => throw new ArgumentOutOfRangeException(nameof(color), color, null)
+        };
+
         #region Styles Management
 
         private static readonly Dictionary<string, GUIStyle> loadedStyles = new();

@@ -66,7 +66,7 @@ namespace Skyx.SkyxEditor
         public static void PlainBGLabel(string label, EColor color, EElementSize size, string hint = null)
         {
             using var _ = new BackgroundColorScope(color.Get());
-            GUILayout.Label(new GUIContent(label, hint), size.GetPlainBG());
+            GUILayout.Label(new GUIContent(label, hint), size.GetPlainBG(color));
         }
 
         private static Color BoolToColor(bool active) => active ? Colors.Console.Success.WithAlpha(0.4f) : Colors.Console.Danger.WithAlpha(0.4f);
