@@ -3,11 +3,13 @@ using UnityEngine;
 
 public sealed class TMP_FpsCounter : MonoBehaviour
 {
+    const int MAX_COUNT = 1200;
+
     [Range(.1f,2),SerializeField] float _sampleSecond = .5f;
     [SerializeField,HideInInspector] TMPro.TMP_Text _textMesh;
     List<double> _frame = new List<double>();
 
-    string[] _fpsCounterStringsCache = new string[ 800 ];
+    string[] _fpsCounterStringsCache = new string[ MAX_COUNT ];
 
     private int _lastFpsValue = -1;
 
