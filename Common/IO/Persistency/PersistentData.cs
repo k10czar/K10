@@ -80,13 +80,14 @@ public class Persistent<T> : IValueCapsule<T> where T : class
 	}
 }
 
+
 public class PersistentValue<T> : IValueCapsule<T> where T : struct, System.IComparable
 {
 	string _realitvePath;
 	T? _t = null;
 
 	public string PathToUse => FullPath( _realitvePath );
-	static string FullPath( string realitvePath ) => FileAdapter.persistentDataPath + "/" + realitvePath;
+	static string FullPath( string realitvePath ) => "Editor/" + realitvePath;
 
 	static Dictionary<string, PersistentValue<T>> _dict = new Dictionary<string, PersistentValue<T>>();
 
@@ -94,8 +95,8 @@ public class PersistentValue<T> : IValueCapsule<T> where T : struct, System.ICom
 
 	public static PersistentValue<T> At( string realitvePath, T startValue )
 	{
-		var has = PersistentValue<T>.Exists( realitvePath );
-		var ret = PersistentValue<T>.At( realitvePath );
+		var has = Exists( realitvePath );
+		var ret = At( realitvePath );
 		if( !has ) ret.Set = startValue;
 		return ret;
 	}
