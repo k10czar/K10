@@ -6,7 +6,7 @@ public class EditorPersistentBoolState : IBoolState, ISettingsValue
 {
 	bool _defaltValue;
 	bool _undoValue;
-	PersistentValueState<bool> _persistentValueState;
+	EditorPersistentValueState<bool> _persistentValueState;
 
 	EventSlot _onTrueState;
 	EventSlot _onFalseState;
@@ -25,7 +25,7 @@ public class EditorPersistentBoolState : IBoolState, ISettingsValue
 
 	private EditorPersistentBoolState( string path, bool initialValue )
 	{
-		_persistentValueState = PersistentValueState<bool>.At( path, initialValue );
+		_persistentValueState = EditorPersistentValueState<bool>.At( path, initialValue );
 		_undoValue = _defaltValue = initialValue;
 		_persistentValueState.OnChange.Register( OnValueChange );
 	}
@@ -61,7 +61,7 @@ public class EditorPersistentValueState<T> : ValueState<T>, ISettingsValue where
 {
 	T _defaltValue;
 	T _undoValue;
-	PersistentValue<T> _persistentData;
+	EditorPersistentValue<T> _persistentData;
 
 	static Dictionary<string, EditorPersistentValueState<T>> _dict = new Dictionary<string, EditorPersistentValueState<T>>();
 
@@ -79,7 +79,7 @@ public class EditorPersistentValueState<T> : ValueState<T>, ISettingsValue where
 
 	protected EditorPersistentValueState( string path, T initialValue )
 	{
-		_persistentData = PersistentValue<T>.At( path, initialValue );
+		_persistentData = EditorPersistentValue<T>.At( path, initialValue );
 		_undoValue = _defaltValue = initialValue;
 		Value = _persistentData.Get;
 		OnChange.Register( OnValueChange );
@@ -100,11 +100,11 @@ public class EditorPersistentValue<T> : IValueCapsule<T> where T : struct, Syste
 	T? _t = null;
 
 	public string PathToUse => FullPath( _realitvePath );
-	static string FullPath( string realitvePath ) => Application.persistentDataPath + "/Editor/" + realitvePath;
+	static string FullPath( string realitvePath ) => "Editor/" + realitvePath;
 
 	static Dictionary<string, EditorPersistentValue<T>> _dict = new Dictionary<string, EditorPersistentValue<T>>();
 
-	public static bool Exists( string realitvePath ) { return _dict.ContainsKey( realitvePath ) || FileAdapter.Exists( FullPath( realitvePath ) ); }
+	public static bool Exists( string realitvePath ) { return _dict.ContainsKey( realitvePath ) || File.Exists( FullPath( realitvePath ) ); }
 
 	public static EditorPersistentValue<T> At( string realitvePath, T startValue )
 	{
@@ -156,8 +156,14 @@ public class EditorPersistentValue<T> : IValueCapsule<T> where T : struct, Syste
 			if( _t == null || !( (T)_t ).Equals( value ) )
 			{
 				_t = value;
-				// if( default( T ).Equals( value ) ) FileAdapter.Delete( PathToUse );
+				// if( default( T ).Equals( value ) ) File.Delete( PathToUse );
 				// else 
+				var filePath = PathToUse;
+				int pathFileDivisor = filePath.Length - 1;
+				while( pathFileDivisor > 0 && filePath[pathFileDivisor] != '/' && filePath[pathFileDivisor] != '\\' )
+					pathFileDivisor--;
+				var dir = filePath.Substring( 0, pathFileDivisor );
+				if( !Directory.Exists( dir ) ) Directory.CreateDirectory( dir );
 				File.WriteAllBytes( PathToUse, BinaryAdapter.Serialize( value ) );
 			}
 		}
