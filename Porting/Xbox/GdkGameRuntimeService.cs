@@ -92,7 +92,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     public ReadOnlyCollection<XblSocialManagerUser> FriendList => _friendList.AsReadOnly();
     private EventSlot<ReadOnlyCollection<XblSocialManagerUser>> _onFriendListUpdated = new();
     public IEventRegister<ReadOnlyCollection<XblSocialManagerUser>> OnFriendListUpdated => _onFriendListUpdated;
-    public bool ShouldUpdateSocial; // TODO-Porting: Do as lock/unlock in case many want to listen to this
+    public bool ShouldUpdateFriendList; // TODO-Porting: Do as lock/unlock in case many want to listen to this
 
 
     // Controller related
@@ -260,8 +260,8 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     private void Update()
     {
         DispatchGDKEvents();
-        if (ShouldUpdateSocial)
-            UpdateSocial();
+        if (ShouldUpdateFriendList)
+            UpdateFriendList();
     }
 
     private void DispatchGDKEvents()
@@ -390,17 +390,12 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         return hResult;
     }
 
-    private void UpdateSocial()
+    private void UpdateFriendList()
     {
         SDK.XBL.XblSocialManagerDoWork(out XblSocialManagerEvent[]  socialEvents);
         if (socialEvents == null || socialEvents.Length == 0)
             return;
 
-        UpdateFriendList();
-    }
-
-    private void UpdateFriendList()
-    {
         if (_friendsFilter == null)
         {
             Debug.LogError($"Couldn't update friends list. Friend's filter still not ready");
@@ -417,6 +412,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         
         _friendList = friends.ToList();
         _onFriendListUpdated.Trigger(FriendList);
+        Debug.Log($"Friend count {FriendList.Count}");
     }
 
     // IEnumerator DoActivityStuff()
