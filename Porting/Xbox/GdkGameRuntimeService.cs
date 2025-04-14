@@ -537,8 +537,8 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     private const string CONNECTION_STRING_KEY = "connectionString=";
     private const string JOINER_KEY = "joinerXuid=";
     private const string JOINEE_KEY = "joineeXuid=";
-    private const string ACCEPT_INVITE_KEY = "inviteAccept/";
-    private const string JOIN_ACTIVITY_KEY = "activityJoin/";
+    private const string ACCEPT_INVITE_KEY = "inviteAccept";
+    private const string JOIN_ACTIVITY_KEY = "activityJoin";
 
     private void InviteEventHandler(IntPtr context, string inviteUri)
     {
@@ -561,11 +561,13 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         switch (inviteAction)
         {
             case ACCEPT_INVITE_KEY:
+            case ACCEPT_INVITE_KEY + "/":
                 userInPartyKey = SENDER_KEY;
                 invitedUserKey = INVITED_USER_KEY;
                 break;
                 
             case JOIN_ACTIVITY_KEY:
+            case JOIN_ACTIVITY_KEY + "/":
                 userInPartyKey = JOINEE_KEY;
                 invitedUserKey = JOINER_KEY;
                 break;
