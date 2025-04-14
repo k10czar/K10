@@ -507,6 +507,24 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
         // JoinInviteButton.interactable = hasMultiplayerPrivileges && hasMultiplayerInvite;
     }
+
+    public void SendInvite(ulong userId)
+    {
+        ulong[] userIds = {userId};
+        SendInvite(userIds);
+    }
+
+    public void SendInvite(ulong[] userIds)
+    {
+        // TODO-Porting: Get right configs
+        SDK.XBL.XblMultiplayerActivitySendInvitesAsync(UserData.contextHandle, userIds, true, "PartyID",
+            (Int32 hr) => {
+                Debug.Log($"Send Invite {(HR.SUCCEEDED(hr) ? "SUCCEEDED" : "failed")}");
+            }
+        );
+    }
+
+
 #endregion
 
 #region Controller
