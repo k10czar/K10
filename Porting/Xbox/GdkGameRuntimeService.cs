@@ -278,7 +278,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         _userData = new GdkUserData();
         SDK.XUserAddAsync(XUserAddOptions.AddDefaultUserSilently, (Int32 hresult, XUserHandle userHandle) =>
         {
-            if (HR.FAILED(hresult) || userHandle != null)
+            if (HR.FAILED(hresult) || userHandle == null)
             {
                 Debug.LogError($"Couldnt add default user {hresult}");
                 return;
@@ -321,7 +321,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     private int GetUserContext()
     {
         int hr = SDK.XBL.XblContextCreateHandle(_userData.userHandle, out _userData.contextHandle);
-        if (HR.FAILED(hr) || _userData.contextHandle != null)
+        if (HR.FAILED(hr) || _userData.contextHandle == null)
             Debug.LogError("Error creating context handle");
 
         return hr;
