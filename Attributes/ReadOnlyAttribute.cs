@@ -1,6 +1,5 @@
  using UnityEngine;
  
- public class ReadOnlyAttribute : BlockEditAttribute { }
  
  /// <summary>
  /// Display a field as read-only in the inspector.

@@ -1,6 +1,8 @@
+#if CODE_METRICS
 #define LOG_ALL_METRICS
 #define LOG_REPORT_ON_SUSPEND
 #define LOG_REPORT_PARTIAL
+#endif
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
