@@ -73,6 +73,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     }
     private bool _hasCreatedDispatchTask;
     
+    private XGameSaveFilesFileAdapter _gdkFileAdapter;
     private GdkUserData _userData;
     public GdkUserData UserData => _userData;
 
@@ -120,9 +121,9 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         this.Log($"<color=LawnGreen>GDK</color> Sandbox: {Sandbox}");
         InitializeRuntime();
 
-        XGameSaveFilesFileAdapter gdkFileAdapter = new();
-        FileAdapter.SetImplementation(gdkFileAdapter); 
-        gdkFileAdapter.IsInitilized.Synchronize( _isReady );
+        _gdkFileAdapter = new();
+        FileAdapter.SetImplementation(_gdkFileAdapter); 
+        _gdkFileAdapter.IsInitilized.Synchronize( _isReady );
 
         AddDefaultUser();
 
@@ -285,6 +286,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
             }
 
             _isLogged.SetTrue();
+            _gdkFileAdapter.Initialize(_userData.userHandle, Scid);
             InitializeUser(userHandle);
         });
     }
