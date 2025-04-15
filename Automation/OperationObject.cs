@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace Automation
 {
-	[CreateAssetMenu( fileName = "OperationObject", menuName = "Automation/OperationObject", order = 1 )]
-    public class OperationObject : ScriptableObject, IOperation
+	[CreateAssetMenu( fileName = "OperationObject", menuName = "K10/Automation/OperationObject", order = 1 )]
+    public class OperationObject : ScriptableObject, IOperation, ISummarizable
 	{
 		[ExtendedDrawer,SerializeReference] IOperation _operation;
 
@@ -17,6 +17,7 @@ namespace Automation
 			}
         }
 
-		public override string ToString() => $"📦 {"OperationObject".Colorfy( Colors.Console.Fields )} {name} with {_operation.ToStringOrNullColored(Colors.Console.Numbers)}";
+		public override string ToString() => $"📦 {nameof(OperationObject)} {name} with {_operation.ToStringOrNull()}";
+		public string Summarize() => $"{name}( {_operation.TrySummarize( ", " )} )";
     }
 }

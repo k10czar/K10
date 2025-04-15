@@ -116,7 +116,7 @@ namespace K10.EditorGUIExtention
 
 	public static class ScriptableObjectField
 	{
-		const string FALLBACK_CREATION_FOLDER = "Assets/Database/SO/";
+		const string FALLBACK_CREATION_FOLDER = "Assets/Data/SO/";
 
 		public static Object Draw( Rect r, string label, Object obj, System.Type type, string path = null, bool ignoreIdentation = true, bool focus = false )
 		{

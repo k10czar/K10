@@ -15,6 +15,7 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 	private EventSlot<GameObject> _onDestroy;
 
 	private EventSlot<GameObject> _onDisable;
+	private EventSlot _onUpdate;
 
 	// private EventSlot _onLateDestroy;
 	private BoolState _isActive;

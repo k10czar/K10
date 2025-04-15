@@ -6,14 +6,15 @@ using System.Collections.Generic;
 namespace Automation
 {
     public class Loop : IOperation
-						, IDrawGizmos, IDrawGizmosOnSelected
+						, IDrawGizmos, IDrawGizmosOnSelected, ISummarizable
 	{
-		[SerializeField] int _repetitions = 1;
+		[ExtendedDrawer,SerializeReference] IValueProvider<int> _repetitions;
 		[ExtendedDrawer,SerializeReference] List<IOperation> _actions;
 
 		public IEnumerator ExecutionCoroutine( bool log = false ) 
 		{
-			for( int l = 0; l < _repetitions; l++ )
+			var repetitions = _repetitions?.Value ?? 1;
+			for( int l = 0; l < repetitions; l++ )
 			{
 				if( log ) Debug.Log( $"♻ {"Loop".Colorfy( Colors.Console.Fields )}[{l.ToStringColored(Colors.Console.Numbers)}] in {this.ToStringOrNull()}" );
 				for( int i = 0; i < _actions.Count; i++ )
@@ -24,13 +25,16 @@ namespace Automation
 						if( log ) Debug.LogError( $"{"Cannot".Colorfy( Colors.Console.Warning )} {"play".Colorfy( Colors.Console.Verbs )} null {"Operation".Colorfy( Colors.Console.TypeName )}" );
 						continue;
 					}
-					if( log ) Debug.Log( $"{"Start".Colorfy( Colors.Console.Verbs )} operation: {act.ToStringOrNull()}" );
+					if( log ) Debug.Log( $"{"Start".Colorfy( Colors.Console.Verbs )} operation[{i}]: {act.ToStringOrNull()}" );
 					yield return act.ExecutionCoroutine( log );
 				}
 			}
 		}
 
-		public override string ToString() => $"🗃 {"Loop".Colorfy( Colors.Console.Fields )} {_repetitions.ToStringColored(Colors.Console.Numbers)}x: {{\n  -{string.Join( ",\n  -", _actions )} }}";
+		public override string ToString() => $"🗃 {"Loop".Colorfy( Colors.Console.Fields )} {_repetitions.ToStringOrNull()}x: {{\n  -{string.Join( ",\n  -", _actions )} }}";
+		public string Summarize() => $"🗃Loop{_repetitions.TrySummarize()}x{{ {_actions.TrySummarize( ", " )} }}";
+
+
 
 #if UNITY_EDITOR
 		public void OnDrawGizmos()
