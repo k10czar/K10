@@ -25,7 +25,14 @@ public class CatalogedUniqueStock<Key,Value> : ICustomDisposableKill where Value
     public bool ContainsKey( Key key ) { return _dict.ContainsKey( key ); }
     public Value GetEntry( Key key ) { return _dict[ key ]; }
 
-    public void RemoveEntry( Key key ) { if( _dict.Remove( key ) ) _onEntriesChanged?.Trigger(); }
+    public bool RemoveEntry(Key key)
+    {
+	    var removed = _dict.Remove(key);
+	    if (removed) _onEntriesChanged?.Trigger();
+
+	    return removed;
+    }
+
     public bool TryGetValue( Key key, out Value t ) { return _dict.TryGetValue( key, out t ); }
 
     public int Count => _dict.Count;
