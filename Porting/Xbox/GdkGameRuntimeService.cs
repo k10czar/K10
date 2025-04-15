@@ -94,6 +94,9 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     public ReadOnlyCollection<XblSocialManagerUser> FriendsList => _friendsList.AsReadOnly();
     private EventSlot<ReadOnlyCollection<XblSocialManagerUser>> _onFriendsListUpdated = new();
     public IEventRegister<ReadOnlyCollection<XblSocialManagerUser>> OnFriendsListUpdated => _onFriendsListUpdated;
+
+    private EventSlot<string> _onReceivedInvite = new();
+    public IEventRegister<string> OnReceivedInvite => _onReceivedInvite;
     public bool ShouldUpdateFriendsList; // TODO-Porting: Do as lock/unlock in case many want to listen to this
 
 
@@ -128,7 +131,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
         AddDefaultUser();
 
-        SDK.XGameInviteRegisterForEvent(InviteEventHandler, out _inviteRegistrationToken);
+        SDK.XGameInviteRegisterForEvent(TriggerReceivedInviteEvent, out _inviteRegistrationToken);
 #if UNITY_GAMECORE
         SDK.XUserRegisterForDeviceAssociationChanged(
             new XTaskQueueHandle(System.IntPtr.Zero),
@@ -466,86 +469,10 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
     // }
     
-
-    private void InviteEventHandler(IntPtr context, string inviteUri)
+    private void TriggerReceivedInviteEvent(IntPtr context, string inviteUri)
     {
-        Debug.Log($"Invite URI: {inviteUri}");
-
-        int inviteActionStart = inviteUri.IndexOf(INVITE_ACTION_KEY) + INVITE_ACTION_KEY.Length;
-        int inviteActionEnd = inviteUri.IndexOf("?", inviteActionStart);
-        string inviteAction = inviteUri[inviteActionStart..inviteActionEnd];
-
-        string userInPartyKey, invitedUserKey;
-        switch (inviteAction)
-        {
-            case ACCEPT_INVITE_KEY:
-            case ACCEPT_INVITE_KEY + "/":
-                userInPartyKey = SENDER_KEY;
-                invitedUserKey = INVITED_USER_KEY;
-                break;
-                
-            case JOIN_ACTIVITY_KEY:
-            case JOIN_ACTIVITY_KEY + "/":
-                userInPartyKey = JOINEE_KEY;
-                invitedUserKey = JOINER_KEY;
-                break;
-            
-            default:
-                Debug.LogError($"Found unhandled invite action: {inviteAction}");
-                return;
-        }
-
-
-        int userInPartyStart = inviteUri.IndexOf(userInPartyKey) + userInPartyKey.Length;
-        int userInPartyEnd = inviteUri.IndexOf("&", userInPartyStart);
-        userInPartyEnd = (userInPartyEnd == -1) ? inviteUri.Length : userInPartyEnd;
-        string userInParty = inviteUri[userInPartyStart..userInPartyEnd];
-
-        int invitedUserStart = inviteUri.IndexOf(invitedUserKey) + invitedUserKey.Length;
-        int invitedUserEnd = inviteUri.IndexOf("&", invitedUserStart);
-        invitedUserEnd = (invitedUserEnd == -1) ? inviteUri.Length : invitedUserEnd;
-        string invitedUser = inviteUri[invitedUserStart..invitedUserEnd];
-
-        int connectionStringStart = inviteUri.IndexOf(CONNECTION_STRING_KEY) + CONNECTION_STRING_KEY.Length;
-        int connectionStringEnd = inviteUri.IndexOf("&", connectionStringStart);
-        connectionStringEnd = (connectionStringEnd == -1) ? inviteUri.Length : connectionStringEnd;
-        string connectionString = inviteUri[connectionStringStart..connectionStringEnd];
-
-        HandleInviteReceived(UInt64.Parse(userInParty), UInt64.Parse(invitedUser), connectionString);
+        _onReceivedInvite.Trigger(inviteUri);
     }
-
-    private void HandleInviteReceived(ulong userInParty, ulong invitedUser, string connectionString)
-    {
-        Debug.Log($"Handling Invite from {userInParty} to {invitedUser} with connection string {connectionString}");
-        Debug.Log($"Invite to {invitedUser} == {UserData.userXUID} ? {invitedUser == UserData.userXUID}");
-
-        // TODO? we are responding to an invite so we do not need to listen anymore
-        // TODO: Check Privileges
-        // var hasMultiplayerPrivileges = XboxLive.HasMultiplayerPrivileges;
-        // var hasMultiplayerInvite = XboxLive.HasMultiplayerInvite;
-
-        // TODO: Check if is already logged in
-
-        // JoinInviteButton.interactable = hasMultiplayerPrivileges && hasMultiplayerInvite;
-    }
-
-    public void SendInvite(ulong userId)
-    {
-        ulong[] userIds = {userId};
-        SendInvite(userIds);
-    }
-
-    public void SendInvite(ulong[] userIds)
-    {
-        // TODO-Porting: Get right configs
-        SDK.XBL.XblMultiplayerActivitySendInvitesAsync(UserData.contextHandle, userIds, true, "PartyID",
-            (Int32 hr) => {
-                Debug.Log($"Send Invite {(HR.SUCCEEDED(hr) ? "SUCCEEDED" : "failed")}");
-            }
-        );
-    }
-
-
 #endregion
 
 #region Controller
