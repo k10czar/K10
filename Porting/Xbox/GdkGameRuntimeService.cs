@@ -7,6 +7,7 @@ using K10.DebugSystem;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using UnityEditor;
 
 public class GdkUserData
 {
@@ -136,10 +137,20 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
             out _deviceAssociationChangedRegistrationToken
         );	
 #endif
+
+#if UNITY_EDITOR
+        EditorApplication.playModeStateChanged += EDITOR_CleanUp;
+#endif
     }
 
     ~GdkGameRuntimeService()
     {
+        CleanUp();
+    }
+
+    private void CleanUp()
+    {
+        Debug.Log($"GDK CleanUp");
 #if UNITY_GAMECORE
         SDK.XUserUnregisterForDeviceAssociationChanged(_deviceAssociationChangedRegistrationToken, true);
 #endif
@@ -148,6 +159,17 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         SDK.XUserCloseHandle(UserData.userHandle);
         SDK.XBL.XblContextCloseHandle(UserData.contextHandle);
     }
+
+#if UNITY_EDITOR
+    private void EDITOR_CleanUp(PlayModeStateChange change)
+    {
+        if (change != PlayModeStateChange.ExitingPlayMode)
+            return;
+
+        CleanUp();
+        EditorApplication.playModeStateChanged -= EDITOR_CleanUp;
+    }
+#endif
     
     private bool InitializeRuntime()
     {
@@ -386,7 +408,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
     private int CreateFriendsFilter()
     {
-        int hResult = SDK.XBL.XblSocialManagerCreateSocialUserGroupFromFilters(UserData.userHandle, XblPresenceFilter.All, XblRelationshipFilter.Unknown, out _friendsFilter);
+        int hResult = SDK.XBL.XblSocialManagerCreateSocialUserGroupFromFilters(UserData.userHandle, XblPresenceFilter.AllOnline, XblRelationshipFilter.Unknown, out _friendsFilter);
         if (HR.FAILED(hResult))
             Debug.LogError($"Could create friends filter {hResult}");
 
