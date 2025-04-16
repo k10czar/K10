@@ -87,7 +87,7 @@ public class PersistentValue<T> : IValueCapsule<T> where T : struct, System.ICom
 	T? _t = null;
 
 	public string PathToUse => FullPath( _realitvePath );
-	static string FullPath( string realitvePath ) => "Editor/" + realitvePath;
+	static string FullPath( string realitvePath ) => FileAdapter.persistentDataPath + "/" + realitvePath;
 
 	static Dictionary<string, PersistentValue<T>> _dict = new Dictionary<string, PersistentValue<T>>();
 
