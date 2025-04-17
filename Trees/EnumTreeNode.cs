@@ -27,7 +27,7 @@ namespace Skyx.Trees
                 value = value,
                 path = new Queue<object>(),
 
-                order = int.MaxValue,
+                order = int.MinValue,
                 treeName = prettyName,
                 valueName = prettyName,
                 hide = false,
@@ -37,7 +37,7 @@ namespace Skyx.Trees
             if (attribute != null)
             {
                 nodeInfo.path = new Queue<object>(attribute.path);
-                nodeInfo.order = attribute.order;
+                nodeInfo.order = attribute.order == int.MinValue ? (int)(object) value : attribute.order;
                 nodeInfo.hide = attribute.hide;
 
                 if (!string.IsNullOrEmpty(attribute.valueDisplayName)) nodeInfo.valueName = attribute.valueDisplayName;

@@ -11,7 +11,7 @@ namespace Skyx.Trees
         public readonly string treeDisplayName;
         public readonly bool hide;
 
-        public EnumTreeAttribute(object[] path = null, string valueDisplayName = "", string treeDisplayName = "", int order = int.MaxValue, bool hide = false)
+        public EnumTreeAttribute(object[] path = null, string valueDisplayName = "", string treeDisplayName = "", int order = int.MinValue, bool hide = false)
         {
             this.path = path ?? Array.Empty<object>();
             this.valueDisplayName = valueDisplayName;

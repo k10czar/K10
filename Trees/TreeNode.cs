@@ -128,7 +128,9 @@ namespace Skyx.Trees
 
             if (otherNode == null) return 1;
 
-            if (!IsValid && !otherNode.IsValid) return 0;
+            if (!IsValid && !otherNode.IsValid)
+                return string.Compare(Key.ToString(), otherNode.Key.ToString(), StringComparison.Ordinal);
+
             if (!IsValid) return -1;
             if (!otherNode.IsValid) return 1;
 
