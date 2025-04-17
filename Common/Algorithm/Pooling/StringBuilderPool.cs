@@ -13,7 +13,7 @@ public static class StringBuilderPool
 	public static StringBuilder RequestWith( string firstLine )
 	{
 		var stringBuilder = RequestEmpty();
-		stringBuilder.AppendLine( firstLine );
+		stringBuilder.Append( firstLine );
 		return stringBuilder;
 	}
 
