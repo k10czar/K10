@@ -73,6 +73,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         } 
     }
     private bool _hasCreatedDispatchTask;
+    private Coroutine _updateCoroutine;
     
     private XGameSaveFilesFileAdapter _gdkFileAdapter;
     private GdkUserData _userData;
@@ -98,7 +99,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     private EventSlot<string> _onReceivedInvite = new();
     public IEventRegister<string> OnReceivedInvite => _onReceivedInvite;
     public bool ShouldUpdateFriendsList; // TODO-Porting: Do as lock/unlock in case many want to listen to this
-
+    private Coroutine _earlyInviteHandlingCoroutine;
 
     // Controller related
 #if UNITY_GAMECORE
@@ -131,7 +132,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
         AddDefaultUser();
 
-        SDK.XGameInviteRegisterForEvent(TriggerReceivedInviteEvent, out _inviteRegistrationToken);
+        SDK.XGameInviteRegisterForEvent(HandleReceivedInvite, out _inviteRegistrationToken);
 #if UNITY_GAMECORE
         SDK.XUserRegisterForDeviceAssociationChanged(
             new XTaskQueueHandle(System.IntPtr.Zero),
@@ -469,8 +470,36 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
     // }
     
-    private void TriggerReceivedInviteEvent(IntPtr context, string inviteUri)
+    private void HandleReceivedInvite(IntPtr context, string inviteUri)
     {
+        if (_earlyInviteHandlingCoroutine != null)
+        {
+            Debug.LogError($"Ignored invite because is still handling an early invite");
+            return;
+        }
+
+        if (!IsFullyInitialized.Value)
+        {
+            _earlyInviteHandlingCoroutine = ExternalCoroutine.StartCoroutine(HandleEarlyInvite(inviteUri));
+            return;
+        }
+
+        TriggerReceivedInviteEvent(inviteUri);
+    }
+
+    private IEnumerator HandleEarlyInvite(string inviteUri)
+    {
+        Debug.Log($"Invite received, but waiting for login to handle it");
+        yield return new WaitUntil(() => IsFullyInitialized.Value);
+        yield return new WaitForEndOfFrame();
+
+        TriggerReceivedInviteEvent(inviteUri);
+        _earlyInviteHandlingCoroutine = null;
+    }
+
+    private void TriggerReceivedInviteEvent(string inviteUri)
+    {
+        Debug.Log($"Triggering invite event: {inviteUri}");
         _onReceivedInvite.Trigger(inviteUri);
     }
 #endregion
