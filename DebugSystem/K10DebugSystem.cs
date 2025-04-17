@@ -97,7 +97,7 @@ namespace K10.DebugSystem
         {
             if (DebugOwnerBehaviour is EDebugOwnerBehaviour.Ignore) return true;
 
-            var count = config.validOwners.Count;
+            var count = requesters.Count();
             var keys = requesters.Select(getOwnerKey);
             var intersectCount = config.validOwners.Intersect(keys).Count();
 

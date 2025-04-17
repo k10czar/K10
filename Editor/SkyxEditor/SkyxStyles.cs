@@ -105,7 +105,7 @@ namespace Skyx.SkyxEditor
             EColor.Success => Colors.AlmostBlack,
             EColor.Warning => Colors.LightGray,
             EColor.Danger => Colors.LightGray,
-            EColor.Support => Colors.LightGray,
+            EColor.Support => Colors.AlmostBlack,
             EColor.Special => Colors.LightGray,
             EColor.Disabled => Colors.LightGray,
             _ => throw new ArgumentOutOfRangeException(nameof(color), color, null)
