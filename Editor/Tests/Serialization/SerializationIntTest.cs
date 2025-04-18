@@ -24,7 +24,7 @@ public class SerializationIntTest
             Assert.AreEqual( val, readedVal, $"Serialized value: {val} deserialized as: {readedVal} error:{val-readedVal}\n{SB}" );
         }
 
-        UnityEngine.Debug.Log( $"TestPositiveOneBitValuesSerialization()\n{SB}" );
+        UnityEngine.Debug.Log( $"TestPositiveOneBitValuesSerialization() validated serialization of:\n{SB}" );
     }
 
     [Test]
@@ -48,7 +48,7 @@ public class SerializationIntTest
             Assert.AreEqual( val, readedVal, $"Serialized value: {val} deserialized as: {readedVal} error:{val-readedVal}\n{SB}" );
         }
         
-        UnityEngine.Debug.Log( $"TestPositiveFullBitsValuesSerialization()\n{SB}" );
+        UnityEngine.Debug.Log( $"TestPositiveFullBitsValuesSerialization() validated serialization of:\n{SB}" );
     }
 
     [Test]
@@ -72,7 +72,7 @@ public class SerializationIntTest
             Assert.AreEqual( val, readedVal, $"Serialized value: {val} deserialized as: {readedVal} error:{val-readedVal}\n{SB}" );
         }
 
-        UnityEngine.Debug.Log( $"TestNegativeOneBitValuesSerialization()\n{SB}" );
+        UnityEngine.Debug.Log( $"TestNegativeOneBitValuesSerialization() validated serialization of:\n{SB}" );
     }
 
     [Test]
@@ -96,6 +96,6 @@ public class SerializationIntTest
             Assert.AreEqual( val, readedVal, $"Serialized value: {val} deserialized as: {readedVal} error:{val-readedVal}\n{SB}" );
         }
 
-        UnityEngine.Debug.Log( $"TestNegativeFullBitsValuesSerialization()\n{SB}" );
+        UnityEngine.Debug.Log( $"TestNegativeFullBitsValuesSerialization() validated serialization of:\n{SB}" );
     }
 }
