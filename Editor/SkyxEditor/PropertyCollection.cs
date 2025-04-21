@@ -419,10 +419,14 @@ namespace Skyx.SkyxEditor
         }
 
         // index = -1 means at end
-        public void InsertArrayElementAtIndex(string propertyName, int index, bool isBacking = false)
+        public void InsertArrayElementAtIndex(string propertyName, int index, bool isBacking = false, Action<SerializedProperty> newElementSetup = null)
         {
             var prop = Get(propertyName, isBacking);
-            prop.InsertArrayElementAtIndex(index == -1 ? prop.arraySize : index);
+            index = index == -1 ? prop.arraySize : index;
+            prop.InsertArrayElementAtIndex(index);
+
+            newElementSetup?.Invoke(prop.GetArrayElementAtIndex(index));
+
             prop.Apply();
         }
 

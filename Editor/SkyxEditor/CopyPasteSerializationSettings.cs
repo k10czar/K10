@@ -85,9 +85,9 @@ namespace Skyx.SkyxEditor
             var unityObject = EditorUtility.InstanceIDToObject(instanceID);
             if (unityObject != null) return unityObject;
 
-            Debug.LogError($"Unity object with instanceID {instanceID} not found.");
-            return null;
+            if (instanceID != 0) Debug.LogError($"Unity object with instanceID {instanceID} not found.");
 
+            return null;
         }
     }
 }
