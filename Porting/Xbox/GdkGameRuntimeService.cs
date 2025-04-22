@@ -312,7 +312,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
             }
 
             _isLogged.SetTrue();
-            _gdkFileAdapter.Initialize(_userData.userHandle, Scid);
+            _gdkFileAdapter.Initialize(userHandle, Scid);
             InitializeUser(userHandle);
         });
     }
