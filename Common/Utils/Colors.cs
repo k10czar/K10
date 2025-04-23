@@ -51,10 +51,10 @@ public static class Colors
     [LazyConst] private static Color[] eColorSequence;
     public static Color[] EColorSequence => eColorSequence ??= new [] { Console.Primary, Console.Secondary, Console.Info, Console.Success, Console.Warning, Console.Danger, Console.Support, Console.Special, Console.Disabled };
 
-    public static Color FromSequence<T>(T value, bool loop = false) where T : Enum => FromSequence((int)(object)value, loop);
-    public static Color FromSequence(int index, bool loop = false)
+    public static Color FromSequence<T>(T value) where T : Enum => FromSequence((int)(object)value);
+    public static Color FromSequence(int index)
     {
-        index = loop ? index % EColorSequence.Length : Mathf.Clamp(index, 0, EColorSequence.Length);
+        index %= EColorSequence.Length;
         return EColorSequence[index];
     }
 
