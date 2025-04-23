@@ -34,6 +34,8 @@ namespace K10.DebugSystem
                     }
                 }
 
+                categories.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.Ordinal));
+
                 return categories;
             }
         }
