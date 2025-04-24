@@ -412,7 +412,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
     private int CreateFriendsFilter()
     {
-        int hResult = SDK.XBL.XblSocialManagerCreateSocialUserGroupFromFilters(UserData.userHandle, XblPresenceFilter.AllOnline, XblRelationshipFilter.Unknown, out _friendsFilter);
+        int hResult = SDK.XBL.XblSocialManagerCreateSocialUserGroupFromFilters(UserData.userHandle, XblPresenceFilter.All, XblRelationshipFilter.Unknown, out _friendsFilter);
         if (HR.FAILED(hResult))
             Debug.LogError($"Could create friends filter {hResult}");
 
