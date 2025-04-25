@@ -65,11 +65,11 @@ public class Privileges
 
         if( failed )
         {
-            Debug.LogError($"Failed to check Privilege {privilege} reason {privilege.denyReason}. HR {hr} - {HR.NameOf(hr)}");
+            Debug.LogError($"Failed to check Privilege {privilegeType} reason {privilege.denyReason}. HR {hr} - {HR.NameOf(hr)}");
             return hr;
         }
             
-        Debug.Log($"Check Privilege <color=magenta>{privilege}</color>:<color=cyan>{privilege.hasPrivilege}</color>. HR {hr} - {HR.NameOf(hr)}");
+        Debug.Log($"Check Privilege <color=magenta>{privilegeType}</color>:<color=cyan>{privilege.hasPrivilege}</color>. HR {hr} - {HR.NameOf(hr)}");
         return hr;
     }
 }
