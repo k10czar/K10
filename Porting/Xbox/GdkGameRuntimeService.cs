@@ -16,7 +16,64 @@ public class GdkUserData
     public ulong userXUID;
     public string userGamertag;
     public XblContextHandle contextHandle;
+    public Privileges Privileges = new();
 }
+
+#region Privileges
+public class Privileges
+{
+    public bool readed = false;
+    public readonly Privilege hasMultiplayerPrivilege = new();
+    public readonly Privilege hasCrossplayPrivilege = new();
+    public readonly Privilege hasUGCPrivilege = new();
+    public readonly Privilege hasCommunicationsPrivilege = new();
+    public readonly Privilege hasMultiplayerPartiesPrivilege = new();
+    public readonly Privilege hasSessionsPrivilege = new();
+
+    public class Privilege
+    {
+        public bool readed;
+        public int hr;
+        public XUserPrivilegeDenyReason denyReason;
+        public bool hasPrivilege;
+    }
+
+    public void ReadUserPrivileges( XUserHandle userHandle )
+    {
+        // TODO-Porting: Check which privileges are needed and actually store them in UserData
+        ReadPrivilege( userHandle, XUserPrivilege.Multiplayer, hasMultiplayerPrivilege );
+        ReadPrivilege( userHandle, XUserPrivilege.CrossPlay, hasCrossplayPrivilege );
+        ReadPrivilege( userHandle, XUserPrivilege.UserGeneratedContent, hasUGCPrivilege );
+
+        // TODO-Porting: Remove, should not be needed since we are removing the chat 
+        ReadPrivilege( userHandle, XUserPrivilege.Communications, hasCommunicationsPrivilege );
+
+        // TODO-Porting: Check what those privileges actually mean
+        ReadPrivilege( userHandle, XUserPrivilege.MultiplayerParties, hasMultiplayerPartiesPrivilege );
+        ReadPrivilege( userHandle, XUserPrivilege.Sessions, hasSessionsPrivilege );
+
+        readed = true;
+    }
+
+    int ReadPrivilege( XUserHandle userHandle, XUserPrivilege privilegeType, Privilege privilege )
+    {
+        var hr = SDK.XUserCheckPrivilege(userHandle, XUserPrivilegeOptions.None, privilegeType, out privilege.hasPrivilege, out privilege.denyReason);
+        
+        var failed = HR.FAILED( hr );
+        privilege.readed = !failed;
+        privilege.hr = hr;
+
+        if( failed )
+        {
+            Debug.LogError($"Failed to check Privilege {privilege} reason {privilege.denyReason}. HR {hr} - {HR.NameOf(hr)}");
+            return hr;
+        }
+            
+        Debug.Log($"Check Privilege <color=magenta>{privilege}</color>:<color=cyan>{privilege.hasPrivilege}</color>. HR {hr} - {HR.NameOf(hr)}");
+        return hr;
+    }
+}
+#endregion
 
 public interface IGdkRuntimeService : IService, IGdkRuntimeData
 {
@@ -335,7 +392,9 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         GetUserLocalId();
         GetUserContext();
         GetGamertag();
-        GetUserPrivileges(); 
+
+        _userData.Privileges.ReadUserPrivileges( _userData.userHandle );
+        // GetUserPrivileges(); 
     }
 
     private int GetUserId()
@@ -373,24 +432,6 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
         return hr;
     }
-
-    private void GetUserPrivileges()
-    {
-        // TODO-Porting: Check which privileges are needed and actually store them in UserData
-
-        XUserPrivilegeDenyReason denyReason;
-        SDK.XUserCheckPrivilege(UserData.userHandle, XUserPrivilegeOptions.None, XUserPrivilege.Multiplayer, out bool hasMultiplayerPrivilege, out denyReason);
-        SDK.XUserCheckPrivilege(UserData.userHandle, XUserPrivilegeOptions.None, XUserPrivilege.CrossPlay, out bool hasCrossplayPrivilege, out denyReason);
-        SDK.XUserCheckPrivilege(UserData.userHandle, XUserPrivilegeOptions.None, XUserPrivilege.UserGeneratedContent, out bool hasUGCPrivilege, out denyReason);
-
-        // TODO-Porting: Remove, should not be needed since we are removing the chat
-        SDK.XUserCheckPrivilege(UserData.userHandle, XUserPrivilegeOptions.None, XUserPrivilege.Communications, out bool hasCommunicationsPrivilege, out denyReason);
-
-        // TODO-Porting: Check what those privileges actually mean
-        SDK.XUserCheckPrivilege(UserData.userHandle, XUserPrivilegeOptions.None, XUserPrivilege.MultiplayerParties, out bool hasMultiplayerPartiesPrivilege, out denyReason);
-        SDK.XUserCheckPrivilege(UserData.userHandle, XUserPrivilegeOptions.None, XUserPrivilege.Sessions, out bool hasSessionsPrivilege, out denyReason);
-    }
-
 #endregion
 
 #region Social
