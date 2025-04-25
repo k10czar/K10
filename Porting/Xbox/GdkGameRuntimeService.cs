@@ -72,33 +72,19 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
             return _isReadyToUse;
         } 
     }
+    public IEventRegister OnStartedCleanUp => _onStartedCleanUp;
+    private EventSlot _onStartedCleanUp = new();
+
     private bool _hasCreatedDispatchTask;
-    private Coroutine _updateCoroutine;
     
     private XGameSaveFilesFileAdapter _gdkFileAdapter;
     private GdkUserData _userData;
     public GdkUserData UserData => _userData;
 
-    // Social
-    private const string INVITE_ACTION_KEY = "://";
-    private const string SENDER_KEY = "sender=";
-    private const string INVITED_USER_KEY = "invitedUser=";
-    private const string CONNECTION_STRING_KEY = "connectionString=";
-    private const string JOINER_KEY = "joinerXuid=";
-    private const string JOINEE_KEY = "joineeXuid=";
-    private const string ACCEPT_INVITE_KEY = "inviteAccept";
-    private const string JOIN_ACTIVITY_KEY = "activityJoin";
+    // Invites
     private XGameInviteRegistrationToken _inviteRegistrationToken;
-    private const XblSocialManagerExtraDetailLevel SOCIAL_EXTRA_DETAIL_LEVEL = XblSocialManagerExtraDetailLevel.TitleHistoryLevel;
-    private XblSocialManagerUserGroupHandle _friendsFilter = null;
-    private List<XblSocialManagerUser> _friendsList = new();
-    public ReadOnlyCollection<XblSocialManagerUser> FriendsList => _friendsList.AsReadOnly();
-    private EventSlot<ReadOnlyCollection<XblSocialManagerUser>> _onFriendsListUpdated = new();
-    public IEventRegister<ReadOnlyCollection<XblSocialManagerUser>> OnFriendsListUpdated => _onFriendsListUpdated;
-
     private EventSlot<string> _onReceivedInvite = new();
     public IEventRegister<string> OnReceivedInvite => _onReceivedInvite;
-    public bool ShouldUpdateFriendsList; // TODO-Porting: Do as lock/unlock in case many want to listen to this
     private Coroutine _earlyInviteHandlingCoroutine;
 
     // Controller related
@@ -146,35 +132,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         EditorApplication.playModeStateChanged += EDITOR_CleanUp;
 #endif
     }
-
-    ~GdkGameRuntimeService()
-    {
-        CleanUp();
-    }
-
-    private void CleanUp()
-    {
-        Debug.Log($"GDK CleanUp");
-#if UNITY_GAMECORE
-        SDK.XUserUnregisterForDeviceAssociationChanged(_deviceAssociationChangedRegistrationToken, true);
-#endif
-        SDK.XGameInviteUnregisterForEvent(_inviteRegistrationToken);
-        SDK.XBL.XblSocialManagerRemoveLocalUser(UserData.userHandle, SOCIAL_EXTRA_DETAIL_LEVEL);
-        SDK.XUserCloseHandle(UserData.userHandle);
-        SDK.XBL.XblContextCloseHandle(UserData.contextHandle);
-    }
-
-#if UNITY_EDITOR
-    private void EDITOR_CleanUp(PlayModeStateChange change)
-    {
-        if (change != PlayModeStateChange.ExitingPlayMode)
-            return;
-
-        CleanUp();
-        EditorApplication.playModeStateChanged -= EDITOR_CleanUp;
-    }
-#endif
-    
+   
     private bool InitializeRuntime()
     {
         if (HR.FAILED(InitializeGamingRuntime()) || !InitializeXboxLive(Scid))
@@ -287,8 +245,6 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     private void Update()
     {
         DispatchGDKEvents();
-        if (ShouldUpdateFriendsList)
-            UpdateFriendsList();
     }
 
     private void DispatchGDKEvents()
@@ -323,10 +279,6 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         _userData.userHandle = userHandle;
 
         FetchUserData();
-        InitializeSocial();
-        
-        // TODO-Porting: Remove this
-        // ExternalCoroutine.StartCoroutine(DoActivityStuff());
     }
 
     private void FetchUserData()
@@ -393,83 +345,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
 #endregion
 
-#region Social
-    private void InitializeSocial()
-    {
-        CreateSocialGraph();
-        CreateFriendsFilter();
-        UpdateFriendsList();
-    }
-
-    private int CreateSocialGraph()
-    {
-        int hResult = SDK.XBL.XblSocialManagerAddLocalUser(UserData.userHandle, SOCIAL_EXTRA_DETAIL_LEVEL);
-        if (HR.FAILED(hResult))
-            Debug.LogError($"Could not initialize Social {hResult}");
-
-        return hResult;
-    }
-
-    private int CreateFriendsFilter()
-    {
-        int hResult = SDK.XBL.XblSocialManagerCreateSocialUserGroupFromFilters(UserData.userHandle, XblPresenceFilter.All, XblRelationshipFilter.Unknown, out _friendsFilter);
-        if (HR.FAILED(hResult))
-            Debug.LogError($"Could create friends filter {hResult}");
-
-        return hResult;
-    }
-
-    private void UpdateFriendsList()
-    {
-        SDK.XBL.XblSocialManagerDoWork(out XblSocialManagerEvent[]  socialEvents);
-        if (socialEvents == null || socialEvents.Length == 0)
-            return;
-
-        if (_friendsFilter == null)
-        {
-            Debug.LogError($"Couldn't update friends list. Friend's filter still not ready");
-            return;
-        }
-
-        // TODO-Porting: Use many filters to be able to order friends
-        int hResult = SDK.XBL.XblSocialManagerUserGroupGetUsers(_friendsFilter, out XblSocialManagerUser[] friends);
-        if (HR.FAILED(hResult))
-        {
-            Debug.LogError($"Couldn't get Xbox friends {hResult}");
-            return;
-        }
-        
-        _friendsList = friends.ToList();
-        _onFriendsListUpdated.Trigger(FriendsList);
-        Debug.Log($"Friend count {FriendsList.Count}");
-    }
-
-    // IEnumerator DoActivityStuff()
-    // {
-    //     Debug.Log($"Starting stuff");
-    //     yield return new WaitForSeconds(3f);
-    //     Debug.Log($"Really Starting stuff");
-        
-    //     var info  = new XblMultiplayerActivityInfo();
-    //     info.ConnectionString = "ConnectionString";
-    //     info.JoinRestriction = XblMultiplayerActivityJoinRestriction.Public;
-    //     info.MaxPlayers = 4;
-    //     info.CurrentPlayers = 1;
-    //     info.GroupId = "PartyID";
-    //     info.Platform = XblMultiplayerActivityPlatform.All;
-
-    //     SDK.XBL.XblMultiplayerActivitySetActivityAsync(UserData.contextHandle, info, true,
-    //         (Int32 hresult) => 
-    //         {
-    //             if (HR.SUCCEEDED(hresult))
-    //                 Debug.Log($"Successfully Set Activity");
-    //             else
-    //                 Debug.Log($"Couldn't Set activity. HR {hresult}");
-    //         }
-    //     );
-
-    // }
-    
+#region Invites
     private void HandleReceivedInvite(IntPtr context, string inviteUri)
     {
         if (_earlyInviteHandlingCoroutine != null)
@@ -536,6 +412,37 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     {
         _activeControllerDeviceId = deviceId;
         _onUpdatedActiveController.Trigger(ActiveControllerDeviceId);
+    }
+#endif
+#endregion
+
+#region CleanUp
+    // TODO-Porting: This isn't even called, is it? Call when closing the game? Or closing handles is automatic?
+    ~GdkGameRuntimeService()
+    {
+        CleanUp();
+    }
+
+    private void CleanUp()
+    {
+        Debug.Log($"GDK CleanUp");
+        _onStartedCleanUp.Trigger();
+#if UNITY_GAMECORE
+        SDK.XUserUnregisterForDeviceAssociationChanged(_deviceAssociationChangedRegistrationToken, true);
+#endif
+        SDK.XGameInviteUnregisterForEvent(_inviteRegistrationToken);
+        SDK.XUserCloseHandle(UserData.userHandle);
+        SDK.XBL.XblContextCloseHandle(UserData.contextHandle);
+    }
+
+#if UNITY_EDITOR
+    private void EDITOR_CleanUp(PlayModeStateChange change)
+    {
+        if (change != PlayModeStateChange.ExitingPlayMode)
+            return;
+
+        CleanUp();
+        EditorApplication.playModeStateChanged -= EDITOR_CleanUp;
     }
 #endif
 #endregion
