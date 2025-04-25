@@ -427,6 +427,8 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     {
         Debug.Log($"GDK CleanUp");
         _onStartedCleanUp.Trigger();
+
+        ExternalCoroutine.StopCoroutine(_earlyInviteHandlingCoroutine);
 #if UNITY_GAMECORE
         SDK.XUserUnregisterForDeviceAssociationChanged(_deviceAssociationChangedRegistrationToken, true);
 #endif
