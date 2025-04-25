@@ -10,7 +10,7 @@ using UnityEngine;
 
 public static class CodeMetrics
 {
-    private static bool _inited;
+    private static bool _inited = false;
 #if LOG_ALL_METRICS || LOG_REPORT_ON_SUSPEND
 	static Dictionary<string,Stopwatch> _currentRunningMetrics = new();
 #endif
@@ -22,7 +22,7 @@ public static class CodeMetrics
 
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    static void Init()
+    static void Clear()
 	{
 		_inited = false;
 #if LOG_REPORT_ON_SUSPEND
