@@ -39,6 +39,11 @@ public static class CodeMetrics
 
     public static void Start( string code )
 	{
+		if (!ApplicationEventsRelay.IsMainThread())
+		{
+			UnityEngine.Debug.Log("<<<< Avoiding code metrics. Not in main thread");
+			return;
+		}
 		TryInit();
 #if LOG_ALL_METRICS || LOG_REPORT_ON_SUSPEND
 		_currentRunningMetrics[code] = StopwatchPool.RequestStarted();
@@ -58,6 +63,9 @@ public static class CodeMetrics
 
     public static void Finish( string code, string newNameToUse = null )
 	{
+		if (!ApplicationEventsRelay.IsMainThread())
+			return;
+			
 #if LOG_ALL_METRICS || LOG_REPORT_ON_SUSPEND
 		if( !_currentRunningMetrics.TryGetValue( code, out var sw ) ) return;
 		var ms = sw.ReturnToPoolAndGetElapsedMs();

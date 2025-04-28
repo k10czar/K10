@@ -1,8 +1,10 @@
 // #define LOG_EVENTS
+using System.Threading;
 using UnityEngine;
 
 public class ApplicationEventsRelay : MonoBehaviour
 {
+    private static Thread _mainThread;
     EventSlot _onQuit = new();
     BoolState _isFocused = new();
     BoolState _isPaused = new();
@@ -17,6 +19,9 @@ public class ApplicationEventsRelay : MonoBehaviour
 
     private void Awake()
     {
+        if (_mainThread == null)
+            _mainThread = Thread.CurrentThread;
+
 #if LOG_EVENTS
         Debug.Log( $"<color=magenta>ApplicationEventsRelay</color>.Awake()" );
 #endif
@@ -54,6 +59,14 @@ public class ApplicationEventsRelay : MonoBehaviour
 #endif //LOG_EVENTS
         }
 #endif //MICROSOFT_GDK && UNITY_GAMECORE
+    }
+
+    public static bool IsMainThread()
+    {
+        if (!HasInstance)
+            Eternal<ApplicationEventsRelay>.Request();
+
+        return _mainThread != null && _mainThread.Equals(Thread.CurrentThread);
     }
 
     private void OnApplicationQuit()
