@@ -2,6 +2,10 @@
 using System.Threading;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 public class ApplicationEventsRelay : MonoBehaviour
 {
     private static Thread _mainThread;
@@ -27,6 +31,10 @@ public class ApplicationEventsRelay : MonoBehaviour
 #endif
         _isFocused = new BoolState(Application.isFocused);
         _isPaused = new BoolState(!Application.isPlaying);
+
+#if UNITY_EDITOR
+        EditorApplication.playModeStateChanged += OnExitPlayMode;
+#endif
 
 #if MICROSOFT_GDK && UNITY_GAMECORE
         UnityEngine.GameCore.GameCorePLM.OnApplicationSuspendingEvent += OnApplicationSuspendingEvent;
@@ -102,5 +110,12 @@ public class ApplicationEventsRelay : MonoBehaviour
 #endif
         _onQuit?.Trigger();
     }
+#if UNITY_EDITOR
+    private void OnExitPlayMode(PlayModeStateChange change)
+    {
+        _isSuspended?.SetTrue();
+        _onQuit?.Trigger();
+    }
+#endif
 #endif
 }
