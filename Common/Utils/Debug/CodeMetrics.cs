@@ -41,7 +41,7 @@ public static class CodeMetrics
 	{
 		if (!ApplicationEventsRelay.IsMainThread())
 		{
-			UnityEngine.Debug.Log("<<<< Avoiding code metrics. Not in main thread");
+			// UnityEngine.Debug.Log("<<<< Avoiding code metrics. Not in main thread");
 			return;
 		}
 		TryInit();
