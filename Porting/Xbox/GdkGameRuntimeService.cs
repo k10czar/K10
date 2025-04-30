@@ -110,7 +110,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     public uint TitleIdNumeric { get; private set; } = 0;
 
     // Initialization
-    public GdkGameRuntimeService Instance => ServiceLocator.Get<GdkGameRuntimeService>();
+    public static GdkGameRuntimeService Instance => ServiceLocator.Get<GdkGameRuntimeService>();
     private BoolState _isInitialized = new BoolState( false );
     public IBoolStateObserver IsInitialized => _isInitialized;
     
@@ -155,6 +155,11 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     public IEventRegister<GXDKAppLocalDeviceId> OnUpdatedActiveController => _onUpdatedActiveController;
     private bool _showingPairControllerUI;
 #endif
+
+    public void ShowFriendData(ulong friendID)
+    {
+        SDK.XGameUiShowPlayerProfileCardAsync(_userData.userHandle, friendID, (result) => Debug.Log($"{result}"));
+    }
  
 #region Initialization
     public GdkGameRuntimeService( string titleId = "62ab3c24", string scid = "00000000-0000-0000-0000-000062ab3c24", string sandbox = "" )
