@@ -110,12 +110,13 @@ public class ApplicationEventsRelay : MonoBehaviour
 #endif
         _onQuit?.Trigger();
     }
+#endif
+
 #if UNITY_EDITOR
     private void OnExitPlayMode(PlayModeStateChange change)
     {
         _isSuspended?.SetTrue();
         _onQuit?.Trigger();
     }
-#endif
 #endif
 }
