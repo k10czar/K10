@@ -23,41 +23,41 @@ public class GdkUserData
 public class Privileges
 {
     public bool readed = false;
-    public readonly Privilege hasMultiplayerPrivilege = new();
-    public readonly Privilege hasCrossplayPrivilege = new();
-    public readonly Privilege hasUGCPrivilege = new();
-    public readonly Privilege hasCommunicationsPrivilege = new();
-    public readonly Privilege hasMultiplayerPartiesPrivilege = new();
-    public readonly Privilege hasSessionsPrivilege = new();
+    public readonly Privilege Multiplayer = new();
+    public readonly Privilege Crossplay = new();
+    public readonly Privilege UserGeneratedContent = new();
+    public readonly Privilege Communications = new();
+    public readonly Privilege MultiplayerParties = new();
+    public readonly Privilege Sessions = new();
 
     public class Privilege
     {
         public bool readed;
         public int hr;
         public XUserPrivilegeDenyReason denyReason;
-        public bool hasPrivilege;
+        public bool isEnabled;
     }
 
     public void ReadUserPrivileges( XUserHandle userHandle )
     {
         // TODO-Porting: Check which privileges are needed and actually store them in UserData
-        ReadPrivilege( userHandle, XUserPrivilege.Multiplayer, hasMultiplayerPrivilege );
-        ReadPrivilege( userHandle, XUserPrivilege.CrossPlay, hasCrossplayPrivilege );
-        ReadPrivilege( userHandle, XUserPrivilege.UserGeneratedContent, hasUGCPrivilege );
+        ReadPrivilege( userHandle, XUserPrivilege.Multiplayer, Multiplayer );
+        ReadPrivilege( userHandle, XUserPrivilege.CrossPlay, Crossplay );
+        ReadPrivilege( userHandle, XUserPrivilege.UserGeneratedContent, UserGeneratedContent );
 
         // TODO-Porting: Remove, should not be needed since we are removing the chat 
-        ReadPrivilege( userHandle, XUserPrivilege.Communications, hasCommunicationsPrivilege );
+        ReadPrivilege( userHandle, XUserPrivilege.Communications, Communications );
 
         // TODO-Porting: Check what those privileges actually mean
-        ReadPrivilege( userHandle, XUserPrivilege.MultiplayerParties, hasMultiplayerPartiesPrivilege );
-        ReadPrivilege( userHandle, XUserPrivilege.Sessions, hasSessionsPrivilege );
+        ReadPrivilege( userHandle, XUserPrivilege.MultiplayerParties, MultiplayerParties );
+        ReadPrivilege( userHandle, XUserPrivilege.Sessions, Sessions );
 
         readed = true;
     }
 
     int ReadPrivilege( XUserHandle userHandle, XUserPrivilege privilegeType, Privilege privilege )
     {
-        var hr = SDK.XUserCheckPrivilege(userHandle, XUserPrivilegeOptions.None, privilegeType, out privilege.hasPrivilege, out privilege.denyReason);
+        var hr = SDK.XUserCheckPrivilege(userHandle, XUserPrivilegeOptions.None, privilegeType, out privilege.isEnabled, out privilege.denyReason);
         
         var failed = HR.FAILED( hr );
         privilege.readed = !failed;
@@ -69,7 +69,7 @@ public class Privileges
             return hr;
         }
             
-        Debug.Log($"Check Privilege <color=magenta>{privilegeType}</color>:<color=cyan>{privilege.hasPrivilege}</color>. HR {hr} - {HR.NameOf(hr)}");
+        Debug.Log($"Check Privilege <color=magenta>{privilegeType}</color>:<color=cyan>{privilege.isEnabled}</color>. HR {hr} - {HR.NameOf(hr)}");
         return hr;
     }
 }
