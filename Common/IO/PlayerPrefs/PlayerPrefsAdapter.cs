@@ -15,11 +15,11 @@ public interface IPlayerPrefsAdapter
 
 public static class PlayerPrefsAdapter
 {
-    #if UNITY_GAMECORE
+#if UNITY_GAMECORE || MICROSOFT_GDK_SUPPORT
 	private static IPlayerPrefsAdapter _implementation = new FakeRuntimePlayerPrefs();
-    #else
+#else
 	private static IPlayerPrefsAdapter _implementation = new DefaultPlayerPrefs();
-    #endif
+#endif
 	
 	public static void SetImplementation(IPlayerPrefsAdapter implementation) { _implementation = implementation; }
 	
