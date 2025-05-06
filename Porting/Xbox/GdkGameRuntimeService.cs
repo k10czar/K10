@@ -22,7 +22,7 @@ public class GdkUserData
 #region Privileges
 public class Privileges
 {
-    public bool readed = false;
+    public bool AlreadyRead = false;
     public readonly Privilege Multiplayer = new();
     public readonly Privilege Crossplay = new();
     public readonly Privilege UserGeneratedContent = new();
@@ -52,7 +52,7 @@ public class Privileges
         ReadPrivilege( userHandle, XUserPrivilege.MultiplayerParties, MultiplayerParties );
         ReadPrivilege( userHandle, XUserPrivilege.Sessions, Sessions );
 
-        readed = true;
+        AlreadyRead = true;
     }
 
     int ReadPrivilege( XUserHandle userHandle, XUserPrivilege privilegeType, Privilege privilege )
@@ -329,9 +329,9 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
                 return;
             }
 
-            _isLogged.SetTrue();
             _gdkFileAdapter.Initialize(userHandle, Scid);
             InitializeUser(userHandle);
+            _isLogged.SetTrue();
         });
     }
 
