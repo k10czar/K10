@@ -174,7 +174,7 @@ namespace Skyx.SkyxEditor
             Colors.Console.Secondary.AddLight(-.2f), // Info
             Colors.Avocado.AddLight(-.2f), // Success
             Colors.Console.Warning.AddLight(-.4f).AddSaturation(-.1f), // Warning
-            Color.clear, // Danger
+            Colors.DarkRed, // Danger
             Color.clear, // Support
             Color.clear, // Special
         };
@@ -185,8 +185,8 @@ namespace Skyx.SkyxEditor
             Colors.Console.Dark,
             Color.white,
             Color.white,
-            Colors.Console.Warning.AddLight(.2f).WithAlpha(.2f), // Warning
-            Color.white,
+            Colors.Yellow, // Warning
+            Colors.LightSalmon,
             Color.white,
             Color.white,
         };
@@ -197,8 +197,8 @@ namespace Skyx.SkyxEditor
             "HelpBox", // Secondary
             "SelectionRect", // Info
             "U2D.createRect", // Success
-            "TE ElementBackground", // Warning
-            "flow node 6", // Danger
+            "HelpBox", // Warning
+            "HelpBox", // Danger
             "TE BoxBackground", // Support
             "ProgressBarBar", // Special
         };
