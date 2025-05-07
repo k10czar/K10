@@ -3,6 +3,9 @@
 #define LOG_REPORT_ON_SUSPEND
 #define LOG_REPORT_PARTIAL
 #endif
+#if LOG_ALL_METRICS || LOG_REPORT_ON_SUSPEND || LOG_REPORT_PARTIAL
+#define ENABLED
+#endif
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -13,6 +16,7 @@ public static class CodeMetrics
     private static bool _inited = false;
 #if LOG_ALL_METRICS || LOG_REPORT_ON_SUSPEND
 	static Dictionary<string,Stopwatch> _currentRunningMetrics = new();
+	static Dictionary<System.Threading.Thread,Dictionary<string,Stopwatch>> _currentRunningMetrics = new();
 #endif
 	static CodeMetricsReport _fullReport = new();
 	static CodeMetricsReport _partialReport = new();
@@ -30,7 +34,7 @@ public static class CodeMetrics
 #endif
 		_fullReport.Clear();
 		_partialReport.Clear();
-#if LOG_ALL_METRICS || LOG_REPORT_ON_SUSPEND
+#if ENABLED
 		_currentRunningMetrics.Clear();
 #endif
 	}
@@ -39,19 +43,20 @@ public static class CodeMetrics
 
     public static void Start( string code )
 	{
+#if ENABLED
 		if (!ApplicationEventsRelay.IsMainThread())
 		{
 			// UnityEngine.Debug.Log("<<<< Avoiding code metrics. Not in main thread");
 			return;
 		}
 		TryInit();
-#if LOG_ALL_METRICS || LOG_REPORT_ON_SUSPEND
 		_currentRunningMetrics[code] = StopwatchPool.RequestStarted();
 #endif
 	}
 
     private static void TryInit()
     {
+#if ENABLED
 		if( _inited ) return;
 		if( !Application.isPlaying ) return;
 		_inited = true;
@@ -59,19 +64,19 @@ public static class CodeMetrics
 		ApplicationEventsRelay.IsSuspended.RegisterOnTrue( _fullReport.DebugLog );
 		UnityEngine.Debug.Log( "Registered <color=#0080FF>CodeMetrics</color> Log when <color=#FF69B4>ApplcationQuit</color>" );
 #endif
+#endif
     }
 
     public static void Finish( string code, string newNameToUse = null )
 	{
+#if ENABLED
 		if (!ApplicationEventsRelay.IsMainThread())
 			return;
 			
-#if LOG_ALL_METRICS || LOG_REPORT_ON_SUSPEND
 		if( !_currentRunningMetrics.TryGetValue( code, out var sw ) ) return;
 		var ms = sw.ReturnToPoolAndGetElapsedMs();
 		_currentRunningMetrics.Remove( code );
 		var codeToUse = string.IsNullOrEmpty(newNameToUse) ? code : newNameToUse;
-#endif
 #if LOG_ALL_METRICS 
 		var logMessage = $"<color=#0080FF>CodeMetrics</color>: <color=#FF69B4>{codeToUse}</color> took <color=#DAA520>{ValueToString(ms)}ms</color>";
 		UnityEngine.Debug.Log( logMessage );
@@ -81,6 +86,7 @@ public static class CodeMetrics
 #endif
 #if LOG_REPORT_PARTIAL
 		_partialReport.Add( codeToUse, ms );
+#endif
 #endif
 	}
 
