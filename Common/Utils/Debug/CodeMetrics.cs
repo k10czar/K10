@@ -16,7 +16,7 @@ public static class CodeMetrics
     private static bool _inited = false;
 #if LOG_ALL_METRICS || LOG_REPORT_ON_SUSPEND
 	static Dictionary<string,Stopwatch> _currentRunningMetrics = new();
-	static Dictionary<System.Threading.Thread,Dictionary<string,Stopwatch>> _currentRunningMetrics = new();
+	// static Dictionary<System.Threading.Thread,Dictionary<string,Stopwatch>> _currentRunningMetrics = new();
 #endif
 	static CodeMetricsReport _fullReport = new();
 	static CodeMetricsReport _partialReport = new();
