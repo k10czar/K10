@@ -71,6 +71,9 @@ public class ApplicationEventsRelay : MonoBehaviour
 
     public static bool IsMainThread()
     {
+#if UNITY_EDITOR
+        if( !Application.isPlaying ) return false;
+#endif
         if (!HasInstance)
             Eternal<ApplicationEventsRelay>.Request();
 
