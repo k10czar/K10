@@ -280,7 +280,7 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 #if UNITY_EDITOR
 
 #endif //UNITY_EDITOR
-		if( _id >= 0 && _assetRuntimeReference == null ) 
+		if( _id >= 0 && _assetRuntimeReference == null || (_assetRuntimeReference != null &&_assetRuntimeReference.HashID != _id )) 
 		{
 			var collection = GetCollection();
             if( collection == null ) return null;

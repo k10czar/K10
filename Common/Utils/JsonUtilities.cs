@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
-using UnityEngine;
 
 public static class JsonUtilities
 {
@@ -23,18 +22,19 @@ public static class JsonUtilities
 	public static string GenerateSavePath(string fileName, string fileExtension)
 		=> $"{DEBUG_FOLDER}{fileName}{fileExtension}";
 
-	public static string LogToJsonFile(this string rawJson, string suffix1 = "", string suffix2 = "", string environment = "")
+	public static void LogToJsonFile(this string rawJson, string suffix1 = "", string suffix2 = "", string environment = "")
 	{
+#if !UNITY_GAMECORE && !MICROSOFT_GDK_SUPPORT
 		var formattedJson = rawJson.FormatAsJson();
 
 		var fileName = GenerateLogFileName(suffix1, suffix2, environment);
 		var savePath = GenerateSavePath(fileName, ".json");
 
-		FileAdapter.SaveHasUTF8(savePath, formattedJson);
+		FileAdapter.SaveAsUTF8(savePath, formattedJson);
 #if UNITY_EDITOR
 		Debug.Log(fileName + ": " + formattedJson);
 #endif //UNITY_EDITOR
-		return fileName;
+#endif //UNITY_GAMECORE
 	}
 
 	private static readonly StringBuilder sb = new StringBuilder();
@@ -128,7 +128,7 @@ public static class JsonUtilities
 					var nextCode = 0;
 					var nextAscii = (int)nc;
 					if( nextAscii < CODES_LENGTH ) nextCode = codes[ nextAscii ];
-					
+
 					var nextClose = ( nextCode & closesCode ) != 0;
 					if( nextClose )
 					{

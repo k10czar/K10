@@ -41,8 +41,8 @@ namespace K10.EditorGUIExtention
 		public static bool Draw( Rect r, string iconName ) { return Draw( r, IconCache.Get( iconName ).Texture, DEFAULT_CHAR, DEFAULT_TOOLTIP, DEFAULT_FAIL_COLOR ); }
 		public static bool Draw( Rect r, string iconName, char failLetter ) { return Draw( r, IconCache.Get( iconName ).Texture, failLetter, DEFAULT_TOOLTIP, DEFAULT_FAIL_COLOR ); }
 		public static bool Draw( Rect r, string iconName, char failLetter, string tooltip, Color failColor ) { return Draw( r, IconCache.Get( iconName ).Texture, failLetter, tooltip, failColor ); }
-		public static bool Draw( Rect r, Texture2D texture ) { return Draw( r, texture, DEFAULT_CHAR, DEFAULT_TOOLTIP, DEFAULT_FAIL_COLOR ); }
-		public static bool Draw( Rect r, Texture2D texture, char failLetter, string tooltip, Color failColor )
+		public static bool Draw( Rect r, Texture texture ) { return Draw( r, texture, DEFAULT_CHAR, DEFAULT_TOOLTIP, DEFAULT_FAIL_COLOR ); }
+		public static bool Draw( Rect r, Texture texture, char failLetter, string tooltip, Color failColor )
 		{
 			var ret = false;
 			if( texture != null ) ret = GUI.Button( r, new GUIContent( texture, tooltip ), K10GuiStyles.basicStyle );
@@ -57,6 +57,12 @@ namespace K10.EditorGUIExtention
 
 		public static class Toggle
 		{
+			const string GREEN_LIGHT_ICON = UnityIcons.lightMeter_greenLight;
+			const string RED_LIGHT_ICON = UnityIcons.lightMeter_redLight;
+			const string TRAFFIC_LIGHT_OFF_ICON = UnityIcons.lightMeter_lightOff;
+			const string LIGHT_ICON_ON = UnityIcons.LampIconColored;
+			const string LIGHT_ICON_OFF = UnityIcons.LampIconGrey;
+
 			static Color DEFAULT_ON_FAIL_COLOR = Color.LerpUnclamped( Color.white, Color.green, .25f );
 			static Color DEFAULT_OFF_FAIL_COLOR = Color.LerpUnclamped( Color.white, Color.red, .25f );
 
@@ -69,14 +75,19 @@ namespace K10.EditorGUIExtention
 				return active;
 			}
 
-			public static bool TrafficLight( bool active, float size, string tooltip = "" ) { return Toggle.Layout( active, size, "greenLight", "redLight" ); }
-			public static bool Lamp( bool active, float size = 32, string tooltip = "" ) { return Toggle.Layout( active, size, "on", "off" ); }
+			public static bool GreenLight( bool active, float size, string tooltip = "" ) { return Toggle.Layout( active, size, GREEN_LIGHT_ICON, TRAFFIC_LIGHT_OFF_ICON ); }
+			public static bool TrafficLight( bool active, float size, string tooltip = "" ) { return Toggle.Layout( active, size, GREEN_LIGHT_ICON, RED_LIGHT_ICON ); }
+			public static bool Lamp( bool active, float size = 32, string tooltip = "" ) { return Toggle.Layout( active, size, LIGHT_ICON_ON, LIGHT_ICON_OFF ); }
 
 			public static bool Draw( Rect rect, bool active, string onIcon, string offIcon, string tooltip = "" )
 			{
 				if( IconButton.Draw( rect, active ? onIcon : offIcon, GetFailChar( active ), "", GetFailColor( active ) ) ) active = !active;
 				return active;
 			}
+
+			public static bool GreenLight( Rect rect, bool active, float size, string tooltip = "" ) { return Toggle.Draw( rect, active, GREEN_LIGHT_ICON, TRAFFIC_LIGHT_OFF_ICON ); }
+			public static bool TrafficLight( Rect rect, bool active, float size, string tooltip = "" ) { return Toggle.Draw( rect, active, GREEN_LIGHT_ICON, RED_LIGHT_ICON ); }
+			public static bool Lamp( Rect rect, bool active, float size = 32, string tooltip = "" ) { return Toggle.Draw( rect, active, LIGHT_ICON_ON, LIGHT_ICON_OFF ); }
 		}
 	}
 }

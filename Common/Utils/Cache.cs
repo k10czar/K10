@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections;
+using K10;
 using UnityEngine;
 
 public static class Cache
@@ -45,12 +46,12 @@ public static class Cache
 	public static List<GameObject> Add( GameObject reference, int copies , bool dontDestroyOnLoad = false)
 	{
 		var cacheList = RequestCacheList( reference );
-		
+
 		var parent = CacheParent;
-		
+
 		var template = GameObject.Instantiate( reference, Vector3.zero, Quaternion.identity, parent );
 		template.SetActive( false );
-				
+
 		cacheList.Add( template );
 
 		for (int i = 0; i < copies; i++)

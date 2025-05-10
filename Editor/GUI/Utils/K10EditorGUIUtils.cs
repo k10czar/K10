@@ -1,10 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEditor;
-using UnityEditorInternal;
-using System.Collections.Generic;
-using K10.EditorGUIExtention;
-using System.Linq;
 
 public static class K10EditorGUIUtils
 {

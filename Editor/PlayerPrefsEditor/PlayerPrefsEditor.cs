@@ -184,7 +184,7 @@ public class PlayerPrefsEditor : EditorWindow
 			PlayerPrefStore pref = playerPrefs[ i ];
 			if( pref.isMarkedForDelete )
 			{
-				PlayerPrefs.DeleteKey( pref.name );
+				PlayerPrefsAdapter.DeleteKey( pref.name );
 				playerPrefs.RemoveAt( i );
 				continue;
 			}
@@ -192,13 +192,13 @@ public class PlayerPrefsEditor : EditorWindow
 			switch( pref.value.type )
 			{
 				case PrefType.Int:
-					PlayerPrefs.SetInt( pref.name, pref.value.intValue );
+					PlayerPrefsAdapter.SetInt( pref.name, pref.value.intValue );
 				break;
 				case PrefType.Float:
-					PlayerPrefs.SetFloat( pref.name, pref.value.floatValue );
+					PlayerPrefsAdapter.SetFloat( pref.name, pref.value.floatValue );
 				break;
 				case PrefType.String:
-					PlayerPrefs.SetString( pref.name, pref.value.stringValue );
+					PlayerPrefsAdapter.SetString( pref.name, pref.value.stringValue );
 				break;
 			}
 			pref.Save();
@@ -232,10 +232,10 @@ public class PlayerPrefsEditor : EditorWindow
 			var val = key.GetValue( subkeyName );
             string sval = val.ToString();
 
-			if( !PlayerPrefs.HasKey( keyName ) ) Debug.LogWarning( keyName + " " + PlayerPrefs.HasKey( keyName ) );
-			else Debug.Log( keyName + " " + PlayerPrefs.HasKey( keyName ) );
+			if( !PlayerPrefsAdapter.HasKey( keyName ) ) Debug.LogWarning( keyName + " " + PlayerPrefsAdapter.HasKey( keyName ) );
+			else Debug.Log( keyName + " " + PlayerPrefsAdapter.HasKey( keyName ) );
 
-			if( !PlayerPrefs.HasKey( keyName ) ) continue;
+			if( !PlayerPrefsAdapter.HasKey( keyName ) ) continue;
 
 			// getting the type of the key is not supported in Mono with registry yet :(
 			// Have to infer type and guess...
@@ -243,11 +243,11 @@ public class PlayerPrefsEditor : EditorWindow
 			string newType = "";
 			bool couldBeInt = int.TryParse( sval, out testInt );
 
-			if( !float.IsNaN( PlayerPrefs.GetFloat( keyName, float.NaN ) ) )
+			if( !float.IsNaN( PlayerPrefsAdapter.GetFloat( keyName, float.NaN ) ) )
 			{
-				val = PlayerPrefs.GetFloat( keyName ).ToString();
+				val = PlayerPrefsAdapter.GetFloat( keyName ).ToString();
 				newType = "real";
-			} else if( couldBeInt && ( PlayerPrefs.GetInt( keyName, testInt - 10 ) == testInt ) )
+			} else if( couldBeInt && ( PlayerPrefsAdapter.GetInt( keyName, testInt - 10 ) == testInt ) )
 			{		
 				newType = "integer";		
 			} else

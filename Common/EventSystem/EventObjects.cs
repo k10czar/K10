@@ -1,10 +1,11 @@
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using K10;
 
 
+[UnityEngine.HideInInspector]
 public class EventSlot : IEvent, ICustomDisposableKill
 {
 	bool _killed = false;
@@ -46,7 +47,7 @@ public class EventSlot : IEvent, ICustomDisposableKill
 			}
 			catch (Exception exception)
 			{
-				Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
+				Debug.LogException(exception);
 			}
 		}
 
@@ -56,7 +57,7 @@ public class EventSlot : IEvent, ICustomDisposableKill
 	public void Kill()
 	{
 		_killed = true;
-		_listeners?.Clear();
+		Clear();
 		_listeners = null;
 	}
 
@@ -84,6 +85,7 @@ public class EventSlot : IEvent, ICustomDisposableKill
 	public override string ToString() { return $"[EventSlot:{EventsCount}]"; }
 }
 
+[UnityEngine.HideInInspector]
 public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 {
 	bool _killed = false;
@@ -97,6 +99,8 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
 	public int CountValidEvents => ( _generic?.CountValidEvents ?? 0 ) + _listeners.Count( ( et ) => et.IsValid );
 	public bool HasListeners => EventsCount > 0;
+
+	public static implicit operator EventSlot( EventSlot<T> v ) => Lazy.Request( ref v._generic );
 
 	public void Trigger( T t )
 	{
@@ -127,7 +131,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 				}
 				catch (Exception exception)
 				{
-					Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
+					Debug.LogException(exception);
 				}
 			}
 			ObjectPool<List<IEventTrigger<T>>>.Return( listenersToTrigger );
@@ -198,6 +202,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 	public override string ToString() { return $"[EventSlot<{typeof(T)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
 }
 
+[UnityEngine.HideInInspector]
 public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 {
 	bool _killed = false;
@@ -211,6 +216,8 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
 	public int CountValidEvents => ( _generic?.CountValidEvents ?? 0 ) + _listeners.Count( ( et ) => et.IsValid );
 	public bool HasListeners => EventsCount > 0;
+
+	public static implicit operator EventSlot<T>( EventSlot<T, K> v ) => Lazy.Request( ref v._generic );
 
 	public void Trigger( T t, K k )
 	{
@@ -241,7 +248,7 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 				}
 				catch (Exception exception)
 				{
-					Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
+					Debug.LogException(exception);
 				}
 			}
 			ObjectPool<List<IEventTrigger<T,K>>>.Return( listenersToTrigger );
@@ -325,6 +332,7 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
 }
 
+[UnityEngine.HideInInspector]
 public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 {
 	bool _killed = false;
@@ -338,6 +346,8 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
 	public int CountValidEvents => ( _generic?.CountValidEvents ?? 0 ) + _listeners.Count( ( et ) => et.IsValid );
 	public bool HasListeners => EventsCount > 0;
+
+	public static implicit operator EventSlot<T, K>( EventSlot<T, K, L> v ) => Lazy.Request( ref v._generic );
 
 	public void Trigger( T t, K k, L l )
 	{
@@ -368,7 +378,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 				}
 				catch (Exception exception)
 				{
-					Debug.LogError($"{exception.Message}\n{exception.StackTrace}");
+					Debug.LogException(exception);
 				}
 			}
 			ObjectPool<List<IEventTrigger<T, K, L>>>.Return( listenersToTrigger );
@@ -465,6 +475,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)},{typeof(L)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
 }
 
+[UnityEngine.HideInInspector]
 public class VoidableEventTrigger : IEventTrigger, ICustomDisposableKill
 {
 	IEventTrigger _trigger;
@@ -477,6 +488,7 @@ public class VoidableEventTrigger : IEventTrigger, ICustomDisposableKill
 	public void Kill() { _trigger = null; }
 }
 
+[UnityEngine.HideInInspector]
 public class VoidableEventTrigger<T> : IEventTrigger<T>, ICustomDisposableKill
 {
 	IEventTrigger<T> _trigger;
@@ -489,6 +501,7 @@ public class VoidableEventTrigger<T> : IEventTrigger<T>, ICustomDisposableKill
 	public void Kill() { _trigger = null; }
 }
 
+[UnityEngine.HideInInspector]
 public class VoidableEventTrigger<T, K> : IEventTrigger<T, K>, ICustomDisposableKill
 {
 	IEventTrigger<T, K> _trigger;
@@ -501,6 +514,7 @@ public class VoidableEventTrigger<T, K> : IEventTrigger<T, K>, ICustomDisposable
 	public void Kill() { _trigger = null; }
 }
 
+[UnityEngine.HideInInspector]
 public class VoidableEventTrigger<T, K, J> : IEventTrigger<T, K, J>, ICustomDisposableKill
 {
 	IEventTrigger<T, K, J> _trigger;

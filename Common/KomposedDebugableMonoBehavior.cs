@@ -5,6 +5,8 @@ public abstract class KomposedDebugableMonoBehavior : MonoBehaviour, IDrawGizmos
 {
     protected abstract IEnumerable<object> GetKomposedDebugableObjects();
 
+    protected virtual bool CanDrawGizmos => true;
+
     public IEnumerable<T> Foreach<T>()
     {
         foreach( var obj in GetKomposedDebugableObjects() ) if( obj is T t ) yield return t;

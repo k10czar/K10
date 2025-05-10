@@ -1,0 +1,27 @@
+{
+    "name": "DoTweenAnimationRigging",
+    "rootNamespace": "",
+    "references": [
+        "Unity.Animation.Rigging",
+        "DoTweenExtensions",
+        "K10"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "DOTWEEN",
+        "ANIMATION_RIGGING_ENABLED"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.animation.rigging",
+            "expression": "1.0",
+            "define": "ANIMATION_RIGGING_ENABLED"
+        }
+    ],
+    "noEngineReferences": false
+}

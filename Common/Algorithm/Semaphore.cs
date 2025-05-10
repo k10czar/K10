@@ -35,19 +35,19 @@ public static class ISemaphoreInterectionExtentions
 		return semaphore != null && !semaphore.Free;
 	}
 
-	public static void BlockOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> source ) 
+	public static void BlockOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> source )
 	{
 		source.Synchronize( semaphore.Validator.Validated<bool>( ( value ) => { if( value ) semaphore.Block( source ); else semaphore.Release( source ); } ) );
 	}
 
 	public static void ReleaseOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> source )
-	{ 
+	{
 		source.Synchronize( semaphore.Validator.Validated<bool>( ( value ) => { if( value ) semaphore.Release( source ); else semaphore.Block( source ); } ) );
 	}
 
 	// public static void BlockOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> source, Func<bool> eventValidation )
 	// {
-	// 	source.Synchronize( semaphore.Validator.LeakedValidated<bool>( ( value ) => { if( value ) semaphore.Block( source ); else semaphore.Release( source ); }, eventValidation ) ); 
+	// 	source.Synchronize( semaphore.Validator.LeakedValidated<bool>( ( value ) => { if( value ) semaphore.Block( source ); else semaphore.Release( source ); }, eventValidation ) );
 	// }
 
 	// public static void ReleaseOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> source, Func<bool> eventValidation )
@@ -132,6 +132,13 @@ public static class ISemaphoreInterectionExtentions
 		condition.RegisterOnFalse( validator.Validated( () => semaphore.Block( condition ), goLifetime ) );
 		goEvents.OnDestroy.Register( validator.Validated( new CallOnce( releaseLambda ) ) );
 	}
+
+	public static BoolState GetBoolObserver(this Semaphore semaphore)
+	{
+		var boolState = new BoolState();
+		semaphore.Synchronize(boolState);
+		return boolState;
+	}
 }
 
 public interface ISemaphore : ISemaphoreInfo, ISemaphoreInterection
@@ -140,14 +147,16 @@ public interface ISemaphore : ISemaphoreInfo, ISemaphoreInterection
 
 public class Semaphore : ISemaphore, ICustomDisposableKill
 {
-	public class SemaphoreObject { 
+	public class SemaphoreObject {
 		public int Value { get; set; }
 		public override string ToString() => Value.ToString();
 		public string NameDebug { get; set; }
 	}
 
-	private readonly Dictionary<object, SemaphoreObject> _semaphores = new Dictionary<object, SemaphoreObject>();
-	public bool Free { get { return _semaphores.Count == 0; } }
+	private readonly Dictionary<object, SemaphoreObject> _semaphores = new();
+	public bool Free => _semaphores.Count == 0;
+	public bool IsLocked => _semaphores.Count > 0;
+	public int BlockCount => _semaphores.Count;
 
 	// TODO: LazyOptimization
 	private EventSlot _blockEvent;
@@ -249,7 +258,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 				_semaphores.Add( obj, s );
 			}
 			s.Value++;
-			
+
 		}
 
 		if( trigger )
@@ -281,11 +290,11 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 			_releaseEvent?.Trigger();
 			_changeStateEvent?.Trigger( true );
 		}
-		
+
 		_onInteraction?.Trigger();
 	}
 
-	public void Clear()
+	public virtual void Clear()
 	{
 		var initialState = Free;
 		_semaphores.Clear();
@@ -294,6 +303,16 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 			_releaseEvent?.Trigger();
 			_changeStateEvent?.Trigger( true );
 		}
+	}
+
+	public void Reset()
+	{
+		_semaphores.Clear();
+
+		_blockEvent.Clear();
+		_releaseEvent.Clear();
+		_changeStateEvent.Clear();
+		_onInteraction.Clear();
 	}
 
 	string KeyName( object obj )
@@ -308,7 +327,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
     {
 		if(_semaphores.TryGetValue(key, out SemaphoreObject s))
 			return s.Value;
-		
+
 		return 0;
     }
 

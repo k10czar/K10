@@ -3,15 +3,16 @@ using UnityEngine;
 
 namespace Automation
 {
-    public class RunFromObject : IOperation
+    public class RunFromObject : IOperation, ISummarizable
 	{
-		[SerializeField] OperationObject _object;
+		[SerializeField,InlineProperties] OperationObject _object;
 
-		public IEnumerator ExecutionCoroutine() 
+		public IEnumerator ExecutionCoroutine( bool log = false ) 
 		{
-			if( _object != null ) yield return _object.ExecutionCoroutine();
+			if( _object != null ) yield return _object.ExecutionCoroutine( log );
 		}
 
-		public string GetSummaryColored() => $"📦 {"RunFromObject".Colorfy( Colors.Console.Fields )}";
+		public override string ToString() => $"📦 {nameof(RunFromObject)} {_object.ToStringOrNull()}";
+		public string Summarize() => _object.TrySummarize( ", " );
 	}
 }

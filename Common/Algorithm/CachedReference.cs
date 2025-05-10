@@ -4,9 +4,13 @@ using System;
 
 public interface ICachedReference<T> : IReferenceHolder<T>, IReferenceSetter<T> { } //where T : class
 
-public interface IReferenceHolder<T>
+public interface IReferenceHolderRaw<T>
 {
 	T CurrentReference { get; }
+}
+
+public interface IReferenceHolder<T> : IReferenceHolderRaw<T>
+{
 	IEventRegister<T,IEventValidator> OnReferenceSet { get; }
 	IEventRegister<T> OnReferenceRemove { get; }
 	IEventValidator Validator{ get; }

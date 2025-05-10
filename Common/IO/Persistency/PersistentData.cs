@@ -12,28 +12,38 @@ public interface IValueCapsule<T>
 //TO DO: Manage to update save on class fields an properties changes
 public class Persistent<T> : IValueCapsule<T> where T : class
 {
-	string _path;
+	string _realitvePath;
 	T _defaultValue = null;
 	T _t = null;
 	bool _readed = false;
 
+	public string PathToUse => FullPath( _realitvePath );
+	public static string FullPath( string realitvePath ) => FileAdapter.persistentDataPath + "/" + realitvePath;
+
 	static Dictionary<string, Persistent<T>> _dict = new Dictionary<string, Persistent<T>>();
 
-	public static Persistent<T> At( string path, T defaultValue = default(T) )
+	public static Persistent<T> At( string realitvePath, T defaultValue = default(T) )
 	{
 		Persistent<T> val;
-		if( !_dict.TryGetValue( path, out val ) )
+		if( !_dict.TryGetValue( realitvePath, out val ) )
 		{
-			val = new Persistent<T>( path, defaultValue );
-			_dict[path] = val;
+			val = new Persistent<T>( realitvePath, defaultValue );
+			_dict[realitvePath] = val;
 		}
 		return val;
 	}
 
-	Persistent( string path, T defaultValue = default(T) )
+	Persistent( string realitvePath, T defaultValue = default(T) )
 	{
 		_defaultValue = defaultValue;
-		_path = path;
+		_realitvePath = realitvePath;
+	}
+
+	public static void Clear( string realitvePath )
+	{
+		_dict.Remove( realitvePath );
+		var fullPath = FullPath( realitvePath );
+		if( FileAdapter.Exists( fullPath ) ) FileAdapter.Delete( fullPath );
 	}
 
 	public T Get
@@ -44,9 +54,9 @@ public class Persistent<T> : IValueCapsule<T> where T : class
 			{
 				_readed = true;
 				_t = _defaultValue;
-				if( FileAdapter.Exists( _path ) )
+				if( FileAdapter.Exists( PathToUse ) )
 				{
-					var readedData = FileAdapter.ReadAllBytes( _path );
+					var readedData = FileAdapter.ReadAllBytes( PathToUse );
 					if( readedData != null )
 						_t = BinaryAdapter.Deserialize<T>( readedData );
 				}
@@ -63,45 +73,47 @@ public class Persistent<T> : IValueCapsule<T> where T : class
 			if( _t == null || !( (T)_t ).Equals( value ) )
 			{
 				_t = value;
-				if( _t == null ) FileAdapter.Delete( _path );
-				else FileAdapter.WriteAllBytes( _path, BinaryAdapter.Serialize( value ) );
+				if( _t == null ) FileAdapter.Delete( PathToUse );
+				else FileAdapter.WriteAllBytes( PathToUse, BinaryAdapter.Serialize( value ) );
 			}
 		}
 	}
 }
 
+
 public class PersistentValue<T> : IValueCapsule<T> where T : struct, System.IComparable
 {
-	string _path;
+	string _realitvePath;
 	T? _t = null;
+
+	public string PathToUse => FullPath( _realitvePath );
+	static string FullPath( string realitvePath ) => FileAdapter.persistentDataPath + "/" + realitvePath;
 
 	static Dictionary<string, PersistentValue<T>> _dict = new Dictionary<string, PersistentValue<T>>();
 
-	public static bool Exists( string path ) { return _dict.ContainsKey( path ) || FileAdapter.Exists( path ); }
+	public static bool Exists( string realitvePath ) { return _dict.ContainsKey( realitvePath ) || FileAdapter.Exists( FullPath( realitvePath ) ); }
 
-
-	public static PersistentValue<T> At( string path, T startValue )
+	public static PersistentValue<T> At( string realitvePath, T startValue )
 	{
-		var has = PersistentValue<T>.Exists( path );
-		var ret = PersistentValue<T>.At( path );
+		var has = Exists( realitvePath );
+		var ret = At( realitvePath );
 		if( !has ) ret.Set = startValue;
 		return ret;
 	}
 
-	public static PersistentValue<T> At( string path )
+	public static PersistentValue<T> At( string realitvePath )
 	{
-		PersistentValue<T> val;
-		if( !_dict.TryGetValue( path, out val ) )
+		if( !_dict.TryGetValue( realitvePath, out var val ) )
 		{
-			val = new PersistentValue<T>( path );
-			_dict[path] = val;
+			val = new PersistentValue<T>( realitvePath );
+			_dict[realitvePath] = val;
 		}
 		return val;
 	}
 
-	PersistentValue( string path )
+	PersistentValue( string realitvePath )
 	{
-		_path = path;
+		_realitvePath = realitvePath;
 	}
 
 	public T Get
@@ -111,9 +123,10 @@ public class PersistentValue<T> : IValueCapsule<T> where T : struct, System.ICom
 			if( _t == null )
 			{
 				_t = default( T );
-				if( FileAdapter.Exists( _path ) )
+				var fullPath = PathToUse;
+				if( FileAdapter.Exists( fullPath ) )
 				{
-					var readedData = FileAdapter.ReadAllBytes( _path );
+					var readedData = FileAdapter.ReadAllBytes( fullPath );
 					if( readedData != null )
 						_t = BinaryAdapter.Deserialize<T>( readedData );
 				}
@@ -130,9 +143,9 @@ public class PersistentValue<T> : IValueCapsule<T> where T : struct, System.ICom
 			if( _t == null || !( (T)_t ).Equals( value ) )
 			{
 				_t = value;
-				// if( default( T ).Equals( value ) ) FileAdapter.Delete( _path );
+				// if( default( T ).Equals( value ) ) FileAdapter.Delete( PathToUse );
 				// else 
-				FileAdapter.WriteAllBytes( _path, BinaryAdapter.Serialize( value ) );
+				FileAdapter.WriteAllBytes( PathToUse, BinaryAdapter.Serialize( value ) );
 			}
 		}
 	}
@@ -207,8 +220,6 @@ public class PersistentValueState<T> : ValueState<T>, ISettingsValue where T : s
 	PersistentValue<T> _persistentData;
 
 	static Dictionary<string, PersistentValueState<T>> _dict = new Dictionary<string, PersistentValueState<T>>();
-
-	public static bool Exists( string path ) { return _dict.ContainsKey( path ) || FileAdapter.Exists( path ); }
 
 	public static PersistentValueState<T> At( string path, T startValue = default( T ) )
 	{

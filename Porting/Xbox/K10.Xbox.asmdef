@@ -1,0 +1,32 @@
+{
+    "name": "K10.Xbox",
+    "rootNamespace": "",
+    "references": [
+        "GUID:6ac568dd7a2af634895b6119885b2204",
+        "GUID:5ee1933b8c8d484ea7cb408c3d679e50",
+        "GUID:62a1c9e4730eb71469ffd94a6e355dd9"
+    ],
+    "includePlatforms": [
+        "Editor",
+        "GameCoreScarlett",
+        "GameCoreXboxOne",
+        "WindowsStandalone64",
+        "XboxOne"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "MICROSOFT_GDK"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.microsoft.gdk",
+            "expression": "0.0",
+            "define": "MICROSOFT_GDK"
+        }
+    ],
+    "noEngineReferences": false
+}

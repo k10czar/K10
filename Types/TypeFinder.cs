@@ -39,9 +39,20 @@ public static class TypeFinder
                         power *= 10;
                         it--;
                     }
-                    var types = GetTypesArray( typename.Substring( itLen + 1, typename.Length - ( itLen + 2 ) ), typesCount );
+                    var subName = typename.Substring( itLen + 1, typename.Length - ( itLen + 2 ) );
+                    var types = GetTypesArray( subName, typesCount );
                     // UnityEngine.Debug.Log( $"{typename} {"starts".Colorfy( Colors.Console.Verbs )} with {iterName} trying {string.Join<Type>(",",types)}" );
-                    return t.MakeGenericType( types );
+                    try
+                    {
+                        var gt = t.MakeGenericType( types );
+                        return gt;
+                    }
+                    catch( Exception e )
+                    {
+                        UnityEngine.Debug.LogError( $"{typename} GetTypesArray( {subName}, {typesCount} ) {"starts".Colorfy( Colors.Console.Verbs )} with {iterName} trying {string.Join<Type>(",",types)} throws {e}" );
+                        UnityEngine.Debug.LogException( e );
+                        continue;
+                    }
                 }
             }
         }
@@ -84,8 +95,9 @@ public static class TypeFinder
 
         if( _nameToTypeCache.TryGetValue( typename, out var type ) ) return type;
 
-		type = Type.GetType( typename ) ?? AppDomain.CurrentDomain.GetAssemblies()
-                                                    .GetGenericType( typename );;
+		type = Type.GetType( typename );
+        if( type == null ) type = AppDomain.CurrentDomain.GetAssemblies()
+                                    .GetGenericType( typename );;
 
         _nameToTypeCache.Add( typename, type );
 
@@ -98,9 +110,10 @@ public static class TypeFinder
 
         if( _nameToTypeCache.TryGetValue( typename, out var type ) ) return type;
 
-		type = Type.GetType( typename ) ?? AppDomain.CurrentDomain.GetAssemblies()
-                                                    .FirstOrDefault( a => string.Equals( assemblyName, a.GetName().Name, COMPARISON ) )?
-                                                    .GetGenericType( typename );
+		type = Type.GetType( typename );
+        if( type == null ) type = AppDomain.CurrentDomain.GetAssemblies()
+                                    .FirstOrDefault( a => string.Equals( assemblyName, a.GetName().Name, COMPARISON ) )?
+                                    .GetGenericType( typename );
 
         _nameToTypeCache.Add( typename, type );
 

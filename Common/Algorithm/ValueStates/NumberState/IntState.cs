@@ -11,7 +11,7 @@ public class IntState : INumericValueState<int>, ICustomDisposableKill
 
     public int Get() { return _value; }
 
-    public void Setter( int value )
+    public virtual void Setter( int value )
     {
         if( _value == value ) return;
         _value = value;
@@ -34,7 +34,7 @@ public class IntState : INumericValueState<int>, ICustomDisposableKill
 	}
 
     public IntState( int initialValue = default( int ) ) { _value = initialValue; }
-	
+
 
 	public override string ToString() { return $"IS({_value})"; }
 }

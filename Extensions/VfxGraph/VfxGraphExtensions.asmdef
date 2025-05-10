@@ -1,0 +1,25 @@
+{
+    "name": "VfxGraphExtensions",
+    "rootNamespace": "",
+    "references": [
+        "GUID:d04eb9c554ad44ceab303cecf0c0cf82",
+        "GUID:6ac568dd7a2af634895b6119885b2204"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "VFX_GRAPH_ENABLED"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.visualeffectgraph",
+            "expression": "15",
+            "define": "VFX_GRAPH_ENABLED"
+        }
+    ],
+    "noEngineReferences": false
+}

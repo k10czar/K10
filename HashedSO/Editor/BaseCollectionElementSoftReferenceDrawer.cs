@@ -42,7 +42,7 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
         var instance = ((BaseCollectionElementSoftReference)property.GetInstance());
         if(instance == null)
         {
-            EditorGUI.LabelField( area, "NULL" );
+            EditorGUI.LabelField( area, ConstsK10.NULL_STRING );
             return;
 		}
 		var assetType = instance.EDITOR_GetAssetType();

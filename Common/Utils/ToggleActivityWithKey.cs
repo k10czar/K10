@@ -26,12 +26,12 @@ public sealed class ToggleActivityWithKey : MonoBehaviour
 		bool hasAtLeastOneKeyDown = false;
 		foreach (var key in _keyCombination)
 		{
-			if (key == null || !Input.GetKey(key))
+			if (!Input.GetKey(key))
 				return false;
 
 			hasAtLeastOneKeyDown |= Input.GetKeyDown(key);
 		}
-		
+
 		return hasAtLeastOneKeyDown;
 	}
 

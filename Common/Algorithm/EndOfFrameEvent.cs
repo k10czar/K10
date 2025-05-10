@@ -1,3 +1,4 @@
+using K10;
 using UnityEngine;
 
 public class EndOfFrameEvent : IEventRequest
@@ -19,7 +20,7 @@ public class EndOfFrameEvent : IEventRequest
     System.Collections.IEnumerator RequestCoroutine()
     {
         yield return COROUTINE_WAIT;
-        if( _requested ) 
+        if( _requested )
         {
             _onEvent.Trigger();
             _requested = false;

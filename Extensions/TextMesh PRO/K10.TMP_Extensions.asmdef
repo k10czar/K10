@@ -1,5 +1,6 @@
 {
     "name": "K10.TMP_Extentions",
+    "rootNamespace": "",
     "references": [
         "Unity.TextMeshPro",
         "K10"
@@ -11,5 +12,6 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": []
+    "versionDefines": [],
+    "noEngineReferences": false
 }
