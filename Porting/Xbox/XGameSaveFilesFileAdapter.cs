@@ -12,19 +12,33 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 	public IBoolStateObserver IsInitilized => _isInitilized;
 
 	private string _folderPath;
+	private XUserHandle _userHandle;
+	private string _scid;
+	ConditionalEventsCollection _validator = new ();
 
     public void Initialize(XUserHandle userHandle, string scid)
     {
-        SDK.XGameSaveFilesGetFolderWithUiAsync(userHandle, scid, 
+		_userHandle = userHandle;
+		_scid = scid;
+
+		RetrieveSaveFolder();
+		
+		_validator.Void();
+		ApplicationEventsRelay.IsSuspended.RegisterOnFalse(_validator.Validated(RetrieveSaveFolder));
+    }
+
+	private void RetrieveSaveFolder()
+	{
+        SDK.XGameSaveFilesGetFolderWithUiAsync(_userHandle, _scid, 
             (int hresult, string folderResult) => 
             {
 				if (HR.FAILED(hresult))
 				{
 					Debug.LogError($"Couldn't get XGameSaveFiles folder. HResult {hresult} ({HR.NameOf(hresult)})");
-#if UNITY_EDITOR
-					_isInitilized.SetTrue();
-					// TODO-Porting Remove this when is really working on PC 
-#endif
+// #if UNITY_EDITOR
+// 					_isInitilized.SetTrue();
+// 					// TODO-Porting Remove this when is really working on PC 
+// #endif
 					return;
 				}
 
