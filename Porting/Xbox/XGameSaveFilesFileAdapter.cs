@@ -73,7 +73,7 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 			var creation = File.GetCreationTimeUtc( file );
 			var lastAccess = File.GetLastAccessTimeUtc( file );
 			var lastWrite = File.GetLastWriteTimeUtc( file );
-			sb.AppendLine( $"{file.Substring( path.Length )} ({creation:dd MMM yy HH:mm:ss}) ({lastWrite:dd MMM yy HH:mm:ss}) ({lastAccess:dd MMM yy HH:mm:ss})" );
+			sb.AppendLine( $"{file.Substring( path.Length )} {{{creation:dd MMM yy HH:mm:ss}}} ({lastWrite:dd MMM yy HH:mm:ss}) [{lastAccess:dd MMM yy HH:mm:ss}]" );
 		}
 
 		var folders = Directory.GetDirectories( path );
