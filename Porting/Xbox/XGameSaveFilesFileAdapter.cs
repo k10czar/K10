@@ -34,7 +34,7 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 				_isInitilized.SetTrue();
                 Debug.Log($"Successfully initialized XGameSaveFiles folder: {folderResult}");
 
-				// DebugFiles();
+				DebugFiles();
             }
         );
     }
