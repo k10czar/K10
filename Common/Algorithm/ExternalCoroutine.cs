@@ -33,6 +33,8 @@ public class ExternalCoroutine : MonoBehaviour
 
 	public static new void StopCoroutine( Coroutine coroutine )
 	{
+		if( coroutine == null ) return;
+		if( instance == null ) return;
 		TryCreateInstance();
 		instance.BaseStopCoroutine( coroutine );
 	}
