@@ -1,12 +1,78 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.Pool;
 
 namespace Skyx.SkyxEditor
 {
-    public class HeaderScope : GUI.Scope
+    public class HeaderScope : IDisposable
     {
-        public readonly bool isExpanded;
-        private readonly bool usesLayout;
+        #region Interface
+
+        public static HeaderScope Open(SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+            => Open(property, property.PrettyName(), color, size);
+
+        public static HeaderScope Open(SerializedProperty property, string title, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+        {
+            var scope = pool.Get();
+
+            scope.usesLayout = true;
+            scope.isExpanded = Begin(title, property, color, size);
+
+            return scope;
+        }
+
+        public static HeaderScope Open(string title, ref bool isExpandedRef, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+        {
+            var scope = pool.Get();
+
+            scope.isExpanded = isExpandedRef;
+            scope.usesLayout = true;
+
+            Begin(title, ref isExpandedRef, color, size, null);
+
+            return scope;
+        }
+
+        public static HeaderScope Open(ref Rect rect, SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+            => Open(ref rect, property, property.PrettyName(), color, size);
+
+        public static HeaderScope Open(ref Rect rect, SerializedProperty property, string title, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+        {
+            var scope = pool.Get();
+
+            scope.usesLayout = false;
+            scope.isExpanded = Begin(ref rect, title, property, color, size);
+
+            return scope;
+        }
+
+        public static HeaderScope Open(ref Rect rect, string title, ref bool isExpandedRef, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+        {
+            var scope = pool.Get();
+
+            scope.usesLayout = false;
+            scope.isExpanded = Begin(ref rect, title, ref isExpandedRef, color, size, null);
+
+            return scope;
+        }
+
+        #endregion
+
+        #region Instance Info
+
+        public bool isExpanded;
+        private bool usesLayout;
+
+        public void Dispose()
+        {
+            if (isExpanded && usesLayout) EditorGUILayout.EndVertical();
+            pool.Release(this);
+        }
+
+        #endregion
+
+        #region Drawers
 
         private static bool Begin(string title, SerializedProperty property, EColor color, EElementSize size)
         {
@@ -81,38 +147,13 @@ namespace Skyx.SkyxEditor
             return isExpandedRef;
         }
 
-        public HeaderScope(SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
-            : this(property, property.PrettyName(), color, size) {}
+        #endregion
 
-        public HeaderScope(SerializedProperty property, string title, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
-        {
-            usesLayout = true;
-            isExpanded = Begin(title, property, color, size);
-        }
+        #region Pool
 
-        public HeaderScope(string title, ref bool isExpandedRef, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
-        {
-            isExpanded = isExpandedRef;
-            usesLayout = true;
-            Begin(title, ref isExpandedRef, color, size, null);
-        }
+        private static readonly ObjectPool<HeaderScope> pool = new(CreateScope);
+        private static HeaderScope CreateScope() => new();
 
-        public HeaderScope(ref Rect rect, SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
-            : this(ref rect, property, property.PrettyName(), color, size) {}
-
-        public HeaderScope(ref Rect rect, SerializedProperty property, string title, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
-        {
-            isExpanded = Begin(ref rect, title, property, color, size);
-        }
-
-        public HeaderScope(ref Rect rect, string title, ref bool isExpandedRef, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
-        {
-            isExpanded = Begin(ref rect, title, ref isExpandedRef, color, size, null);
-        }
-
-        protected override void CloseScope()
-        {
-            if (isExpanded && usesLayout) EditorGUILayout.EndVertical();
-        }
+        #endregion
     }
 }

@@ -542,7 +542,7 @@ namespace Skyx.SkyxEditor
 
             Setup();
 
-            LogOwners = new Object[] { owner };
+            LogOwners = new[] { owner };
         }
 
         public Object[] LogOwners { get; }

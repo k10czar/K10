@@ -28,7 +28,7 @@ namespace Skyx.SkyxEditor
                     ? Colors.Console.SuccessBackground
                     : (isNumber ? Colors.Console.Success : Colors.Console.Danger);
 
-            using var backgroundColor = new BackgroundColorScope(color);
+            using var backgroundColor = BackgroundColorScope.Set(color);
 
             var currentIndex = Array.IndexOf(validValues, property.stringValue);
 
@@ -84,7 +84,7 @@ namespace Skyx.SkyxEditor
         public static void DrawObjectField(Rect rect, SerializedProperty property, Type objType, string hint = null, bool allowSceneObjects = false)
         {
             var backgroundColor = property.objectReferenceValue != null ? Colors.Console.Success : Colors.Console.Danger;
-            using var backgroundScope = new BackgroundColorScope(backgroundColor);
+            using var backgroundScope = BackgroundColorScope.Set(backgroundColor);
 
             property.objectReferenceValue = EditorGUI.ObjectField(rect, property.objectReferenceValue, objType, allowSceneObjects);
 
@@ -198,7 +198,7 @@ namespace Skyx.SkyxEditor
             var label = isExpandedProp.isExpanded ? "⇓" : ">";
             var backgroundColor = isExpandedProp.isExpanded ? Colors.Console.GrayOut : Colors.Console.DarkerGrayOut;
 
-            using var backgroundScope = new BackgroundColorScope(backgroundColor);
+            using var backgroundScope = BackgroundColorScope.Set(backgroundColor);
             EditorGUI.LabelField(extracted, label, SkyxStyles.ButtonStyle);
 
             var clicked = extracted.TryUseClick(false);
@@ -219,7 +219,7 @@ namespace Skyx.SkyxEditor
         {
             style ??= SkyxStyles.ButtonStyle;
 
-            using var backgroundScope = new BackgroundColorScope(backgroundColor);
+            using var backgroundScope = BackgroundColorScope.Set(backgroundColor);
             var result = GUI.Button(rect, label, style);
 
             if (!string.IsNullOrEmpty(hint)) DrawHintOverlay(rect, hint);
@@ -283,13 +283,13 @@ namespace Skyx.SkyxEditor
 
         public static void PlainBGLabel(Rect rect, string label, Color backgroundColor, bool isHeader = false, string hint = null)
         {
-            using var backgroundScope = new BackgroundColorScope(backgroundColor);
+            using var backgroundScope = BackgroundColorScope.Set(backgroundColor);
             EditorGUI.LabelField(rect, new GUIContent(label, hint), isHeader ? SkyxStyles.PlainBGHeader : SkyxStyles.PlainBGLabel);
         }
 
         public static void PlainBGLabel(Rect rect, string label, EColor color, EElementSize size)
         {
-            using var backgroundScope = new BackgroundColorScope(SkyxStyles.HeaderColor(color));
+            using var backgroundScope = BackgroundColorScope.Set(SkyxStyles.HeaderColor(color));
             EditorGUI.LabelField(rect, label, SkyxStyles.HeaderText(size));
         }
 

@@ -24,7 +24,7 @@ namespace Skyx.SkyxEditor
             title = string.IsNullOrEmpty(title) ? property.PrettyName() : title;
             newText = string.IsNullOrEmpty(newText) ? "New Entry" : newText;
 
-            using var scope = new HeaderScope(ref rect, property, title, color, size);
+            using var scope = HeaderScope.Open(ref rect, property, title, color, size);
             if (!scope.isExpanded) return;
 
             DrawElements(ref rect, property);

@@ -33,7 +33,7 @@ namespace Skyx.SkyxEditor
         {
             style ??= SkyxStyles.ButtonStyle;
 
-            using var backgroundScope = new BackgroundColorScope(backgroundColor);
+            using var backgroundScope = BackgroundColorScope.Set(backgroundColor);
             var result = GUILayout.Button(label, style, layouts);
 
             return result;
@@ -59,13 +59,13 @@ namespace Skyx.SkyxEditor
 
         public static void PlainBGLabel(string label, Color backgroundColor, bool isHeader = false, string hint = null)
         {
-            using var backgroundScope = new BackgroundColorScope(backgroundColor);
+            using var backgroundScope = BackgroundColorScope.Set(backgroundColor);
             GUILayout.Label(new GUIContent(label, hint), isHeader ? SkyxStyles.PlainBGHeader : SkyxStyles.PlainBGLabel);
         }
 
         public static void PlainBGLabel(string label, EColor color, EElementSize size, string hint = null)
         {
-            using var _ = new BackgroundColorScope(color.Get());
+            using var _ = BackgroundColorScope.Set(color.Get());
             GUILayout.Label(new GUIContent(label, hint), size.GetPlainBG(color));
         }
 

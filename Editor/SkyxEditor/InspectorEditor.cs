@@ -100,7 +100,7 @@ namespace Skyx.SkyxEditor
                 DrawRuntimeInfo();
                 SkyxLayout.Space();
 
-                using var scope = new HeaderScope("Configs", ref isConfigsExpanded);
+                using var scope = HeaderScope.Open("Configs", ref isConfigsExpanded);
                 if (scope.isExpanded) DrawConfigsInternal();
             }
             else
