@@ -1,4 +1,3 @@
-using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -95,44 +94,6 @@ namespace Skyx.SkyxEditor
 
         public static void Space() => EditorGUILayout.Space(SkyxStyles.ElementsMargin);
         public static void CompactSpace() => EditorGUILayout.Space(SkyxStyles.CompactSpace);
-
-        #endregion
-
-        #region Modules
-
-        public static bool ShouldShowBlock(string label, ref bool switchValue)
-            => ShouldShowBlock(label, ref switchValue, Colors.Console.Dark);
-
-        public static bool ShouldShowBlock(string label, string saveKey)
-        {
-            var switchValue = EditorPrefs.GetBool(saveKey);
-            ShouldShowBlock(label, ref switchValue, Colors.Console.Dark.Expanded(switchValue));
-            EditorPrefs.SetBool(saveKey, switchValue);
-
-            return switchValue;
-        }
-
-        public static bool ShouldShowBlock(string label, ref bool switchValue, Color color)
-        {
-            Separator(color, SkyxStyles.DefaultSeparatorSize, new Vector2(-3, -2));
-
-            if (PlainBGHeaderButton(label, color)) switchValue = !switchValue;
-            GUILayout.Space(3);
-
-            return switchValue;
-        }
-
-        public static void LeftPadding(Action drawer, int padding = 10)
-        {
-            EditorGUILayout.BeginHorizontal();
-            GUILayout.Space(padding);
-            EditorGUILayout.BeginVertical();
-
-            drawer();
-
-            EditorGUILayout.EndVertical();
-            EditorGUILayout.EndHorizontal();
-        }
 
         #endregion
     }

@@ -148,12 +148,12 @@ namespace Skyx.SkyxEditor
 
         #region Layout Draw
 
-        public void Draw(string propertyName)
+        public void Draw(string propertyName, bool isBacking = false)
         {
-            if (!TryGet(propertyName, out var property)) return;
+            if (!TryGet(propertyName, isBacking, out var property)) return;
 
             EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(property);
+            SkyxGUI.Draw(property);
             if (EditorGUI.EndChangeCheck()) property.Apply();
         }
 
@@ -167,21 +167,12 @@ namespace Skyx.SkyxEditor
             list.DoLayoutList();
         }
 
-        public void DrawBacking(string propertyName)
+        public void Draw(string propertyName, string label, bool isBacking = false)
         {
-            if (!TryGetBacking(propertyName, out var property)) return;
+            if (!TryGet(propertyName, isBacking, out var property)) return;
 
             EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(property);
-            if (EditorGUI.EndChangeCheck()) property.Apply();
-        }
-
-        public void Draw(string propertyName, string label)
-        {
-            if (!TryGet(propertyName, out var property)) return;
-
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(property, new GUIContent(label));
+            SkyxGUI.Draw(property, label);
             if (EditorGUI.EndChangeCheck()) property.Apply();
         }
 
@@ -208,7 +199,7 @@ namespace Skyx.SkyxEditor
             var property = Get(propertyName, isBacking);
 
             EditorGUI.BeginChangeCheck();
-            EditorGUI.PropertyField(rect, property, drawLabel ? null : GUIContent.none);
+            SkyxGUI.Draw(rect, property, drawLabel);
             if (EditorGUI.EndChangeCheck()) property.Apply();
 
             if (slideRect) rect.SlideSameRect();
@@ -226,7 +217,7 @@ namespace Skyx.SkyxEditor
         private static void Draw(ref Rect rect, SerializedProperty property, bool hasValue, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool alwaysDrawInlaid = false)
         {
             EditorGUI.BeginChangeCheck();
-            EditorGUI.PropertyField(rect, property, GUIContent.none);
+            SkyxGUI.Draw(rect, property);
             if (EditorGUI.EndChangeCheck()) property.Apply();
 
             SkyxGUI.DrawHintOverlay(rect, overlayHint ?? inlaidHint);
@@ -376,7 +367,7 @@ namespace Skyx.SkyxEditor
                 if (customDrawElement == null)
                 {
                     EditorGUI.BeginChangeCheck();
-                    EditorGUI.PropertyField(rect, innerProp, GUIContent.none);
+                    SkyxGUI.Draw(rect, innerProp);
                     if (EditorGUI.EndChangeCheck()) innerProp.Apply();
                 }
                 else customDrawElement(rect, index, isActive, isFocused);
@@ -451,9 +442,9 @@ namespace Skyx.SkyxEditor
             return total;
         }
 
-        public float GetPropertyHeight(string propertyName)
+        public float GetPropertyHeight(string propertyName, bool isBacking = false)
         {
-            if (!TryGet(propertyName, out var property)) return 0;
+            if (!TryGet(propertyName, isBacking, out var property)) return 0;
 
             return lists.TryGetValue(property, out var list)
                 ? list.GetHeight()
@@ -466,20 +457,7 @@ namespace Skyx.SkyxEditor
 
         public bool TryGet(string propertyName, bool isBacking, out SerializedProperty property)
         {
-            return isBacking ? TryGetBacking(propertyName, out property) : TryGet(propertyName, out property);
-        }
-
-        public bool TryGet(string propertyName, out SerializedProperty property)
-        {
-            if (properties.TryGetValue(propertyName, out property)) return true;
-
-            this.LogError($"{owner} does not contain {propertyName}");
-            return false;
-        }
-
-        public bool TryGetBacking(string propertyName, out SerializedProperty property)
-        {
-            propertyName = $"<{propertyName}>k__BackingField";
+            if (isBacking) propertyName = $"<{propertyName}>k__BackingField";
             if (properties.TryGetValue(propertyName, out property)) return true;
 
             this.LogError($"{owner} does not contain {propertyName}");

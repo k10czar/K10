@@ -12,7 +12,7 @@ namespace Skyx.SkyxEditor
 
         public static void DrawTextField(Rect rect, SerializedProperty property, string inlaidHint, string overlayHint = null)
         {
-            property.stringValue = EditorGUI.TextField(rect, property.stringValue);
+            property.stringValue = EditorGUI.DelayedTextField(rect, property.stringValue);
 
             DrawHintOverlay(rect, overlayHint ?? inlaidHint);
             if (string.IsNullOrEmpty(property.stringValue)) DrawHindInlaid(rect, inlaidHint);
@@ -47,7 +47,7 @@ namespace Skyx.SkyxEditor
             innerRect.ApplyStartMargin();
 
             EditorGUI.BeginChangeCheck();
-            property.stringValue = EditorGUI.TextField(innerRect, GUIContent.none, property.stringValue, SkyxStyles.DefaultLabel);
+            property.stringValue = EditorGUI.DelayedTextField(innerRect, GUIContent.none, property.stringValue, SkyxStyles.DefaultLabel);
             if (EditorGUI.EndChangeCheck()) property.Apply();
 
             DrawHintOverlay(innerRect, overlayHint ?? inlaidHint);
@@ -64,7 +64,7 @@ namespace Skyx.SkyxEditor
 
         public static void DrawIntField(Rect rect, SerializedProperty property, string hint)
         {
-            property.intValue = EditorGUI.IntField(rect, property.intValue);
+            property.intValue = EditorGUI.DelayedIntField(rect, property.intValue);
 
             DrawHintOverlay(rect, hint);
             if (property.intValue == 0)  DrawHindInlaid(rect, hint);
@@ -72,7 +72,7 @@ namespace Skyx.SkyxEditor
 
         public static void DrawFloatField(Rect rect, SerializedProperty property, string inlaidHint, bool alwaysVisible = true, string overlayHint = null)
         {
-            property.floatValue = EditorGUI.FloatField(rect, property.floatValue);
+            property.floatValue = EditorGUI.DelayedFloatField(rect, property.floatValue);
 
             DrawHintOverlay(rect, overlayHint ?? inlaidHint);
             if (property.floatValue == 0 || alwaysVisible) DrawHindInlaid(rect, inlaidHint);
@@ -138,6 +138,44 @@ namespace Skyx.SkyxEditor
                 DrawTextField(rect, property, drawInfo.hint);
 
             else throw new Exception("Unknown type");
+        }
+
+        public static void Draw(Rect rect, SerializedProperty property, bool drawLabel = false)
+        {
+            var label = drawLabel ? null : GUIContent.none;
+
+            switch (property.propertyType)
+            {
+                case SerializedPropertyType.String:
+                    EditorGUI.DelayedTextField(rect, property, label); break;
+
+                case SerializedPropertyType.Integer:
+                    EditorGUI.DelayedIntField(rect, property, label); break;
+
+                case SerializedPropertyType.Float:
+                    EditorGUI.DelayedFloatField(rect, property, label); break;
+
+                default: EditorGUI.PropertyField(rect, property, label); break;
+            }
+        }
+
+        public static void Draw(SerializedProperty property, string label = null)
+        {
+            var labelGUI = new GUIContent(label ?? property.displayName);
+
+            switch (property.propertyType)
+            {
+                case SerializedPropertyType.String:
+                    EditorGUILayout.DelayedTextField(property, labelGUI); break;
+
+                case SerializedPropertyType.Integer:
+                    EditorGUILayout.DelayedIntField(property, labelGUI); break;
+
+                case SerializedPropertyType.Float:
+                    EditorGUILayout.DelayedFloatField(property, labelGUI); break;
+
+                default: EditorGUILayout.PropertyField(property, labelGUI); break;
+            }
         }
 
         #endregion
