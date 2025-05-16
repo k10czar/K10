@@ -78,10 +78,10 @@ namespace Skyx.SkyxEditor
             if (property.floatValue == 0 || alwaysVisible) DrawHindInlaid(rect, inlaidHint);
         }
 
-        public static void DrawObjectField<T>(Rect rect, SerializedProperty property, string hint)
-            => DrawObjectField(rect, property, typeof(T), hint);
+        public static void DrawObjectField<T>(Rect rect, SerializedProperty property, string hint, bool allowSceneObjects = false)
+            => DrawObjectField(rect, property, typeof(T), hint, allowSceneObjects);
 
-        public static void DrawObjectField(Rect rect, SerializedProperty property, Type objType, string hint = null, bool allowSceneObjects = false)
+        private static void DrawObjectField(Rect rect, SerializedProperty property, Type objType, string hint = null, bool allowSceneObjects = false)
         {
             var backgroundColor = property.objectReferenceValue != null ? Colors.Console.Success : Colors.Console.Danger;
             using var backgroundScope = BackgroundColorScope.Set(backgroundColor);
@@ -144,6 +144,7 @@ namespace Skyx.SkyxEditor
         {
             var label = drawLabel ? null : GUIContent.none;
 
+            EditorGUI.BeginChangeCheck();
             switch (property.propertyType)
             {
                 case SerializedPropertyType.String:
@@ -157,6 +158,7 @@ namespace Skyx.SkyxEditor
 
                 default: EditorGUI.PropertyField(rect, property, label); break;
             }
+            if (EditorGUI.EndChangeCheck()) property.Apply();
         }
 
         public static void Draw(SerializedProperty property, string label = null)

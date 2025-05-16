@@ -197,11 +197,7 @@ namespace Skyx.SkyxEditor
         public void Draw(ref Rect rect, string propertyName, bool slideRect = true, bool isBacking = false, bool drawLabel = false)
         {
             var property = Get(propertyName, isBacking);
-
-            EditorGUI.BeginChangeCheck();
             SkyxGUI.Draw(rect, property, drawLabel);
-            if (EditorGUI.EndChangeCheck()) property.Apply();
-
             if (slideRect) rect.SlideSameRect();
         }
 
@@ -216,9 +212,7 @@ namespace Skyx.SkyxEditor
 
         private static void Draw(ref Rect rect, SerializedProperty property, bool hasValue, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool alwaysDrawInlaid = false)
         {
-            EditorGUI.BeginChangeCheck();
             SkyxGUI.Draw(rect, property);
-            if (EditorGUI.EndChangeCheck()) property.Apply();
 
             SkyxGUI.DrawHintOverlay(rect, overlayHint ?? inlaidHint);
             if (alwaysDrawInlaid || !hasValue) SkyxGUI.DrawHindInlaid(rect, inlaidHint);
@@ -244,9 +238,9 @@ namespace Skyx.SkyxEditor
             if (slideRect) rect.SlideSameRect();
         }
 
-        public void DrawObjectField<T>(ref Rect rect, string propertyName, string hint = null, bool slideRect = true, bool isBacking = false) where T: Object
+        public void DrawObjectField<T>(ref Rect rect, string propertyName, string hint = null, bool allowSceneObjects = false, bool slideRect = true, bool isBacking = false) where T: Object
         {
-            SkyxGUI.DrawObjectField<T>(rect, Get(propertyName, isBacking), hint);
+            SkyxGUI.DrawObjectField<T>(rect, Get(propertyName, isBacking), hint, allowSceneObjects);
             if (slideRect) rect.SlideSameRect();
         }
 
@@ -364,12 +358,7 @@ namespace Skyx.SkyxEditor
             {
                 var innerProp = property.GetArrayElementAtIndex(index);
 
-                if (customDrawElement == null)
-                {
-                    EditorGUI.BeginChangeCheck();
-                    SkyxGUI.Draw(rect, innerProp);
-                    if (EditorGUI.EndChangeCheck()) innerProp.Apply();
-                }
+                if (customDrawElement == null) SkyxGUI.Draw(rect, innerProp);
                 else customDrawElement(rect, index, isActive, isFocused);
 
                 if (rect.TryUseClick(true)) PropertyContextMenu.Open(innerProp);

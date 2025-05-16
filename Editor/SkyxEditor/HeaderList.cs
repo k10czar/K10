@@ -74,7 +74,7 @@ namespace Skyx.SkyxEditor
                 var element = property.GetArrayElementAtIndex(i);
 
                 var elementRect = rect;
-                elementRect.height = EditorGUI.GetPropertyHeight(element);
+                elementRect.height = SerializedRefLib.GetPropertyHeight(element, true);
 
                 var isHorizontalControl = elementRect.height < HorizontalThreshold;
                 var controlSize = (isHorizontalControl ? GetControlButtonCount(property, i, true) : 1) * SkyxStyles.ListControlButtonSize;
@@ -82,7 +82,7 @@ namespace Skyx.SkyxEditor
 
                 if (DrawElementControlButtons(buttonsRect, property, i, isHorizontalControl)) return;
 
-                EditorGUI.PropertyField(elementRect, element);
+                SerializedRefLib.DrawDefaultInspector(elementRect, element, true);
 
                 rect.y += elementRect.height + 2;
                 var separator = rect;
@@ -151,7 +151,7 @@ namespace Skyx.SkyxEditor
         {
             var total = property.arraySize * ExtraElementHeight;
             for (int i = 0; i < property.arraySize; i++)
-                total += EditorGUI.GetPropertyHeight(property.GetArrayElementAtIndex(i));
+                total += SerializedRefLib.GetPropertyHeight(property.GetArrayElementAtIndex(i), true);
 
             return total;
         }

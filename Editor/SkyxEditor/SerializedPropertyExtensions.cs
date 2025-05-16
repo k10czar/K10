@@ -14,6 +14,30 @@ namespace Skyx.SkyxEditor
         private static readonly Regex replaceRegex = new(@"\[\d+\]", RegexOptions.Compiled);
         private const BindingFlags Bindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
+        public static T GetParentValue<T>(this SerializedProperty property)
+        {
+            object obj = property.serializedObject.targetObject;
+            var path = property.propertyPath.Replace(".Array.data", "");
+            var fieldStructure = path.Split('.');
+            var targetType = typeof(T);
+
+            if (obj.GetType() == targetType) return (T) obj;
+
+            foreach (var pathPiece in fieldStructure)
+            {
+                if (pathPiece.Contains("["))
+                {
+                    var index = Convert.ToInt32(new string(pathPiece.Where(char.IsDigit).ToArray()));
+                    obj = GetFieldValueWithIndex(replaceRegex.Replace(pathPiece, ""), obj, index);
+                }
+                else obj = GetFieldValue(pathPiece, obj);
+
+                if (obj.GetType() == targetType) return (T) obj;
+            }
+
+            throw new Exception($"{targetType} was not found in property: {path}");
+        }
+
         public static object GetValue(this SerializedProperty property)
         {
             object obj = property.serializedObject.targetObject;
@@ -25,7 +49,7 @@ namespace Skyx.SkyxEditor
                 var pathPiece = fieldStructure[i];
                 if (pathPiece.Contains("["))
                 {
-                    int index = System.Convert.ToInt32(new string(pathPiece.Where(char.IsDigit).ToArray()));
+                    int index = Convert.ToInt32(new string(pathPiece.Where(char.IsDigit).ToArray()));
                     obj = GetFieldValueWithIndex(replaceRegex.Replace(pathPiece, ""), obj, index);
                 }
                 else obj = GetFieldValue(pathPiece, obj);
@@ -174,6 +198,9 @@ namespace Skyx.SkyxEditor
             property.serializedObject.Update();
             PropertyCollection.Release(property.serializedObject);
         }
+
+        public static SerializedProperty FindBackingProperty(this SerializedProperty property, string propertyName)
+            => property.FindPropertyRelative($"<{propertyName}>k__BackingField");
 
         #region JSON Manipulation
 

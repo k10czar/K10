@@ -22,17 +22,17 @@ public static class TypeFinder
         foreach( var t in assembly.GetTypes() )
         {
             var iterName = t.FullName;
-            if( typename.StartsWith( iterName, COMPARISON ) ) 
+            if( typename.StartsWith( iterName, COMPARISON ) )
             {
                 var tLen = typename.Length;
                 var itLen = iterName.Length;
                 if( tLen == itLen ) return t;
-                if( tLen > itLen ) 
+                if( tLen > itLen )
                 {
                     var typesCount = 0;
                     var it = itLen - 1;
                     var power = 1;
-                    while( it >= 0 && char.IsNumber( iterName[it] ) ) 
+                    while( it >= 0 && char.IsNumber( iterName[it] ) )
                     {
                         var digit = iterName[it] - '0';
                         typesCount += digit * power;
@@ -42,8 +42,11 @@ public static class TypeFinder
                     var subName = typename.Substring( itLen + 1, typename.Length - ( itLen + 2 ) );
                     var types = GetTypesArray( subName, typesCount );
                     // UnityEngine.Debug.Log( $"{typename} {"starts".Colorfy( Colors.Console.Verbs )} with {iterName} trying {string.Join<Type>(",",types)}" );
+
                     try
                     {
+                        if (!t.IsGenericType) continue;
+
                         var gt = t.MakeGenericType( types );
                         return gt;
                     }
@@ -58,10 +61,10 @@ public static class TypeFinder
         }
         return null;
     }
-    
+
     public static Type[] GetTypesArray( string typename, int count )
     {
-        UnityEngine.Debug.Log( $"{"GetTypesArray".Colorfy( Colors.Console.Verbs )}( {typename}, {count.ToStringColored( Colors.Console.Numbers)} )" );
+        // UnityEngine.Debug.Log( $"{"GetTypesArray".Colorfy( Colors.Console.Verbs )}( {typename}, {count.ToStringColored( Colors.Console.Numbers)} )" );
         var it = 0;
         var itA = 0;
         var len = typename.Length;
@@ -73,7 +76,7 @@ public static class TypeFinder
             while( level == 0 && itA < len && typename[itA] != '[' ) itA++;
             level++;
             itB = itA + 1;
-            while( level > 0 && itB < len ) 
+            while( level > 0 && itB < len )
             {
                 if( typename[itB] == '[' ) level++;
                 if( typename[itB] == ']' ) level--;
