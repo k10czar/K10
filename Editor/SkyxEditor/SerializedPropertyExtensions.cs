@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -10,145 +12,17 @@ namespace Skyx.SkyxEditor
 {
     public static class SerializedPropertyExtension
     {
-        private static readonly Regex isArrayEntryRegex = new(@"\.Array\.data\[\d+\]$", RegexOptions.Compiled);
-        private static readonly Regex replaceRegex = new(@"\[\d+\]", RegexOptions.Compiled);
-        private const BindingFlags Bindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+        #region Property Content Manipulation
 
-        public static T GetParentValue<T>(this SerializedProperty property)
+        public static void Apply(this SerializedProperty property, string reason = null) => PropertyCollection.Apply(property.serializedObject, reason ?? $"Modified {property.propertyPath}");
+
+        public static void PrepareForChanges(this SerializedProperty property, string reason) => Undo.RecordObject(property.serializedObject.targetObject, reason);
+
+        public static void ApplyDirectChanges(this SerializedProperty property, string reason)
         {
-            object obj = property.serializedObject.targetObject;
-            var path = property.propertyPath.Replace(".Array.data", "");
-            var fieldStructure = path.Split('.');
-            var targetType = typeof(T);
-
-            if (obj.GetType() == targetType) return (T) obj;
-
-            foreach (var pathPiece in fieldStructure)
-            {
-                if (pathPiece.Contains("["))
-                {
-                    var index = Convert.ToInt32(new string(pathPiece.Where(char.IsDigit).ToArray()));
-                    obj = GetFieldValueWithIndex(replaceRegex.Replace(pathPiece, ""), obj, index);
-                }
-                else obj = GetFieldValue(pathPiece, obj);
-
-                if (obj.GetType() == targetType) return (T) obj;
-            }
-
-            throw new Exception($"{targetType} was not found in property: {path}");
-        }
-
-        public static object GetValue(this SerializedProperty property)
-        {
-            object obj = property.serializedObject.targetObject;
-            string path = property.propertyPath.Replace(".Array.data", "");
-            string[] fieldStructure = path.Split('.');
-
-            for (int i = 0; i < fieldStructure.Length; i++)
-            {
-                var pathPiece = fieldStructure[i];
-                if (pathPiece.Contains("["))
-                {
-                    int index = Convert.ToInt32(new string(pathPiece.Where(char.IsDigit).ToArray()));
-                    obj = GetFieldValueWithIndex(replaceRegex.Replace(pathPiece, ""), obj, index);
-                }
-                else obj = GetFieldValue(pathPiece, obj);
-            }
-
-            return obj;
-        }
-
-        public static T GetValue<T>(this SerializedProperty property) where T : class
-            => GetValue(property) as T;
-
-        public static bool SetValue<T>(this SerializedProperty property, T value) where T : class
-        {
-            object obj = property.serializedObject.targetObject;
-            string path = property.propertyPath.Replace(".Array.data", "");
-            string[] fieldStructure = path.Split('.');
-            for (int i = 0; i < fieldStructure.Length - 1; i++)
-            {
-                if (fieldStructure[i].Contains("["))
-                {
-                    int index = System.Convert.ToInt32(new string(fieldStructure[i].Where(char.IsDigit).ToArray()));
-                    obj = GetFieldValueWithIndex(replaceRegex.Replace(fieldStructure[i], ""), obj, index);
-                }
-                else
-                {
-                    obj = GetFieldValue(fieldStructure[i], obj);
-                }
-            }
-
-            string fieldName = fieldStructure.Last();
-            if (fieldName.Contains("["))
-            {
-                int index = System.Convert.ToInt32(new string(fieldName.Where(char.IsDigit).ToArray()));
-                return SetFieldValueWithIndex(replaceRegex.Replace(fieldName, ""), obj, index, value);
-            }
-            else
-            {
-                return SetFieldValue(fieldName, obj, value);
-            }
-        }
-
-        private static FieldInfo GetField(string fieldName, object obj)
-        {
-            var currentType = obj.GetType();
-            do
-            {
-                var field = currentType.GetField(fieldName, Bindings);
-                if (field != null) return field;
-
-                currentType = currentType.BaseType;
-            } while (currentType != null);
-
-            return null;
-        }
-
-        private static object GetFieldValue(string fieldName, object obj)
-        {
-            var field = GetField(fieldName, obj);
-            return field != null ? field.GetValue(obj) : default;
-        }
-
-        private static object GetFieldValueWithIndex(string fieldName, object obj, int index)
-        {
-            var field = GetField(fieldName, obj);
-            if (field == null) return default;
-
-            var list = field.GetValue(obj);
-            if (list.GetType().IsArray) return ((object[])list)[index];
-
-            return list is IEnumerable ? ((IList)list)[index] : default;
-        }
-
-        private static bool SetFieldValue(string fieldName, object obj, object value)
-        {
-            var field = GetField(fieldName, obj);
-            if (field == null) return false;
-
-            field.SetValue(obj, value);
-            return true;
-        }
-
-        private static bool SetFieldValueWithIndex(string fieldName, object obj, int index, object value)
-        {
-            var field = GetField(fieldName, obj);
-            if (field == null) return false;
-
-            object list = field.GetValue(obj);
-            if (list.GetType().IsArray)
-            {
-                ((object[])list)[index] = value;
-                return true;
-            }
-            else if (list is IEnumerable)
-            {
-                ((IList)list)[index] = value;
-                return true;
-            }
-
-            return false;
+            EditorUtility.SetDirty(property.serializedObject.targetObject);
+            property.serializedObject.Update();
+            PropertyCollection.Release(property.serializedObject);
         }
 
         public static object GenerateDefaultValue(this SerializedProperty property)
@@ -185,22 +59,176 @@ namespace Skyx.SkyxEditor
                 throw new ArgumentException($"Property is not an array element! {path}");
         }
 
+        #endregion
+
+        #region Reflection Getters / Setters
+
+        private static readonly Regex isArrayEntryRegex = new(@"\.Array\.data\[\d+\]$", RegexOptions.Compiled);
+        private static readonly Regex extractArrayPieceRegex = new(@"\[\d+\]", RegexOptions.Compiled);
+        private const BindingFlags Bindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+
+        private static readonly Dictionary<string, Type> propertyTypeCache = new();
+
+        public static T GetParentValue<T>(this SerializedProperty property)
+        {
+            object obj = property.serializedObject.targetObject;
+            var fieldStructure = GetPathStructure(property);
+            var targetType = typeof(T);
+
+            if (obj.GetType() == targetType) return (T) obj;
+
+            foreach (var pathPiece in fieldStructure)
+            {
+                obj = pathPiece.Contains("[")
+                    ? GetFieldValueWithIndex(pathPiece, obj)
+                    : GetFieldValue(pathPiece, obj);
+
+                if (obj.GetType() == targetType) return (T) obj;
+            }
+
+            throw new Exception($"{targetType} was not found in property: {property.propertyPath}");
+        }
+
+        public static object GetValue(this SerializedProperty property)
+        {
+            object obj = property.serializedObject.targetObject;
+            var fieldStructure = GetPathStructure(property);
+
+            foreach (var pathPiece in fieldStructure)
+            {
+                obj = pathPiece.Contains("[")
+                    ? GetFieldValueWithIndex(pathPiece, obj)
+                    : GetFieldValue(pathPiece, obj);
+            }
+
+            return obj;
+        }
+
+        public static T GetValue<T>(this SerializedProperty property) where T : class => GetValue(property) as T;
+
+        public static bool SetValue<T>(this SerializedProperty property, T value) where T : class
+        {
+            object obj = property.serializedObject.targetObject;
+            var fieldStructure = GetPathStructure(property);
+
+            for (var index = 0; index < fieldStructure.Length - 1; index++)
+            {
+                var pathPiece = fieldStructure[index];
+                obj = pathPiece.Contains("[")
+                    ? GetFieldValueWithIndex(pathPiece, obj)
+                    : GetFieldValue(pathPiece, obj);
+            }
+
+            var lastPathPiece = fieldStructure.Last();
+            return lastPathPiece.Contains("[")
+                ? SetFieldValueWithIndex(lastPathPiece, obj, value)
+                : SetFieldValue(lastPathPiece, obj, value);
+        }
+
+        public static Type GetCachedType(this SerializedProperty property)
+        {
+            var cacheKey = GetFieldInfoCacheKey(property);
+            if (propertyTypeCache.TryGetValue(cacheKey, out var cachedType)) return cachedType;
+
+            var value = GetValue(property);
+            var type = value.GetType();
+
+            propertyTypeCache[cacheKey] = type;
+
+            return type;
+        }
+
+        private static FieldInfo GetField(string fieldName, object obj)
+        {
+            var currentType = obj.GetType();
+            do
+            {
+                var field = currentType.GetField(fieldName, Bindings);
+                if (field != null) return field;
+
+                currentType = currentType.BaseType;
+            } while (currentType != null);
+
+            return null;
+        }
+
+        private static object GetFieldValue(string fieldName, object obj)
+        {
+            var field = GetField(fieldName, obj);
+            return field != null ? field.GetValue(obj) : default;
+        }
+
+        private static object GetFieldValueWithIndex(string pathPiece, object obj)
+        {
+            var fieldName = extractArrayPieceRegex.Replace(pathPiece, "");
+            var index = GetPathDigit(pathPiece);
+
+            var field = GetField(fieldName, obj);
+            if (field == null) return default;
+
+            var list = field.GetValue(obj);
+            if (list.GetType().IsArray) return ((object[])list)[index];
+
+            return list is IEnumerable ? ((IList)list)[index] : default;
+        }
+
+        private static bool SetFieldValue(string fieldName, object obj, object value)
+        {
+            var field = GetField(fieldName, obj);
+            if (field == null) return false;
+
+            field.SetValue(obj, value);
+            return true;
+        }
+
+        private static bool SetFieldValueWithIndex(string pathPiece, object obj, object value)
+        {
+            var fieldName = extractArrayPieceRegex.Replace(pathPiece, "");
+            var index = GetPathDigit(pathPiece);
+
+            var field = GetField(fieldName, obj);
+            if (field == null) return false;
+
+            var list = field.GetValue(obj);
+
+            if (list.GetType().IsArray)
+            {
+                ((object[])list)[index] = value;
+                return true;
+            }
+
+            if (list is IEnumerable)
+            {
+                ((IList)list)[index] = value;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static int GetPathDigit(string pathPiece) => Convert.ToInt32(new string(pathPiece.Where(char.IsDigit).ToArray()));
+
+        private static string[] GetPathStructure(SerializedProperty property) => property.propertyPath.Replace(".Array.data", "").Split('.');
+
+        private static string GetFieldInfoCacheKey(SerializedProperty property)
+        {
+            var targetType = property.serializedObject.targetObject.GetType();
+            var normalizedPath = extractArrayPieceRegex.Replace(property.propertyPath, "[]");
+
+            return $"{targetType.FullName}.{normalizedPath}";
+        }
+
+        #endregion
+
+        #region Utils
+
         public static bool IsArrayEntry(this SerializedProperty property) => isArrayEntryRegex.IsMatch(property.propertyPath);
         public static string PrettyName(this SerializedProperty property) => ObjectNames.NicifyVariableName(property.name);
 
-        public static void Apply(this SerializedProperty property, string reason = null) => PropertyCollection.Apply(property.serializedObject, reason ?? $"Modified {property.propertyPath}");
-
-        public static void PrepareForChanges(this SerializedProperty property, string reason) => Undo.RecordObject(property.serializedObject.targetObject, reason);
-
-        public static void ApplyDirectChanges(this SerializedProperty property, string reason)
-        {
-            EditorUtility.SetDirty(property.serializedObject.targetObject);
-            property.serializedObject.Update();
-            PropertyCollection.Release(property.serializedObject);
-        }
-
         public static SerializedProperty FindBackingProperty(this SerializedProperty property, string propertyName)
             => property.FindPropertyRelative($"<{propertyName}>k__BackingField");
+
+        #endregion
 
         #region JSON Manipulation
 

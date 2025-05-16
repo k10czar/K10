@@ -284,6 +284,20 @@ namespace Skyx.SkyxEditor
             list.DoList(rect);
         }
 
+        public void DrawAllExcept(ref Rect rect, params string[] except)
+        {
+            foreach (var key in properties.Keys)
+            {
+                if (except.Contains(key)) continue;
+
+                var target = properties[key];
+
+                rect.height = EditorGUI.GetPropertyHeight(target, true);
+                SkyxGUI.Draw(rect, target, true);
+                rect.y += rect.height + SkyxStyles.ElementsMargin;
+            }
+        }
+
         #endregion
 
         #region Lists
@@ -414,7 +428,7 @@ namespace Skyx.SkyxEditor
 
         #region Getters
 
-        public float GetHeight(params string[] excludeFields)
+        public float GetTotalHeightExcluding(params string[] excludeFields)
         {
             var total = 0f;
 
@@ -422,7 +436,7 @@ namespace Skyx.SkyxEditor
             {
                 if (excludeFields.Contains(field)) continue;
 
-                total += EditorGUIUtility.standardVerticalSpacing;
+                total += SkyxStyles.ElementsMargin;
 
                 if (lists.TryGetValue(property, out var list)) total += list.GetHeight();
                 else total += EditorGUI.GetPropertyHeight(property, true);
@@ -475,18 +489,17 @@ namespace Skyx.SkyxEditor
             var fromObject = string.IsNullOrEmpty(propertyPath);
             var rootProperty = fromObject ? root.GetIterator() : root.FindProperty(propertyPath);
 
-            var currentProperty = rootProperty.Copy();
-            if (!currentProperty.NextVisible(true)) return;
+            var iterator = rootProperty.Copy();
+            if (!iterator.NextVisible(true)) return;
 
-            var nextSiblingProperty = rootProperty.Copy();
-            if (!fromObject) nextSiblingProperty.NextVisible(false);
-
+            var endProperty = rootProperty.Copy();
+            if (!fromObject) endProperty.NextVisible(false);
             do
             {
-                if (SerializedProperty.EqualContents(currentProperty, nextSiblingProperty)) break;
-                properties.Add(currentProperty.name, currentProperty.Copy());
+                if (SerializedProperty.EqualContents(iterator, endProperty)) break;
+                properties.Add(iterator.name, iterator.Copy());
             }
-            while (currentProperty.NextVisible(false));
+            while (iterator.NextVisible(false));
         }
 
         private void Reset(SerializedObject newRoot)

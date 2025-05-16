@@ -1,7 +1,6 @@
 using System.Collections.Generic;
-using UnityEngine;
 
-public class TypeListDataCache
+public static class TypeListDataCache
 {
     static Dictionary<System.Type,TypeListData> _data = null;
     static Dictionary<(System.Type,System.Type),TypeListData> _doubleData = null;
