@@ -11,9 +11,4 @@ namespace Skyx.SkyxEditor
 
         public static GUIStyle Invisible(this GUIStyle style) => new(style) { normal = { textColor = Color.clear } };
     }
-
-    public static class ColorExtensions
-    {
-        public static string RGB(this Color color) => ColorUtility.ToHtmlStringRGB(color);
-    }
 }

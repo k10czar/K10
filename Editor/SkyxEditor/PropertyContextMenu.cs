@@ -100,13 +100,7 @@ namespace Skyx.SkyxEditor
             parent.InsertArrayElementAtIndex(index);
             parent.Apply();
 
-            selectedProperty.PrepareForChanges($"Insert element above {selectedDisplayInfo}");
-
-            var newElement = parent.GetArrayElementAtIndex(index);
-            var defaultValue = selectedProperty.GenerateDefaultValue();
-            newElement.SetValue(defaultValue);
-
-            selectedProperty.ApplyDirectChanges($"Insert element above {selectedDisplayInfo}");
+            ResetElement(parent.GetArrayElementAtIndex(index), $"Insert element above {selectedDisplayInfo}");
         }
 
         private static void OnInsertElementBelow()
@@ -115,12 +109,24 @@ namespace Skyx.SkyxEditor
             parent.InsertArrayElementAtIndex(index);
             parent.Apply();
 
-            selectedProperty.PrepareForChanges($"Insert element below {selectedDisplayInfo}");
+            ResetElement(parent.GetArrayElementAtIndex(index + 1), $"Insert element below {selectedDisplayInfo}");
+        }
 
-            var newElement = parent.GetArrayElementAtIndex(index + 1);
-            newElement.SetValue(selectedProperty.GenerateDefaultValue());
+        private static void ResetElement(SerializedProperty newElement, string reason)
+        {
+            if (newElement.IsManagedRef())
+            {
+                newElement.managedReferenceValue = null;
+                newElement.Apply();
 
-            selectedProperty.ApplyDirectChanges($"Insert element below {selectedDisplayInfo}");
+                EditorUtils.RunOnSceneOnce(() => SerializedRefLib.DrawTypePickerMenu(newElement));
+            }
+            else
+            {
+                selectedProperty.PrepareForChanges(reason);
+                newElement.SetValue(selectedProperty.GenerateDefaultValue());
+                selectedProperty.ApplyDirectChanges(reason);
+            }
         }
 
         private static void OnDuplicateElement()

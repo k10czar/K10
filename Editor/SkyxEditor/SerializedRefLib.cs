@@ -14,6 +14,12 @@ namespace Skyx.SkyxEditor
         {
             if (property.IsManagedRef())
             {
+                if (property.managedReferenceValue == null)
+                {
+                    DrawMissingSerializedRef(ref rect, property);
+                    return;
+                }
+
                 var customDrawer = GetCachedPropertyDrawer(property);
                 if (customDrawer != null) customDrawer.OnGUI(rect, property, new GUIContent(label));
                 else if (boxManagedReferences) DrawManagedReferenceBoxed(ref rect, property, label);
@@ -21,6 +27,9 @@ namespace Skyx.SkyxEditor
             }
             else SkyxGUI.Draw(rect, property, true);
         }
+
+        private static void DrawMissingSerializedRef(ref Rect rect, SerializedProperty property)
+            => DrawTypePickerButton(ref rect, "MISSING REFERENCE!", property, EColor.Danger);
 
         private static void DrawManagedReferenceBoxed(ref Rect rect, SerializedProperty property, string label)
         {
@@ -59,6 +68,8 @@ namespace Skyx.SkyxEditor
 
         private static float CalculateManagedRefHeight(SerializedProperty property, bool boxManagedReferences)
         {
+            if (property.managedReferenceValue == null) return SkyxStyles.FullLineHeight;
+
             var customDrawer = GetCachedPropertyDrawer(property);
             if (customDrawer != null) return customDrawer.GetPropertyHeight(property, null);
 
@@ -85,63 +96,32 @@ namespace Skyx.SkyxEditor
 
         #region Pickers
 
-        private static readonly Dictionary<Type, GenericMenu> menuCache = new();
         private static Action<Type> currentCallback;
 
-        private static GenericMenu GetTypePickerMenu(Type target, Action<Type> onSelection)
+        public static void DrawTypePickerMenu(SerializedProperty property, Action<SerializedProperty> newElementSetup = null)
         {
-            currentCallback = onSelection;
-            if (menuCache.TryGetValue(target, out var menu)) return menu;
+            var mousePos = Event.current.mousePosition;
+            var rect = new Rect(mousePos.x, mousePos.y, 1, 1);
 
-            var newMenu = new GenericMenu();
+            DrawTypePickerMenu(rect, property, newElementSetup);
+        }
 
-            newMenu.AddItem(new GUIContent("None"), false, () => currentCallback(null));
+        public static void DrawTypePickerMenu(Rect rect, SerializedProperty property, Action<SerializedProperty> newElementSetup = null)
+        {
+            ClassTreePicker.Draw(rect, property.GetManagedType(), property.managedReferenceValue?.GetType(), OnTypeSelected);
 
-            var listing = TypeListDataCache.GetFrom(target);
-            var candidates = listing.GetTypes();
-            var guis = listing.GetGUIs();
-
-            for (var index = 0; index < candidates.Length; index++)
+            void OnTypeSelected(Type newSelection)
             {
-                var candidate = candidates[index];
-                var gui = guis[index];
-
-                newMenu.AddItem(gui, false, () => currentCallback(candidate));
+                property.SetNewReferenceType(newSelection, true);
+                newElementSetup?.Invoke(property);
             }
-
-            menuCache[target] = newMenu;
-            return newMenu;
         }
 
-        public static void DrawTypePickerMenu(SerializedProperty property, Action<SerializedProperty> newElementSetup)
-            => DrawTypePickerMenu(property.GetManagedType(), selectedType =>
-            {
-                property.SetNewReferenceType(selectedType, true);
-                newElementSetup.Invoke(property);
-            });
-
-        public static void DrawTypePickerMenu(Type pickerTarget, Action<Type> onSelection)
+        public static void DrawTypePickerButton(ref Rect rect, string label, SerializedProperty property, EColor color)
         {
-            var menu = GetTypePickerMenu(pickerTarget, onSelection);
-            menu.ShowAsContext();
-        }
-
-        public static void DrawTypePickerButton(ref Rect rect, string label, Type pickerTarget, Action<Type> onSelection)
-        {
-            if (EditorGUI.DropdownButton(rect, new GUIContent(label), FocusType.Keyboard))
-                DrawTypePickerMenu(pickerTarget, onSelection);
-        }
-
-        public static bool DrawTypePickerButton(ref Rect rect, Type pickerTarget, Type currentSelection, out Type newSelection)
-        {
-            var listing = TypeListDataCache.GetFrom(pickerTarget);
-            var candidates = listing.GetTypes();
-
-            var currentIndex = Array.IndexOf(candidates, currentSelection);
-            var newIndex = EditorGUI.Popup(rect, currentIndex, listing.GetGUIs());
-
-            newSelection = candidates[newIndex];
-            return newIndex != currentIndex;
+            using var backgroundScope = BackgroundColorScope.Set(color);
+            if (EditorGUI.DropdownButton(rect, new GUIContent(label), FocusType.Passive))
+                DrawTypePickerMenu(rect, property);
         }
 
         #endregion

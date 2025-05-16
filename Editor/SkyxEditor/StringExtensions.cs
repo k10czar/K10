@@ -13,7 +13,7 @@ namespace Skyx.SkyxEditor
             var targetColor = color.Get();
             var targetSize = isHeader ? SkyxStyles.DefaultFontSize : SkyxStyles.SmallFontSize;
 
-            return $"{baseString} | <color=#{targetColor.RGB()}><size={targetSize}>{infoString}</size></color>";
+            return $"{baseString} | <color={targetColor.ToHexRGB()}><size={targetSize}>{infoString}</size></color>";
         }
 
         public static string Pretty(this Enum value) => ObjectNames.NicifyVariableName(value.ToString());

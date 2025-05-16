@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-
 namespace Skyx.Trees
 {
     public class EnumTreeNode<T> : TreeNode<T> where T: Enum
@@ -18,7 +14,7 @@ namespace Skyx.Trees
         protected override TreeNodeInfo<T> GetNodeInfo(T value)
         {
 #if UNITY_EDITOR
-            var prettyName = ObjectNames.NicifyVariableName(value.ToString());
+            var prettyName = UnityEditor.ObjectNames.NicifyVariableName(value.ToString());
 #else
             var prettyName = value.ToString();
 #endif

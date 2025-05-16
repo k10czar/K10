@@ -67,7 +67,7 @@ namespace Skyx.SkyxEditor
             var instanceProperty = enumTreeType.GetProperty("Instance");
             var tree = instanceProperty!.GetMethod.Invoke(null, null);
 
-            var genericDropdownType = typeof(TreeAdvancedDropdown<>);
+            var genericDropdownType = typeof(EnumTreeAdvancedDropdown<>);
             var specificDropdownType = genericDropdownType.MakeGenericType(enumType);
             var dropdown = (AdvancedDropdown) Activator.CreateInstance(specificDropdownType, state, tree, property, callback);
 
@@ -76,7 +76,7 @@ namespace Skyx.SkyxEditor
         }
     }
 
-    internal class TreeAdvancedDropdown<T> : AdvancedDropdown where T : Enum
+    internal class EnumTreeAdvancedDropdown<T> : AdvancedDropdown where T : Enum
     {
         private readonly TreeNode<T> treeNode;
         private readonly SerializedProperty property;
@@ -85,7 +85,7 @@ namespace Skyx.SkyxEditor
         private readonly bool canCreateNodes;
         private readonly string enumDeclarationFilePath;
 
-        public TreeAdvancedDropdown(AdvancedDropdownState state, EnumTreeNode<T> treeNode, SerializedProperty property, Action<object> callback) : base(state)
+        public EnumTreeAdvancedDropdown(AdvancedDropdownState state, EnumTreeNode<T> treeNode, SerializedProperty property, Action<object> callback) : base(state)
         {
             this.treeNode = treeNode;
             this.property = property;
@@ -113,7 +113,7 @@ namespace Skyx.SkyxEditor
                 if (node.IsValid)
                 {
                     var isSelected = property?.intValue == (int)(object)node.Value;
-                    dropdown.AddChild(new TreeAdvancedDropdownItem<T>(node, isSelected));
+                    dropdown.AddChild(new EnumTreeAdvancedDropdownItem<T>(node, isSelected));
                     hasValidChildren = true;
                 }
 
@@ -130,13 +130,13 @@ namespace Skyx.SkyxEditor
             if (canCreateNodes)
             {
                 dropdown.AddSeparator();
-                dropdown.AddChild(new NewNodeAdvancedDropdownItem<T>(currentTreeNode));
+                dropdown.AddChild(new NewEnumNodeAdvancedDropdownItem<T>(currentTreeNode));
             }
 
             return dropdown;
         }
 
-        private void TreeNodeSelected(TreeAdvancedDropdownItem<T> treeItem)
+        private void TreeNodeSelected(EnumTreeAdvancedDropdownItem<T> treeItem)
         {
             Debug.Assert(treeItem.isValid, $"Selected invalid entry! {treeItem.value}");
 
@@ -148,7 +148,7 @@ namespace Skyx.SkyxEditor
             property.Apply();
         }
 
-        private void NewNodeSelected(NewNodeAdvancedDropdownItem<T> newNodeItem)
+        private void NewNodeSelected(NewEnumNodeAdvancedDropdownItem<T> newNodeItem)
         {
             var parent = newNodeItem.parent;
             NewEnumNodeWindow.OpenWindow(parent.Value, parent.Path, enumDeclarationFilePath);
@@ -156,17 +156,17 @@ namespace Skyx.SkyxEditor
 
         protected override void ItemSelected(AdvancedDropdownItem item)
         {
-            if (item is TreeAdvancedDropdownItem<T> treeItem) TreeNodeSelected(treeItem);
-            else if (item is NewNodeAdvancedDropdownItem<T> newNodeItem) NewNodeSelected(newNodeItem);
+            if (item is EnumTreeAdvancedDropdownItem<T> treeItem) TreeNodeSelected(treeItem);
+            else if (item is NewEnumNodeAdvancedDropdownItem<T> newNodeItem) NewNodeSelected(newNodeItem);
         }
     }
 
-    internal class TreeAdvancedDropdownItem<T> : AdvancedDropdownItem where T : Enum
+    internal class EnumTreeAdvancedDropdownItem<T> : AdvancedDropdownItem where T : Enum
     {
         public readonly T value;
         public readonly bool isValid;
 
-        public TreeAdvancedDropdownItem(TreeNode<T> node, bool isSelected)
+        public EnumTreeAdvancedDropdownItem(TreeNode<T> node, bool isSelected)
             : base($"{(isSelected ? "✓ " : "")}{node.ValueDisplayName}")
         {
             value = node.Value;
@@ -174,11 +174,11 @@ namespace Skyx.SkyxEditor
         }
     }
 
-    internal class NewNodeAdvancedDropdownItem<T> : AdvancedDropdownItem where T : Enum
+    internal class NewEnumNodeAdvancedDropdownItem<T> : AdvancedDropdownItem where T : Enum
     {
         public readonly TreeNode<T> parent;
 
-        public NewNodeAdvancedDropdownItem(TreeNode<T> node) : base("+ Create Node")
+        public NewEnumNodeAdvancedDropdownItem(TreeNode<T> node) : base("+ Create Node")
         {
             parent = node;
         }
