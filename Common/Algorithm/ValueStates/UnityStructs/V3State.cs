@@ -1,6 +1,9 @@
+#if TRY_USE_NEW_MATH && !DO_NOT_USE_NEW_MATH
+#define USE_NEW_MATHEMATICS
+#endif
 using UnityEngine;
 
-#if TRY_USE_NEW_MATH && !DO_NOT_USE_NEW_MATH //USE_NEW_MATHEMATICS
+#if USE_NEW_MATHEMATICS
 using Unity.Mathematics;
 using v3 = Unity.Mathematics.float3;
 #else
@@ -12,9 +15,7 @@ public class V3State : IValueState<v3>, ICustomDisposableKill
 {
     [SerializeField] v3 _value;
 
-	// TODO: LazyOptimization
 	[System.NonSerialized] EventSlot<v3> _onChange;
-	// [System.NonSerialized] EventSlot<Vector3> _onChange = new EventSlot<Vector3>();
 	public IEventRegister<v3> OnChange => Lazy.Request( ref _onChange );
 
     public v3 Value { get { return _value; } set { Setter( value ); } }
