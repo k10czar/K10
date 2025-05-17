@@ -127,13 +127,13 @@ namespace Skyx.SkyxEditor
 
         public static Type GetCachedType(this SerializedProperty property)
         {
-            var cacheKey = GetFieldInfoCacheKey(property);
-            if (propertyTypeCache.TryGetValue(cacheKey, out var cachedType)) return cachedType;
+            // var cacheKey = GetFieldInfoCacheKey(property);
+            // if (propertyTypeCache.TryGetValue(cacheKey, out var cachedType)) return cachedType;
 
             var value = GetValue(property);
             var type = value.GetType();
 
-            propertyTypeCache[cacheKey] = type;
+            // propertyTypeCache[cacheKey] = type;
 
             return type;
         }

@@ -43,5 +43,15 @@ namespace Skyx.SkyxEditor
 
             SceneView.duringSceneGui += wrapper;
         }
+
+        #region Cache Clears
+
+        [MenuItem("Disyphus/Clear Editor Caches/Clear SerializedReferences Drawers")]
+        private static void ClearSerializedRefDrawers()
+        {
+            SerializedRefLib.customDrawerCache.Clear();
+        }
+
+        #endregion
     }
 }

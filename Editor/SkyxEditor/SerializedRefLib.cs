@@ -33,7 +33,7 @@ namespace Skyx.SkyxEditor
 
         private static void DrawManagedReferenceBoxed(ref Rect rect, SerializedProperty property, string label)
         {
-            label ??= property.displayName.AppendInfo(property.managedReferenceValue?.GetType().Name, false, EColor.Warning);
+            label ??= property.displayName.AppendInfo(property.managedReferenceValue?.GetType().Name, EColor.Warning, EElementSize.SingleLine);
             using var scope = FoldoutScope.Open(ref rect, property, label, indent: true);
             if (!scope.isExpanded) return;
 
@@ -128,7 +128,7 @@ namespace Skyx.SkyxEditor
 
         #region Custom Drawers
 
-        private static readonly Dictionary<Type, PropertyDrawer> customDrawerCache = new();
+        internal static readonly Dictionary<Type, PropertyDrawer> customDrawerCache = new();
 
         private static PropertyDrawer GetCachedPropertyDrawer(SerializedProperty property)
         {

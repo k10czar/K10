@@ -15,7 +15,7 @@ public class EventSlot : IEvent, ICustomDisposableKill
 
 	public bool IsValid => !_killed;
 	public int EventsCount => _listeners?.Count ?? 0;
-	public int CountValidEvents => _listeners.Count( ( et ) => et.IsValid );
+	public int CountValidEvents => _listeners?.Count( ( et ) => et.IsValid ) ?? 0;
 	public bool HasListeners => EventsCount > 0;
 
 	public void Trigger()
