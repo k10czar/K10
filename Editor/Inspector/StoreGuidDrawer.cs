@@ -16,17 +16,6 @@ public class StoreGuidDrawer : PropertyDrawer {
 
 [CustomPropertyDrawer( typeof( StoreGuidFromAttribute ) )]
 public class StoreGuidFromDrawer : PropertyDrawer {
-
-    void Start()
-    {
-        Debug.Log( "StoreGuidFromDrawer.Start" );
-    }
-
-    void OnEnable()
-    {
-        Debug.Log( "StoreGuidFromDrawer.OnEnable" );
-    }
-
     public override float GetPropertyHeight( SerializedProperty property, GUIContent label ) {
         return EditorGUI.GetPropertyHeight( property, label, true );
     }
@@ -37,7 +26,7 @@ public class StoreGuidFromDrawer : PropertyDrawer {
         var path = AssetDatabase.GUIDToAssetPath( guid );
         var type = myAttribute.TypeRestriction;
         var objRef = AssetDatabase.LoadAssetAtPath( path, type );
-        var newRef = ScriptableObjectField.Draw( area, property.displayName, objRef, type, myAttribute.NewPath, false );
+        var newRef = ScriptableObjectField.Draw( area, label.text, objRef, type, myAttribute.NewPath, false );
         if( objRef != newRef )
         {
             var newPath = AssetDatabase.GetAssetPath( newRef );
