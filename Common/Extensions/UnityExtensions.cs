@@ -170,7 +170,7 @@ public static class K10UnityExtensions
 
 		return SceneManager.GetActiveScene().name + ":" + name;
 	}
-	
+
 	public static Transform Ancestor( this Transform t )
 	{
 		if( t == null ) return null;
@@ -499,10 +499,12 @@ public static class K10UnityExtensions
 	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, Color nameColor, Color typeColor, Color nullColor, string nullString = ConstsK10.NULL_STRING )=> ( obj != null ) ? $"{obj.name.Colorfy(nameColor)}<{obj.TypeNameOrNullColored(typeColor)}>" : nullString.Colorfy(nullColor);
 
 	[MethodImpl( AggrInline )] public static string NameOrNull( this Object obj, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.name : nullString;
+	[MethodImpl( AggrInline )] public static string NameOrNullColored( this Object obj) => obj != null ? obj.name : ConstsK10.NULL_STRING_COLORED;
 	[MethodImpl( AggrInline )] public static string ToStringColored( this bool boolValue ) => boolValue.ToString().Colorfy( boolValue ? Colors.Console.Numbers : Colors.Console.Negation );
 	[MethodImpl( AggrInline )] public static string ToStringColored( this object obj, Color valueColor ) => obj.ToString().Colorfy(valueColor);
 	[MethodImpl( AggrInline )] public static string ToStringOrNull( this object obj, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.ToString() : nullString;
 	[MethodImpl( AggrInline )] public static string ToStringOrNullColored( this object obj, Color valueColor, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.ToString().Colorfy(valueColor) : nullString.Colorfy(Colors.Console.Negation);
+	[MethodImpl( AggrInline )] public static string ToStringOrNullColored( this object obj) => obj != null ? obj.ToString() : ConstsK10.NULL_STRING_COLORED;
 	[MethodImpl( AggrInline )] public static string ToStringOrNullColored( this object obj, Color valueColor, Color nullColor, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.ToString().Colorfy(valueColor) : nullString.Colorfy(nullColor);
 	[MethodImpl( AggrInline )] public static string HierarchyNameOrNull( this GameObject obj, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.HierarchyName() : nullString;
 	[MethodImpl( AggrInline )] public static string HierarchyNameOrNullColored( this GameObject obj, Color valueColor, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.HierarchyName().Colorfy(valueColor) : nullString.Colorfy(Colors.Console.Negation);
@@ -510,4 +512,14 @@ public static class K10UnityExtensions
 	[MethodImpl( AggrInline )] public static string HierarchyNameOrNullColored( this Transform obj, Color valueColor, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.HierarchyName().Colorfy(valueColor) : nullString.Colorfy(Colors.Console.Negation);
 	[MethodImpl( AggrInline )] public static string HierarchyNameOrNull( this Component obj, string nullString = ConstsK10.NULL_STRING ) => ( obj != null ? ( obj.transform.HierarchyName() + $"<{( obj != null ? obj.GetType().ToString() : nullString )}>" ) : nullString );
 	[MethodImpl( AggrInline )] public static string HierarchyNameOrNullColored( this Component obj, Color valueColor, string nullString = ConstsK10.NULL_STRING ) => ( obj != null ? ( obj.transform.HierarchyName().Colorfy(valueColor) + $"<{( obj != null ? obj.GetType().ToString() : nullString.Colorfy(Colors.Console.Negation) )}>" ) : nullString.Colorfy(Colors.Console.Negation) );
+
+	public static string ToInspectorName(this object target)
+	{
+		return target switch
+		{
+			Object obj => NameOrNullColored(obj),
+			string str => ToStringOrNullColored(str),
+			_ => ToStringOrNullColored(target),
+		};
+	}
 }

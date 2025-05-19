@@ -1,4 +1,5 @@
-﻿using Unity.Profiling;
+﻿using System;
+using Unity.Profiling;
 using UnityEditor;
 using UnityEngine;
 
@@ -27,5 +28,7 @@ namespace Skyx.SkyxEditor
             EditorUtility.SetDirty(property.serializedObject.targetObject);
             property.serializedObject.Update();
         }
+
+        public virtual bool ResetNewObject(SerializedProperty newElement) => false;
     }
 }

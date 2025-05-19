@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -20,7 +18,7 @@ namespace Skyx.SkyxEditor
                     return;
                 }
 
-                var customDrawer = GetCachedPropertyDrawer(property);
+                var customDrawer = CustomDrawersCache.Get(property);
                 if (customDrawer != null) customDrawer.OnGUI(rect, property, new GUIContent(label));
                 else if (boxManagedReferences) DrawManagedReferenceBoxed(ref rect, property, label);
                 else DrawManagedReference(ref rect, property);
@@ -70,7 +68,7 @@ namespace Skyx.SkyxEditor
         {
             if (property.managedReferenceValue == null) return SkyxStyles.FullLineHeight;
 
-            var customDrawer = GetCachedPropertyDrawer(property);
+            var customDrawer = CustomDrawersCache.Get(property);
             if (customDrawer != null) return customDrawer.GetPropertyHeight(property, null);
 
             if (boxManagedReferences && !property.isExpanded) return SkyxStyles.ClosedScopeHeight(EElementSize.SingleLine);
@@ -98,7 +96,9 @@ namespace Skyx.SkyxEditor
 
         private static Action<Type> currentCallback;
 
-        public static void DrawTypePickerMenu(SerializedProperty property, Action<SerializedProperty> newElementSetup = null)
+        public static void DrawTypePickerMenu(SerializedProperty property) => DrawTypePickerMenu(property, null);
+
+        public static void DrawTypePickerMenu(SerializedProperty property, Action<SerializedProperty> newElementSetup)
         {
             var mousePos = Event.current.mousePosition;
             var rect = new Rect(mousePos.x, mousePos.y, 1, 1);
@@ -113,7 +113,7 @@ namespace Skyx.SkyxEditor
             void OnTypeSelected(Type newSelection)
             {
                 property.SetNewReferenceType(newSelection, true);
-                newElementSetup?.Invoke(property);
+                property.ResetDefaultValues(newElementSetup, true);
             }
         }
 
@@ -122,92 +122,6 @@ namespace Skyx.SkyxEditor
             using var backgroundScope = BackgroundColorScope.Set(color);
             if (EditorGUI.DropdownButton(rect, new GUIContent(label), FocusType.Passive))
                 DrawTypePickerMenu(rect, property);
-        }
-
-        #endregion
-
-        #region Custom Drawers
-
-        internal static readonly Dictionary<Type, PropertyDrawer> customDrawerCache = new();
-
-        private static PropertyDrawer GetCachedPropertyDrawer(SerializedProperty property)
-        {
-            var fieldType = property.GetCachedType();
-            if (customDrawerCache.TryGetValue(fieldType, out var cachedDrawer)) return cachedDrawer;
-
-            var drawer = FindPropertyDrawerForType(fieldType);
-            customDrawerCache[fieldType] = drawer;
-            return drawer;
-        }
-
-        private static PropertyDrawer FindPropertyDrawerForType(Type type)
-        {
-            if (IsIgnoredAssemblyForDrawers(type.Assembly)) return null;
-
-            List<(Type drawerType, Type targetType)> potentialDrawers = new();
-
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                if (IsIgnoredAssemblyForDrawers(assembly)) continue;
-
-                foreach (var drawerType in assembly.GetTypes())
-                {
-                    var customAttributes = drawerType.GetCustomAttributes(typeof(CustomPropertyDrawer), true);
-                    if (customAttributes.Length == 0) continue;
-
-                    foreach (CustomPropertyDrawer candidate in customAttributes)
-                    {
-                        var drawerTargetType = GetDrawerTargetType(candidate);
-                        if (drawerTargetType == null) continue;
-
-                        if (drawerTargetType.IsSubclassOf(typeof(PropertyAttribute))) continue;
-
-                        if (drawerTargetType.IsAssignableFrom(type))
-                            potentialDrawers.Add((drawerType, drawerTargetType));
-                    }
-                }
-            }
-
-            if (potentialDrawers.Count == 0) return null;
-
-            var bestMatch = potentialDrawers[0];
-            foreach (var candidate in potentialDrawers)
-            {
-                if (candidate.targetType == type)
-                {
-                    bestMatch = candidate;
-                    break;
-                }
-
-                if (bestMatch.targetType.IsAssignableFrom(candidate.targetType))
-                    bestMatch = candidate;
-            }
-
-            try
-            {
-                return (PropertyDrawer)Activator.CreateInstance(bestMatch.drawerType);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Failed to create property drawer {bestMatch.drawerType.Name}: {e}");
-                return null;
-            }
-        }
-
-        private static bool IsIgnoredAssemblyForDrawers(Assembly assembly)
-        {
-            var assemblyName = assembly.FullName;
-            return assemblyName.StartsWith("UnityEngine") ||
-                   assemblyName.StartsWith("UnityEditor") ||
-                   assemblyName.StartsWith("System") ||
-                   assemblyName.StartsWith("mscorlib") ||
-                   assemblyName.StartsWith("netstandard");
-        }
-
-        private static Type GetDrawerTargetType(CustomPropertyDrawer drawerAttribute)
-        {
-            var typeField = typeof(CustomPropertyDrawer).GetField("m_Type", BindingFlags.Instance | BindingFlags.NonPublic);
-            return typeField?.GetValue(drawerAttribute) as Type;
         }
 
         #endregion

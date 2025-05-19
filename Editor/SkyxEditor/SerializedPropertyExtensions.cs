@@ -59,6 +59,26 @@ namespace Skyx.SkyxEditor
                 throw new ArgumentException($"Property is not an array element! {path}");
         }
 
+        public static void ResetDefaultValues(this SerializedProperty newElement, Action<SerializedProperty> customReset, bool keepManagedRef)
+        {
+            if (!keepManagedRef && newElement.IsManagedRef())
+            {
+                newElement.managedReferenceValue = null;
+                newElement.Apply();
+
+                EditorUtils.RunOnSceneOnce(() => SerializedRefLib.DrawTypePickerMenu(newElement, customReset));
+                return;
+            }
+
+            if (customReset != null) customReset(newElement);
+            else if (!CustomDrawersCache.TryResetNewElement(newElement))
+            {
+                newElement.PrepareForChanges("Resetting new element!");
+                newElement.SetValue(newElement.GenerateDefaultValue());
+                newElement.ApplyDirectChanges("Resetting new element!");
+            }
+        }
+
         #endregion
 
         #region Reflection Getters / Setters

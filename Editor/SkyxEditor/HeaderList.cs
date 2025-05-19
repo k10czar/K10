@@ -1,23 +1,22 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 
 namespace Skyx.SkyxEditor
 {
     public static class HeaderList
     {
-        public delegate void OnNewElementCallback(SerializedProperty element);
-
         private const float ExtraElementHeight = SkyxStyles.ElementsMargin + 3; // from separator
         private const float NewElementHeight = SkyxStyles.FullLineHeight;
         public const float HorizontalThreshold = SkyxStyles.ListControlButtonSize * 3;
 
-        public static void DrawLayout(SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, string title = null, string newText = null, OnNewElementCallback onNewElement = null)
+        public static void DrawLayout(SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, string title = null, string newText = null, Action<SerializedProperty> onNewElement = null)
         {
             var rect = EditorGUILayout.GetControlRect(false, GetPropertyHeight(property, false, size));
             Draw(ref rect, property, color, size, title, newText, onNewElement, false);
         }
 
-        public static void Draw(ref Rect rect, SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, string title = null, string newText = null, OnNewElementCallback onNewElement = null, bool resetHeight = true)
+        public static void Draw(ref Rect rect, SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, string title = null, string newText = null, Action<SerializedProperty> onNewElement = null, bool resetHeight = true)
         {
             if (resetHeight) rect.height = GetPropertyHeight(property, true);
 
@@ -31,13 +30,13 @@ namespace Skyx.SkyxEditor
             DrawNewElement(rect, property, newText, onNewElement);
         }
 
-        public static void DrawHeaderlessLayout(SerializedProperty property, string newText = null, OnNewElementCallback onNewElement = null)
+        public static void DrawHeaderlessLayout(SerializedProperty property, string newText = null, Action<SerializedProperty> onNewElement = null)
         {
             var rect = EditorGUILayout.GetControlRect(false, GetPropertyHeight(property, true));
             DrawHeaderless(ref rect, property, newText, onNewElement, false);
         }
 
-        public static void DrawHeaderless(ref Rect rect, SerializedProperty property, string newText = null, OnNewElementCallback onNewElement = null, bool resetHeight = true)
+        public static void DrawHeaderless(ref Rect rect, SerializedProperty property, string newText = null, Action<SerializedProperty> onNewElement = null, bool resetHeight = true)
         {
             if (resetHeight) rect.height = GetPropertyHeight(property, true);
             newText = string.IsNullOrEmpty(newText) ? "New Entry" : newText;
@@ -46,7 +45,7 @@ namespace Skyx.SkyxEditor
             DrawNewElement(rect, property, newText, onNewElement);
         }
 
-        private static void DrawNewElement(Rect rect, SerializedProperty property, string newText, OnNewElementCallback onNewElement)
+        private static void DrawNewElement(Rect rect, SerializedProperty property, string newText, Action<SerializedProperty> onNewElement)
         {
             rect.y += 2;
             rect.height = SkyxStyles.LineHeight;
@@ -62,8 +61,10 @@ namespace Skyx.SkyxEditor
             {
                 var index = property.arraySize;
                 property.InsertArrayElementAtIndex(index);
-                onNewElement?.Invoke(property.GetArrayElementAtIndex(index));
                 property.Apply($"New array element: {property.propertyPath}");
+
+                var newElement = property.GetArrayElementAtIndex(index);
+                newElement.ResetDefaultValues(onNewElement, false);
             }
         }
 

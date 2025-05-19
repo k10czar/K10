@@ -44,12 +44,6 @@ namespace Skyx.SkyxEditor
                 menu.AddItem(new GUIContent("Duplicate Array Element"), false, OnDuplicateElement);
                 menu.AddItem(new GUIContent("Delete Array Element"), false, OnDeleteElement);
             }
-            else if (property.propertyType is SerializedPropertyType.ObjectReference)
-            {
-                menu.AddSeparator("");
-                menu.AddItem(new GUIContent("Copy System Path"), false, OnCopySystemPath);
-                menu.AddItem(new GUIContent("Copy GUID"), false, OnCopyGUID);
-            }
 
             menu.ShowAsContext();
         }
@@ -100,7 +94,8 @@ namespace Skyx.SkyxEditor
             parent.InsertArrayElementAtIndex(index);
             parent.Apply();
 
-            ResetElement(parent.GetArrayElementAtIndex(index), $"Insert element above {selectedDisplayInfo}");
+            var newElement = parent.GetArrayElementAtIndex(index);
+            newElement.ResetDefaultValues(null, false);
         }
 
         private static void OnInsertElementBelow()
@@ -109,24 +104,8 @@ namespace Skyx.SkyxEditor
             parent.InsertArrayElementAtIndex(index);
             parent.Apply();
 
-            ResetElement(parent.GetArrayElementAtIndex(index + 1), $"Insert element below {selectedDisplayInfo}");
-        }
-
-        private static void ResetElement(SerializedProperty newElement, string reason)
-        {
-            if (newElement.IsManagedRef())
-            {
-                newElement.managedReferenceValue = null;
-                newElement.Apply();
-
-                EditorUtils.RunOnSceneOnce(() => SerializedRefLib.DrawTypePickerMenu(newElement));
-            }
-            else
-            {
-                selectedProperty.PrepareForChanges(reason);
-                newElement.SetValue(selectedProperty.GenerateDefaultValue());
-                selectedProperty.ApplyDirectChanges(reason);
-            }
+            var newElement = parent.GetArrayElementAtIndex(index + 1);
+            newElement.ResetDefaultValues(null, false);
         }
 
         private static void OnDuplicateElement()
@@ -141,14 +120,6 @@ namespace Skyx.SkyxEditor
             selectedProperty.ExtractArrayElementInfo(out var parent, out var index);
             parent.DeleteArrayElementAtIndex(index);
             parent.Apply();
-        }
-
-        private static void OnCopySystemPath()
-        {
-        }
-
-        private static void OnCopyGUID()
-        {
         }
     }
 }

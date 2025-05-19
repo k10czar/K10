@@ -88,7 +88,7 @@ namespace Skyx.SkyxEditor
             var drawingRect = headerRect;
             drawingRect.ApplyStartMargin(10);
             GUI.Toggle(drawingRect.ExtractMiniButton(), isExpandedRef, GUIContent.none, EditorStyles.foldout);
-            EditorGUI.LabelField(drawingRect, title, SkyxStyles.BoldStyle);
+            EditorGUI.LabelField(drawingRect, title, SkyxStyles.DefaultLabel);
 
             if (isExpandedRef)
             {

@@ -396,8 +396,10 @@ namespace Skyx.SkyxEditor
             {
                 var index = thisList.selectedIndices.Count > 0 ? Mathf.Min(property.arraySize, thisList.selectedIndices[0] + 1) : property.arraySize;
                 property.InsertArrayElementAtIndex(index);
-                newElementSetup?.Invoke(property.GetArrayElementAtIndex(index));
                 property.Apply($"New array element: {property.propertyPath}");
+
+                var newElement = property.GetArrayElementAtIndex(index);
+                newElement.ResetDefaultValues(newElementSetup, false);
             }
 
             void OnRemoveCallback(ReorderableList thisList)
@@ -418,10 +420,10 @@ namespace Skyx.SkyxEditor
             var prop = Get(propertyName, isBacking);
             index = index == -1 ? prop.arraySize : index;
             prop.InsertArrayElementAtIndex(index);
-
-            newElementSetup?.Invoke(prop.GetArrayElementAtIndex(index));
-
             prop.Apply();
+
+            var newElement = prop.GetArrayElementAtIndex(index);
+            newElement.ResetDefaultValues(newElementSetup, false);
         }
 
         #endregion
