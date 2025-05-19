@@ -481,6 +481,8 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         SDK.XGameInviteUnregisterForEvent(_inviteRegistrationToken);
         SDK.XUserCloseHandle(UserData.userHandle);
         SDK.XBL.XblContextCloseHandle(UserData.contextHandle);
+
+        Debug.Log($"GDK CleanUp finished");
     }
 
 #if UNITY_EDITOR
