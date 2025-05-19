@@ -1,5 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -7,21 +9,16 @@ namespace Skyx.SkyxEditor
 {
     public static class EnumTreeGUI
     {
-        public static void DrawSecondary<T>(Rect rect, SerializedProperty property, string hint = null) => DrawEnum(rect, property, typeof(T), Colors.Console.Secondary, hint);
-        public static void DrawSupport<T>(Rect rect, SerializedProperty property, string hint = null) => DrawEnum(rect, property, typeof(T), Colors.Console.GrayOut, hint);
-        public static void DrawSecondary(Rect rect, SerializedProperty property, Type enumType, string hint = null) => DrawEnum(rect, property, enumType, Colors.Console.Secondary, hint);
+        public static void DrawSecondary<T>(Rect rect, SerializedProperty property, string hint = null) => DrawEnum(rect, property, typeof(T), EColor.Secondary, hint);
+        public static void DrawSupport<T>(Rect rect, SerializedProperty property, string hint = null) => DrawEnum(rect, property, typeof(T), EColor.Support, hint);
+        public static void DrawSecondary(Rect rect, SerializedProperty property, Type enumType, string hint = null) => DrawEnum(rect, property, enumType, EColor.Secondary, hint);
 
-        public static void DrawEnum<T>(Rect rect, SerializedProperty property, EColor color, string hint = "")
-            => DrawEnum(rect, property, typeof(T), color.Get(), hint);
+        public static void DrawEnum<T>(Rect rect, SerializedProperty property, EColor color, string hint = "", T[] validList = null, bool isIncludeList = false)
+            => DrawEnum(rect, property, typeof(T), color, hint, validList?.Cast<object>(), isIncludeList);
 
-        public static void DrawEnum(Rect rect, SerializedProperty property, Type enumType, Color color, string hint = "")
+        public static void DrawEnum(Rect rect, SerializedProperty property, Type enumType, EColor color, string hint = "", IEnumerable<object> validList = null, bool isIncludeList = false)
         {
-            EnumTreeDrawer.DrawEnumDropdown(
-                rect,
-                property,
-                color,
-                SkyxStyles.PopupStyle,
-                enumType);
+            EnumTreeDrawer.DrawEnumDropdown(rect, property, color, enumType, validList, isIncludeList);
 
             var value = Enum.ToObject(enumType, property.intValue);
             var fullHint = $"[{enumType.Name}.{value}] {hint}";

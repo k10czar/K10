@@ -125,7 +125,7 @@ namespace Skyx.SkyxEditor
                 var hasFlagsAttribute = targetType.IsDefined(typeof(FlagsAttribute), inherit: false);
 
                 if (hasFlagsAttribute) EnumTreeGUI.DrawEnumMask(rect, property, targetType, drawInfo.color);
-                else EnumTreeGUI.DrawEnum(rect, property, targetType, drawInfo.color.Get(), drawInfo.hint);
+                else EnumTreeGUI.DrawEnum(rect, property, targetType, drawInfo.color, drawInfo.hint);
             }
 
             else if (targetType.IsClass)

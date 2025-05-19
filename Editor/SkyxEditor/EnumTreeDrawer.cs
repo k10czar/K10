@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Skyx.Trees;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
@@ -17,28 +18,25 @@ namespace Skyx.SkyxEditor
 
             position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
 
-            DrawEnumDropdown(position, property, EditorStyles.popup, fieldInfo.FieldType);
+            DrawEnumDropdown(position, property, fieldInfo.FieldType, null, false);
 
             EditorGUI.EndProperty();
         }
 
-        public static void DrawEnumDropdown(Rect position, SerializedProperty property, Color color, GUIStyle style, Type fieldType)
+        public static void DrawEnumDropdown(Rect position, SerializedProperty property, EColor color, Type fieldType, IEnumerable<object> validList = null, bool isIncludeList = false)
         {
             using var backgroundScope = BackgroundColorScope.Set(color);
-            DrawEnumDropdown(position, property, style, fieldType);
+            DrawEnumDropdown(position, property, fieldType, validList, isIncludeList);
         }
 
-        public static void DrawEnumDropdown<T>(Rect position, T value, Action<object> callback, EColor color = EColor.Primary) where T: Enum
-            => DrawEnumDropdown(position, typeof(T), value, callback, color.Get(), SkyxStyles.PopupStyle);
-
-        private static void DrawEnumDropdown(Rect position, Type enumType, object enumObj, Action<object> callback, Color color, GUIStyle style)
+        public static void DrawEnumDropdown<T>(Rect position, T value, Action<object> callback, EColor color = EColor.Primary, IEnumerable<object> validList = null, bool isIncludeList = false) where T: Enum
         {
             using var backgroundScope = BackgroundColorScope.Set(color);
             position.y += 1;
-            DrawEnumDropdown(position, enumType, enumObj, null, callback, style);
+            DrawEnumDropdown(position, typeof(T), value, null, callback, validList, isIncludeList);
         }
 
-        private static void DrawEnumDropdown(Rect position, SerializedProperty property, GUIStyle style, Type fieldType)
+        private static void DrawEnumDropdown(Rect position, SerializedProperty property, Type fieldType, IEnumerable<object> validList, bool isIncludeList)
         {
             var enumType = fieldType;
             if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(List<>))
@@ -53,14 +51,14 @@ namespace Skyx.SkyxEditor
 
             var enumObj = Enum.ToObject(enumType, property.intValue);
 
-            DrawEnumDropdown(position, enumType, enumObj, property, null, style);
+            DrawEnumDropdown(position, enumType, enumObj, property, null, validList, isIncludeList);
         }
 
-        private static void DrawEnumDropdown(Rect position, Type enumType, object enumObj, SerializedProperty property, Action<object> callback, GUIStyle style)
+        private static void DrawEnumDropdown(Rect position, Type enumType, object enumObj, SerializedProperty property, Action<object> callback, IEnumerable<object> validList, bool isIncludeList)
         {
             var name = new GUIContent(ObjectNames.NicifyVariableName(enumObj.ToString()));
 
-            if (!EditorGUI.DropdownButton(position, name, FocusType.Passive, style)) return;
+            if (!EditorGUI.DropdownButton(position, name, FocusType.Passive, EditorStyles.popup)) return;
             var state = new AdvancedDropdownState();
 
             var enumTreeType = typeof(EnumTreeNode<>).MakeGenericType(enumType);
@@ -69,7 +67,7 @@ namespace Skyx.SkyxEditor
 
             var genericDropdownType = typeof(EnumTreeAdvancedDropdown<>);
             var specificDropdownType = genericDropdownType.MakeGenericType(enumType);
-            var dropdown = (AdvancedDropdown) Activator.CreateInstance(specificDropdownType, state, tree, property, callback);
+            var dropdown = (AdvancedDropdown) Activator.CreateInstance(specificDropdownType, state, tree, property, callback, validList, isIncludeList);
 
             var dropdownRect = new Rect(position);
             dropdown.Show(dropdownRect);
@@ -85,11 +83,16 @@ namespace Skyx.SkyxEditor
         private readonly bool canCreateNodes;
         private readonly string enumDeclarationFilePath;
 
-        public EnumTreeAdvancedDropdown(AdvancedDropdownState state, EnumTreeNode<T> treeNode, SerializedProperty property, Action<object> callback) : base(state)
+        private readonly IEnumerable<object> validList;
+        private readonly bool listIsInclude; // or exclude
+
+        public EnumTreeAdvancedDropdown(AdvancedDropdownState state, EnumTreeNode<T> treeNode, SerializedProperty property, Action<object> callback, IEnumerable<object> validList, bool isIncludeList) : base(state)
         {
             this.treeNode = treeNode;
             this.property = property;
             this.callback = callback;
+            this.validList = validList;
+            this.listIsInclude = isIncludeList;
 
             var definitionAttributes = typeof(T).GetCustomAttributes(typeof(ExpandableEnumTreeAttribute), true);
             canCreateNodes = definitionAttributes.Length > 0;
@@ -99,6 +102,14 @@ namespace Skyx.SkyxEditor
         }
 
         protected override AdvancedDropdownItem BuildRoot() => BuildNodeDropdown(treeNode);
+
+        private bool IsNodeIncluded(object value)
+        {
+            if (validList == null) return true;
+
+            var contains = validList.Contains(value);
+            return listIsInclude == contains;
+        }
 
         private AdvancedDropdownItem BuildNodeDropdown(TreeNode<T> currentTreeNode)
         {
@@ -110,6 +121,8 @@ namespace Skyx.SkyxEditor
 
             foreach (var node in children)
             {
+                if (!IsNodeIncluded(node.Value)) continue;
+
                 if (node.IsValid)
                 {
                     var isSelected = property?.intValue == (int)(object)node.Value;
@@ -124,7 +137,8 @@ namespace Skyx.SkyxEditor
 
             foreach (var node in children)
             {
-                if (node.HasChildren) dropdown.AddChild(BuildNodeDropdown(node));
+                if (node.HasChildren && IsNodeIncluded(node.Value))
+                    dropdown.AddChild(BuildNodeDropdown(node));
             }
 
             if (canCreateNodes)
