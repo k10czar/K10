@@ -95,6 +95,17 @@ public static class ServiceLocator
 		public static readonly GenericsComparer Instance = new GenericsComparer();
 	}
 
+	public static void TryGet<T>(ref T serv) where T : IService
+	{
+		if (serv != null)
+		{
+        	LogVerbose( $"TryGet<{typeof(T)}>( {serv.ToStringOrNullColored( Colors.Console.Names )} ) already set" );
+			return;
+		}
+		serv = Get<T>();
+        LogVerbose( $"TryGet<{typeof(T)}>() returned {serv.ToStringOrNullColored( Colors.Console.Names )}" );
+	}
+
 	public static T Get<T>() where T : IService
 	{
 		return (T)Get(typeof(T));
