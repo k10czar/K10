@@ -73,6 +73,19 @@ public static class EventExtensions
 		return wrapper;
 	}
 
+	public static Action<T> RegisterOnceWrapper<T>(this IEventRegister<T> register, Action<T> act)
+	{
+		Action<T> wrapper = null;
+		wrapper = value =>
+		{
+			register.Unregister(wrapper);
+			act(value);
+		};
+		register.Register(wrapper);
+
+		return wrapper;
+	}
+
 	#region Enumerables
 	public static void Register( this IEnumerable<IEventRegister> registers, Action act ) => registers.Register( new ActionEventCapsule( act ) );
 	public static void Register( this IEnumerable<IEventRegister> registers, IEventTrigger listener )
