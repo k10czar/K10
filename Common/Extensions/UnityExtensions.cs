@@ -518,7 +518,7 @@ public static class K10UnityExtensions
 		return target switch
 		{
 			Object obj => NameOrNullColored(obj),
-			string str => ToStringOrNullColored(str),
+			string str => string.IsNullOrEmpty(str) ? ConstsK10.NULL_STRING_COLORED : str,
 			_ => ToStringOrNullColored(target),
 		};
 	}

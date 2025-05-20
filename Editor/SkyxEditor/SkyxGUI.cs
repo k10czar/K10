@@ -128,14 +128,14 @@ namespace Skyx.SkyxEditor
                 else EnumTreeGUI.DrawEnum(rect, property, targetType, drawInfo.color, drawInfo.hint);
             }
 
-            else if (targetType.IsClass)
-                DrawObjectField(rect, property, targetType, drawInfo.hint, true);
+            else if (targetType == typeof(string))
+                DrawTextField(rect, property, drawInfo.hint);
 
             else if (targetType == typeof(float))
                 DrawFloatField(rect, property, drawInfo.hint);
 
-            else if (targetType == typeof(string))
-                DrawTextField(rect, property, drawInfo.hint);
+            else if (targetType.IsClass)
+                DrawObjectField(rect, property, targetType, drawInfo.hint, true);
 
             else throw new Exception("Unknown type");
         }
@@ -283,6 +283,16 @@ namespace Skyx.SkyxEditor
             => Button(ExtractMiniButton(ref rect, fromEnd), label, color.Get(), SkyxStyles.MiniButtonStyle, hint);
 
         #endregion
+
+        public static void DrawLabel(ref Rect rect, string label, bool extractLabelRect = true, EColor color = EColor.Primary)
+        {
+            var drawRect = extractLabelRect ? rect.ExtractLabelRect() : rect;
+
+            var style = SkyxStyles.DefaultLabel;
+            if (color is not EColor.Primary) style = style.With(color);
+
+            EditorGUI.LabelField(drawRect, label, style);
+        }
 
         public static string DrawTextFieldWithSuggestions(Rect rect, string currentValue, string[] suggestions)
         {

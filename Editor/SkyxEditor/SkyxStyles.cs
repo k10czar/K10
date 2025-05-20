@@ -74,8 +74,8 @@ namespace Skyx.SkyxEditor
 
         public static GUIStyle ButtonStyle => Style("button", GUI.skin.button, DefaultFontSize, padding: defaultPadding);
         public static GUIStyle HeaderButtonStyle => Style("HeaderButton", GUI.skin.button, BigFontSize, padding: bigPadding);
-        public static GUIStyle MiniButtonStyle => Style("button", GUI.skin.button, padding: noPadding);
-        public static GUIStyle BoldButtonStyle => Style("boldButton", ButtonStyle, FontStyle.Bold);
+        public static GUIStyle MiniButtonStyle => Style("MiniButton", GUI.skin.button, padding: noPadding);
+        public static GUIStyle BoldButtonStyle => Style("BoldButton", ButtonStyle, FontStyle.Bold);
 
         public static GUIStyle DropDownButton = new("DropDownToggleButton");
 
