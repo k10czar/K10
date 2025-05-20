@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Unity.Profiling;
 using UnityEditor;
 using UnityEngine;
@@ -36,37 +37,6 @@ namespace Skyx.SkyxEditor
             DrawTitle();
             DrawSaveFile();
             DrawConfigs();
-        }
-
-        private void DrawSaveFile()
-        {
-            if (!ShouldDrawSaveFile) return;
-
-            if (EditorUtility.IsDirty(target))
-            {
-                if (SkyxLayout.Button("Save Changes!", EColor.Warning))
-                    PropertyCollection.SaveAsset(target);
-            }
-            else if (ShouldDrawReserialize)
-            {
-                if (SkyxLayout.Button("Reserialize", EColor.Special))
-                {
-                    if (EditorUtility.DisplayDialog("Are you sure?", $"Reserialize {target.name} entries?", "Yes", "No"))
-                    {
-                        var path = AssetDatabase.GetAssetPath(target);
-                        AssetDatabase.ForceReserializeAssets(new [] { path });
-                        PropertyCollection.SaveAsset(target);
-                    }
-                }
-            }
-            else
-            {
-                EditorGUI.BeginDisabledGroup(true);
-                GUILayout.Button("No Changes");
-                EditorGUI.EndDisabledGroup();
-            }
-
-            SkyxLayout.Space();
         }
 
         private bool IsValid()
@@ -179,5 +149,107 @@ namespace Skyx.SkyxEditor
                 // ignored
             }
         }
+
+        #region Save Changes
+
+        private bool showModifications;
+
+        private void DrawSaveFile()
+        {
+            if (!ShouldDrawSaveFile) return;
+
+            if (EditorUtility.IsDirty(target))
+            {
+                if (SkyxLayout.Button("Save Changes!", EColor.Warning))
+                    PropertyCollection.SaveAsset(target);
+            }
+            else if (ShouldDrawReserialize)
+            {
+                if (SkyxLayout.Button("Reserialize", EColor.Special))
+                {
+                    if (EditorUtility.DisplayDialog("Are you sure?", $"Reserialize {target.name} entries?", "Yes", "No"))
+                    {
+                        var path = AssetDatabase.GetAssetPath(target);
+                        AssetDatabase.ForceReserializeAssets(new [] { path });
+                        PropertyCollection.SaveAsset(target);
+                    }
+                }
+            }
+            else
+            {
+                EditorGUI.BeginDisabledGroup(true);
+                GUILayout.Button("No Changes");
+                EditorGUI.EndDisabledGroup();
+            }
+
+            SkyxLayout.Space();
+        }
+
+        protected void DrawPrefabModifications()
+        {
+            var targetComponent = Target;
+            var targetObject = (targetComponent as Component)!.gameObject;
+            if (!PrefabUtility.IsPartOfPrefabInstance(targetObject)) return;
+
+            var sourceComponent = PrefabUtility.GetCorrespondingObjectFromSource(targetComponent);
+            var outerRoot = PrefabUtility.GetOutermostPrefabInstanceRoot(targetObject);
+            var nearestRoot = PrefabUtility.GetNearestPrefabInstanceRoot(targetObject);
+            var isNestedPrefab = outerRoot != nearestRoot;
+
+            var thisComponentMods = PrefabUtility.GetPropertyModifications(targetObject)
+                .Where(entry => entry.target is T && entry.target == sourceComponent)
+                .ToArray();
+
+            if (thisComponentMods.Length <= 0) return;
+
+            TryShowModifications(thisComponentMods);
+            SkyxLayout.CompactSpace();
+
+            var rect = EditorGUILayout.GetControlRect(false);
+            rect.DivideRect(isNestedPrefab ? 3 : 2);
+
+            if (isNestedPrefab)
+            {
+                if (SkyxGUI.Button(rect, "Apply to NESTED Prefab", EColor.Warning))
+                    ApplyOverrides(targetComponent, outerRoot);
+
+                rect.SlideSameRect();
+                if (SkyxGUI.Button(rect, "Apply to PARENT Prefab", EColor.Warning))
+                    ApplyOverrides(targetComponent, targetComponent);
+            }
+            else
+            {
+                if (SkyxGUI.Button(rect, "Apply Modifications", EColor.Warning))
+                    ApplyOverrides(targetComponent, targetComponent);
+            }
+
+            rect.SlideSameRect();
+            if (SkyxGUI.Button(rect, "Undo Modifications", EColor.Danger))
+                UndoOverrides(targetComponent);
+
+            SkyxLayout.Separator();
+        }
+
+        private static void UndoOverrides(T targetComponent)
+        {
+            PrefabUtility.RevertObjectOverride(targetComponent, InteractionMode.UserAction);
+        }
+
+        private static void ApplyOverrides(T targetComponent, Object pathSource)
+        {
+            var path = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(pathSource);
+            PrefabUtility.ApplyObjectOverride(targetComponent, path, InteractionMode.UserAction);
+        }
+
+        private void TryShowModifications(PropertyModification[] modifications)
+        {
+            using var scope = FoldoutScope.Open($"⚠️ {modifications.Length} Modifications!", ref showModifications, EColor.Warning);
+            if (!scope.isExpanded) return;
+
+            foreach (PropertyModification modification in modifications)
+                EditorGUILayout.LabelField($"{serializedObject.GetReadablePath(modification.propertyPath)}: {modification.value}");
+        }
+
+        #endregion
     }
 }

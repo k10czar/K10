@@ -7,6 +7,9 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Unity.Plastic.Newtonsoft.Json;
 using UnityEditor;
+using UnityEngine;
+using UnityEngine.Serialization;
+using Object = UnityEngine.Object;
 
 namespace Skyx.SkyxEditor
 {
@@ -247,6 +250,80 @@ namespace Skyx.SkyxEditor
 
         public static SerializedProperty FindBackingProperty(this SerializedProperty property, string propertyName)
             => property.FindPropertyRelative($"<{propertyName}>k__BackingField");
+
+
+        public static string GetReadablePath(this SerializedObject serializedObject, string propertyPath)
+        {
+            object current = serializedObject.targetObject;
+            var currentType = current.GetType();
+
+            var parts = propertyPath.Split('.');
+            var readableParts = new List<string>();
+
+            for (int i = 0; i < parts.Length; i++)
+            {
+                var part = parts[i];
+
+                if (part == "Array") continue;
+                if (currentType == null) break;
+
+                if (part.StartsWith("data["))
+                {
+                    var index = Convert.ToInt32(new string(part.Where(char.IsDigit).ToArray()));
+
+                    if (current is IList list && index >= 0 && index < list.Count)
+                    {
+                        current = list[index];
+                        currentType = current?.GetType();
+                        readableParts.Add($"[{index}]");;
+                    }
+                    else
+                    {
+                        readableParts.Add($"[INVALID_INDEX:{index}]");
+                        break;
+                    }
+                }
+                else if (part.StartsWith("managedReferences["))
+                {
+                    var id = long.Parse(new string(part.Where(char.IsDigit).ToArray()));
+                    var managed = ManagedReferenceUtility.GetManagedReference((Object) current, id);
+
+                    // TODO: Get managedRef array index
+
+                    if (managed != null)
+                    {
+                        current = managed;
+                        currentType = managed.GetType();
+                        readableParts.Add(currentType.Name);
+                    }
+                    else
+                    {
+                        readableParts.Add("[unresolved_managed_reference]");
+                        break;
+                    }
+                }
+                else
+                {
+                    var field = currentType.GetField(part, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+                    if (field != null)
+                    {
+                        readableParts.Add(RemoveBackingField(field.Name));
+                        current = field.GetValue(current);
+                        currentType = current?.GetType();
+                    }
+                    else
+                    {
+                        readableParts.Add($"[UNKNOWN:{part}]");
+                        break;
+                    }
+                }
+            }
+
+            return string.Join(".", readableParts);
+        }
+
+        private static string RemoveBackingField(string path) => path.Replace(".<", ".").Replace("<", "").Replace(">k__BackingField", "");
 
         #endregion
 
