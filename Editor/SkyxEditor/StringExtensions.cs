@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using UnityEditor;
 
 namespace Skyx.SkyxEditor
@@ -27,5 +28,7 @@ namespace Skyx.SkyxEditor
         }
 
         public static string Pretty(this Enum value) => ObjectNames.NicifyVariableName(value.ToString());
+
+        public static string Clean(this string source) => Regex.Replace(source, "[^a-zA-Z0-9]", "");
     }
 }

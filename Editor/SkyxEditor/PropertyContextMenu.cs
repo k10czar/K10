@@ -16,12 +16,14 @@ namespace Skyx.SkyxEditor
         private static Type selectedType;
         private static string selectedDisplayInfo;
         private static SerializedProperty selectedProperty;
+        private static Action<SerializedProperty> selectedElementSetup;
 
-        public static void Open(SerializedProperty property)
+        public static void Open(SerializedProperty property, Action<SerializedProperty> newElementSetup = null)
         {
             selectedProperty = property;
             selectedType = property.GetValue().GetType();
             selectedDisplayInfo = $"{property.displayName} ({selectedType})";
+            selectedElementSetup = newElementSetup;
 
             var menu = new GenericMenu();
 
@@ -95,7 +97,7 @@ namespace Skyx.SkyxEditor
             parent.Apply();
 
             var newElement = parent.GetArrayElementAtIndex(index);
-            newElement.ResetDefaultValues(null, false);
+            newElement.ResetDefaultValues(selectedElementSetup, false);
         }
 
         private static void OnInsertElementBelow()
@@ -105,7 +107,7 @@ namespace Skyx.SkyxEditor
             parent.Apply();
 
             var newElement = parent.GetArrayElementAtIndex(index + 1);
-            newElement.ResetDefaultValues(null, false);
+            newElement.ResetDefaultValues(selectedElementSetup, false);
         }
 
         private static void OnDuplicateElement()

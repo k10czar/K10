@@ -76,9 +76,17 @@ namespace Skyx.SkyxEditor
             if (customReset != null) customReset(newElement);
             else if (!CustomDrawersCache.TryResetNewElement(newElement))
             {
-                newElement.PrepareForChanges("Resetting new element!");
-                newElement.SetValue(newElement.GenerateDefaultValue());
-                newElement.ApplyDirectChanges("Resetting new element!");
+                if (newElement.propertyType is SerializedPropertyType.ObjectReference)
+                {
+                    newElement.objectReferenceValue = null;
+                    newElement.Apply();
+                }
+                else
+                {
+                    newElement.PrepareForChanges("Resetting new element!");
+                    newElement.SetValue(newElement.GenerateDefaultValue());
+                    newElement.ApplyDirectChanges("Resetting new element!");
+                }
             }
         }
 
