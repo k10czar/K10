@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -332,6 +331,68 @@ namespace Skyx.SkyxEditor
         }
 
         private static string RemoveBackingField(string path) => path.Replace(".<", ".").Replace("<", "").Replace(">k__BackingField", "");
+
+        #endregion
+
+        #region Common Setters
+
+        public static void FillWithExisting<T>(this SerializedProperty property, bool fillWithGameObject, bool force, bool searchChildren = true, bool searchParent = true) where T : Component
+        {
+            if (!force && HasValidTarget<T>(property, fillWithGameObject)) return;
+
+            var component = GetComponent<T>(property, searchChildren, searchParent);
+            if (component == null)
+            {
+                Debug.LogError($"Could not find {typeof(T)} in {property.serializedObject.targetObject.name}");
+                return;
+            }
+
+            property.objectReferenceValue = fillWithGameObject ? component.gameObject : component;
+            property.Apply();
+        }
+
+        private static T GetComponent<T>(SerializedProperty property, bool searchChildren, bool searchParent) where T : Component
+        {
+            var root = (MonoBehaviour) property.serializedObject.targetObject;
+
+            if (searchChildren)
+            {
+                var candidate = root.GetComponentInChildren<T>(true);
+                if (candidate != null) return candidate;
+            }
+
+            if (searchParent)
+            {
+                var candidate = root.GetComponentInParent<T>(true);
+                if (candidate != null) return candidate;
+            }
+
+            return null;
+        }
+
+        public static bool HasValidTarget<T>(SerializedProperty property, bool filledWithGameObject)
+        {
+            if (filledWithGameObject)
+            {
+                var selectedSource = property.objectReferenceValue as GameObject;
+                return selectedSource != null && selectedSource.TryGetComponent<T>(out _);
+            }
+
+            return property.objectReferenceValue != null && property.objectReferenceValue is T;
+        }
+
+        public static void TryClearWrongTarget<T>(this SerializedProperty property, bool filledWithGameObject)
+        {
+            var selectedSource = property.objectReferenceValue;
+
+            if (selectedSource == null) return;
+            if (HasValidTarget<T>(property, filledWithGameObject)) return;
+
+            Debug.LogError($"Provided object {selectedSource} is not a {typeof(T)}!", selectedSource);
+
+            property.objectReferenceValue = null;
+            property.Apply();
+        }
 
         #endregion
 

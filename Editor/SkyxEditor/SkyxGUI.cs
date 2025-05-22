@@ -194,7 +194,7 @@ namespace Skyx.SkyxEditor
             => DrawToggle(rect, onLabel, offLabel, Colors.Console.Warning, Colors.Console.GrayOut, property, hint);
 
         public static bool DrawChoiceToggle(Rect rect, string onLabel, string offLabel, SerializedProperty property, string hint)
-            => DrawToggle(rect, onLabel, offLabel, Colors.Console.Success, Colors.Console.Info, property, hint);
+            => DrawToggle(rect, onLabel, offLabel, Colors.Console.Special, Colors.Console.Info, property, hint);
 
         public static bool MiniSuccessToggle(ref Rect rect, SerializedProperty toggleProp, string label, string hint, bool fromEnd = false)
             => DrawSuccessToggle(ExtractMiniButton(ref rect, fromEnd), label, toggleProp, hint);
