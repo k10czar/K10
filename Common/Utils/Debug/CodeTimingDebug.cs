@@ -101,9 +101,8 @@ public static class CodeTimingDebug
 		if( !enabled ) return;
 		LogEnd( tag );
 
-		var sw = new Stopwatch();
+		var sw = StopwatchPool.RequestStarted();
 		_watches[tag] = sw;
-		sw.Start();
 	}
 	
 	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
@@ -122,7 +121,6 @@ public static class CodeTimingDebug
 		if( !_watches.TryGetValue( tag, out var osw ) ) return;
 		if( osw.IsRunning ) osw.Stop();
 		_watches.Remove( tag );
-		
 
 		int currentFrame = Time.frameCount;
 		if (_framesData.Count == 0 || _framesData[_framesData.Count - 1].FrameNumber != currentFrame)
@@ -134,8 +132,7 @@ public static class CodeTimingDebug
 
 		var frameData = _framesData[_framesData.Count - 1];
 
-		var elapsed = osw.Elapsed.TotalMilliseconds;
-		frameData.AddTimingData(tag, elapsed);
+		frameData.AddTimingData(tag, osw.ReturnToPoolAndGetElapsedMs() );
 
 		// return elapsed;
 	}
