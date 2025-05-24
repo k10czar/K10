@@ -185,10 +185,10 @@ namespace Skyx.SkyxEditor
             Colors.Console.Dark,
             Color.white,
             Color.white,
-            Colors.Yellow, // Warning
+            Colors.Yellow, // Warningw
             Colors.LightSalmon,
             Color.white,
-            Color.white,
+            Colors.Console.Special,
         };
 
         private static readonly string[] boxStyles =
@@ -200,7 +200,7 @@ namespace Skyx.SkyxEditor
             "HelpBox", // Warning
             "HelpBox", // Danger
             "TE BoxBackground", // Support
-            "ProgressBarBar", // Special
+            "HelpBox", // Special
         };
 
         public static GUIStyle HeaderText(EElementSize size = EElementSize.Primary) => headerText[(int)size];
