@@ -52,10 +52,11 @@ public class CodeOrchestrator : MonoBehaviour
 	{
 		get
 		{
-			if( _eternalOrchestrator == null )
+			if (_eternalOrchestrator == null)
 			{
-				GameObject obj = new GameObject( $"EternalCodeOrchestration" );
+				GameObject obj = new GameObject($"EternalCodeOrchestration");
 				_eternalOrchestrator = obj.AddComponent<CodeOrchestrator>();
+				DontDestroyOnLoad( obj );
 			}
 			return _eternalOrchestrator;
 		}
