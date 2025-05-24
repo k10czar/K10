@@ -91,7 +91,7 @@ public static class MathAdapter
 #endif
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static int sign( float x ) => x < 0 ? -1 : 1;
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float clamp( float val, float min, float max ) => val < min ? min : ( val > max ? max : val );
-	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float clamp01( float val ) => clamp( val, 0, 1 );
+	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float clamp01( float val ) => val < 0 ? 0 : ( val > 1 ? 1 : val );
 
 	//Vector3
 #if USE_NEW_MATHEMATICS
