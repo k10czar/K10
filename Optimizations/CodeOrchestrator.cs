@@ -22,8 +22,11 @@ public interface IOrchestratedFixedUpdate
 public class CodeOrchestrator : MonoBehaviour
 {
 	List<IOrchestratedUpdate> _updatables = new();
+	List<IOrchestratedUpdate> _updatablesCallList = new();
 	List<IOrchestratedLateUpdate> _lateUpdatables = new();
+	List<IOrchestratedLateUpdate> _lateUpdatablesCallList = new();
 	List<IOrchestratedFixedUpdate> _fixedUpdatables = new();
+	List<IOrchestratedFixedUpdate> _fixedUpdatablesCallList = new();
 
 	// EventSlot _onDestroy;
 	// public IEventRegister OnDestroy => _onDestroy ??= new();
@@ -79,45 +82,60 @@ public class CodeOrchestrator : MonoBehaviour
 	void Update()
 	{
 		var len = _updatables.Count;
-		for( int i = 0; i < len; i++ )
+		
+		while (_updatablesCallList.Count < len) _updatablesCallList.Add(null);
+		for (int i = 0; i < len; i++) _updatablesCallList[i] = _updatables[i];
+
+		for (int i = 0; i < len; i++)
 		{
-			var element = _updatables[i];
+			var element = _updatablesCallList[i];
 			element.PreUpdate();
 		}
-		for( int i = 0; i < len; i++ )
+		for (int i = 0; i < len; i++)
 		{
-			var element = _updatables[i];
+			var element = _updatablesCallList[i];
 			element.PostUpdate();
+			_updatablesCallList[i] = null;
 		}
 	}
 
 	void FixedUpdate()
 	{
 		var len = _lateUpdatables.Count;
-		for( int i = 0; i < len; i++ )
+		
+		while (_lateUpdatablesCallList.Count < len) _lateUpdatablesCallList.Add(null);
+		for (int i = 0; i < len; i++) _lateUpdatablesCallList[i] = _lateUpdatables[i];
+		
+		for (int i = 0; i < len; i++)
 		{
-			var element = _lateUpdatables[i];
+			var element = _lateUpdatablesCallList[i];
 			element.PreLateUpdate();
 		}
 		for( int i = 0; i < len; i++ )
 		{
-			var element = _lateUpdatables[i];
+			var element = _lateUpdatablesCallList[i];
 			element.PostLateUpdate();
+			_lateUpdatablesCallList[i] = null;
 		}
 	}
 
 	void LateUpdate()
 	{
 		var len = _fixedUpdatables.Count;
-		for( int i = 0; i < len; i++ )
+		
+		while (_fixedUpdatablesCallList.Count < len) _fixedUpdatablesCallList.Add(null);
+		for (int i = 0; i < len; i++) _fixedUpdatablesCallList[i] = _fixedUpdatables[i];
+		
+		for (int i = 0; i < len; i++)
 		{
-			var element = _fixedUpdatables[i];
+			var element = _fixedUpdatablesCallList[i];
 			element.PreFixedUpdate();
 		}
 		for( int i = 0; i < len; i++ )
 		{
-			var element = _fixedUpdatables[i];
+			var element = _fixedUpdatablesCallList[i];
 			element.PostFixedUpdate();
+			_fixedUpdatablesCallList[i] = null;
 		}
 	}
 }
