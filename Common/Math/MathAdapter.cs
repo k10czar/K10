@@ -70,8 +70,6 @@ public static class MathAdapter
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float smoothStep(float a, float b, float x) => math.smoothstep( a, b, x );
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static int CeilToInt( float a ) => Mathf.CeilToInt( a ); // TODO: Change to New Mathematics
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static int RoundToInt( float a ) => Mathf.RoundToInt( a ); // TODO: Change to New Mathematics
-	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static bool Approximately(float a, float b) => math.abs( a - b ) < EP2;
-	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static bool Approximately(float a, float b, float tolerance) => math.abs( a - b ) < tolerance;
 #else
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float abs( float a ) => Mathf.Abs( a );
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float min( float a, float b ) => Mathf.Min( a, b );
@@ -85,16 +83,54 @@ public static class MathAdapter
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float smoothStep(float a, float b, float x) => Mathf.SmoothStep( a, b, x );
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static int CeilToInt( float a ) => Mathf.CeilToInt( a );
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static int RoundToInt( float a ) => Mathf.RoundToInt( a );
-	[MethodImpl(Optimizations.INLINE_IF_CAN)] public static bool Approximately(float a, float b) => Mathf.Abs(a - b) < EP2;
-	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static bool Approximately(float a, float b, float tolerance) => Mathf.Abs( a - b ) < tolerance;
 	// [MethodImpl(Optimizations.INLINE_IF_CAN)] public static float sign( float a ) => Mathf.Sign( a );
 #endif
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static int sign( float x ) => x < 0 ? -1 : 1;
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float clamp( float val, float min, float max ) => val < min ? min : ( val > max ? max : val );
+	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float clamp01( float val ) => val < 0 ? 0 : ( val > 1 ? 1 : val );
 
-	//Vector3
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
+	public static bool Approximately(float a, float b)
+	{
+		var dx = a - b;
+		return dx < EP2 && dx > NEG_EP2;
+    }
+
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
+	public static bool Approximately(float a, float b, float tolerance)
+	{
+		var dx = a - b;
+		return dx < tolerance && dx > -tolerance;
+    }
+
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
+	public static bool Approximately(Vector3 a, Vector3 b, float dimensionTolerance = EP2)
+	{
+		var dx = a.x - b.x;
+		if (dx > dimensionTolerance) return false;
+		var negativeTolerance = -dimensionTolerance;
+		if (dx < negativeTolerance) return false;
+		var dy = a.y - b.y;
+		if (dy > dimensionTolerance) return false;
+		if (dy < negativeTolerance) return false;
+		var dz = a.z - b.z;
+		if (dz > dimensionTolerance) return false;
+		if (dz < negativeTolerance) return false;
+		return true;
+    }
+
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
+	public static bool IsZero(Vector3 a, float dimensionTolerance = EP2)
+	{
+		if (a.x > dimensionTolerance || a.y > dimensionTolerance || a.z > dimensionTolerance ) return false;
+		var negativeTolerance = -dimensionTolerance;
+		if (a.x < negativeTolerance || a.y < negativeTolerance || a.z < negativeTolerance) return false;
+		return true;
+    }
+
+    //Vector3
 #if USE_NEW_MATHEMATICS
-	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float dot( v3 a, v3 b ) => math.dot( a, b );
+    [MethodImpl( Optimizations.INLINE_IF_CAN )] public static float dot( v3 a, v3 b ) => math.dot( a, b );
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static v3 cross( v3 a, v3 b ) => math.cross( a, b );
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static v3 normalize( v3 a ) => math.normalize( a );
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float length( v3 a ) => math.length( a );

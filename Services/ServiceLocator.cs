@@ -59,6 +59,17 @@ public static class ServiceLocator
 		_onUpdate = null;
 	}
 
+	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+	public static void AfterSceneLoad()
+	{
+		if (services == null) return;
+		foreach( var kvp in services )
+		{
+			var ser = kvp.Value;
+			if( ser is IAfterSceneLoad load ) load.AfterSceneLoad();
+		}
+	}
+
 	public class GenericsComparer : IEqualityComparer<Type[]>
 	{
 		public bool Equals(Type[] x, Type[] y)

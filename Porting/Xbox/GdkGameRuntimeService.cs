@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEditor;
+using WebSocketSharp;
 
 public class GdkUserData
 {
@@ -16,6 +17,7 @@ public class GdkUserData
     public ulong userXUID;
     public string userGamertag;
     public XblContextHandle contextHandle;
+    public XStoreContext storeContext;
     public Privileges Privileges = new();
 }
 
@@ -143,6 +145,10 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     private EventSlot<string> _onReceivedInvite = new();
     public IEventRegister<string> OnReceivedInvite => _onReceivedInvite;
     private Coroutine _earlyInviteHandlingCoroutine;
+
+    // DLC
+    private HashSet<string> _dlcsWithValidLicense = new();
+
 
     // Controller related
 #if UNITY_GAMECORE
@@ -349,6 +355,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         GetUserLocalId();
         GetUserContext();
         GetGamertag();
+        GetStoreContext();
 
         _userData.Privileges.ReadUserPrivileges( _userData.userHandle );
         // GetUserPrivileges(); 
@@ -388,6 +395,45 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
             Debug.LogError($"Failed to get LocaId. HR {hr} - {HR.NameOf(hr)}");
 
         return hr;
+    }
+
+    private int GetStoreContext()
+    {
+        int hr = SDK.XStoreCreateContext(UserData.userHandle, out _userData.storeContext);
+        if (HR.FAILED(hr) || _userData.storeContext == null)
+            Debug.LogError($"CreateStoreContext failed - 0x{hr:X8}.");
+
+        return hr;
+    }
+#endregion
+
+#region DLC
+    public void FetchDLCLicense(string storeId)
+    {
+        if (storeId.IsNullOrEmpty())
+            return;
+
+        SDK.XStoreAcquireLicenseForDurablesAsync(UserData.storeContext, storeId,
+            (Int32 hresult, XStoreLicense license) =>
+            {
+                if (HR.FAILED(hresult) || license == null)
+                {
+                    if (HR.FAILED(hresult))
+                        Debug.LogError($"Failed to get DLC license {storeId}: HR = {hresult}");
+
+                    return;
+                }
+
+                if (SDK.XStoreIsLicenseValid(license))
+                    _dlcsWithValidLicense.Add(storeId);
+            }
+        );
+    }
+
+    //! Only checks DLC which licenses have already been checked (used to avoid async handling)
+    public bool HasDLC(string storeId)
+    {
+        return _dlcsWithValidLicense.Contains(storeId);
     }
 #endregion
 
@@ -479,8 +525,11 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         SDK.XUserUnregisterForDeviceAssociationChanged(_deviceAssociationChangedRegistrationToken, true);
 #endif
         SDK.XGameInviteUnregisterForEvent(_inviteRegistrationToken);
+        SDK.XStoreCloseContextHandle(UserData.storeContext);
         SDK.XUserCloseHandle(UserData.userHandle);
         SDK.XBL.XblContextCloseHandle(UserData.contextHandle);
+
+        Debug.Log($"GDK CleanUp finished");
     }
 
 #if UNITY_EDITOR
