@@ -72,6 +72,10 @@ public static class MathAdapter
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static int RoundToInt( float a ) => Mathf.RoundToInt( a ); // TODO: Change to New Mathematics
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static bool Approximately(float a, float b) => math.abs( a - b ) < EP2;
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static bool Approximately(float a, float b, float tolerance) => math.abs( a - b ) < tolerance;
+	[MethodImpl(Optimizations.INLINE_IF_CAN)] public static bool Approximately(Vector3 a, Vector3 b, float dimensionTolerance) =>
+									math.abs( a.x - b.x ) < dimensionTolerance &&
+									math.abs( a.y - b.y ) < dimensionTolerance &&
+									math.abs( a.z - b.z ) < dimensionTolerance;
 #else
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float abs( float a ) => Mathf.Abs( a );
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float min( float a, float b ) => Mathf.Min( a, b );
@@ -87,6 +91,10 @@ public static class MathAdapter
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static int RoundToInt( float a ) => Mathf.RoundToInt( a );
 	[MethodImpl(Optimizations.INLINE_IF_CAN)] public static bool Approximately(float a, float b) => Mathf.Abs(a - b) < EP2;
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static bool Approximately(float a, float b, float tolerance) => Mathf.Abs( a - b ) < tolerance;
+	[MethodImpl(Optimizations.INLINE_IF_CAN)] public static bool Approximately(Vector3 a, Vector3 b, float dimensionTolerance) =>
+									Mathf.Abs( a.x - b.x ) < dimensionTolerance &&
+									Mathf.Abs( a.y - b.y ) < dimensionTolerance &&
+									Mathf.Abs( a.z - b.z ) < dimensionTolerance;
 	// [MethodImpl(Optimizations.INLINE_IF_CAN)] public static float sign( float a ) => Mathf.Sign( a );
 #endif
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static int sign( float x ) => x < 0 ? -1 : 1;
