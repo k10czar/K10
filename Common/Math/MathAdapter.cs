@@ -119,6 +119,15 @@ public static class MathAdapter
 		return true;
     }
 
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
+	public static bool IsZero(Vector3 a, float dimensionTolerance = EP2)
+	{
+		if (a.x > dimensionTolerance || a.y > dimensionTolerance || a.z > dimensionTolerance ) return false;
+		var negativeTolerance = -dimensionTolerance;
+		if (a.x < negativeTolerance || a.y < negativeTolerance || a.z < negativeTolerance) return false;
+		return true;
+    }
+
     //Vector3
 #if USE_NEW_MATHEMATICS
     [MethodImpl( Optimizations.INLINE_IF_CAN )] public static float dot( v3 a, v3 b ) => math.dot( a, b );
