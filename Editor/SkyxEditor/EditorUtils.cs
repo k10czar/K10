@@ -143,5 +143,12 @@ namespace Skyx.SkyxEditor
                 Debug.LogWarning("Couldn't access isLocked property.");
             }
         }
+
+        public static void ClearConsole()
+        {
+            var logEntries = Type.GetType("UnityEditor.LogEntries, UnityEditor");
+            var clearMethod = logEntries.GetMethod("Clear");
+            clearMethod.Invoke(new object(), null);
+        }
     }
 }
