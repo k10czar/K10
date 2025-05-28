@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -79,7 +80,14 @@ public class CodeOrchestrator : MonoBehaviour
 		if( obj is IOrchestratedFixedUpdate fupd ) _fixedUpdatables.Remove( fupd );
 	}
 
-	void Update()
+    void OnDestroy()
+    {
+		for (int i = 0; i < _updatables.Count; i++) if (_updatables[i] is IDisposable disp) disp.Dispose();
+		for (int i = 0; i < _lateUpdatables.Count; i++) if (_lateUpdatables[i] is IDisposable disp) disp.Dispose();
+		for (int i = 0; i < _fixedUpdatables.Count; i++) if (_fixedUpdatables[i] is IDisposable disp) disp.Dispose();
+    }
+
+    void Update()
 	{
 		var len = _updatables.Count;
 		
