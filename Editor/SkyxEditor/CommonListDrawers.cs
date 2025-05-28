@@ -24,6 +24,7 @@ namespace Skyx.SkyxEditor
 
             var newObj = new GameObject($"{root.name}.{pointName}{index + 1}");
             newObj.SetActive(false);
+            newObj.isStatic = true;
             var newPoint = newObj.transform;
             newPoint.SetParent(root.transform);
             newPoint.position = hit.point;
