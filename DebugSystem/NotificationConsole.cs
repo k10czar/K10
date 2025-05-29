@@ -4,17 +4,24 @@ using System;
 
 public class NotificationConsole : MonoBehaviour
 {
-    [SerializeField] Rect _area = new Rect(20, 300, 500, 500);
+    [SerializeField] Rect _area = new Rect(30, 150, 1000, 1000);
     [SerializeField] List<LabelData> _labelDraws = new()
     {
         new LabelData( Color.black, new Vector2(2, 2) ),
         new LabelData( Colors.ElectricLime, new Vector2(0, 0) )
     };
-    [SerializeField] GUIStyle _style = GUI.skin.label;
-    [SerializeField] List<Notification> _notifications = new();
-    [SerializeField] bool _isDirty = false;
-    [SerializeField] float _nextVanish = float.MaxValue;
-    [SerializeField] string _currentMessage = string.Empty;
+    [SerializeField] GUIStyle _style = new GUIStyle(GUI.skin.label)
+    {
+        fontSize = 20,
+        normal = new GUIStyleState()
+        {
+            textColor = Color.white
+        }
+    };
+    List<Notification> _notifications = new();
+    bool _isDirty = false;
+    float _nextVanish = float.MaxValue;
+    [SerializeField,TextArea(5,25)] string _currentMessage = string.Empty;
 
     public static void Notify(string message, float notificationSeconds = 5f)
     {
@@ -24,6 +31,7 @@ public class NotificationConsole : MonoBehaviour
     private void LocalNotify(string message, float notificationSeconds )
     {
         var refTime = Time.timeSinceLevelLoad;
+        if (_notifications == null) _notifications = new();
         _notifications.Add(new Notification(message, refTime + notificationSeconds));
         _nextVanish = MathAdapter.min(_nextVanish, refTime);
         _isDirty = true;
@@ -50,6 +58,8 @@ public class NotificationConsole : MonoBehaviour
             _nextVanish = MathAdapter.min(_nextVanish, n.vanishTime);
             SB.AppendLine(n.message);
         }
+
+        _currentMessage = SB.ReturnToPoolAndCast();
     }
 
     void OnGUI()
