@@ -78,6 +78,14 @@ namespace Skyx.SkyxEditor
             if (property.floatValue == 0 || alwaysVisible) DrawHindInlaid(rect, inlaidHint);
         }
 
+        public static void DrawObjectField<T>(Rect rect, SerializedProperty property, string label, string hint, bool allowSceneObjects = false)
+        {
+            rect.DivideRect(2);
+            EditorGUI.LabelField(rect, label, SkyxStyles.DefaultLabel);
+            rect.SlideSameRect();
+            DrawObjectField<T>(rect, property, hint, allowSceneObjects);
+        }
+
         public static void DrawObjectField<T>(Rect rect, SerializedProperty property, string hint, bool allowSceneObjects = false)
             => DrawObjectField(rect, property, typeof(T), hint, allowSceneObjects);
 
