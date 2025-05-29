@@ -3,21 +3,23 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using K10;
+using System.Runtime.CompilerServices;
 
 
 [UnityEngine.HideInInspector]
 public class EventSlot : IEvent, ICustomDisposableKill
 {
 	bool _killed = false;
-	// TODO: LazyOptimization
 	private List<IEventTrigger> _listeners;
-	// private List<IEventTrigger> _listeners = new List<IEventTrigger>();
+	private List<IEventTrigger> _callList;
+	bool _callListIsDirty = false;
 
 	public bool IsValid => !_killed;
 	public int EventsCount => _listeners?.Count ?? 0;
 	public int CountValidEvents => _listeners.Count( ( et ) => et.IsValid );
 	public bool HasListeners => EventsCount > 0;
 
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	public void Trigger()
 	{
 		if( _killed )
@@ -26,22 +28,56 @@ public class EventSlot : IEvent, ICustomDisposableKill
 			return;
 		}
 
-		if( _listeners == null || _listeners.Count == 0 ) return;
+		if (_listeners == null) return;
+		
+		var count = _listeners.Count;
+		if ( count <= 0 ) return;
 
-		var listenersToTrigger = ObjectPool<List<IEventTrigger>>.Request();
-		listenersToTrigger.AddRange( _listeners );
+		if (count == 1) // Only one element Events does not need callList
+		{
+			try
+			{
+				var listener = _listeners[0];
+				if (listener.IsValid) listener.Trigger();
+				//NOT else Trigger can invalidate listener
+				if (!listener.IsValid)
+				{
+					//Trigger could add another element or remove itself, so we could not assume that we could clear the list or the element is in the same spot
+					_listeners?.Remove(listener);
+					_callListIsDirty = true;
+					TryClearFullSignatureList();
+				}
+			}
+			catch (Exception exception)
+			{
+				Debug.LogException(exception);
+			}
+			return;
+		}
 
-		var count = listenersToTrigger.Count;
+		if (_callListIsDirty)
+		{
+			Lazy.RequestPoolable(ref _callList);
+			for (int i = 0; i < count; i++)
+			{
+				if (i < _callList.Count) _callList[i] = _listeners[i];
+				else _callList.Add(_listeners[i]);
+			}
+			for (int i = _callList.Count - 1; i >= count; i--) _callList.RemoveAt(i);
+			_callListIsDirty = false;
+		}
+
 		for( int i = 0; i < count; i++ )
 		{
 			try
 			{
-				var listener = listenersToTrigger[i];
+				var listener = _callList[i];
 				if (listener.IsValid) listener.Trigger();
 				//NOT else Trigger can invalidate listener
 				if (!listener.IsValid)
 				{
 					_listeners?.Remove(listener);
+					_callListIsDirty = true;
 					TryClearFullSignatureList();
 				}
 			}
@@ -50,35 +86,61 @@ public class EventSlot : IEvent, ICustomDisposableKill
 				Debug.LogException(exception);
 			}
 		}
-
-		ObjectPool<List<IEventTrigger>>.Return( listenersToTrigger );
 	}
 
 	public void Kill()
 	{
 		_killed = true;
 		Clear();
-		_listeners = null;
 	}
 
-	public void Clear() => _listeners?.Clear();
-
-	private void TryClearFullSignatureList()
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
+	public void Clear()
 	{
-		if( _listeners == null || _listeners.Count == 0 ) _listeners = null;
+		_callListIsDirty = false;
+		if (_listeners != null)
+		{
+			_listeners.Clear();
+			ObjectPool.ReturnAndClearRef(ref _listeners);
+		}
+		if (_callList != null)
+		{
+			_callList.Clear();
+			ObjectPool.ReturnAndClearRef(ref _callList);
+		}
+    }
+
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
+    private void TryClearFullSignatureList()
+	{
+		if (_listeners != null && _listeners.Count == 0 )
+		{
+			ObjectPool.ReturnAndClearRef( ref _listeners );
+			if (_callList != null)
+			{
+				_callList.Clear();
+				ObjectPool.ReturnAndClearRef( ref _callList );
+			}
+			_callListIsDirty = false;
+		}
 	}
 
-	public void Register( IEventTrigger listener )
+	public void Register(IEventTrigger listener)
 	{
-		if( _killed || listener == null ) return;
-		Lazy.Request( ref _listeners ).Add( listener );
+		if (_killed || listener == null) return;
+		Lazy.RequestPoolable(ref _listeners).Add(listener);
+		_callListIsDirty = true;
 	}
 
 	public bool Unregister( IEventTrigger listener )
 	{
 		if( _killed || _listeners == null ) return false;
 		bool removed = _listeners.Remove( listener );
-		if( removed ) TryClearFullSignatureList();
+		if (removed)
+		{
+			TryClearFullSignatureList();
+			_callListIsDirty = true;
+		}
 		return removed;
 	}
 
@@ -89,11 +151,10 @@ public class EventSlot : IEvent, ICustomDisposableKill
 public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 {
 	bool _killed = false;
-	// TODO: LazyOptimization
 	private EventSlot _generic;
 	private List<IEventTrigger<T>> _listeners;
-	// private EventSlot _generic = new EventSlot();
-	// private List<IEventTrigger<T>> _listeners = new List<IEventTrigger<T>>();
+	private List<IEventTrigger<T>> _callList;
+	bool _callListIsDirty = false;
 
 	public bool IsValid => !_killed;
 	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
@@ -102,91 +163,154 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 
 	public static implicit operator EventSlot( EventSlot<T> v ) => Lazy.Request( ref v._generic );
 
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	public void Trigger( T t )
-	{
-		if( _killed )
-		{
-			Debug.LogError( $"Error: Cannot Trigger dead EventSlot<{typeof( T )}>" );
-			return;
-		}
+    {
+        if (_killed)
+        {
+            Debug.LogError($"Error: Cannot Trigger dead EventSlot<{typeof(T)}>");
+            return;
+        }
 
-		if( _listeners != null && _listeners.Count > 0 )
-		{
-			var listenersToTrigger = ObjectPool<List<IEventTrigger<T>>>.Request();
-			listenersToTrigger.AddRange( _listeners );
-
-			var count = listenersToTrigger.Count;
-			for( int i = 0; i < count; i++ )
-			{
-				try
+        if (_listeners != null)
+        {
+            var count = _listeners.Count;
+            if (count > 0)
+            {
+				if (count == 1) // Only one element Events does not need callList
 				{
-					var listener = listenersToTrigger[i];
-					if (listener.IsValid) listener.Trigger(t);
-					//NOT else Trigger can invalidate listener
-					if (!listener.IsValid)
+					try
 					{
-						_listeners?.Remove(listener);
-						TryClearFullSignatureList();
+						var listener = _listeners[0];
+						if (listener.IsValid) listener.Trigger(t);
+						//NOT else Trigger can invalidate listener
+						if (!listener.IsValid)
+						{
+							//Trigger could add another element or remove itself, so we could not assume that we could clear the list or the element is in the same spot
+							_listeners?.Remove(listener);
+							_callListIsDirty = true;
+							TryClearFullSignatureList();
+						}
+					}
+					catch (Exception exception)
+					{
+						Debug.LogException(exception);
 					}
 				}
-				catch (Exception exception)
+				else
 				{
-					Debug.LogException(exception);
+					if (_callListIsDirty)
+					{
+						Lazy.RequestPoolable(ref _callList);
+						for (int i = 0; i < count; i++)
+						{
+							if (i < _callList.Count) _callList[i] = _listeners[i];
+							else _callList.Add(_listeners[i]);
+						}
+						for (int i = _callList.Count - 1; i >= count; i--) _callList.RemoveAt(i);
+						_callListIsDirty = false;
+					}
+
+					for (int i = 0; i < count; i++)
+					{
+						try
+						{
+							var listener = _callList[i];
+							if (listener.IsValid) listener.Trigger(t);
+							//NOT else Trigger can invalidate listener
+							if (!listener.IsValid)
+							{
+								_listeners?.Remove(listener);
+								_callListIsDirty = true;
+								TryClearFullSignatureList();
+							}
+						}
+						catch (Exception exception)
+						{
+							Debug.LogException(exception);
+						}
+					}
 				}
-			}
-			ObjectPool<List<IEventTrigger<T>>>.Return( listenersToTrigger );
-		}
+            }
+        }
 
-		if( _generic != null )
-		{
-			_generic.Trigger();
-			TryClearGeneric();
-		}
-	}
+        if (_generic != null)
+        {
+            _generic.Trigger();
+            TryClearGeneric();
+        }
+    }
 
-	public void Kill()
+    public void Kill()
 	{
 		_killed = true;
-		_listeners?.Clear();
-		_generic?.Kill();
-		_listeners = null;
-		_generic = null;
+		Clear();
 	}
 
 	public void Clear()
 	{
-		_generic.Clear();
-		_listeners?.Clear();
+		_callListIsDirty = false;
+		if (_listeners != null)
+		{
+			_listeners.Clear();
+			ObjectPool.ReturnAndClearRef( ref _listeners);
+		}
+		if (_generic != null)
+		{
+			_generic.Clear();
+			ObjectPool.ReturnAndClearRef(ref _generic);
+		}
+		if (_callList != null)
+		{
+			_callList.Clear();
+			ObjectPool.ReturnAndClearRef(ref _callList);
+		}
 	}
 
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	private void TryClearGeneric()
 	{
 		if( _generic == null ) return;
-		if( _generic.EventsCount == 0 ) _generic = null;
+		if (_generic.EventsCount == 0) ObjectPool.ReturnAndClearRef( ref _generic);
 	}
+	
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	private void TryClearFullSignatureList()
 	{
-		if( _listeners == null ) return;
-		if( _listeners.Count == 0 ) _listeners = null;
+		if (_listeners == null) return;
+		if (_listeners.Count == 0)
+		{
+			ObjectPool.ReturnAndClearRef( ref _listeners );
+			if (_callList != null)
+			{
+				_callList.Clear();
+				ObjectPool.ReturnAndClearRef( ref _callList);
+			}
+		}
 	}
 
 	public void Register( IEventTrigger<T> listener )
 	{
 		if( _killed || listener == null ) return;
-		Lazy.Request( ref _listeners ).Add( listener );
+		Lazy.RequestPoolable( ref _listeners ).Add( listener );
+		_callListIsDirty = true;
 	}
 
 	public void Register( IEventTrigger listener )
 	{
 		if( _killed || listener == null ) return;
-		Lazy.Request( ref _generic ).Register( listener );
+		Lazy.RequestPoolable( ref _generic ).Register( listener );
 	}
 
 	public bool Unregister( IEventTrigger<T> listener )
 	{
 		if( _killed || _listeners == null ) return false;
 		bool removed = _listeners.Remove( listener );
-		if( removed ) TryClearFullSignatureList();
+		if (removed)
+		{
+			_callListIsDirty = true;
+			TryClearFullSignatureList();
+		}
 		return removed;
 	}
 
@@ -198,7 +322,6 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 		return removed;
 	}
 
-
 	public override string ToString() { return $"[EventSlot<{typeof(T)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
 }
 
@@ -206,11 +329,10 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 {
 	bool _killed = false;
-	// TODO: LazyOptimization
 	private EventSlot<T> _generic;
 	private List<IEventTrigger<T, K>> _listeners;
-	// private EventSlot<T> _generic = new EventSlot<T>();
-	// private List<IEventTrigger<T, K>> _listeners = new List<IEventTrigger<T, K>>();
+	private List<IEventTrigger<T, K>> _callList;
+	bool _callListIsDirty = false;
 
 	public bool IsValid => !_killed;
 	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
@@ -219,78 +341,137 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 
 	public static implicit operator EventSlot<T>( EventSlot<T, K> v ) => Lazy.Request( ref v._generic );
 
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	public void Trigger( T t, K k )
-	{
-		if( _killed )
-		{
-			Debug.LogError( $"Error: Cannot Trigger dead EventSlot<{typeof( T )},{typeof( K )}>" );
-			return;
-		}
+    {
+        if (_killed)
+        {
+            Debug.LogError($"Error: Cannot Trigger dead EventSlot<{typeof(T)},{typeof(K)}>");
+            return;
+        }
 
-		if( _listeners != null && _listeners.Count > 0 )
-		{
-			var listenersToTrigger = ObjectPool<List<IEventTrigger<T,K>>>.Request();
-			listenersToTrigger.AddRange( _listeners );
-
-			var count = listenersToTrigger.Count;
-			for( int i = 0; i < count; i++ )
-			{
-				try
+        if (_listeners != null)
+        {
+            var count = _listeners.Count;
+            if (count > 0)
+            {
+				if (count == 1) // Only one element Events does not need callList
 				{
-					var listener = listenersToTrigger[i];
-					if (listener.IsValid) listener.Trigger(t, k);
-					//NOT else Trigger can invalidate listener
-					if (!listener.IsValid)
+					try
 					{
-						_listeners?.Remove(listener);
-						TryClearFullSignatureList();
+						var listener = _listeners[0];
+						if (listener.IsValid) listener.Trigger(t, k);
+						//NOT else Trigger can invalidate listener
+						if (!listener.IsValid)
+						{
+							_listeners?.Remove(listener);
+							_callListIsDirty = true;
+							TryClearFullSignatureList();
+						}
+					}
+					catch (Exception exception)
+					{
+						Debug.LogException(exception);
 					}
 				}
-				catch (Exception exception)
+				else
 				{
-					Debug.LogException(exception);
+					if (_callListIsDirty)
+					{
+						Lazy.RequestPoolable(ref _callList);
+						for (int i = 0; i < count; i++)
+						{
+							if (i < _callList.Count) _callList[i] = _listeners[i];
+							else _callList.Add(_listeners[i]);
+						}
+						for (int i = _callList.Count - 1; i >= count; i--) _callList.RemoveAt(i);
+						_callListIsDirty = false;
+					}
+
+					for (int i = 0; i < count; i++)
+					{
+						try
+						{
+							var listener = _callList[i];
+							if (listener.IsValid) listener.Trigger(t, k);
+							//NOT else Trigger can invalidate listener
+							if (!listener.IsValid)
+							{
+								_listeners?.Remove(listener);
+								_callListIsDirty = true;
+								TryClearFullSignatureList();
+							}
+						}
+						catch (Exception exception)
+						{
+							Debug.LogException(exception);
+						}
+					}
 				}
-			}
-			ObjectPool<List<IEventTrigger<T,K>>>.Return( listenersToTrigger );
-		}
+            }
+        }
 
-		if( _generic != null )
-		{
-			_generic.Trigger( t );
-			TryClearGeneric();
-		}
-	}
+        if (_generic != null)
+        {
+            _generic.Trigger(t);
+            TryClearGeneric();
+        }
+    }
 
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	private void TryClearGeneric()
 	{
 		if( _generic == null ) return;
-		if( _generic.EventsCount == 0 ) _generic = null;
+		if (_generic.EventsCount == 0) ObjectPool.ReturnAndClearRef( ref _generic);
 	}
+	
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	private void TryClearFullSignatureList()
 	{
-		if( _listeners == null ) return;
-		if( _listeners.Count == 0 ) _listeners = null;
+		if (_listeners == null) return;
+		if (_listeners.Count == 0)
+		{
+			ObjectPool.ReturnAndClearRef( ref _listeners );
+			if (_callList != null)
+			{
+				_callList.Clear();
+				ObjectPool.ReturnAndClearRef( ref _callList);
+			}
+			_callListIsDirty = false;
+		}
 	}
 
 	public void Kill()
 	{
 		_killed = true;
-		_listeners?.Clear();
-		_generic?.Kill();
-		_listeners = null;
-		_generic = null;
+		Clear();
 	}
 
 	public void Clear()
 	{
-		_generic.Clear();
-		_listeners?.Clear();
+		_callListIsDirty = false;
+		if (_listeners != null)
+		{
+			_listeners.Clear();
+			ObjectPool.ReturnAndClearRef( ref _listeners);
+		}
+		if (_generic != null)
+		{
+			_generic.Clear();
+			ObjectPool.ReturnAndClearRef(ref _generic);
+		}
+		if (_callList != null)
+		{
+			_callList.Clear();
+			ObjectPool.ReturnAndClearRef(ref _callList);
+		}
 	}
 
 	public void Register( IEventTrigger<T, K> listener )
 	{
 		if( _killed || listener == null ) return;
 		Lazy.Request( ref _listeners ).Add( listener );
+		_callListIsDirty = true;
 	}
 
 	public void Register( IEventTrigger<T> listener )
@@ -309,7 +490,11 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 	{
 		if( _killed || _listeners == null ) return false;
 		bool removed = _listeners.Remove( listener );
-		if( removed ) TryClearFullSignatureList();
+		if (removed)
+		{
+			_callListIsDirty = true;
+			TryClearFullSignatureList();
+		}
 		return removed;
 	}
 
@@ -336,11 +521,10 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 {
 	bool _killed = false;
-	// TODO: LazyOptimization
 	private EventSlot<T, K> _generic;
 	private List<IEventTrigger<T, K, L>> _listeners;
-	// private EventSlot<T, K> _generic = new EventSlot<T, K>();
-	// private List<IEventTrigger<T, K, L>> _listeners = new List<IEventTrigger<T, K, L>>();
+	private List<IEventTrigger<T, K, L>> _callList;
+	bool _callListIsDirty = false;
 
 	public bool IsValid => !_killed;
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
@@ -349,6 +533,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 
 	public static implicit operator EventSlot<T, K>( EventSlot<T, K, L> v ) => Lazy.Request( ref v._generic );
 
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	public void Trigger( T t, K k, L l )
 	{
 		if( _killed )
@@ -357,31 +542,65 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 			return;
 		}
 
-		if( _listeners != null && _listeners.Count > 0 )
+		if( _listeners != null )
 		{
-			var listenersToTrigger = ObjectPool<List<IEventTrigger<T, K, L>>>.Request();
-			listenersToTrigger.AddRange( _listeners );
-
-			var count = listenersToTrigger.Count;
-			for( int i = 0; i < count; i++ )
+			var count = _listeners.Count;
+			if (count > 0)
 			{
-				try
+				if (count == 1) // Only one element Events does not need callList
 				{
-					var listener = listenersToTrigger[i];
-					if (listener.IsValid) listener.Trigger(t, k, l);
-					//NOT else Trigger can invalidate listener
-					if (!listener.IsValid)
+					try
 					{
-						_listeners?.Remove(listener);
-						TryClearFullSignatureList();
+						var listener = _listeners[0];
+						if (listener.IsValid) listener.Trigger(t, k, l);
+						//NOT else Trigger can invalidate listener
+						if (!listener.IsValid)
+						{
+							_listeners?.Remove(listener);
+							_callListIsDirty = true;
+							TryClearFullSignatureList();
+						}
+					}
+					catch (Exception exception)
+					{
+						Debug.LogException(exception);
 					}
 				}
-				catch (Exception exception)
+				else
 				{
-					Debug.LogException(exception);
+					if (_callListIsDirty)
+					{
+						Lazy.RequestPoolable(ref _callList);
+						for (int i = 0; i < count; i++)
+						{
+							if (i < _callList.Count) _callList[i] = _listeners[i];
+							else _callList.Add(_listeners[i]);
+						}
+						for (int i = _callList.Count - 1; i >= count; i--) _callList.RemoveAt(i);
+						_callListIsDirty = false;
+					}	
+
+					for (int i = 0; i < count; i++)
+					{
+						try
+						{
+							var listener = _callList[i];
+							if (listener.IsValid) listener.Trigger(t, k, l);
+							//NOT else Trigger can invalidate listener
+							if (!listener.IsValid)
+							{
+								_listeners?.Remove(listener);
+								_callListIsDirty = true;
+								TryClearFullSignatureList();
+							}
+						}
+						catch (Exception exception)
+						{
+							Debug.LogException(exception);
+						}
+					}
 				}
 			}
-			ObjectPool<List<IEventTrigger<T, K, L>>>.Return( listenersToTrigger );
 		}
 
 		if( _generic != null )
@@ -391,35 +610,59 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 		}
 	}
 
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	private void TryClearGeneric()
 	{
-		if( _generic == null || _generic.EventsCount == 0 ) _generic = null;
+		if( _generic == null ) return;
+		if (_generic.EventsCount == 0) ObjectPool.ReturnAndClearRef( ref _generic);
 	}
-
+	
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	private void TryClearFullSignatureList()
 	{
-		if( _listeners == null || _listeners.Count == 0 ) _listeners = null;
+		if (_listeners == null) return;
+		if (_listeners.Count == 0)
+		{
+			ObjectPool.ReturnAndClearRef( ref _listeners );
+			if (_callList != null)
+			{
+				_callList.Clear();
+				ObjectPool.ReturnAndClearRef( ref _callList);
+			}
+		}
 	}
 
 	public void Kill()
 	{
 		_killed = true;
-		_listeners?.Clear();
-		_generic?.Kill();
-		_listeners = null;
-		_generic = null;
+		Clear();
 	}
 
 	public void Clear()
 	{
-		_generic.Clear();
-		_listeners?.Clear();
+		_callListIsDirty = false;
+		if (_listeners != null)
+		{
+			_listeners.Clear();
+			ObjectPool.ReturnAndClearRef( ref _listeners);
+		}
+		if (_generic != null)
+		{
+			_generic.Clear();
+			ObjectPool.ReturnAndClearRef(ref _generic);
+		}
+		if (_callList != null)
+		{
+			_callList.Clear();
+			ObjectPool.ReturnAndClearRef(ref _callList);
+		}
 	}
 
 	public void Register( IEventTrigger<T, K, L> listener )
 	{
 		if( _killed || listener == null ) return;
 		Lazy.Request( ref _listeners ).Add( listener );
+		_callListIsDirty = true;
 	}
 
 	public void Register( IEventTrigger<T, K> listener )
@@ -444,7 +687,11 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 	{
 		if( _killed || _listeners == null ) return false;
 		bool removed = _listeners.Remove( listener );
-		if( removed ) TryClearFullSignatureList();
+		if (removed)
+		{
+			_callListIsDirty = true;
+			TryClearFullSignatureList();
+		}
 		return removed;
 	}
 
