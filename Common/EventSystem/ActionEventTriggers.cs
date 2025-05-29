@@ -1,5 +1,7 @@
 
 
+using System.Runtime.CompilerServices;
+
 [UnityEngine.HideInInspector]
 public struct ActionEventCapsule : IEventTrigger//, ICustomDisposableKill
 {
@@ -11,8 +13,8 @@ public struct ActionEventCapsule : IEventTrigger//, ICustomDisposableKill
 	// }
 
 	public ActionEventCapsule( System.Action callback ) { _callback = callback; }
-	public void Trigger() { _callback(); }
-	bool IValidatedObject.IsValid { get { return _callback != null; } }
+	[MethodImpl(Optimizations.INLINE_IF_CAN)] public void Trigger() { _callback(); }
+	bool IValidatedObject.IsValid { [MethodImpl(Optimizations.INLINE_IF_CAN)] get { return _callback != null; } }
 
 	public override bool Equals( object obj )
 	{
@@ -39,8 +41,8 @@ public struct ActionEventCapsule<T> : IEventTrigger<T>//, ICustomDisposableKill
 	// }
 
 	public ActionEventCapsule( System.Action<T> callback ) { _callback = callback; }
-	public void Trigger( T t ) { _callback( t ); }
-	public bool IsValid { get { return _callback != null; } }
+	[MethodImpl(Optimizations.INLINE_IF_CAN)] public void Trigger( T t ) { _callback( t ); }
+	public bool IsValid { [MethodImpl(Optimizations.INLINE_IF_CAN)] get { return _callback != null; } }
 
 	public override bool Equals( object obj )
 	{
@@ -67,8 +69,8 @@ public struct ActionEventCapsule<T, K> : IEventTrigger<T, K>//, ICustomDisposabl
 	// }
 
 	public ActionEventCapsule( System.Action<T, K> callback ) { _callback = callback; }
-	public void Trigger( T t, K k ) { _callback( t, k ); }
-	public bool IsValid { get { return _callback != null; } }
+	[MethodImpl(Optimizations.INLINE_IF_CAN)] public void Trigger( T t, K k ) { _callback( t, k ); }
+	public bool IsValid { [MethodImpl(Optimizations.INLINE_IF_CAN)] get { return _callback != null; } }
 
 	public override bool Equals( object obj )
 	{
@@ -96,8 +98,8 @@ public struct ActionEventCapsule<T, K, L> : IEventTrigger<T, K, L>//, ICustomDis
 	// }
 
 	public ActionEventCapsule( System.Action<T, K, L> callback ) { _callback = callback; }
-	public void Trigger( T t, K k, L l ) { _callback( t, k, l ); }
-	public bool IsValid { get { return _callback != null; } }
+	[MethodImpl(Optimizations.INLINE_IF_CAN)] public void Trigger( T t, K k, L l ) { _callback( t, k, l ); }
+	public bool IsValid { [MethodImpl(Optimizations.INLINE_IF_CAN)] get { return _callback != null; } }
 
 	public override bool Equals( object obj )
 	{
