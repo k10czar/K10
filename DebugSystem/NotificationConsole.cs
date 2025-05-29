@@ -4,28 +4,30 @@ using System;
 
 public class NotificationConsole : MonoBehaviour
 {
+    static NotificationConsole _instance;
+
     [SerializeField] Rect _area = new Rect(30, 150, 1000, 1000);
+
     [SerializeField] List<LabelData> _labelDraws = new()
     {
         new LabelData( Color.black, new Vector2(2, 2) ),
         new LabelData( Colors.ElectricLime, new Vector2(0, 0) )
     };
-    [SerializeField] GUIStyle _style = new GUIStyle(GUI.skin.label)
-    {
-        fontSize = 20,
-        normal = new GUIStyleState()
-        {
-            textColor = Color.white
-        }
-    };
+
+    GUIStyle _style;
+
     List<Notification> _notifications = new();
-    bool _isDirty = false;
+    [SerializeField] bool _isDirty = false;
     float _nextVanish = float.MaxValue;
     [SerializeField,TextArea(5,25)] string _currentMessage = string.Empty;
 
     public static void Notify(string message, float notificationSeconds = 5f)
     {
-        Guaranteed<NotificationConsole>.Instance.LocalNotify(message, notificationSeconds);
+        if (_instance == null)
+        {
+            _instance = new GameObject( "NotificationConsole" ).AddComponent<NotificationConsole>();
+        }
+        _instance.LocalNotify(message, notificationSeconds);
     }
 
     private void LocalNotify(string message, float notificationSeconds )
@@ -67,7 +69,12 @@ public class NotificationConsole : MonoBehaviour
         TryBuildMessage();
         if (string.IsNullOrEmpty(_currentMessage)) return;
 
-        GUI.Box(_area, GUIContent.none);
+        if (_style == null)
+        {
+            _style = new GUIStyle(GUI.skin.label);
+            _style.fontSize = 20;
+            _style.normal.textColor = Color.white;
+        }
 
         var initialColor = GUI.color;
         foreach (var draw in _labelDraws)
