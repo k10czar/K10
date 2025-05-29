@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 public static class VectorExtensions
 {
-    [MethodImpl( ConstsK10.AggrInline )]
+    [MethodImpl( Optimizations.INLINE_IF_CAN )]
 	public static Vector3 OnLineSegment( this Vector3 point, Vector3 from, Vector3 to )
 	{
 		var delta = to - from;
@@ -14,7 +14,7 @@ public static class VectorExtensions
 		return from + nDir * Mathf.Clamp( dot, 0, mag );
 	}
 
-    [MethodImpl( ConstsK10.AggrInline )]
+    [MethodImpl( Optimizations.INLINE_IF_CAN )]
     public static Vector3 GetHasPolynomialResult( this Vector3[] terms, float x )
     {
         var v = Vector3.zero;
@@ -28,7 +28,7 @@ public static class VectorExtensions
         return v;
     }
 
-    [MethodImpl( ConstsK10.AggrInline )]
+    [MethodImpl( Optimizations.INLINE_IF_CAN )]
     public static bool IsCloser( this Vector3 a, Vector3 b, float dimensionTolerance = float.Epsilon )
     {
         var dx = b.x - a.x;
@@ -47,7 +47,7 @@ public static class VectorExtensions
         return false;
     }
 
-    [MethodImpl( ConstsK10.AggrInline )]
+    [MethodImpl( Optimizations.INLINE_IF_CAN )]
     public static Vector3 RandomShake( this Vector3 v, float maxMag )
     {
         var randonOffsetMag = UnityEngine.Random.Range( 0, maxMag );
@@ -56,7 +56,7 @@ public static class VectorExtensions
         return Shake( v, randonOffsetMag, randonAngZ, randonAngY );
     }
 
-    [MethodImpl( ConstsK10.AggrInline )]
+    [MethodImpl( Optimizations.INLINE_IF_CAN )]
     public static Vector3 Shake( this Vector3 v, float mag, float angleZ, float angleY )
     {        
         var cosZ = MathAdapter.cos( angleZ );
