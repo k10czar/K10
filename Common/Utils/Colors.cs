@@ -14,6 +14,7 @@ public static class Colors
     public static Color From( byte r, byte g, byte b ) => new Color( r * BYTE_TO_FLOAT, g * BYTE_TO_FLOAT, b * BYTE_TO_FLOAT );
 
     [LazyConst] private static Dictionary<string,Color> ALL_COLORS = null;
+    [LazyConst] private static List<Color> ALL_COLORS_VALUES = null;
 
     public static Color Get(string colorName)
     {
@@ -47,6 +48,17 @@ public static class Colors
         }
     }
 
+    public static List<Color> AllValues
+    {
+        get
+        {
+            if (ALL_COLORS_VALUES != null) return ALL_COLORS_VALUES;
+
+            ALL_COLORS_VALUES = new( All.Values );
+            return ALL_COLORS_VALUES;
+        }
+    }
+
     [LazyConst] private static Color[] optionsSequence;
 
     public static Color[] OptionsSequence
@@ -72,6 +84,16 @@ public static class Colors
             statusSequence = new [] { MintGreen, Orange, LightCoral, OrangeRed };
 
             return statusSequence;
+        }
+    }
+
+    public static Color Random
+    {
+        get
+        {
+            var allColors = AllValues;
+            var id = UnityEngine.Random.Range(0, allColors.Count);
+            return allColors[id];
         }
     }
 

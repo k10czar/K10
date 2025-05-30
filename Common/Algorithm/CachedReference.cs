@@ -115,6 +115,6 @@ public class CachedReference<T> : ICachedReference<T>, ICustomDisposableKill
 		_onReferenceRemove?.Trigger( old );
 		_validator?.Void();
 		_current = newReference;
-		if( _onReferenceSet != null ) _onReferenceSet.Trigger( newReference, Validator );
+		_onReferenceSet?.Trigger( newReference, Validator );
 	}
 }
