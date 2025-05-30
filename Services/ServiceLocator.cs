@@ -70,6 +70,17 @@ public static class ServiceLocator
 		}
 	}
 
+	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+	public static void BeforeSceneLoad()
+	{
+		if (services == null) return;
+		foreach( var kvp in services )
+		{
+			var ser = kvp.Value;
+			if( ser is IBeforeSceneLoad load ) load.BeforeSceneLoad();
+		}
+	}
+
 	public class GenericsComparer : IEqualityComparer<Type[]>
 	{
 		public bool Equals(Type[] x, Type[] y)

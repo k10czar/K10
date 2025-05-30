@@ -45,10 +45,10 @@ public static class MathAdapter
 #else
 	public const float PI = Mathf.PI;
 #endif
-	public const float PI2 = 2*PI;
+	public const float PI2 = 2f*PI;
 
 	public const float RadiansToDegrees = 180f / PI;
-	public const float DegreesToRadians = 1 / RadiansToDegrees;
+	public const float DegreesToRadians = 1f / RadiansToDegrees;
 
 #if USE_NEW_MATHEMATICS
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float2 IgnoreY( this float3 v3 ) { return new float2( v3.x, v3.z ); }

@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public interface IOrchestratedUpdate
@@ -21,31 +23,28 @@ public interface IOrchestratedFixedUpdate
 
 public class CodeOrchestrator : MonoBehaviour
 {
-	List<IOrchestratedUpdate> _updatables = new();
-	List<IOrchestratedUpdate> _updatablesCallList = new();
-	List<IOrchestratedLateUpdate> _lateUpdatables = new();
-	List<IOrchestratedLateUpdate> _lateUpdatablesCallList = new();
-	List<IOrchestratedFixedUpdate> _fixedUpdatables = new();
-	List<IOrchestratedFixedUpdate> _fixedUpdatablesCallList = new();
+	SubCodeOrchestrator _orchestrator = new();
 
-	// EventSlot _onDestroy;
-	// public IEventRegister OnDestroy => _onDestroy ??= new();
-
-	static CodeOrchestrator _sceneOrchestrator;
+	static SubCodeOrchestrator _sceneOrchestrator;
 	static CodeOrchestrator _eternalOrchestrator;
 
-	public static CodeOrchestrator Scene
+	public static SubCodeOrchestrator Scene
 	{
 		get
 		{
-			if( _sceneOrchestrator == null )
+			if (_sceneOrchestrator == null)
 			{
-				GameObject obj = new GameObject( $"SceneCodeOrchestrator" );
-				_sceneOrchestrator = obj.AddComponent<CodeOrchestrator>();
-				// var buildOrchestrator = _sceneOrchestrator;
-				// _sceneOrchestrator.OnDestroy.Register( () => {
-				// 	if( buildOrchestrator == _sceneOrchestrator ) _sceneOrchestrator = null;
-				// } );
+				var sceneRelay = GameObjectEventsRelay.SceneObject;
+				var orc = new SubCodeOrchestrator();
+				_sceneOrchestrator = orc;
+				var eternal = Eternal;
+				eternal.Add(orc);
+				sceneRelay.OnDestroyEvent.Register(() =>
+				{
+					eternal.Remove(orc);
+					if (_sceneOrchestrator == orc) _sceneOrchestrator = null;
+					orc.Dispose();
+                });
 			}
 			return _sceneOrchestrator;
 		}
@@ -59,83 +58,45 @@ public class CodeOrchestrator : MonoBehaviour
 			{
 				GameObject obj = new GameObject($"EternalCodeOrchestration");
 				_eternalOrchestrator = obj.AddComponent<CodeOrchestrator>();
-				DontDestroyOnLoad( obj );
+				DontDestroyOnLoad(obj);
 			}
 			return _eternalOrchestrator;
 		}
 	}
 
-	public void Add( object obj )
+	public void Add(object obj)
 	{
-		if( obj is IOrchestratedUpdate upd ) _updatables.Add( upd );
-		if( obj is IOrchestratedLateUpdate lupd ) _lateUpdatables.Add( lupd );
-		if( obj is IOrchestratedFixedUpdate fupd ) _fixedUpdatables.Add( fupd );
+		_orchestrator.Add(obj);
 	}
 
-	public void Remove( object obj )
+	public void Remove(object obj)
 	{
-		if( obj is IOrchestratedUpdate upd ) _updatables.Remove( upd );
-		if( obj is IOrchestratedLateUpdate lupd ) _lateUpdatables.Remove( lupd );
-		if( obj is IOrchestratedFixedUpdate fupd ) _fixedUpdatables.Remove( fupd );
+		_orchestrator.Remove(obj);
+	}
+
+	void OnDestroy()
+	{
+		_orchestrator.Dispose();
 	}
 
 	void Update()
 	{
-		var len = _updatables.Count;
-		
-		while (_updatablesCallList.Count < len) _updatablesCallList.Add(null);
-		for (int i = 0; i < len; i++) _updatablesCallList[i] = _updatables[i];
-
-		for (int i = 0; i < len; i++)
-		{
-			var element = _updatablesCallList[i];
-			element.PreUpdate();
-		}
-		for (int i = 0; i < len; i++)
-		{
-			var element = _updatablesCallList[i];
-			element.PostUpdate();
-			_updatablesCallList[i] = null;
-		}
-	}
-
-	void FixedUpdate()
-	{
-		var len = _lateUpdatables.Count;
-		
-		while (_lateUpdatablesCallList.Count < len) _lateUpdatablesCallList.Add(null);
-		for (int i = 0; i < len; i++) _lateUpdatablesCallList[i] = _lateUpdatables[i];
-		
-		for (int i = 0; i < len; i++)
-		{
-			var element = _lateUpdatablesCallList[i];
-			element.PreLateUpdate();
-		}
-		for( int i = 0; i < len; i++ )
-		{
-			var element = _lateUpdatablesCallList[i];
-			element.PostLateUpdate();
-			_lateUpdatablesCallList[i] = null;
-		}
+		_orchestrator.BakeUpdateList();
+		_orchestrator.PreUpdate();
+		_orchestrator.PostUpdate();
 	}
 
 	void LateUpdate()
 	{
-		var len = _fixedUpdatables.Count;
-		
-		while (_fixedUpdatablesCallList.Count < len) _fixedUpdatablesCallList.Add(null);
-		for (int i = 0; i < len; i++) _fixedUpdatablesCallList[i] = _fixedUpdatables[i];
-		
-		for (int i = 0; i < len; i++)
-		{
-			var element = _fixedUpdatablesCallList[i];
-			element.PreFixedUpdate();
-		}
-		for( int i = 0; i < len; i++ )
-		{
-			var element = _fixedUpdatablesCallList[i];
-			element.PostFixedUpdate();
-			_fixedUpdatablesCallList[i] = null;
-		}
+		_orchestrator.BakeLateUpdateList();
+		_orchestrator.PreLateUpdate();
+		_orchestrator.PostLateUpdate();
+	}
+
+	void FixedUpdate()
+	{
+		_orchestrator.BakeFixedUpdateList();
+		_orchestrator.PreFixedUpdate();
+		_orchestrator.PostFixedUpdate();
 	}
 }

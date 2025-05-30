@@ -1,19 +1,26 @@
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace K10
 {
 	public static class ObjectPool
 	{
-		public static void Return<T>(T obj) where T : new() => ObjectPool<T>.Return(obj);
-		public static void Request<T>( out T obj ) where T : new()
+		[MethodImpl(Optimizations.INLINE_IF_CAN)] public static void Return<T>(T obj) where T : new() => ObjectPool<T>.Return(obj);
+		[MethodImpl(Optimizations.INLINE_IF_CAN)] public static void ReturnAndClearRef<T>(ref T obj) where T : new()
+		{
+			ObjectPool<T>.Return(obj);
+			obj = default;
+        }
+
+        [MethodImpl(Optimizations.INLINE_IF_CAN)] public static void Request<T>( out T obj ) where T : new()
 		{
 			obj = ObjectPool<T>.Request();
 		}
-		public static void RequestList<T>( out List<T> obj )
+		[MethodImpl(Optimizations.INLINE_IF_CAN)] public static void RequestList<T>( out List<T> obj )
 		{
 			obj = ObjectPool<List<T>>.Request();
 		}
-		public static void RequestListWith<T>( out List<T> obj, IEnumerable<T> elements )
+		[MethodImpl(Optimizations.INLINE_IF_CAN)] public static void RequestListWith<T>( out List<T> obj, IEnumerable<T> elements )
 		{
 			RequestList( out obj );
 			obj.AddRange( elements );
