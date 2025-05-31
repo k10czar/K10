@@ -214,7 +214,7 @@ namespace Skyx.SkyxEditor
         {
             SkyxGUI.Draw(rect, property);
 
-            SkyxGUI.DrawHintOverlay(rect, overlayHint ?? inlaidHint);
+            SkyxGUI.DrawHintOverlay(ref rect, overlayHint ?? inlaidHint);
             if (alwaysDrawInlaid || !hasValue) SkyxGUI.DrawHindInlaid(rect, inlaidHint);
 
             if (slideRect) rect.SlideSameRect();

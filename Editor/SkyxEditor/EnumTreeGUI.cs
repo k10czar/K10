@@ -23,7 +23,7 @@ namespace Skyx.SkyxEditor
             var value = Enum.ToObject(enumType, property.intValue);
             var fullHint = $"[{enumType.Name}.{value}] {hint}";
 
-            SkyxGUI.DrawHintOverlay(rect, fullHint);
+            SkyxGUI.DrawHintOverlay(ref rect, fullHint);
         }
 
         // Only works with sequenced enums!
@@ -87,7 +87,7 @@ namespace Skyx.SkyxEditor
             }
 
             var fullHint = $"[{enumType}] {hint}";
-            SkyxGUI.DrawHintOverlay(rect, fullHint);
+            SkyxGUI.DrawHintOverlay(ref rect, fullHint);
         }
     }
 }

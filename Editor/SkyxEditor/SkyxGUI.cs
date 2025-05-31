@@ -14,7 +14,7 @@ namespace Skyx.SkyxEditor
         {
             property.stringValue = EditorGUI.DelayedTextField(rect, property.stringValue);
 
-            DrawHintOverlay(rect, overlayHint ?? inlaidHint);
+            DrawHintOverlay(ref rect, overlayHint ?? inlaidHint);
             if (string.IsNullOrEmpty(property.stringValue)) DrawHindInlaid(rect, inlaidHint);
         }
 
@@ -50,14 +50,14 @@ namespace Skyx.SkyxEditor
             property.stringValue = EditorGUI.DelayedTextField(innerRect, GUIContent.none, property.stringValue, SkyxStyles.DefaultLabel);
             if (EditorGUI.EndChangeCheck()) property.Apply();
 
-            DrawHintOverlay(innerRect, overlayHint ?? inlaidHint);
+            DrawHintOverlay(ref innerRect, overlayHint ?? inlaidHint);
             if (string.IsNullOrEmpty(property.stringValue)) DrawHindInlaid(innerRect, inlaidHint);
         }
 
         public static void DrawTextAreaField(Rect rect, SerializedProperty property, string hint)
         {
             property.stringValue = EditorGUI.TextArea(rect, property.stringValue);
-            DrawHintOverlay(rect, hint);
+            DrawHintOverlay(ref rect, hint);
 
             if (string.IsNullOrEmpty(property.stringValue)) DrawHindInlaid(rect, hint);
         }
@@ -66,7 +66,7 @@ namespace Skyx.SkyxEditor
         {
             property.intValue = EditorGUI.DelayedIntField(rect, property.intValue);
 
-            DrawHintOverlay(rect, hint);
+            DrawHintOverlay(ref rect, hint);
             if (property.intValue == 0)  DrawHindInlaid(rect, hint);
         }
 
@@ -74,7 +74,7 @@ namespace Skyx.SkyxEditor
         {
             property.floatValue = EditorGUI.DelayedFloatField(rect, property.floatValue);
 
-            DrawHintOverlay(rect, overlayHint ?? inlaidHint);
+            DrawHintOverlay(ref rect, overlayHint ?? inlaidHint);
             if (property.floatValue == 0 || alwaysVisible) DrawHindInlaid(rect, inlaidHint);
         }
 
@@ -96,13 +96,12 @@ namespace Skyx.SkyxEditor
 
             property.objectReferenceValue = EditorGUI.ObjectField(rect, property.objectReferenceValue, objType, allowSceneObjects);
 
-            DrawHintOverlay(rect, hint);
+            DrawHintOverlay(ref rect, hint);
         }
 
-        public static void DrawHintOverlay(Rect rect, string hint)
+        public static void DrawHintOverlay(ref Rect rect, string hint)
         {
             if (string.IsNullOrEmpty(hint)) return;
-
             EditorGUI.LabelField(rect, new GUIContent(" ", hint));
         }
 
@@ -228,7 +227,7 @@ namespace Skyx.SkyxEditor
 
             var clicked = Button(rect, label, color, SkyxStyles.ButtonStyle);
 
-            DrawHintOverlay(rect, hint);
+            DrawHintOverlay(ref rect, hint);
 
             if (clicked)
             {
@@ -270,7 +269,7 @@ namespace Skyx.SkyxEditor
             using var backgroundScope = BackgroundColorScope.Set(backgroundColor);
             var result = GUI.Button(rect, label, style);
 
-            if (!string.IsNullOrEmpty(hint)) DrawHintOverlay(rect, hint);
+            if (!string.IsNullOrEmpty(hint)) DrawHintOverlay(ref rect, hint);
 
             return result;
         }
@@ -320,8 +319,13 @@ namespace Skyx.SkyxEditor
             var hintRect = ExtractRect(ref rect, SkyxStyles.HintIconWidth, fromEnd);
 
             EditorGUI.LabelField(hintRect, $"<b>{icon}</b>", SkyxStyles.CenterBoldStyle);
+            DrawHintOverlay(ref hintRect, hint);
+        }
 
-            if (!string.IsNullOrEmpty(hint)) DrawHintOverlay(hintRect, hint);
+        public static void HintLabel(ref Rect rect, string label, string hint)
+        {
+            EditorGUI.LabelField(rect, label, SkyxStyles.BoldStyle);
+            DrawHintOverlay(ref rect, hint);
         }
 
         public static void Separator(ref Rect rect, float margin = SkyxStyles.ElementsMargin)
