@@ -21,16 +21,16 @@ namespace Skyx.SkyxEditor
         public static void DrawValidatedTextField(Rect rect, SerializedProperty property, string inlaidHint, string[] validValues, bool allowEmpty = false, string overlayHint = null)
         {
             var isNumber = float.TryParse(property.stringValue, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out _);
+            var currentIndex = isNumber ? -1 : Array.IndexOf(validValues, property.stringValue);
+            var isEmpty = string.IsNullOrEmpty(property.stringValue);
 
-            var color = string.IsNullOrEmpty(property.stringValue)
+            var color = isEmpty
                 ? (allowEmpty ? Colors.Console.Success : Colors.Console.Warning)
-                : (validValues.Contains(property.stringValue))
+                : (currentIndex != -1)
                     ? Colors.Console.SuccessBackground
                     : (isNumber ? Colors.Console.Success : Colors.Console.Danger);
 
             using var backgroundColor = BackgroundColorScope.Set(color);
-
-            var currentIndex = Array.IndexOf(validValues, property.stringValue);
 
             GUI.Box(rect, GUIContent.none, SkyxStyles.DropDownButton);
 
@@ -51,7 +51,7 @@ namespace Skyx.SkyxEditor
             if (EditorGUI.EndChangeCheck()) property.Apply();
 
             DrawHintOverlay(ref innerRect, overlayHint ?? inlaidHint);
-            if (string.IsNullOrEmpty(property.stringValue)) DrawHindInlaid(innerRect, inlaidHint);
+            if (isEmpty) DrawHindInlaid(innerRect, inlaidHint);
         }
 
         public static void DrawTextAreaField(Rect rect, SerializedProperty property, string hint)
@@ -319,6 +319,17 @@ namespace Skyx.SkyxEditor
             var hintRect = ExtractRect(ref rect, SkyxStyles.HintIconWidth, fromEnd);
 
             EditorGUI.LabelField(hintRect, $"<b>{icon}</b>", SkyxStyles.CenterBoldStyle);
+            DrawHintOverlay(ref hintRect, hint);
+        }
+
+        // see: https://github.com/halak/unity-editor-icons
+        public static void HintBuiltInIcon(ref Rect rect, string builtInIconName, string hint, bool fromEnd = false)
+        {
+            var hintRect = ExtractRect(ref rect, SkyxStyles.HintIconWidth, fromEnd);
+
+            var icon = EditorGUIUtility.IconContent(builtInIconName);
+            EditorGUI.LabelField(hintRect, icon, SkyxStyles.CenterBoldStyle);
+
             DrawHintOverlay(ref hintRect, hint);
         }
 
