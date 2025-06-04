@@ -103,11 +103,23 @@ namespace Skyx.SkyxEditor
 
         protected override AdvancedDropdownItem BuildRoot() => BuildNodeDropdown(treeNode);
 
-        private bool IsNodeIncluded(object value)
+        private bool IsNodeIncluded(TreeNode<T> node)
         {
             if (validList == null) return true;
 
-            var contains = validList.Contains(value);
+            var contains = validList.Contains(node.Value);
+            if (listIsInclude && contains) return true;
+
+            if (node.HasChildren)
+            {
+                var children = node.GetChildren();
+
+                foreach (var child in children)
+                {
+                    if (IsNodeIncluded(child)) return true;
+                }
+            }
+
             return listIsInclude == contains;
         }
 
@@ -121,7 +133,7 @@ namespace Skyx.SkyxEditor
 
             foreach (var node in children)
             {
-                if (!IsNodeIncluded(node.Value)) continue;
+                if (!IsNodeIncluded(node)) continue;
 
                 if (node.IsValid)
                 {
@@ -137,7 +149,7 @@ namespace Skyx.SkyxEditor
 
             foreach (var node in children)
             {
-                if (node.HasChildren && IsNodeIncluded(node.Value))
+                if (node.HasChildren && IsNodeIncluded(node))
                     dropdown.AddChild(BuildNodeDropdown(node));
             }
 

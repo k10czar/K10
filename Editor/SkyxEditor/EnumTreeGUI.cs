@@ -13,10 +13,13 @@ namespace Skyx.SkyxEditor
         public static void DrawSupport<T>(Rect rect, SerializedProperty property, string hint = null) => DrawEnum(rect, property, typeof(T), EColor.Support, hint);
         public static void DrawSecondary(Rect rect, SerializedProperty property, Type enumType, string hint = null) => DrawEnum(rect, property, enumType, EColor.Secondary, hint);
 
-        public static void DrawEnum<T>(Rect rect, SerializedProperty property, EColor color, string hint = "", T[] validList = null, bool isIncludeList = false)
+        public static void DrawEnum<T>(Rect rect, SerializedProperty property, EColor color, string hint, T[] validList, bool isIncludeList = true)
             => DrawEnum(rect, property, typeof(T), color, hint, validList?.Cast<object>(), isIncludeList);
 
-        public static void DrawEnum(Rect rect, SerializedProperty property, Type enumType, EColor color, string hint = "", IEnumerable<object> validList = null, bool isIncludeList = false)
+        public static void DrawEnum<T>(Rect rect, SerializedProperty property, EColor color, string hint = "")
+            => DrawEnum(rect, property, typeof(T), color, hint);
+
+        public static void DrawEnum(Rect rect, SerializedProperty property, Type enumType, EColor color, string hint = "", IEnumerable<object> validList = null, bool isIncludeList = true)
         {
             EnumTreeDrawer.DrawEnumDropdown(rect, property, color, enumType, validList, isIncludeList);
 
