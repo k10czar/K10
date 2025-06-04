@@ -363,9 +363,16 @@ namespace Skyx.SkyxEditor
 
             void DrawElementBackgroundCallback(Rect rect, int index, bool isActive, bool isFocused)
             {
-                if (isElementHighlighted != null && index >= 0 && isElementHighlighted(property.GetArrayElementAtIndex(index)))
-                    EditorGUI.DrawRect(rect, isActive ? Colors.Console.SpecialSelectedBackground : Colors.Console.SpecialBackground);
-                else ReorderableList.defaultBehaviours.DrawElementBackground(rect, index, isActive, isFocused, draggable);
+                if (index < 0) ReorderableList.defaultBehaviours.DrawElementBackground(rect, index, isActive, isFocused, draggable);
+
+                else
+                {
+                    var color = isElementHighlighted?.Invoke(property.GetArrayElementAtIndex(index)) ?? false
+                        ? (isActive ? Colors.Console.SpecialSelectedBackground : Colors.Console.SpecialBackground)
+                        : (isFocused ? Colors.CeruleanBlue : (index % 2 == 0 ? Colors.Console.Dark: Colors.Console.DarkerDark));
+
+                    EditorGUI.DrawRect(rect, color);
+                }
             }
 
             void DrawElementCallback(Rect rect, int index, bool isActive, bool isFocused)
