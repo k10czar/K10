@@ -513,6 +513,8 @@ public static class K10UnityExtensions
 	[MethodImpl( AggrInline )] public static string HierarchyNameOrNull( this Component obj, string nullString = ConstsK10.NULL_STRING ) => ( obj != null ? ( obj.transform.HierarchyName() + $"<{( obj != null ? obj.GetType().ToString() : nullString )}>" ) : nullString );
 	[MethodImpl( AggrInline )] public static string HierarchyNameOrNullColored( this Component obj, Color valueColor, string nullString = ConstsK10.NULL_STRING ) => ( obj != null ? ( obj.transform.HierarchyName().Colorfy(valueColor) + $"<{( obj != null ? obj.GetType().ToString() : nullString.Colorfy(Colors.Console.Negation) )}>" ) : nullString.Colorfy(Colors.Console.Negation) );
 
+	[MethodImpl(AggrInline)] public static string TypeNameOrNull(this Component target) => target == null ? ConstsK10.NULL_STRING_COLORED : target.GetType().Name;
+
 	public static string ToInspectorName(this object target)
 	{
 		return target switch
