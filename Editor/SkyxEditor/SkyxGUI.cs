@@ -80,9 +80,7 @@ namespace Skyx.SkyxEditor
 
         public static void DrawObjectField<T>(Rect rect, SerializedProperty property, string label, string hint, bool allowSceneObjects = false)
         {
-            rect.DivideRect(2);
-            EditorGUI.LabelField(rect, label, SkyxStyles.DefaultLabel);
-            rect.SlideSameRect();
+            DrawLabel(ref rect, label);
             DrawObjectField<T>(rect, property, hint, allowSceneObjects);
         }
 
