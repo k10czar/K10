@@ -198,8 +198,11 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 #endif //UNITY_EDITOR
     T _assetRuntimeReference;
     [SerializeField] int _id = -1;
+	[SerializeField] string _name;
 
 	public int HashID => _id;
+
+	public string Name => _name;
 
 #if UNITY_EDITOR
     public bool HasReference => _id >= 0 && !string.IsNullOrEmpty( _editorAssetRefGuid );
@@ -258,6 +261,7 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 		if (_assetHardReference == null)
 		{
 			_id = -1;
+			_name = null;
 			_editorAssetRefGuid = string.Empty;
 			return;
 		}
@@ -270,6 +274,7 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 	public override void EDITOR_UpdateDataFromRef()
 	{
 		_id = _assetHardReference?.HashID ?? -1;
+		_name = _assetHardReference?.name ?? null;
 	}
 #endif //UNITY_EDITOR
 
@@ -313,6 +318,7 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 		var changedId = id != _id;
 		changed |= changedId;
 		_id = id;
+		_name = validRef ? _assetRuntimeReference.name : null;
 
 #if UNITY_EDITOR
 		var changedHardRef = _assetHardReference != t;

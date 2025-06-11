@@ -37,6 +37,7 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
         
         var refState = property.FindPropertyRelative( "_referenceState" );
         var id = property.FindPropertyRelative( "_id" );
+        var nameProp = property.FindPropertyRelative("_name");
 
         Object realRef = null;
         var instance = ((BaseCollectionElementSoftReference)property.GetInstance());
@@ -48,7 +49,15 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
 		var assetType = instance.EDITOR_GetAssetType();
         var path = UnityEditor.AssetDatabase.GUIDToAssetPath( editorAssetRefGuid.stringValue );
         realRef = UnityEditor.AssetDatabase.LoadAssetAtPath( path, assetType );
-        
+
+        if (string.IsNullOrEmpty(nameProp.stringValue) && realRef != null)
+        {
+            nameProp.serializedObject.Update();
+            nameProp.stringValue = realRef.name;
+            nameProp.serializedObject.ApplyModifiedProperties();
+        }
+
+
         var color = Color.white;
         if( refIsNull ) color = RED_COLOR;
         GuiColorManager.New( color );
@@ -67,7 +76,7 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
 
         var specifiedRealRef = (IHashedSO)newRef;
         id.intValue = specifiedRealRef?.HashID ?? -1;
-        
+
         area = area.CutTop( slh );
 
         EditorGUI.EndFoldoutHeaderGroup();
