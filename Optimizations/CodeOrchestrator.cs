@@ -28,6 +28,8 @@ public class CodeOrchestrator : MonoBehaviour
 	static SubCodeOrchestrator _sceneOrchestrator;
 	static CodeOrchestrator _eternalOrchestrator;
 
+	public static bool SceneExists => _sceneOrchestrator != null;
+
 	public static SubCodeOrchestrator Scene
 	{
 		get
@@ -44,7 +46,7 @@ public class CodeOrchestrator : MonoBehaviour
 					eternal.Remove(orc);
 					if (_sceneOrchestrator == orc) _sceneOrchestrator = null;
 					orc.Dispose();
-                });
+				});
 			}
 			return _sceneOrchestrator;
 		}
