@@ -23,12 +23,15 @@ public interface IOrchestratedFixedUpdate
 
 public class CodeOrchestrator : MonoBehaviour
 {
-	SubCodeOrchestrator _orchestrator = new();
+	[SerializeField] SubCodeOrchestrator _orchestrator = new();
+#if UNITY_EDITOR
+	[SerializeField] List<string> _debugList = new();
+#endif
 
 	static SubCodeOrchestrator _sceneOrchestrator;
 	static CodeOrchestrator _eternalOrchestrator;
 
-	public static bool SceneExists => _sceneOrchestrator != null;
+	public static bool FromSceneExists => _sceneOrchestrator != null;
 
 	public static SubCodeOrchestrator Scene
 	{
@@ -36,13 +39,15 @@ public class CodeOrchestrator : MonoBehaviour
 		{
 			if (_sceneOrchestrator == null)
 			{
-				var sceneRelay = GameObjectEventsRelay.SceneObject;
 				var orc = new SubCodeOrchestrator();
 				_sceneOrchestrator = orc;
 				var eternal = Eternal;
 				eternal.Add(orc);
+				var sceneRelay = GameObjectEventsRelay.SceneObject;
+				Debug.Log( $"Created Scene CodeOrchestrator".Colorfy( Colors.Violet ) );
 				sceneRelay.OnDestroyEvent.Register(() =>
 				{
+					Debug.Log( $"Destroyed Scene CodeOrchestrator".Colorfy( Colors.Tomato ) );
 					eternal.Remove(orc);
 					if (_sceneOrchestrator == orc) _sceneOrchestrator = null;
 					orc.Dispose();
@@ -58,6 +63,7 @@ public class CodeOrchestrator : MonoBehaviour
 		{
 			if (_eternalOrchestrator == null)
 			{
+				Debug.Log( $"Created Eternal CodeOrchestrator".Colorfy( Colors.Orange ) );
 				GameObject obj = new GameObject($"EternalCodeOrchestration");
 				_eternalOrchestrator = obj.AddComponent<CodeOrchestrator>();
 				DontDestroyOnLoad(obj);
@@ -93,7 +99,14 @@ public class CodeOrchestrator : MonoBehaviour
 		_orchestrator.BakeLateUpdateList();
 		_orchestrator.PreLateUpdate();
 		_orchestrator.PostLateUpdate();
-	}
+#if UNITY_EDITOR
+		if (UnityEditor.Selection.activeGameObject == gameObject)
+		{
+			_debugList.Clear();
+			_orchestrator.DebugList(_debugList);
+		}
+#endif
+		}
 
 	void FixedUpdate()
 	{
