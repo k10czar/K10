@@ -8,12 +8,20 @@ namespace Automation
     public class Loop : IOperation
 						, IDrawGizmos, IDrawGizmosOnSelected, ISummarizable
 	{
-		[ExtendedDrawer,SerializeReference] IValueProvider<int> _repetitions;
+#if UNITY_2023_1_OR_NEWER
+		[ExtendedDrawer, SerializeReference] IValueProvider<int> _repetitionsRef;
+#else
+		[SerializeField] int _repetitionsVal;
+#endif
 		[ExtendedDrawer,SerializeReference] List<IOperation> _actions;
 
 		public IEnumerator ExecutionCoroutine( bool log = false ) 
 		{
-			var repetitions = _repetitions?.Value ?? 1;
+#if UNITY_2023_1_OR_NEWER
+			var repetitions = _repetitionsRef?.Value ?? 1;
+#else
+			var repetitions = _repetitionsVal;
+#endif
 			for( int l = 0; l < repetitions; l++ )
 			{
 				if( log ) Debug.Log( $"♻ {"Loop".Colorfy( Colors.Console.Fields )}[{l.ToStringColored(Colors.Console.Numbers)}] in {this.ToStringOrNull()}" );
@@ -31,13 +39,28 @@ namespace Automation
 			}
 		}
 
-		public override string ToString() => $"🗃 {"Loop".Colorfy( Colors.Console.Fields )} {_repetitions.ToStringOrNull()}x: {{\n  -{string.Join( ",\n  -", _actions )} }}";
-		public string Summarize() => $"🗃Loop{_repetitions.TrySummarize()}x{{ {_actions.TrySummarize( ", " )} }}";
+        public override string ToString()
+        {
+#if UNITY_2023_1_OR_NEWER
+            return $"🗃 {"Loop".Colorfy(Colors.Console.Fields)} {_repetitionsRef.ToStringOrNull()}x: {{\n  -{string.Join(",\n  -", _actions)} }}";
+#else
+            return $"🗃 {"Loop".Colorfy(Colors.Console.Fields)} {_repetitionsVal.ToStringOrNull()}x: {{\n  -{string.Join(",\n  -", _actions)} }}";
+#endif
+        }
+
+        public string Summarize()
+        {
+#if UNITY_2023_1_OR_NEWER
+            return $"🗃Loop{_repetitionsRef.TrySummarize()}x{{ {_actions.TrySummarize(", ")} }}";
+#else
+            return $"🗃Loop{_repetitionsVal.TrySummarize()}x{{ {_actions.TrySummarize(", ")} }}";
+#endif
+        }
 
 
 
 #if UNITY_EDITOR
-		public void OnDrawGizmos()
+        public void OnDrawGizmos()
 		{
 			foreach( var act in _actions ) if( act is IDrawGizmos dg ) dg.OnDrawGizmos();
 		}

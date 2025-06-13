@@ -22,9 +22,13 @@ public class GuaranteedSO<T> where T : ScriptableObject, new()
 		if( field == null ) 
 		{
 			var metricsCode = $"Resources.Load( <color=cyan>{soName}</color> )";
+#if CODE_METRICS
             CodeMetrics.Start( metricsCode );
+#endif
 			field = Resources.Load<T>( soName );
+#if CODE_METRICS
             CodeMetrics.Finish( metricsCode );
+#endif
 		}
 #if UNITY_EDITOR
 		if( field == null && !Application.isPlaying ) field = RequestResource( soName );
