@@ -205,26 +205,21 @@ namespace Skyx.SkyxEditor
             TryShowModifications(thisComponentMods);
             SkyxLayout.CompactSpace();
 
-            var rect = EditorGUILayout.GetControlRect(false);
-            rect.DivideRect(isNestedPrefab ? 3 : 2);
-
             if (isNestedPrefab)
             {
-                if (SkyxGUI.Button(rect, "Apply to NESTED Prefab", EColor.Warning))
+                if (SkyxLayout.Button($"Apply to {outerRoot.name} Prefab (NESTED)", EColor.Warning))
                     ApplyOverrides(targetComponent, outerRoot);
 
-                rect.SlideSameRect();
-                if (SkyxGUI.Button(rect, "Apply to PARENT Prefab", EColor.Warning))
+                if (SkyxLayout.Button($"Apply to {nearestRoot.name} Prefab (PARENT)", EColor.Warning))
                     ApplyOverrides(targetComponent, targetComponent);
             }
             else
             {
-                if (SkyxGUI.Button(rect, "Apply Modifications", EColor.Warning))
+                if (SkyxLayout.Button($"Apply Modifications to {nearestRoot.name}", EColor.Warning))
                     ApplyOverrides(targetComponent, targetComponent);
             }
 
-            rect.SlideSameRect();
-            if (SkyxGUI.Button(rect, "Undo Modifications", EColor.Danger))
+            if (SkyxLayout.Button("Undo Modifications", EColor.Danger))
                 UndoOverrides(targetComponent);
 
             SkyxLayout.Separator();
