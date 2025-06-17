@@ -134,7 +134,7 @@ public static class Colors
         [ConstLike] public static readonly Color DarkBackground = AlmostBlack.WithAlpha(.4f);
 
         [ConstLike] public static readonly Color SuccessBackground = Avocado;
-        [ConstLike] public static readonly Color WarningBackground = Tomato;
+        [ConstLike] public static readonly Color WarningBackground = Warning.WithAlpha(.6f);
         [ConstLike] public static readonly Color SpecialBackground = From(62, 45, 64);
         [ConstLike] public static readonly Color SpecialSelectedBackground = From(75, 40, 75);
 
