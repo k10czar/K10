@@ -361,7 +361,7 @@ namespace Skyx.SkyxEditor
         public static void PlainBGLabel(Rect rect, string label, EColor color, EElementSize size)
         {
             using var backgroundScope = BackgroundColorScope.Set(SkyxStyles.HeaderColor(color));
-            EditorGUI.LabelField(rect, label, SkyxStyles.HeaderText(size));
+            EditorGUI.LabelField(rect, label, SkyxStyles.HeaderText(size, color));
         }
 
         #region Rect Control

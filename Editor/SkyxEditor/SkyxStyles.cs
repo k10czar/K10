@@ -124,12 +124,15 @@ namespace Skyx.SkyxEditor
         private static GUIStyle Style(string name, GUIStyle baseStyle, FontStyle fontStyle, TextAnchor alignment)
             => Style(name, baseStyle, fontStyle: fontStyle, hasFontStyle: true, alignment: alignment, hasAlignment: true);
 
-        private static GUIStyle Style(string name, GUIStyle baseStyle, int fontSize = 0, bool hasAlignment = false, TextAnchor alignment = TextAnchor.MiddleLeft, bool hasFontStyle = false, FontStyle fontStyle = FontStyle.Bold, RectOffset padding = null, Texture2D background = null, RectOffset margin = null)
+        private static GUIStyle Style(string name, GUIStyle baseStyle, int fontSize = 0, bool hasAlignment = false, TextAnchor alignment = TextAnchor.MiddleLeft, bool hasFontStyle = false, FontStyle fontStyle = FontStyle.Bold, RectOffset padding = null, Texture2D background = null, RectOffset margin = null, Color? textColor = null)
         {
             if (loadedStyles.TryGetValue(name, out var style)) return style;
 
-            var newStyle = new GUIStyle(baseStyle) { richText = true };
-            newStyle.normal.textColor = Colors.Console.GrayOut;
+            var newStyle = new GUIStyle(baseStyle)
+            {
+                richText = true,
+                normal = { textColor = textColor ?? Colors.Console.GrayOut }
+            };
 
             if (hasAlignment) newStyle.alignment = alignment;
             if (hasFontStyle) newStyle.fontStyle = fontStyle;
@@ -150,14 +153,33 @@ namespace Skyx.SkyxEditor
         #region Box
 
         public const float ListControlButtonSize = MiniButtonSize;
-        public const float BoxHeaderHeight = FullLineHeight;
         public const float BoxMargin = 5;
 
-        private static readonly GUIStyle[] headerText =
+        private static readonly GUIStyle[] defaultHeaderText =
         {
             PlainBGHeader, // Primary
             Style("SecondaryHeader", Header, fontSize: 15, background: EditorGUIUtility.whiteTexture), // Secondary
             Style("SingleLineHeader", CenterBoldStyle, background: EditorGUIUtility.whiteTexture), // SingleLine
+        };
+
+        private static readonly GUIStyle[] disabledHeaderText =
+        {
+            Style("DisabledHeader", defaultHeaderText[0], textColor: Colors.Console.Disabled), // Primary
+            Style("DisabledSecondaryHeader", defaultHeaderText[1], textColor: Colors.Console.Disabled), // Secondary
+            Style("DisabledSingleLineHeader", defaultHeaderText[2], textColor: Colors.Console.Disabled), // SingleLine
+        };
+
+        private static readonly GUIStyle[][] headerText =
+        {
+            defaultHeaderText, // Primary
+            defaultHeaderText, // Secondary
+            defaultHeaderText, // Info
+            defaultHeaderText, // Success
+            defaultHeaderText, // Warning
+            defaultHeaderText, // Danger
+            defaultHeaderText, // Support
+            defaultHeaderText, // Special
+            disabledHeaderText, // Disabled
         };
 
         private static readonly float[] headerHeights =
@@ -177,6 +199,7 @@ namespace Skyx.SkyxEditor
             Colors.DarkRed, // Danger
             Color.clear, // Support
             Color.clear, // Special
+            Colors.Console.Dark.AddLight(-.08f), // Disabled
         };
 
         private static readonly Color[] boxColors =
@@ -189,41 +212,35 @@ namespace Skyx.SkyxEditor
             Colors.LightSalmon,
             Color.white,
             Colors.Console.Special,
+            Colors.Console.Dark,
         };
 
-        private static readonly string[] boxStyles =
+        private static readonly GUIStyle[] boxStyles =
         {
-            "ScriptText", // Primary
-            "HelpBox", // Secondary
-            "SelectionRect", // Info
-            "U2D.createRect", // Success
-            "HelpBox", // Warning
-            "HelpBox", // Danger
-            "TE BoxBackground", // Support
-            "HelpBox", // Special
+            new("ScriptText"), // Primary
+            new("HelpBox"), // Secondary
+            new("SelectionRect"), // Info
+            new("U2D.createRect"), // Success
+            new("HelpBox"), // Warning
+            new("HelpBox"), // Danger
+            new("TE BoxBackground"), // Support
+            new("HelpBox"), // Special
+            new("HelpBox"), // Disabled
         };
 
-        public static GUIStyle HeaderText(EElementSize size = EElementSize.Primary) => headerText[(int)size];
-        public static float HeaderHeight(EElementSize size = EElementSize.Primary) => headerHeights[(int)size];
-        public static float ScopeTotalExtraHeight(EElementSize size = EElementSize.Primary) => headerHeights[(int)size] + (3 * ElementsMargin);
-        public static float ClosedScopeHeight(EElementSize size = EElementSize.Primary) => headerHeights[(int)size] + ElementsMargin;
+        public static GUIStyle HeaderText(EElementSize size, EColor color) => headerText[(int)color][(int)size];
+        public static float HeaderHeight(EElementSize size) => headerHeights[(int)size];
+        public static float ScopeTotalExtraHeight(EElementSize size) => headerHeights[(int)size] + (3 * ElementsMargin);
+        public static float ClosedScopeHeight(EElementSize size) => headerHeights[(int)size] + ElementsMargin;
 
-        public static GUIStyle BoxStyle(EColor color) => new(boxStyles[(int)color]);
+        public static GUIStyle BoxStyle(EColor color) => boxStyles[(int)color];
         public static Color HeaderColor(EColor color) => headerColors[(int)color];
         public static Color BoxColor(EColor color) => boxColors[(int)color];
-
-        public static Color DefaultHeaderColor => HeaderColor(EColor.Secondary);
 
         public static readonly GUIStyle borderBoxHeaderStyle = new()
         {
             margin = new RectOffset(3, 3, 2, 2),
             padding = new RectOffset(5, 5, 2, 5)
-        };
-
-        public static readonly GUIStyle borderBoxStyle = new()
-        {
-            margin = new RectOffset(3, 3, 2, 2),
-            padding = new RectOffset(5, 5, 5, 5)
         };
 
         #endregion
