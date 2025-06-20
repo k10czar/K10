@@ -155,7 +155,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 
 	public void Clear()
 	{
-		_generic.Clear();
+		_generic?.Clear();
 		_listeners?.Clear();
 	}
 

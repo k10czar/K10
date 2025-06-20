@@ -45,19 +45,6 @@ namespace Skyx.SkyxEditor
             return prop;
         }
 
-        public static SerializedProperty GetFloatsProp(SerializedProperty root, int index = 0, float defaultValue = 0)
-        {
-            var prop = GetPropertyFromArray(root, "floats", out var createdFields, index);
-
-            if (createdFields)
-            {
-                prop.floatValue = defaultValue;
-                prop.Apply();
-            }
-
-            return prop;
-        }
-
         public static SerializedProperty GetPositionsProp(SerializedProperty root, int index = 0)
         {
             var prop = GetPropertyFromArray(root, "positions", out var createdFields, index);
