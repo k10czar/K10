@@ -44,7 +44,7 @@ namespace Skyx.SkyxEditor
 
         #region Labels
 
-        public static bool DrawTitle(UnityEngine.Object asset)
+        public static bool DrawTitle(Object asset)
         {
             Separator();
             var clicked = GUILayout.Button(ObjectNames.NicifyVariableName(asset.name), SkyxStyles.HugeHeader.With(Colors.Console.Light));

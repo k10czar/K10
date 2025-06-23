@@ -113,12 +113,16 @@ namespace Skyx.SkyxEditor
 
         public static void Draw(Rect rect, SerializedProperty property, Type targetType, FieldDrawInfo drawInfo)
         {
+            EditorGUI.BeginChangeCheck();
+
             if (targetType == typeof(int))
             {
                 if (targetType != drawInfo.requestedType)
                     EnumTreeGUI.DrawEnumMask(rect, property, drawInfo.requestedType, drawInfo.color);
 
                 else DrawIntField(rect, property, drawInfo.hint);
+
+                if (EditorGUI.EndChangeCheck()) property.Apply();
 
                 return;
             }
@@ -143,6 +147,8 @@ namespace Skyx.SkyxEditor
                 DrawObjectField(rect, property, targetType, drawInfo.hint, true);
 
             else throw new Exception("Unknown type");
+
+            if (EditorGUI.EndChangeCheck()) property.Apply();
         }
 
         public static void Draw(Rect rect, SerializedProperty property, bool drawLabel = false)
@@ -230,7 +236,11 @@ namespace Skyx.SkyxEditor
             if (clicked)
             {
                 if (useExpandField) toggleProp.isExpanded = !isActive;
-                else toggleProp.boolValue = !isActive;
+                else
+                {
+                    toggleProp.boolValue = !isActive;
+                    toggleProp.Apply();
+                }
             }
 
             return clicked;

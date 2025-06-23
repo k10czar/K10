@@ -27,6 +27,19 @@ namespace Skyx.SkyxEditor
         protected virtual void DrawRuntimeInfo() {}
         protected abstract void DrawConfigs();
 
+        protected void Initialize()
+        {
+            CacheProperties(false);
+            Target = target as T;
+        }
+
+        public void DrawOnlyConfigs()
+        {
+            Initialize();
+            using var profilerMarker = drawMarker.Auto();
+            DrawConfigs();
+        }
+
         private void DrawConfigsInternal()
         {
             CacheProperties(false);
@@ -154,7 +167,7 @@ namespace Skyx.SkyxEditor
 
         private bool showModifications;
 
-        private void DrawSaveFile()
+        protected void DrawSaveFile()
         {
             if (!ShouldDrawSaveFile) return;
 

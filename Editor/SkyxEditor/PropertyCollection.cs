@@ -62,6 +62,9 @@ namespace Skyx.SkyxEditor
             EditorUtility.SetDirty(serializedObject.targetObject);
 
             ResetCollections(serializedObject);
+
+            if (target is IPropertyChangedListener listener)
+                listener.OnPropertyChanged();
         }
 
         private static void ResetCollections(SerializedObject serializedObject)
@@ -344,9 +347,9 @@ namespace Skyx.SkyxEditor
             ReorderableList.HeaderCallbackDelegate customHeader = null,
             IsElementHighlighted isElementHighlighted = null)
         {
-            if (HasList(property)) return null;
+            if (lists.TryGetValue(property, out var list)) return list;
 
-            var list = new ReorderableList(property.serializedObject, property, draggable, displayHeader, displayAddButton, displayRemoveButton)
+            list = new ReorderableList(property.serializedObject, property, draggable, displayHeader, displayAddButton, displayRemoveButton)
             {
                 drawHeaderCallback = DrawHeaderCallback,
                 drawElementCallback = DrawElementCallback,
@@ -356,6 +359,9 @@ namespace Skyx.SkyxEditor
                 onReorderCallback = OnReorderCallback,
                 drawElementBackgroundCallback = DrawElementBackgroundCallback,
             };
+
+            if (!displayAddButton && !displayRemoveButton)
+                list.footerHeight = 0;
 
             lists.Add(property, list);
 

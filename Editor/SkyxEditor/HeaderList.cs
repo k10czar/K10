@@ -8,7 +8,7 @@ namespace Skyx.SkyxEditor
     {
         private const float ExtraElementHeight = SkyxStyles.ElementsMargin + 3; // from separator
         private const float NewElementHeight = SkyxStyles.FullLineHeight;
-        public const float HorizontalThreshold = SkyxStyles.ListControlButtonSize * 3;
+        private const float HorizontalThreshold = SkyxStyles.ListControlButtonSize * 3;
 
         public static void DrawLayout(SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, string title = null, string newText = null, Action<SerializedProperty> onNewElement = null)
         {
@@ -26,23 +26,25 @@ namespace Skyx.SkyxEditor
             using var scope = HeaderScope.Open(ref rect, property, title, color, size);
             if (!scope.isExpanded) return;
 
-            DrawElements(ref rect, property);
+            DrawElements(ref rect, property, true);
             DrawNewElement(rect, property, newText, onNewElement);
         }
 
-        public static void DrawHeaderlessLayout(SerializedProperty property, string newText = null, Action<SerializedProperty> onNewElement = null)
+        public static void DrawHeaderlessLayout(SerializedProperty property, string newText = null, Action<SerializedProperty> onNewElement = null, bool canMoveElements = true)
         {
             var rect = EditorGUILayout.GetControlRect(false, GetPropertyHeight(property, true));
-            DrawHeaderless(ref rect, property, newText, onNewElement, false);
+            DrawHeaderless(ref rect, property, newText, onNewElement, canMoveElements, false);
         }
 
-        public static void DrawHeaderless(ref Rect rect, SerializedProperty property, string newText = null, Action<SerializedProperty> onNewElement = null, bool resetHeight = true)
+        public static void DrawHeaderless(ref Rect rect, SerializedProperty property, string newText = null, Action<SerializedProperty> onNewElement = null, bool canMoveElements = true, bool resetHeight = true)
         {
             if (resetHeight) rect.height = GetPropertyHeight(property, true);
             newText = string.IsNullOrEmpty(newText) ? "New Entry" : newText;
 
-            DrawElements(ref rect, property);
+            DrawElements(ref rect, property, canMoveElements);
             DrawNewElement(rect, property, newText, onNewElement);
+
+            rect.y += SkyxStyles.FullLineHeight + 2;
         }
 
         private static void DrawNewElement(Rect rect, SerializedProperty property, string newText, Action<SerializedProperty> onNewElement)
@@ -68,7 +70,7 @@ namespace Skyx.SkyxEditor
             }
         }
 
-        private static void DrawElements(ref Rect rect, SerializedProperty property)
+        private static void DrawElements(ref Rect rect, SerializedProperty property, bool canMoveElements)
         {
             for (int i = 0; i < property.arraySize; i++)
             {
@@ -77,11 +79,11 @@ namespace Skyx.SkyxEditor
                 var elementRect = rect;
                 elementRect.height = SerializedRefLib.GetPropertyHeight(element, true);
 
-                var isHorizontalControl = elementRect.height < HorizontalThreshold;
+                var isHorizontalControl = canMoveElements && elementRect.height < HorizontalThreshold;
                 var controlSize = (isHorizontalControl ? GetControlButtonCount(property, i, true) : 1) * SkyxStyles.ListControlButtonSize;
                 var buttonsRect = elementRect.ExtractRect(controlSize);
 
-                if (DrawElementControlButtons(buttonsRect, property, i, isHorizontalControl)) return;
+                if (DrawElementControlButtons(buttonsRect, property, i, isHorizontalControl, canMoveElements)) return;
 
                 SerializedRefLib.DrawDefaultInspector(elementRect, element, true);
 
@@ -100,9 +102,9 @@ namespace Skyx.SkyxEditor
             return 1 + (index > 0 ? 1 : 0) + (index < property.arraySize - 1 ? 1 : 0);
         }
 
-        private static bool DrawElementControlButtons(Rect rect, SerializedProperty property, int index, bool isHorizontal)
+        private static bool DrawElementControlButtons(Rect rect, SerializedProperty property, int index, bool isHorizontal, bool canMoveElements)
         {
-            var count = GetControlButtonCount(property, index, isHorizontal);
+            var count = canMoveElements ? GetControlButtonCount(property, index, isHorizontal) : 1;
 
             rect.height = (isHorizontal ? 1 : count) * SkyxStyles.ListControlButtonSize;
 
@@ -112,7 +114,7 @@ namespace Skyx.SkyxEditor
             if (isHorizontal) rect.DivideRect(count);
             else rect.DivideVertically(count);
 
-            if (index > 0 || isHorizontal)
+            if (canMoveElements && (index > 0 || isHorizontal))
             {
                 if (index > 0 && GUI.Button(rect, "▲", SkyxStyles.CenterLabel))
                 {
@@ -132,7 +134,7 @@ namespace Skyx.SkyxEditor
                 return true;
             }
 
-            if (index < property.arraySize - 1)
+            if (canMoveElements && (index < property.arraySize - 1))
             {
                 if (isHorizontal) rect.SlideSameRect();
                 else rect.SlideSameVertically();
@@ -161,7 +163,7 @@ namespace Skyx.SkyxEditor
         {
             if (!isHeaderless && !property.isExpanded) return SkyxStyles.ClosedScopeHeight(size);
 
-            return (isHeaderless ? SkyxStyles.ElementsMargin : SkyxStyles.ScopeTotalExtraHeight(size)) +
+            return (isHeaderless ? 0 : SkyxStyles.ScopeTotalExtraHeight(size)) +
                     GetElementsHeight(property) +
                     NewElementHeight;
         }
