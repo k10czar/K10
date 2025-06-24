@@ -18,7 +18,7 @@ namespace Skyx.SkyxEditor
             if (string.IsNullOrEmpty(property.stringValue)) DrawHindInlaid(rect, inlaidHint);
         }
 
-        public static void DrawValidatedTextField(Rect rect, SerializedProperty property, string inlaidHint, string[] validValues, bool allowEmpty = false, string overlayHint = null)
+        public static void DrawValidatedTextField(Rect rect, SerializedProperty property, string inlaidHint, string[] validValues, bool allowEmpty = false, string overlayHint = null, bool canWriteCustom = true)
         {
             var isNumber = float.TryParse(property.stringValue, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out _);
             var currentIndex = isNumber ? -1 : Array.IndexOf(validValues, property.stringValue);
@@ -37,18 +37,18 @@ namespace Skyx.SkyxEditor
             var innerRect = rect;
             var dropdownRect = innerRect.ExtractEndRect(10);
 
-            var index = EditorGUI.Popup(dropdownRect, currentIndex, validValues, GUIStyle.none.Invisible());
-            if (index != currentIndex)
-            {
-                property.stringValue = validValues[index];
-                property.Apply();
-            }
+            if (dropdownRect.TryUseClick(false))
+                StringPicker.Draw(dropdownRect, validValues, property);
 
             innerRect.ApplyStartMargin();
 
-            EditorGUI.BeginChangeCheck();
+            if (canWriteCustom) EditorGUI.BeginChangeCheck();
+            else EditorGUI.BeginDisabledGroup(true);
+
             property.stringValue = EditorGUI.DelayedTextField(innerRect, GUIContent.none, property.stringValue, SkyxStyles.DefaultLabel);
-            if (EditorGUI.EndChangeCheck()) property.Apply();
+
+            if (canWriteCustom) { if (EditorGUI.EndChangeCheck()) property.Apply(); }
+            else EditorGUI.EndDisabledGroup();
 
             DrawHintOverlay(ref innerRect, overlayHint ?? inlaidHint);
             if (isEmpty) DrawHindInlaid(innerRect, inlaidHint);
@@ -67,7 +67,7 @@ namespace Skyx.SkyxEditor
             property.intValue = EditorGUI.DelayedIntField(rect, property.intValue);
 
             DrawHintOverlay(ref rect, hint);
-            if (property.intValue == 0)  DrawHindInlaid(rect, hint);
+            if (property.intValue == 0) DrawHindInlaid(rect, hint);
         }
 
         public static void DrawFloatField(Rect rect, SerializedProperty property, string inlaidHint, bool alwaysVisible = true, string overlayHint = null)
