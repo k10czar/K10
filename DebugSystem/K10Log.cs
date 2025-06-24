@@ -16,11 +16,13 @@ namespace K10.DebugSystem
         public static Color Color => category.Color;
         public static Color SecondaryColor => category.SecondaryColor;
 
+        private static bool ShouldAlwaysDebug(LogSeverity severity)
+            => severity is LogSeverity.Error || typeof(T) == typeof(TempDebugCategory);
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
         public static void Log(LogSeverity severity, string log, bool verbose, Object consoleTarget, IEnumerable<Object> owners)
         {
-            if (severity != LogSeverity.Error && (!K10DebugSystem.CanDebug<T>(verbose) || !K10DebugSystem.CheckDebugOwners(owners)))
+            if (!ShouldAlwaysDebug(severity) && (!K10DebugSystem.CanDebug<T>(verbose) || !K10DebugSystem.CheckDebugOwners(owners)))
                 return;
 
 #if UNITY_EDITOR
