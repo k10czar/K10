@@ -12,6 +12,9 @@ namespace Skyx.SkyxEditor
         public static string AppendInfo(this string baseString, object info, EColor color = EColor.Support, EElementSize size = EElementSize.Primary)
             => AppendInfo(baseString, info.ToString(), color, size);
 
+        public static string AppendInfo(this string baseString, Enum info, EColor color = EColor.Support, EElementSize size = EElementSize.Primary)
+            => AppendInfo(baseString, info.Pretty(), color, size);
+
         public static string AppendInfo(this string baseString, string infoString, EColor color = EColor.Support, EElementSize size = EElementSize.Primary)
         {
             var targetColor = color.Get();

@@ -10,13 +10,13 @@ namespace Skyx.SkyxEditor
         private const float NewElementHeight = SkyxStyles.FullLineHeight;
         private const float HorizontalThreshold = SkyxStyles.ListControlButtonSize * 3;
 
-        public static void DrawLayout(SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, string title = null, string newText = null, Action<SerializedProperty> onNewElement = null)
+        public static void DrawLayout(SerializedProperty property, string title = null, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, string newText = null, Action<SerializedProperty> onNewElement = null)
         {
             var rect = EditorGUILayout.GetControlRect(false, GetPropertyHeight(property, false, size));
-            Draw(ref rect, property, color, size, title, newText, onNewElement, false);
+            Draw(ref rect, property, title, color, size, newText, onNewElement, false);
         }
 
-        public static void Draw(ref Rect rect, SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, string title = null, string newText = null, Action<SerializedProperty> onNewElement = null, bool resetHeight = true)
+        public static void Draw(ref Rect rect, SerializedProperty property, string title = null, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, string newText = null, Action<SerializedProperty> onNewElement = null, bool resetHeight = true)
         {
             if (resetHeight) rect.height = GetPropertyHeight(property, true);
 
