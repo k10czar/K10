@@ -21,7 +21,7 @@ public class GdkGameRuntimeServiceConfigurator : IService, IStartable, ILoggable
             return;
         }
         this.Log( "Starting <color=LawnGreen>GdkGameRuntimeService</color>..." );
-        gdkRuntimeManager = new GdkGameRuntimeService( _gdkSettings.TitleId, _gdkSettings.Scid, _gdkSettings.Sandbox );
+        gdkRuntimeManager = new GdkGameRuntimeService( _gdkSettings.Scid, _gdkSettings.SaveScid, _gdkSettings.TitleId , _gdkSettings.Sandbox );
         ServiceLocator.Register( gdkRuntimeManager );
     }
 }
