@@ -11,7 +11,7 @@ public class AutomationLogCategory : IK10LogCategory
 
 namespace Automation
 {
-	public interface IOperation
+	public interface IOperation : ILoggable<AutomationLogCategory>
 	{
 		IEnumerator ExecutionCoroutine( bool log = false );
 	}

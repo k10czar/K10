@@ -201,6 +201,8 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 
 	public int HashID => _id;
 
+	public string Name => GetReference().name;
+
 #if UNITY_EDITOR
     public bool HasReference => _id >= 0 && !string.IsNullOrEmpty( _editorAssetRefGuid );
 #else
