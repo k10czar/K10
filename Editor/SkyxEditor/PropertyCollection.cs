@@ -148,6 +148,7 @@ namespace Skyx.SkyxEditor
         private readonly string propertyPath;
 
         private readonly Dictionary<string, SerializedProperty> properties = new();
+        public int PropertiesCount => properties.Count;
 
         #region Layout Draw
 
@@ -179,12 +180,12 @@ namespace Skyx.SkyxEditor
             if (EditorGUI.EndChangeCheck()) property.Apply();
         }
 
-        public void DrawAll(params string[] including)
+        public void DrawIncluding(params string[] including)
         {
             foreach (var entry in including) Draw(entry);
         }
 
-        public void DrawAllExcept(params string[] except)
+        public void DrawAll(params string[] except)
         {
             foreach (var key in properties.Keys)
             {
@@ -287,7 +288,7 @@ namespace Skyx.SkyxEditor
             list.DoList(rect);
         }
 
-        public void DrawAllExcept(ref Rect rect, params string[] except)
+        public void DrawAll(ref Rect rect, params string[] except)
         {
             foreach (var key in properties.Keys)
             {
@@ -443,7 +444,7 @@ namespace Skyx.SkyxEditor
 
         #region Getters
 
-        public float GetTotalHeightExcluding(params string[] excludeFields)
+        public float GetTotalHeight(params string[] excludeFields)
         {
             var total = 0f;
 

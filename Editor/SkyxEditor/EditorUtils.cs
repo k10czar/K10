@@ -13,7 +13,7 @@ namespace Skyx.SkyxEditor
 
             wrapper = () =>
             {
-                action();
+                try { action(); } catch (Exception) {}
                 EditorApplication.delayCall -= wrapper;
             };
 
@@ -26,7 +26,7 @@ namespace Skyx.SkyxEditor
 
             wrapper = sceneView =>
             {
-                action(sceneView);
+                try { action(sceneView); } catch (Exception) {}
                 SceneView.duringSceneGui -= wrapper;
             };
 
@@ -39,7 +39,7 @@ namespace Skyx.SkyxEditor
 
             wrapper = _ =>
             {
-                action();
+                try { action(); } catch (Exception) {}
                 SceneView.duringSceneGui -= wrapper;
             };
 
@@ -147,8 +147,8 @@ namespace Skyx.SkyxEditor
         public static void ClearConsole()
         {
             var logEntries = Type.GetType("UnityEditor.LogEntries, UnityEditor");
-            var clearMethod = logEntries.GetMethod("Clear");
-            clearMethod.Invoke(new object(), null);
+            var clearMethod = logEntries!.GetMethod("Clear");
+            clearMethod!.Invoke(new object(), null);
         }
     }
 }
