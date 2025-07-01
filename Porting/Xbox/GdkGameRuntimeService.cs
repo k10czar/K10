@@ -176,11 +176,13 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
             saveScid = scid;
 
         TitleIdNumeric = uint.Parse(titleId, System.Globalization.NumberStyles.HexNumber);
-		Debug.Log( $"<color=Crimson>GdkGameRuntimeService</color>( {titleId}({TitleIdNumeric}), {scid}, {sandbox} )" );
+		Debug.Log( $"<color=Crimson>GdkGameRuntimeService</color>( {titleId}({TitleIdNumeric}), {scid} (sav: {saveScid}), {sandbox} )" );
         if( !string.IsNullOrEmpty(sandbox) ) Sandbox = sandbox;
         TitleId = titleId;
         Scid = scid;
+        SaveScid = saveScid;
         this.Log($"<color=LawnGreen>GDK Xbox Live</color> API SCID: {Scid}");
+        this.Log($"<color=LawnGreen>GDK Xbox Live</color> Save SCID: {SaveScid}");
         this.Log($"<color=LawnGreen>GDK</color> TitleId: {TitleId}");
         this.Log($"<color=LawnGreen>GDK</color> Sandbox: {Sandbox}");
         InitializeRuntime();
