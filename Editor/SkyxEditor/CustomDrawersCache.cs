@@ -95,7 +95,7 @@ namespace Skyx.SkyxEditor
             return typeField?.GetValue(drawerAttribute) as Type;
         }
 
-        [MenuItem("Disyphus/Editor Caches/Clear CustomPropertyDrawer cache")]
+        [MenuItem("Disyphus/Editor/Clear CustomDrawersCache")]
         private static void ClearSerializedRefDrawers()
         {
             cache.Clear();

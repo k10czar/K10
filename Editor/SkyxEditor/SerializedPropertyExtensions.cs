@@ -24,7 +24,7 @@ namespace Skyx.SkyxEditor
         {
             EditorUtility.SetDirty(property.serializedObject.targetObject);
             property.serializedObject.Update();
-            PropertyCollection.Release(property.serializedObject);
+            PropertyCollection.ScheduleReset(property.serializedObject);
         }
 
         public static object GenerateDefaultValue(this SerializedProperty property)

@@ -18,6 +18,7 @@ namespace Skyx.SkyxEditor
         private static readonly ProfilerMarker applyCollectionMarker = new("PropertyCollection.Apply");
 
         [ResetedOnLoad] private static readonly Dictionary<string, Dictionary<string, PropertyCollection>> collections = new();
+        [ResetedOnLoad] private static readonly HashSet<SerializedObject> scheduledResets = new();
 
         private static string GetID(SerializedObject target) => target.targetObject.GetHashCode().ToString();
 
@@ -38,7 +39,7 @@ namespace Skyx.SkyxEditor
             if (objectCollections.TryGetValue(path, out var collection)) return collection;
 
             var isRoot = string.IsNullOrEmpty(path);
-            Log($"Creating new collection for {root.targetObject.name} @ {(isRoot ? "_ROOT_" : path)}", isRoot ? LogSeverity.Info : LogSeverity.Warning);
+            Log($"Creating new collection for {root.targetObject.name} @ {PropertyName(path)}", isRoot ? LogSeverity.Info : LogSeverity.Warning);
 
             collection = new PropertyCollection(root, path);
             objectCollections.Add(path, collection);
@@ -61,39 +62,51 @@ namespace Skyx.SkyxEditor
 
             EditorUtility.SetDirty(serializedObject.targetObject);
 
-            ResetCollections(serializedObject);
+            ScheduleReset(serializedObject);
 
             if (target is IPropertyChangedListener listener)
                 listener.OnPropertyChanged();
         }
 
+        public static void ScheduleReset(SerializedObject serializedObject)
+        {
+            if (scheduledResets.Count == 0) EditorUtils.RunDelayedOnce(ResetCollections);
+            scheduledResets.Add(serializedObject);
+        }
+
+        private static void ResetCollections()
+        {
+            foreach (var serializedObject in scheduledResets)
+                ResetCollections(serializedObject);
+
+            scheduledResets.Clear();
+        }
+
         private static void ResetCollections(SerializedObject serializedObject)
         {
             var id = GetID(serializedObject);
-
             if (!collections.TryGetValue(id, out var objectCollections)) return;
 
-            foreach (var (key, collection) in objectCollections.ToList())
+            serializedObject.Update();
+
+            foreach (var (path, collection) in objectCollections.ToList())
             {
-                if (collection.IsValid())
+                try
                 {
-                    if (collection.root == serializedObject) continue;
+                    // if (collection.IsValid(serializedObject)) continue;
 
-                    try
-                    {
-                        collection.Reset(serializedObject);
-                        LogVerbose($"Collection {key} was reset.");
+                    collection.Reset(serializedObject);
+                    LogVerbose($"Collection {PropertyName(path)} was reset.");
 
-                        continue;
-                    }
-                    catch
-                    {
-                        // ignored
-                    }
+                    continue;
+                }
+                catch
+                {
+                    // ignored
                 }
 
-                LogVerbose($"Collection for {serializedObject.targetObject} @ {key} was corrupted! Deleting...");
-                objectCollections.Remove(key);
+                LogVerbose($"Collection for {serializedObject.targetObject} @ {PropertyName(path)} was corrupted! Deleting...");
+                objectCollections.Remove(path);
             }
         }
 
@@ -130,6 +143,7 @@ namespace Skyx.SkyxEditor
         {
             LogVerbose("Undo performed!");
             collections.Clear();
+            scheduledResets.Clear();
         }
 
         static PropertyCollection()
@@ -138,12 +152,32 @@ namespace Skyx.SkyxEditor
             Undo.undoRedoPerformed += OnUndoRedoPerformed;
         }
 
+        [MenuItem("Disyphus/Editor/Clear PropertyCollections")]
+        private static void ClearPropertyCollections()
+        {
+            collections.Clear();
+            scheduledResets.Clear();
+        }
+
+        [MenuItem("Disyphus/Editor/Log PropertyCollections")]
+        private static void LogPropertyCollections()
+        {
+            var total = collections.Sum(entry => entry.Value.Count);
+            Log($"{collections.Count} serializedObjects tracked, with a total of {total} collections.");
+        }
+
+        private static string PropertyName(string path) => string.IsNullOrEmpty(path) ? "_ROOT_" : path;
+
+        [HideInCallstack]
         private static void Log(string log, LogSeverity severity = LogSeverity.Info) => K10Log<EditorDebugCategory>.Log(severity, log);
+
+        [HideInCallstack]
         private static void LogVerbose(string log) => K10Log<EditorDebugCategory>.LogVerbose(log);
 
         #endregion
 
         private SerializedObject root;
+        private SerializedProperty rootProperty;
         private Object owner;
         private readonly string propertyPath;
 
@@ -485,25 +519,42 @@ namespace Skyx.SkyxEditor
 
         #endregion
 
-        private bool IsValid()
+        #region Setup & Dispose
+
+        private (SerializedProperty, bool) GetRootProperty()
         {
-            try
-            {
-                _ = properties.Values.All(entry => entry.isExpanded); // Forces internal Verify call
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            var fromObject = string.IsNullOrEmpty(propertyPath);
+            return (fromObject ? root.GetIterator() : root.FindProperty(propertyPath), fromObject);
+        }
+
+        private bool IsValid(SerializedObject serializedObject)
+        {
+            return true;
+            // TODO: Find valid way to check is things changed
+            // if (root != serializedObject) return false;
+
+            // var (targetProperty, fromObject) = GetRootProperty();
+            //
+            // if (targetProperty.IsManagedRef())
+            //     return rootProperty.managedReferenceId == targetProperty.managedReferenceId;
+            //
+            // return SerializedProperty.EqualContents(targetProperty, rootProperty);
+
+            // try
+            // {
+            //     _ = properties.Values.All(entry => entry.isExpanded); // Forces internal Verify call
+            //     return true;
+            // }
+            // catch
+            // {
+            //     return false;
+            // }
         }
 
         private void Setup()
         {
-            root.Update();
-
-            var fromObject = string.IsNullOrEmpty(propertyPath);
-            var rootProperty = fromObject ? root.GetIterator() : root.FindProperty(propertyPath);
+            bool fromObject;
+            (rootProperty, fromObject) = GetRootProperty();
 
             var iterator = rootProperty.Copy();
             if (!iterator.NextVisible(true)) return;
@@ -536,11 +587,14 @@ namespace Skyx.SkyxEditor
             owner = root.targetObject;
             propertyPath = path;
 
+            root.Update();
             Setup();
 
             LogOwners = new[] { owner };
         }
 
         public Object[] LogOwners { get; }
+
+        #endregion
     }
 }

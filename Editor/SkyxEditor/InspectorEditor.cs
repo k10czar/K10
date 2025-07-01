@@ -114,7 +114,7 @@ namespace Skyx.SkyxEditor
 
         protected void CacheProperties(bool reset)
         {
-            if (reset) PropertyCollection.Release(serializedObject);
+            if (reset) PropertyCollection.ScheduleReset(serializedObject);
             Properties = PropertyCollection.Get(serializedObject);
         }
 

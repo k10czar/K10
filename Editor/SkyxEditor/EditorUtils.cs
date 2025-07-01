@@ -14,10 +14,10 @@ namespace Skyx.SkyxEditor
             wrapper = () =>
             {
                 try { action(); } catch (Exception) {}
-                EditorApplication.delayCall -= wrapper;
+                EditorApplication.update -= wrapper;
             };
 
-            EditorApplication.delayCall += wrapper;
+            EditorApplication.update += wrapper;
         }
 
         public static void RunOnSceneOnce(Action<SceneView> action)
