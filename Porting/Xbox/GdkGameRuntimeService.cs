@@ -87,6 +87,7 @@ public interface IGdkRuntimeData
 {
     string Sandbox { get; }
     string Scid { get; }
+    string SaveScid { get; }
     string TitleId { get; }
     uint TitleIdNumeric { get; }
 }
@@ -104,6 +105,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     public string Sandbox { get; private set; } = "XDKS.1";
     // Documented as: "Specifies the SCID to be used for Save Game Storage."
     public string Scid { get; private set; } = "00000000-0000-0000-0000-0000FFFFFFFF";
+    public string SaveScid { get; private set; } = "00000000-0000-0000-0000-0000FFFFFFFF";
 
     // Documented as: "...a default value of 'FFFFFFFF' for this element. This allows for early iteration of your
     //   title without having to immediately acquire the Id from Partner Center. It is strongly recommended to change
@@ -168,14 +170,19 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     }
  
 #region Initialization
-    public GdkGameRuntimeService( string titleId = "62ab3c24", string scid = "00000000-0000-0000-0000-000062ab3c24", string sandbox = "" )
+    public GdkGameRuntimeService( string scid, string saveScid = "", string titleId = "", string sandbox = "" )
     {
+        if (saveScid.IsNullOrEmpty())
+            saveScid = scid;
+
         TitleIdNumeric = uint.Parse(titleId, System.Globalization.NumberStyles.HexNumber);
-		Debug.Log( $"<color=Crimson>GdkGameRuntimeService</color>( {titleId}({TitleIdNumeric}), {scid}, {sandbox} )" );
+		Debug.Log( $"<color=Crimson>GdkGameRuntimeService</color>( {titleId}({TitleIdNumeric}), {scid} (sav: {saveScid}), {sandbox} )" );
         if( !string.IsNullOrEmpty(sandbox) ) Sandbox = sandbox;
         TitleId = titleId;
         Scid = scid;
+        SaveScid = saveScid;
         this.Log($"<color=LawnGreen>GDK Xbox Live</color> API SCID: {Scid}");
+        this.Log($"<color=LawnGreen>GDK Xbox Live</color> Save SCID: {SaveScid}");
         this.Log($"<color=LawnGreen>GDK</color> TitleId: {TitleId}");
         this.Log($"<color=LawnGreen>GDK</color> Sandbox: {Sandbox}");
         InitializeRuntime();
@@ -210,29 +217,22 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         }
 
         // Not necessary but handy to know when debugging
-        int hResult = SDK.XGameGetXboxTitleId(out var titleId);
+        int hResult = SDK.XGameGetXboxTitleId(out uint titleIdNumeric);
         if (HR.FAILED(hResult))
-        {
             this.Log($"FAILED: Could not get TitleID! hResult: 0x{hResult:x} ({HR.NameOf(hResult)})");
-        }
 
-        if (titleId.ToString("X").ToLower().Equals(TitleId.ToLower()) == false)
-        {
-            this.LogVerbose($"WARNING! Expected Title Id: {TitleId} got: {titleId:X}");
-        }
+        if (!TitleId.IsNullOrEmpty() && !titleIdNumeric.ToString("X").ToLower().Equals(TitleId.ToLower()))
+            this.LogVerbose($"WARNING! Expected Title Id: {TitleId} got: {titleIdNumeric:X}");
 
-        TitleId = titleId.ToString("X");
+        TitleId = titleIdNumeric.ToString("X");
+        TitleIdNumeric = titleIdNumeric;
 
         hResult = SDK.XSystemGetXboxLiveSandboxId(out var sandboxId);
         if (HR.FAILED(hResult))
-        {
             this.Log($"FAILED: Could not get SandboxID! HResult: 0x{hResult:x} ({HR.NameOf(hResult)})");
-        }
 
-        if (sandboxId.Equals(Sandbox) == false)
-        {
+        if (!Sandbox.IsNullOrEmpty() && !sandboxId.Equals(Sandbox))
             this.LogVerbose($"WARNING! Expected sandbox Id: {Sandbox} got: {sandboxId}");
-        }
 
         Sandbox = sandboxId;
 
@@ -335,7 +335,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
                 return;
             }
 
-            _gdkFileAdapter.Initialize(userHandle, Scid);
+            _gdkFileAdapter.Initialize(userHandle, SaveScid);
             InitializeUser(userHandle);
             _isLogged.SetTrue();
         });
