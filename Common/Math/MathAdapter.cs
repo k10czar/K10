@@ -212,4 +212,44 @@ public static class MathAdapter
 		root1 = (bMinus + deltaRoot) / a2;
 		root2 = (bMinus - deltaRoot) / a2;
 	}
+
+	[MethodImpl(Optimizations.INLINE_IF_CAN)] public static float SoftClamp(float val, float min, float max, float softMarginPercentage = .2f, float additionalVirtualMarginPercentage = 1f)
+	{
+		if (max < min)
+		{
+			var newMax = min;
+			min = max;
+			max = newMax;
+		}
+
+		var range = max - min;
+		if (Approximately(range, 0)) return val;
+
+		if (softMarginPercentage > .5f) softMarginPercentage = .5f;
+		if (softMarginPercentage < 0) softMarginPercentage = 0;
+
+		var virtualMargin = ( softMarginPercentage + additionalVirtualMarginPercentage ) * range;
+		var softMargin = softMarginPercentage * range;
+		
+		var softMarginMin = min + softMargin;
+		if (val < softMarginMin) return softMarginMin - mixedLerp( softMarginMin - val, virtualMargin );
+
+		var softMarginMax = max - softMargin;
+		if (val > softMarginMax) return softMarginMax + mixedLerp( val - softMarginMax, virtualMargin );
+
+		return val;
+	}
+
+	[MethodImpl(Optimizations.INLINE_IF_CAN)] public static float mixedLerp(float val, float length)
+	{
+		if (length < 0) return length;
+		if (val > length) return length;
+		if (Approximately(length, 0)) return length;
+		var normDelta = val / length;
+		var modDelta = 1 - normDelta;
+		modDelta = modDelta * modDelta;
+		modDelta = 1 - modDelta;
+		modDelta *= length;
+		return lerp( val, modDelta, normDelta );
+	}
 }
