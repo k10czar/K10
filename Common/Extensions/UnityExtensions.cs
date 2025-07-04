@@ -137,6 +137,20 @@ public static class K10UnityExtensions
 		rect = rect.CutRight( width + spacing );
 		return column;
 	}
+	
+	[MethodImpl(AggrInline)] public static Vector2 Clamp( this Rect thisRect , Vector2 pos )
+	{
+		pos.x = MathAdapter.clamp(pos.x, thisRect.xMin, thisRect.xMax);
+		pos.y = MathAdapter.clamp(pos.y, thisRect.yMin, thisRect.yMax);
+		return pos;
+	}
+	
+	[MethodImpl(AggrInline)] public static Vector2 SoftClamp( this Rect rect, Vector2 pos, float softMargin = .2f, float virtualMargin = 1f )
+	{
+		pos.x = MathAdapter.SoftClamp( pos.x, rect.xMin, rect.xMax, softMargin, virtualMargin );
+		pos.y = MathAdapter.SoftClamp( pos.y, rect.yMin, rect.yMax, softMargin, virtualMargin );
+		return pos;
+	}
 
 	[MethodImpl( AggrInline )] public static Rect ExpandTop( this Rect r, float height ) { return new Rect( r.x, r.y - height, r.width, r.height + height ); }
 	[MethodImpl( AggrInline )] public static Rect ExpandBottom( this Rect r, float height ) { return new Rect( r.x, r.y, r.width, r.height + height ); }

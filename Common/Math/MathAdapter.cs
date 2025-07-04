@@ -212,4 +212,58 @@ public static class MathAdapter
 		root1 = (bMinus + deltaRoot) / a2;
 		root2 = (bMinus - deltaRoot) / a2;
 	}
+
+	[MethodImpl(Optimizations.INLINE_IF_CAN)] public static float SoftClamp(float val, float min, float max, float softMarginPercentage = .2f, float additionalVirtualMarginPercentage = 1f)
+	{
+		if (max < min)
+		{
+			var newMax = min;
+			min = max;
+			max = newMax;
+		}
+
+		var range = max - min;
+		if (Approximately(range, 0)) return val;
+
+		if (softMarginPercentage > .5f) softMarginPercentage = .5f;
+		if (softMarginPercentage < 0)
+		{
+			if (val < min) return min;
+			if (val > max) return max;
+			return val;
+		}
+
+		var virtualMargin = ( softMarginPercentage + additionalVirtualMarginPercentage ) * range;
+		var softMargin = softMarginPercentage * range;
+		
+		var softMarginMin = min + softMargin;
+		if (val < softMarginMin) return softMarginMin - mixedLerp( softMarginMin - val, virtualMargin, softMargin );
+
+		var softMarginMax = max - softMargin;
+		if (val > softMarginMax) return softMarginMax + mixedLerp( val - softMarginMax, virtualMargin, softMargin );
+
+		return val;
+	}
+
+	[MethodImpl(Optimizations.INLINE_IF_CAN)] public static float mixedLerp(float val, float virtualLength, float realLength)
+	{
+		if (virtualLength < 0) return realLength;
+		if (val > virtualLength) return realLength;
+		if (Approximately(virtualLength, 0)) return realLength;
+
+		if (realLength < 0) return realLength;
+		if (Approximately(realLength, 0)) return realLength;
+
+		var normDelta = val / virtualLength;
+		var modDelta = 1 - normDelta;
+		modDelta = modDelta * modDelta;
+		modDelta = 1 - modDelta;
+		modDelta *= realLength;
+
+		var delta = val / realLength;
+		if (virtualLength < realLength) delta = normDelta;
+		if (delta > 1) delta = 1;
+
+		return lerp(val, modDelta, delta);
+	}
 }
