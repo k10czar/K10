@@ -226,7 +226,12 @@ public static class MathAdapter
 		if (Approximately(range, 0)) return val;
 
 		if (softMarginPercentage > .5f) softMarginPercentage = .5f;
-		if (softMarginPercentage < 0) softMarginPercentage = 0;
+		if (softMarginPercentage < 0)
+		{
+			if (val < min) return min;
+			if (val > max) return max;
+			return val;
+		}
 
 		var virtualMargin = ( softMarginPercentage + additionalVirtualMarginPercentage ) * range;
 		var softMargin = softMarginPercentage * range;
