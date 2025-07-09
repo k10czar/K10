@@ -11,7 +11,7 @@ namespace Automation
 #if UNITY_2023_1_OR_NEWER
 		[ExtendedDrawer, SerializeReference] IValueProvider<int> _repetitionsRef;
 #else
-		[SerializeField] int _repetitionsVal;
+		[SerializeField] int _repetitionsVal = 1;
 #endif
 		[ExtendedDrawer,SerializeReference] List<IOperation> _actions;
 
