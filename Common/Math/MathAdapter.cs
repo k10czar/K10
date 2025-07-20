@@ -213,7 +213,7 @@ public static class MathAdapter
 		root2 = (bMinus - deltaRoot) / a2;
 	}
 
-	[MethodImpl(Optimizations.INLINE_IF_CAN)] public static float SoftClamp(float val, float min, float max, float softMarginPercentage = .2f, float additionalVirtualMarginPercentage = 1f)
+	[MethodImpl(Optimizations.INLINE_IF_CAN)] public static float SoftClamp(float val, float min, float max, float softMarginPercentage = .2f, float additionalVirtualMarginPercentage = 2f)
 	{
 		if (max < min)
 		{
@@ -233,7 +233,7 @@ public static class MathAdapter
 			return val;
 		}
 
-		var virtualMargin = ( softMarginPercentage + additionalVirtualMarginPercentage ) * range;
+		var virtualMargin = softMarginPercentage * additionalVirtualMarginPercentage * range;
 		var softMargin = softMarginPercentage * range;
 		
 		var softMarginMin = min + softMargin;

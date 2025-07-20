@@ -21,23 +21,23 @@ public class NotificationConsole : MonoBehaviour
     float _nextVanish = float.MaxValue;
     [SerializeField,TextArea(5,25)] string _currentMessage = string.Empty;
 
-    public static void Notify(string message, float notificationSeconds = 5f)
+    public static void Notify(string message, float notificationSeconds = 5f, bool alsoLogOnUnityConsole = false)
     {
         if (_instance == null)
         {
             _instance = new GameObject( "NotificationConsole" ).AddComponent<NotificationConsole>();
         }
-        _instance.LocalNotify(message, notificationSeconds);
+        _instance.LocalNotify(message, notificationSeconds, alsoLogOnUnityConsole);
     }
 
-    private void LocalNotify(string message, float notificationSeconds )
+    private void LocalNotify(string message, float notificationSeconds, bool alsoLogOnUnityConsole = false )
     {
         var refTime = Time.timeSinceLevelLoad;
         if (_notifications == null) _notifications = new();
         _notifications.Add(new Notification(message, refTime + notificationSeconds));
         _nextVanish = MathAdapter.min(_nextVanish, refTime);
         _isDirty = true;
-        Debug.Log( $"{"NotificationConsole".Colorfy(Colors.Erin)}: {message}\nwill last {notificationSeconds.ToStringColored(Colors.Console.Numbers)}s" );
+        if( alsoLogOnUnityConsole ) Debug.Log( $"{"NotificationConsole".Colorfy(Colors.Erin)}: {message}\nwill last {notificationSeconds.ToStringColored(Colors.Console.Numbers)}s" );
     }
 
     void TryBuildMessage()

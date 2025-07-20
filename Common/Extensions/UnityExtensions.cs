@@ -145,7 +145,7 @@ public static class K10UnityExtensions
 		return pos;
 	}
 	
-	[MethodImpl(AggrInline)] public static Vector2 SoftClamp( this Rect rect, Vector2 pos, float softMargin = .2f, float virtualMargin = 1f )
+	[MethodImpl(AggrInline)] public static Vector2 SoftClamp( this Rect rect, Vector2 pos, float softMargin = .2f, float virtualMargin = 2f )
 	{
 		pos.x = MathAdapter.SoftClamp( pos.x, rect.xMin, rect.xMax, softMargin, virtualMargin );
 		pos.y = MathAdapter.SoftClamp( pos.y, rect.yMin, rect.yMax, softMargin, virtualMargin );

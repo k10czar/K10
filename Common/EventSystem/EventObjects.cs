@@ -12,7 +12,9 @@ public class EventSlot : IEvent, ICustomDisposableKill
 	bool _killed = false;
 	private List<IEventTrigger> _listeners;
 	private List<IEventTrigger> _callList;
-	bool _callListIsDirty = false;
+	bool _callListIsDirty = true;
+	bool _triggering = false;
+	bool _clearCallListDelayed = false;
 
 	public bool IsValid => !_killed;
 	public int EventsCount => _listeners?.Count ?? 0;
@@ -67,7 +69,8 @@ public class EventSlot : IEvent, ICustomDisposableKill
 			_callListIsDirty = false;
 		}
 
-		for( int i = 0; i < count; i++ )
+		_triggering = true;
+		for (int i = 0; i < count; i++)
 		{
 			try
 			{
@@ -86,6 +89,13 @@ public class EventSlot : IEvent, ICustomDisposableKill
 				Debug.LogException(exception);
 			}
 		}
+		_triggering = false;
+
+		if (_clearCallListDelayed)
+		{
+			_clearCallListDelayed = false;
+			if (_listeners == null || _listeners.Count == 0) TryClearCallList();
+		}
 	}
 
 	public void Kill()
@@ -103,7 +113,11 @@ public class EventSlot : IEvent, ICustomDisposableKill
 			_listeners.Clear();
 			ObjectPool.ReturnAndClearRef(ref _listeners);
 		}
-		if (_callList != null)
+		if (_triggering)
+		{
+			_clearCallListDelayed = true;
+		}
+		else if (_callList != null)
 		{
 			_callList.Clear();
 			ObjectPool.ReturnAndClearRef(ref _callList);
@@ -116,16 +130,24 @@ public class EventSlot : IEvent, ICustomDisposableKill
 		if (_listeners != null && _listeners.Count == 0 )
 		{
 			ObjectPool.ReturnAndClearRef( ref _listeners );
-			if (_callList != null)
-			{
-				_callList.Clear();
-				ObjectPool.ReturnAndClearRef( ref _callList );
-			}
+			TryClearCallList();
 			_callListIsDirty = false;
 		}
 	}
 
-	public void Register(IEventTrigger listener)
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
+	private bool TryClearCallList()
+    {
+		_clearCallListDelayed = true;
+        if (_triggering) return false; //Is been used
+		_clearCallListDelayed = false;
+        if (_callList == null) return true; //Already clear
+        _callList.Clear();
+        ObjectPool.ReturnAndClearRef(ref _callList);
+        return true;
+    }
+
+    public void Register(IEventTrigger listener)
 	{
 		if (_killed || listener == null) return;
 		Lazy.RequestPoolable(ref _listeners).Add(listener);
@@ -154,7 +176,9 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 	private EventSlot _generic;
 	private List<IEventTrigger<T>> _listeners;
 	private List<IEventTrigger<T>> _callList;
-	bool _callListIsDirty = false;
+	bool _callListIsDirty = true;
+	bool _triggering = false;
+	bool _clearCallListDelayed = false;
 
 	public bool IsValid => !_killed;
 	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
@@ -211,6 +235,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 						_callListIsDirty = false;
 					}
 
+					_triggering = true;
 					for (int i = 0; i < count; i++)
 					{
 						try
@@ -229,6 +254,13 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 						{
 							Debug.LogException(exception);
 						}
+					}
+					_triggering = false;
+
+					if (_clearCallListDelayed)
+					{
+						_clearCallListDelayed = false;
+						if (_listeners == null || _listeners.Count == 0) TryClearCallList();
 					}
 				}
             }
@@ -260,7 +292,11 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 			_generic.Clear();
 			ObjectPool.ReturnAndClearRef(ref _generic);
 		}
-		if (_callList != null)
+		if (_triggering)
+		{
+			_clearCallListDelayed = true;
+		}
+		else if (_callList != null)
 		{
 			_callList.Clear();
 			ObjectPool.ReturnAndClearRef(ref _callList);
@@ -281,13 +317,21 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 		if (_listeners.Count == 0)
 		{
 			ObjectPool.ReturnAndClearRef( ref _listeners );
-			if (_callList != null)
-			{
-				_callList.Clear();
-				ObjectPool.ReturnAndClearRef( ref _callList);
-			}
+			TryClearCallList();
 		}
 	}
+
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
+	private bool TryClearCallList()
+    {
+		_clearCallListDelayed = true;
+        if (_triggering) return false; //Is been used
+		_clearCallListDelayed = false;
+        if (_callList == null) return true; //Already clear
+        _callList.Clear();
+        ObjectPool.ReturnAndClearRef(ref _callList);
+        return true;
+    }
 
 	public void Register( IEventTrigger<T> listener )
 	{
@@ -332,7 +376,9 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 	private EventSlot<T> _generic;
 	private List<IEventTrigger<T, K>> _listeners;
 	private List<IEventTrigger<T, K>> _callList;
-	bool _callListIsDirty = false;
+	bool _callListIsDirty = true;
+	bool _triggering = false;
+	bool _clearCallListDelayed = false;
 
 	public bool IsValid => !_killed;
 	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
@@ -388,6 +434,7 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 						_callListIsDirty = false;
 					}
 
+					_triggering = true;
 					for (int i = 0; i < count; i++)
 					{
 						try
@@ -406,6 +453,13 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 						{
 							Debug.LogException(exception);
 						}
+					}
+					_triggering = false;
+
+					if (_clearCallListDelayed)
+					{
+						_clearCallListDelayed = false;
+						if (_listeners == null || _listeners.Count == 0) TryClearCallList();
 					}
 				}
             }
@@ -432,14 +486,22 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 		if (_listeners.Count == 0)
 		{
 			ObjectPool.ReturnAndClearRef( ref _listeners );
-			if (_callList != null)
-			{
-				_callList.Clear();
-				ObjectPool.ReturnAndClearRef( ref _callList);
-			}
+			TryClearCallList();
 			_callListIsDirty = false;
 		}
 	}
+
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
+	private bool TryClearCallList()
+    {
+		_clearCallListDelayed = true;
+        if (_triggering) return false; //Is been used
+		_clearCallListDelayed = false;
+        if (_callList == null) return true; //Already clear
+        _callList.Clear();
+        ObjectPool.ReturnAndClearRef(ref _callList);
+        return true;
+    }
 
 	public void Kill()
 	{
@@ -460,7 +522,11 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 			_generic.Clear();
 			ObjectPool.ReturnAndClearRef(ref _generic);
 		}
-		if (_callList != null)
+		if (_triggering)
+		{
+			_clearCallListDelayed = true;
+		}
+		else if (_callList != null)
 		{
 			_callList.Clear();
 			ObjectPool.ReturnAndClearRef(ref _callList);
@@ -524,7 +590,9 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 	private EventSlot<T, K> _generic;
 	private List<IEventTrigger<T, K, L>> _listeners;
 	private List<IEventTrigger<T, K, L>> _callList;
-	bool _callListIsDirty = false;
+	bool _callListIsDirty = true;
+	bool _triggering = false;
+	bool _clearCallListDelayed = false;
 
 	public bool IsValid => !_killed;
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
@@ -580,6 +648,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 						_callListIsDirty = false;
 					}	
 
+					_triggering = true;
 					for (int i = 0; i < count; i++)
 					{
 						try
@@ -598,6 +667,13 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 						{
 							Debug.LogException(exception);
 						}
+					}
+					_triggering = false;
+
+					if (_clearCallListDelayed)
+					{
+						_clearCallListDelayed = false;
+						if (_listeners == null || _listeners.Count == 0) TryClearCallList();
 					}
 				}
 			}
@@ -624,13 +700,21 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 		if (_listeners.Count == 0)
 		{
 			ObjectPool.ReturnAndClearRef( ref _listeners );
-			if (_callList != null)
-			{
-				_callList.Clear();
-				ObjectPool.ReturnAndClearRef( ref _callList);
-			}
+			TryClearCallList();
 		}
 	}
+
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
+	private bool TryClearCallList()
+    {
+		_clearCallListDelayed = true;
+        if (_triggering) return false; //Is been used
+		_clearCallListDelayed = false;
+        if (_callList == null) return true; //Already clear
+        _callList.Clear();
+        ObjectPool.ReturnAndClearRef(ref _callList);
+        return true;
+    }
 
 	public void Kill()
 	{
@@ -651,7 +735,11 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 			_generic.Clear();
 			ObjectPool.ReturnAndClearRef(ref _generic);
 		}
-		if (_callList != null)
+		if (_triggering)
+		{
+			_clearCallListDelayed = true;
+		}
+		else if (_callList != null)
 		{
 			_callList.Clear();
 			ObjectPool.ReturnAndClearRef(ref _callList);
