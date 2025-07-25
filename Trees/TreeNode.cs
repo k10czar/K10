@@ -15,11 +15,18 @@ namespace Skyx.Trees
         private object Key { get; }
         public string Path { get; private set; }
 
-
         private readonly bool isRoot;
 
         private readonly Dictionary<object, TreeNode<T>> children = new();
         public bool HasChildren => children.Count > 0;
+
+        public int GetIntValue()
+        {
+            if (Value.GetType().GetEnumUnderlyingType() == typeof(byte))
+                return (byte)(object) Value;
+
+            return (int)(object) Value;
+        }
 
         public List<TreeNode<T>> GetChildren()
         {

@@ -137,7 +137,7 @@ namespace Skyx.SkyxEditor
 
                 if (node.IsValid)
                 {
-                    var isSelected = property?.intValue == (int)(object)node.Value;
+                    var isSelected = property?.intValue == node.GetIntValue();
                     dropdown.AddChild(new EnumTreeAdvancedDropdownItem<T>(node, isSelected));
                     hasValidChildren = true;
                 }
@@ -164,13 +164,13 @@ namespace Skyx.SkyxEditor
 
         private void TreeNodeSelected(EnumTreeAdvancedDropdownItem<T> treeItem)
         {
-            Debug.Assert(treeItem.isValid, $"Selected invalid entry! {treeItem.value}");
+            Debug.Assert(treeItem.IsValid, $"Selected invalid entry! {treeItem.Value}");
 
-            callback?.Invoke(treeItem.value);
+            callback?.Invoke(treeItem.Value);
 
             if (property == null) return;
 
-            property.intValue = (int)(object) treeItem.value;
+            property.intValue = treeItem.GetIntValue();
             property.Apply();
         }
 
@@ -189,14 +189,16 @@ namespace Skyx.SkyxEditor
 
     internal class EnumTreeAdvancedDropdownItem<T> : AdvancedDropdownItem where T : Enum
     {
-        public readonly T value;
-        public readonly bool isValid;
+        private readonly TreeNode<T> node;
+
+        public T Value => node.Value;
+        public bool IsValid => node.IsValid;
+        public int GetIntValue() => node.GetIntValue();
 
         public EnumTreeAdvancedDropdownItem(TreeNode<T> node, bool isSelected)
             : base($"{(isSelected ? "✓ " : "")}{node.ValueDisplayName}")
         {
-            value = node.Value;
-            isValid = node.IsValid;
+            this.node = node;
         }
     }
 

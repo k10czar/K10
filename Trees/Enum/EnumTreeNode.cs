@@ -33,7 +33,11 @@ namespace Skyx.Trees
             if (attribute != null)
             {
                 nodeInfo.path = new Queue<object>(attribute.path);
-                nodeInfo.order = attribute.order == int.MinValue ? (int)(object) value : attribute.order;
+
+                if (value.GetType().GetEnumUnderlyingType() == typeof(byte))
+                    nodeInfo.order = attribute.order == int.MinValue ? (byte)(object) value : attribute.order;
+                else nodeInfo.order = attribute.order == int.MinValue ? (int)(object) value : attribute.order;
+
                 nodeInfo.hide = attribute.hide;
 
                 if (!string.IsNullOrEmpty(attribute.valueDisplayName)) nodeInfo.valueName = attribute.valueDisplayName;
