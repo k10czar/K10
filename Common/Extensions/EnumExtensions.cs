@@ -1,4 +1,3 @@
-using System.Reflection;
 using System;
 
 public static class EnumExtensions
@@ -19,12 +18,12 @@ public static class EnumExtensions
 
         var SB = StringBuilderPool.RequestEmpty();
 
-        foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Static))
+        foreach (var field in type.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static))
         {
             if (enumValue.HasFlag((Enum)field.GetValue(null)))
             {
-                if( SB.Length != 0 ) SB.Append( separator );
-                SB.Append( field.Name );
+                if (SB.Length != 0) SB.Append(separator);
+                SB.Append(field.Name);
             }
         }
 
