@@ -31,7 +31,12 @@ public class FloatState : INumericValueState<float>, ICustomDisposableKill
 		_onChange = null;
 	}
 
-	public IEventRegister<float> OnChange => Lazy.Request( ref _onChange );
+	public void Recycle()
+	{
+		_onChange.Clear();
+	}
+
+	public IEventRegister<float> OnChange => Lazy.Request(ref _onChange);
 
 	public FloatState() : this( default( float ) ) { }
 	public FloatState( float initialValue ) { _value = initialValue; }
