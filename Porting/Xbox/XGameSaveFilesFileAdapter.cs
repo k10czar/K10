@@ -24,11 +24,13 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 		RetrieveSaveFolder();
 		
 		_validator.Void();
-		ApplicationEventsRelay.IsSuspended.RegisterOnFalse(_validator.Validated(RetrieveSaveFolder));
+		ApplicationEventsRelay.IsSuspended.OnFalseState.Register(_validator.Validated(RetrieveSaveFolder));
     }
 
 	private void RetrieveSaveFolder()
 	{
+        Debug.Log($"RetrieveSaveFolder");
+		_isInitilized.SetFalse();
         SDK.XGameSaveFilesGetFolderWithUiAsync(_userHandle, _scid, 
             (int hresult, string folderResult) => 
             {
