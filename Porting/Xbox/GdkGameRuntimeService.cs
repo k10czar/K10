@@ -29,11 +29,10 @@ public class Privileges
     public readonly Privilege Crossplay = new();
     public readonly Privilege UserGeneratedContent = new();
     public readonly Privilege Communications = new();
-    public readonly Privilege MultiplayerParties = new();
-    public readonly Privilege Sessions = new();
 
     public class Privilege
     {
+        public XUserPrivilege xUserPrivilege;
         public bool readed;
         public int hr;
         public XUserPrivilegeDenyReason denyReason;
@@ -42,17 +41,11 @@ public class Privileges
 
     public void ReadUserPrivileges( XUserHandle userHandle )
     {
-        // TODO-Porting: Check which privileges are needed and actually store them in UserData
-        ReadPrivilege( userHandle, XUserPrivilege.Multiplayer, Multiplayer );
         ReadPrivilege( userHandle, XUserPrivilege.CrossPlay, Crossplay );
+        ReadPrivilege( userHandle, XUserPrivilege.Multiplayer, Multiplayer );
         ReadPrivilege( userHandle, XUserPrivilege.UserGeneratedContent, UserGeneratedContent );
 
-        // TODO-Porting: Remove, should not be needed since we are removing the chat 
         ReadPrivilege( userHandle, XUserPrivilege.Communications, Communications );
-
-        // TODO-Porting: Check what those privileges actually mean
-        ReadPrivilege( userHandle, XUserPrivilege.MultiplayerParties, MultiplayerParties );
-        ReadPrivilege( userHandle, XUserPrivilege.Sessions, Sessions );
 
         AlreadyRead = true;
     }
@@ -64,6 +57,7 @@ public class Privileges
         var failed = HR.FAILED( hr );
         privilege.readed = !failed;
         privilege.hr = hr;
+        privilege.xUserPrivilege = privilegeType;
 
         if( failed )
         {
@@ -100,7 +94,6 @@ public class GdkLogCategory : IK10LogCategory
 
 public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategory>
 {
-    // TODO-Porting: Set values, just in case
     // Config
     public string Sandbox { get; private set; } = "XDKS.1";
     // Documented as: "Specifies the SCID to be used for Save Game Storage."
@@ -509,7 +502,6 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 #endregion
 
 #region CleanUp
-    // TODO-Porting: This isn't even called, is it? Call when closing the game? Or closing handles is automatic?
     ~GdkGameRuntimeService()
     {
         CleanUp();
