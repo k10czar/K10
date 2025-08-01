@@ -5,8 +5,6 @@ using System;
 using System.Collections;
 using K10.DebugSystem;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using UnityEditor;
 using WebSocketSharp;
 
@@ -50,7 +48,7 @@ public class Privileges
         AlreadyRead = true;
     }
 
-    int ReadPrivilege( XUserHandle userHandle, XUserPrivilege privilegeType, Privilege privilege )
+    public static int ReadPrivilege( XUserHandle userHandle, XUserPrivilege privilegeType, Privilege privilege )
     {
         var hr = SDK.XUserCheckPrivilege(userHandle, XUserPrivilegeOptions.None, privilegeType, out privilege.isEnabled, out privilege.denyReason);
         
@@ -398,6 +396,33 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
         return hr;
     }
+
+    public void AskForPrivilege(Privileges.Privilege privilege, Action success, Action fail)
+    {
+        if (privilege.isEnabled)
+        {
+            success?.Invoke();
+            return;
+        }
+
+        SDK.XUserResolvePrivilegeWithUiAsync(UserData.userHandle, XUserPrivilegeOptions.None, privilege.xUserPrivilege, 
+            (Int32 hresult) => {
+                Debug.Log($">>><<< XUserResolvePrivilegeWithUiAsync = {hresult}");
+                if (HR.SUCCEEDED(hresult))
+                {
+                    Privileges.ReadPrivilege(UserData.userHandle, privilege.xUserPrivilege, privilege);
+                    if (privilege.isEnabled)
+                    {
+                        success?.Invoke();
+                        return;
+                    }
+                }
+
+                fail?.Invoke();
+            }
+        );
+    }
+
 #endregion
 
 #region DLC
