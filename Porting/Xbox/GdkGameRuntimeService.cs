@@ -415,8 +415,6 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
                 }
                 else
                     fail?.Invoke();
-
-                fail?.Invoke();
             }
         );
     }
