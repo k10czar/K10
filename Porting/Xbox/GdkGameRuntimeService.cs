@@ -410,13 +410,11 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
                 Debug.Log($">>><<< XUserResolvePrivilegeWithUiAsync = {hresult}");
                 if (HR.SUCCEEDED(hresult))
                 {
-                    Privileges.ReadPrivilege(UserData.userHandle, privilege.xUserPrivilege, privilege);
-                    if (privilege.isEnabled)
-                    {
-                        success?.Invoke();
-                        return;
-                    }
+                    privilege.isEnabled = true;
+                    success?.Invoke();
                 }
+                else
+                    fail?.Invoke();
 
                 fail?.Invoke();
             }
