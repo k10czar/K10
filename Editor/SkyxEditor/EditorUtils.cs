@@ -150,5 +150,13 @@ namespace Skyx.SkyxEditor
             var clearMethod = logEntries!.GetMethod("Clear");
             clearMethod!.Invoke(new object(), null);
         }
+
+        public static void FocusSceneView(Vector3 target)
+        {
+            var view = SceneView.lastActiveSceneView;
+
+            view.pivot = target;
+            view.size = .7f;
+        }
     }
 }
