@@ -42,7 +42,6 @@ public class Privileges
         ReadPrivilege( userHandle, XUserPrivilege.CrossPlay, Crossplay );
         ReadPrivilege( userHandle, XUserPrivilege.Multiplayer, Multiplayer );
         ReadPrivilege( userHandle, XUserPrivilege.UserGeneratedContent, UserGeneratedContent );
-
         ReadPrivilege( userHandle, XUserPrivilege.Communications, Communications );
 
         AlreadyRead = true;
@@ -419,6 +418,143 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         );
     }
 
+    // TODO: move up
+    Dictionary<ulong, bool> _communicationPermissionCache = new();
+    public const ulong CROSS_NETWORK_FAKE_XUID = 0;
+    
+    public void CheckCommunicationPermissionWithCrossNetworkUser(Action<bool> callback)
+    {
+        if (!UserData.Privileges.Communications.isEnabled)
+        {
+            callback?.Invoke(false);
+            return;
+        }
+
+        if (_communicationPermissionCache.ContainsKey(CROSS_NETWORK_FAKE_XUID))
+        {
+            callback?.Invoke(_communicationPermissionCache[CROSS_NETWORK_FAKE_XUID]);
+            return;
+        }
+
+        SDK.XBL.XblPrivacyCheckPermissionForAnonymousUserAsync(UserData.contextHandle, XblPermission.CommunicateUsingText, XblAnonymousUserType.CrossNetworkUser,
+            (Int32 hresult, XblPermissionCheckResult permissionCheckResult) => {
+                if (HR.FAILED(hresult))
+                {
+                    callback?.Invoke(false);
+                    return;
+                }
+
+                _communicationPermissionCache[permissionCheckResult.TargetXuid] = permissionCheckResult.IsAllowed;
+                callback?.Invoke(permissionCheckResult.IsAllowed);
+            }
+        ); 
+    }
+
+    public void CheckCommunicationPermissionWithXboxUser(ulong xuid, Action<bool> callback)
+    {
+        if (!UserData.Privileges.Communications.isEnabled)
+        {
+            callback?.Invoke(false);
+            return;
+        }
+
+        if (_communicationPermissionCache.ContainsKey(xuid))
+        {
+            callback?.Invoke(_communicationPermissionCache[xuid]);
+            return;
+        }
+
+        SDK.XBL.XblPrivacyCheckPermissionAsync(UserData.contextHandle, XblPermission.CommunicateUsingText, xuid,
+            (Int32 hresult, XblPermissionCheckResult permissionCheckResult) => {
+                if (HR.FAILED(hresult))
+                {
+                    Debug.Log($"<><> FAILED TO CHECK COMMS PERMISSION");
+                    callback?.Invoke(false);
+                    return;
+                }
+
+                Debug.Log($"<><> Can communicate with {permissionCheckResult.TargetXuid} = {permissionCheckResult.IsAllowed}");
+                _communicationPermissionCache[permissionCheckResult.TargetXuid] = permissionCheckResult.IsAllowed;
+                callback?.Invoke(permissionCheckResult.IsAllowed);
+            }
+        );
+    }
+
+    public void CheckCommunicationPermissionWithUsers(List<ulong> xuids, bool includeCrossNetworkUsers, Action<Dictionary<ulong, bool>> callback)
+    {
+        if (!UserData.Privileges.Communications.isEnabled)
+        {
+            Dictionary<ulong, bool> result = new();
+            foreach (var xuid in xuids)
+                result.Add(xuid, false);
+
+            if (includeCrossNetworkUsers)
+                result.Add(CROSS_NETWORK_FAKE_XUID, false);
+                
+            callback?.Invoke(result);
+            return;
+        }
+
+        Debug.Log($">><<>> _XUIDS[].Length = {xuids.Count} + network users = {includeCrossNetworkUsers}");
+        var permissions = new XblPermission[] { XblPermission.CommunicateUsingText };
+        var anonymousUserTypes = includeCrossNetworkUsers ? new XblAnonymousUserType[] { XblAnonymousUserType.CrossNetworkUser } : new XblAnonymousUserType[] { };
+
+        List<ulong> xuidsNotPresentInCache = new();
+
+        foreach (ulong xuid in xuids)
+            if (!_communicationPermissionCache.ContainsKey(xuid))
+                xuidsNotPresentInCache.Add(xuid);
+        
+        bool needsToCheckCrossNetworkUsers = includeCrossNetworkUsers && !_communicationPermissionCache.ContainsKey(CROSS_NETWORK_FAKE_XUID);
+
+        if (xuidsNotPresentInCache.Count == 0 && !needsToCheckCrossNetworkUsers)
+        {
+            Debug.Log($">><<>> Getting from cache");
+            callback?.Invoke(GetCommunicationPermissionListFromCache(xuids, includeCrossNetworkUsers));
+            return;
+        }
+  
+        SDK.XBL.XblPrivacyBatchCheckPermissionAsync(UserData.contextHandle, permissions, xuidsNotPresentInCache.ToArray(), anonymousUserTypes,
+            (Int32 hresult, XblPermissionCheckResult[] permissionCheckResults) => {
+                if (HR.FAILED(hresult))
+                {
+                    callback?.Invoke(new());
+                    return;
+                }
+
+                Debug.Log($">><<>> _resultXUIDS[].Length = {permissionCheckResults.Length}");
+                foreach (var permissionCheckResult in permissionCheckResults)
+                {
+                    Debug.Log($">><<>> PCR: {permissionCheckResult.IsAllowed} | {permissionCheckResult.TargetXuid} | {permissionCheckResult.TargetUserType}");
+                    _communicationPermissionCache[permissionCheckResult.TargetXuid] = permissionCheckResult.IsAllowed;
+                }
+
+                callback?.Invoke(GetCommunicationPermissionListFromCache(xuids, includeCrossNetworkUsers));
+            }
+        );
+    }
+
+    private Dictionary<ulong, bool> GetCommunicationPermissionListFromCache(List<ulong> xuids, bool includeCrossNetworkUsers)
+    {
+        Dictionary<ulong, bool> resultList = new();
+
+        if (includeCrossNetworkUsers)
+            xuids.Add(CROSS_NETWORK_FAKE_XUID);
+
+        foreach (var xuid in xuids)
+        {
+            if (!_communicationPermissionCache.ContainsKey(xuid))
+            {
+                Debug.LogError("Trying to generate communications permission list from cache, but doesn't have all needed values");
+                resultList.Add(xuid, false);
+                continue;
+            }
+
+            resultList.Add(xuid, _communicationPermissionCache[xuid]);
+        }
+
+        return resultList;
+    }
 #endregion
 
 #region DLC
