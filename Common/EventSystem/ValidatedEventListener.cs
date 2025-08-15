@@ -70,12 +70,12 @@ public sealed class ValidatedEventListener<T> : BaseConditionalEventListener, IE
 		{
 			if (_hashCode == -1)
 			{
-				if (_evnt != null || _condition != null) _hashCode = _evnt.GetHashCode() + _condition.GetHashCode();
+				if (_evnt != null && _condition != null) _hashCode = _evnt.GetHashCode() + _condition.GetHashCode();
 				else _hashCode = 0;
 			}
 			if (del._hashCode == -1)
 			{
-				if (del._evnt != null || del._condition != null) del._hashCode = del._evnt.GetHashCode() + del._condition.GetHashCode();
+				if (del._evnt != null && del._condition != null) del._hashCode = del._evnt.GetHashCode() + del._condition.GetHashCode();
 				else del._hashCode = 0;
 			}
 			return _hashCode == del._hashCode && _evnt.Equals( del._evnt ) && _condition.Equals( del._condition );
