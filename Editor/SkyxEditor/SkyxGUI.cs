@@ -213,8 +213,8 @@ namespace Skyx.SkyxEditor
         public static bool MiniEnableToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint)
             => DrawEnableToggle(ExtractMiniButton(ref rect), onLabel, offLabel, toggleProp, hint);
 
-        public static bool MiniWarningToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint)
-            => DrawWarningToggle(ExtractMiniButton(ref rect), onLabel, offLabel, toggleProp, hint);
+        public static bool MiniWarningToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint, bool fromEnd = false)
+            => DrawWarningToggle(ExtractMiniButton(ref rect, fromEnd), onLabel, offLabel, toggleProp, hint);
 
         public static bool MiniChoiceToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint)
             => DrawChoiceToggle(ExtractMiniButton(ref rect), onLabel, offLabel, toggleProp, hint);

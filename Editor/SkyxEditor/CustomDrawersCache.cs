@@ -14,6 +14,8 @@ namespace Skyx.SkyxEditor
         public static PropertyEditor Get(SerializedProperty property)
         {
             var fieldType = property.GetCachedType();
+            if (fieldType == null) return null;
+
             if (cache.TryGetValue(fieldType, out var cachedDrawer)) return cachedDrawer;
 
             var drawer = FindPropertyDrawerForType(fieldType);
