@@ -157,7 +157,7 @@ public static class CachedCollectionExtentions
 
     public static void Synchronize<T>( this ICachedCollectionObserver<T> collection, System.Action<T> evnt, bool evenDefault = true ) 
 	{ 
-		Synchronize( collection, new ActionEventCapsule<T>( evnt ), evenDefault );
+		Synchronize( collection, new ActionCapsule<T>( evnt ), evenDefault );
 	}
 
 	public static void Synchronize<T>( this ICachedCollectionObserverEnumerable<T> collection, IEventTrigger<T> evnt, bool evenDefault = true )
@@ -172,7 +172,7 @@ public static class CachedCollectionExtentions
 
 	public static void Synchronize<T>( this ICachedCollectionObserverEnumerable<T> collection, System.Action<T> evnt, bool evenDefault = true )
 	{
-		Synchronize( collection, new ActionEventCapsule<T>( evnt ), evenDefault );
+		Synchronize( collection, new ActionCapsule<T>( evnt ), evenDefault );
 	}
 
 	public static void Synchronize<T>( this ICachedCollectionObserverEnumerable<T> collection, IEventTrigger<T> evnt, IEventValidator validator, bool evenDefault = true )

@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using K10;
 
-
 [UnityEngine.HideInInspector]
 public class EventSlot : IEvent, ICustomDisposableKill
 {
@@ -473,56 +472,4 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 	}
 
 	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)},{typeof(L)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
-}
-
-[UnityEngine.HideInInspector]
-public class VoidableEventTrigger : IEventTrigger, ICustomDisposableKill
-{
-	IEventTrigger _trigger;
-
-	public VoidableEventTrigger( IEventTrigger trigger ) { _trigger = trigger; }
-	public VoidableEventTrigger( Action act ) : this( new ActionEventCapsule( act ) ) { }
-	public bool IsValid => _trigger?.IsValid ?? false;
-	public void Trigger() { if( IsValid ) _trigger.Trigger(); }
-	public void Void() { _trigger = null; }
-	public void Kill() { _trigger = null; }
-}
-
-[UnityEngine.HideInInspector]
-public class VoidableEventTrigger<T> : IEventTrigger<T>, ICustomDisposableKill
-{
-	IEventTrigger<T> _trigger;
-
-	public VoidableEventTrigger( IEventTrigger<T> trigger ) { _trigger = trigger; }
-	public VoidableEventTrigger( Action<T> act ) : this( new ActionEventCapsule<T>( act ) ) { }
-	public bool IsValid => _trigger?.IsValid ?? false;
-	public void Trigger( T t ) { if( IsValid ) _trigger.Trigger( t ); }
-	public void Void() { _trigger = null; }
-	public void Kill() { _trigger = null; }
-}
-
-[UnityEngine.HideInInspector]
-public class VoidableEventTrigger<T, K> : IEventTrigger<T, K>, ICustomDisposableKill
-{
-	IEventTrigger<T, K> _trigger;
-
-	public VoidableEventTrigger( IEventTrigger<T, K> trigger ) { _trigger = trigger; }
-	public VoidableEventTrigger( Action<T, K> act ) : this( new ActionEventCapsule<T, K>( act ) ) { }
-	public bool IsValid => _trigger?.IsValid ?? false;
-	public void Trigger( T t, K k ) { if( IsValid ) _trigger.Trigger( t, k ); }
-	public void Void() { _trigger = null; }
-	public void Kill() { _trigger = null; }
-}
-
-[UnityEngine.HideInInspector]
-public class VoidableEventTrigger<T, K, J> : IEventTrigger<T, K, J>, ICustomDisposableKill
-{
-	IEventTrigger<T, K, J> _trigger;
-
-	public VoidableEventTrigger( IEventTrigger<T, K, J> trigger ) { _trigger = trigger; }
-	public VoidableEventTrigger( Action<T, K, J> act ) : this( new ActionEventCapsule<T, K, J>( act ) ) { }
-	public bool IsValid => _trigger?.IsValid ?? false;
-	public void Trigger( T t, K k, J j ) { if( IsValid ) _trigger.Trigger( t, k, j ); }
-	public void Void() { _trigger = null; }
-	public void Kill() { _trigger = null; }
 }

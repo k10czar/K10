@@ -76,7 +76,7 @@ public class Voidable : IEventTrigger, IVoidable
 	public IEventRegister OnVoid => _onVoid ??= new EventSlot();
 
 	public Voidable( IEventTrigger callback ) { _callback = callback; _onVoid = null; }
-	public Voidable( System.Action act ) { _callback = new ActionEventCapsule( act ); _onVoid = null; }
+	public Voidable( System.Action act ) { _callback = new ActionCapsule( act ); _onVoid = null; }
 
     public void Trigger() { if( !IsValid ) return; _callback.Trigger(); }
     public bool IsValid => _callback?.IsValid ?? false;
@@ -92,7 +92,7 @@ public class Voidable<T> : IEventTrigger<T>, IVoidable
 	public IEventRegister OnVoid => _onVoid ??= new EventSlot();
 
     public Voidable( IEventTrigger<T> callback ) { _callback = callback; _onVoid = null; }
-	public Voidable( System.Action<T> act ) { _callback = new ActionEventCapsule<T>( act ); _onVoid = null; }
+	public Voidable( System.Action<T> act ) { _callback = new ActionCapsule<T>( act ); _onVoid = null; }
 
     public void Trigger( T t ) { if( !IsValid ) return; _callback.Trigger( t ); }
     public bool IsValid => _callback?.IsValid ?? false;

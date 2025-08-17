@@ -7,7 +7,7 @@ public sealed class ValidatedEventListener : BaseConditionalEventListener, IEven
 	private readonly int _hashCode = -1;
 	public override bool IsValid => _evnt != null && base.IsValid && _evnt.IsValid;
 
-	public ValidatedEventListener( System.Action action, IEventValidator validator, IEventValidator additionalValidator = null ) : this( new ActionEventCapsule( action ), validator, additionalValidator ) { }
+	public ValidatedEventListener( System.Action action, IEventValidator validator, IEventValidator additionalValidator = null ) : this( new ActionCapsule( action ), validator, additionalValidator ) { }
 	public ValidatedEventListener( IEventTrigger evnt, IEventValidator validator, IEventValidator additionalValidator = null ) : base( validator.TryCombineValidationCheck( additionalValidator ) )
 	{
 		if( _condition == null || !_condition() ) return;
@@ -40,7 +40,7 @@ public sealed class ValidatedEventListener<T> : BaseConditionalEventListener, IE
 	private readonly int _hashCode = -1;
 	public override bool IsValid => _evnt != null && base.IsValid && _evnt.IsValid;
 
-	public ValidatedEventListener( System.Action<T> action, IEventValidator validator, IEventValidator additionalValidator = null ) : this( new ActionEventCapsule<T>( action ), validator, additionalValidator ) { }
+	public ValidatedEventListener( System.Action<T> action, IEventValidator validator, IEventValidator additionalValidator = null ) : this( new ActionCapsule<T>( action ), validator, additionalValidator ) { }
 	public ValidatedEventListener( IEventTrigger<T> evnt, IEventValidator validator, IEventValidator additionalValidator = null ) : base( validator.TryCombineValidationCheck( additionalValidator ) )
 	{
 		if( _condition == null || !_condition() ) return;
@@ -73,7 +73,7 @@ public sealed class ValidatedEventListener<T, K> : BaseConditionalEventListener,
 	private readonly int _hashCode = -1;
 	public override bool IsValid => _evnt != null && base.IsValid && _evnt.IsValid;
 
-	public ValidatedEventListener( System.Action<T, K> action, IEventValidator validator, IEventValidator additionalValidator = null ) : this( new ActionEventCapsule<T, K>( action ), validator, additionalValidator ) { }
+	public ValidatedEventListener( System.Action<T, K> action, IEventValidator validator, IEventValidator additionalValidator = null ) : this( new ActionCapsule<T, K>( action ), validator, additionalValidator ) { }
 	public ValidatedEventListener( IEventTrigger<T, K> evnt, IEventValidator validator, IEventValidator additionalValidator = null ) : base( validator.TryCombineValidationCheck( additionalValidator ) )
 	{
 		if( _condition == null || !_condition() ) return;
@@ -106,7 +106,7 @@ public sealed class ValidatedEventListener<T,K,J> : BaseConditionalEventListener
 	private readonly int _hashCode = -1;
 	public override bool IsValid => _evnt != null && base.IsValid && _evnt.IsValid;
 
-	public ValidatedEventListener( System.Action<T,K,J> action, IEventValidator validator, IEventValidator additionalValidator = null ) : this( new ActionEventCapsule<T,K,J>( action ), validator, additionalValidator ) { }
+	public ValidatedEventListener( System.Action<T,K,J> action, IEventValidator validator, IEventValidator additionalValidator = null ) : this( new ActionCapsule<T,K,J>( action ), validator, additionalValidator ) { }
 	public ValidatedEventListener( IEventTrigger<T,K,J> evnt, IEventValidator validator, IEventValidator additionalValidator = null ) : base( validator.TryCombineValidationCheck( additionalValidator ) )
 	{
 		if( _condition == null || !_condition() ) return;

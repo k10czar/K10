@@ -6,7 +6,7 @@ public abstract class BaseConditionalEventListener : ICustomDisposableKill
 	protected System.Func<bool> _condition;
 
 	public BaseConditionalEventListener( System.Func<bool> condition ) { _condition = condition; }
-	public virtual bool IsValid { get { return _condition != null && _condition(); } }
+	public virtual bool IsValid => _condition != null && _condition();
 
 	public virtual void Kill() { _condition = null; }
 }
@@ -14,15 +14,15 @@ public abstract class BaseConditionalEventListener : ICustomDisposableKill
 [UnityEngine.HideInInspector]
 public sealed class ConditionalEventListener : BaseConditionalEventListener, IEventTrigger
 {
-	VoidableEventTrigger _evnt;
+	EventTriggerCapsule _evnt;
 
 	public override bool IsValid => base.IsValid && _evnt != null && _evnt.IsValid;
 
-	private ConditionalEventListener( VoidableEventTrigger evnt, System.Func<bool> condition ) : base( condition ) { _evnt = evnt; }
-	public ConditionalEventListener( IEventTrigger evnt, System.Func<bool> condition ) : this( new VoidableEventTrigger( evnt ), condition ) { }
-	public ConditionalEventListener( System.Action action, System.Func<bool> condition ) : this( new VoidableEventTrigger( action ), condition ) { }
+	private ConditionalEventListener( EventTriggerCapsule evnt, System.Func<bool> condition ) : base( condition ) { _evnt = evnt; }
+	public ConditionalEventListener( IEventTrigger evnt, System.Func<bool> condition ) : this( new EventTriggerCapsule( evnt ), condition ) { }
+	public ConditionalEventListener( System.Action action, System.Func<bool> condition ) : this( new EventTriggerCapsule( action ), condition ) { }
 
-	public override void Kill() { base.Kill(); _evnt?.Kill(); }
+	public override void Kill() { base.Kill(); _evnt?.Void(); }
 
 	public void Trigger() { _evnt.Trigger(); }
 
@@ -42,15 +42,15 @@ public sealed class ConditionalEventListener : BaseConditionalEventListener, IEv
 [UnityEngine.HideInInspector]
 public sealed class ConditionalEventListener<T> : BaseConditionalEventListener, IEventTrigger<T>
 {
-	VoidableEventTrigger<T> _evnt;
+	EventTriggerCapsule<T> _evnt;
 
 	public override bool IsValid => base.IsValid && _evnt != null && _evnt.IsValid;
 
-	private ConditionalEventListener( VoidableEventTrigger<T> evnt, System.Func<bool> condition ) : base( condition ) { _evnt = evnt; }
-	public ConditionalEventListener( IEventTrigger<T> evnt, System.Func<bool> condition ) : this( new VoidableEventTrigger<T>( evnt ), condition ) { }
-	public ConditionalEventListener( System.Action<T> action, System.Func<bool> condition ) : this( new VoidableEventTrigger<T>( action ), condition ) { }
+	private ConditionalEventListener( EventTriggerCapsule<T> evnt, System.Func<bool> condition ) : base( condition ) { _evnt = evnt; }
+	public ConditionalEventListener( IEventTrigger<T> evnt, System.Func<bool> condition ) : this( new EventTriggerCapsule<T>( evnt ), condition ) { }
+	public ConditionalEventListener( System.Action<T> action, System.Func<bool> condition ) : this( new EventTriggerCapsule<T>( action ), condition ) { }
 
-	public override void Kill() { base.Kill(); _evnt?.Kill(); }
+	public override void Kill() { base.Kill(); _evnt?.Void(); }
 
 	public void Trigger( T t ) { _evnt.Trigger( t ); }
 
@@ -70,15 +70,15 @@ public sealed class ConditionalEventListener<T> : BaseConditionalEventListener, 
 [UnityEngine.HideInInspector]
 public sealed class ConditionalEventListener<T, K> : BaseConditionalEventListener, IEventTrigger<T, K>
 {
-	VoidableEventTrigger<T, K> _evnt;
+	EventTriggerCapsule<T, K> _evnt;
 
 	public override bool IsValid => base.IsValid && _evnt != null && _evnt.IsValid;
 
-	private ConditionalEventListener( VoidableEventTrigger<T, K> evnt, System.Func<bool> condition ) : base( condition ) { _evnt = evnt; }
-	public ConditionalEventListener( IEventTrigger<T, K> evnt, System.Func<bool> condition ) : this( new VoidableEventTrigger<T, K>( evnt ), condition ) {}
-	public ConditionalEventListener( System.Action<T, K> action, System.Func<bool> condition ) : this( new VoidableEventTrigger<T, K>( action ), condition ) { }
+	private ConditionalEventListener( EventTriggerCapsule<T, K> evnt, System.Func<bool> condition ) : base( condition ) { _evnt = evnt; }
+	public ConditionalEventListener( IEventTrigger<T, K> evnt, System.Func<bool> condition ) : this( new EventTriggerCapsule<T, K>( evnt ), condition ) {}
+	public ConditionalEventListener( System.Action<T, K> action, System.Func<bool> condition ) : this( new EventTriggerCapsule<T, K>( action ), condition ) { }
 
-	public override void Kill() { base.Kill(); _evnt?.Kill(); }
+	public override void Kill() { base.Kill(); _evnt?.Void(); }
 
 	public void Trigger( T t, K k ) { _evnt.Trigger( t, k ); }
 
@@ -98,15 +98,15 @@ public sealed class ConditionalEventListener<T, K> : BaseConditionalEventListene
 [UnityEngine.HideInInspector]
 public sealed class ConditionalEventListener<T, K, J> : BaseConditionalEventListener, IEventTrigger<T, K, J>
 {
-	VoidableEventTrigger<T, K, J> _evnt;
+	EventTriggerCapsule<T, K, J> _evnt;
 
 	public override bool IsValid => base.IsValid && _evnt != null && _evnt.IsValid;
 
-	private ConditionalEventListener( VoidableEventTrigger<T, K, J> evnt, System.Func<bool> condition ) : base( condition ) { _evnt = evnt; }
-	public ConditionalEventListener( IEventTrigger<T, K, J> evnt, System.Func<bool> condition ) : this( new VoidableEventTrigger<T, K, J>( evnt ), condition ) { }
-	public ConditionalEventListener( System.Action<T, K, J> action, System.Func<bool> condition ) : this( new VoidableEventTrigger<T, K, J>( action ), condition ) { }
+	private ConditionalEventListener( EventTriggerCapsule<T, K, J> evnt, System.Func<bool> condition ) : base( condition ) { _evnt = evnt; }
+	public ConditionalEventListener( IEventTrigger<T, K, J> evnt, System.Func<bool> condition ) : this( new EventTriggerCapsule<T, K, J>( evnt ), condition ) { }
+	public ConditionalEventListener( System.Action<T, K, J> action, System.Func<bool> condition ) : this( new EventTriggerCapsule<T, K, J>( action ), condition ) { }
 
-	public override void Kill() { base.Kill(); _evnt?.Kill(); }
+	public override void Kill() { base.Kill(); _evnt?.Void(); }
 
 	public void Trigger( T t, K k, J j ) { _evnt.Trigger( t, k, j ); }
 
