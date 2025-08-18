@@ -18,7 +18,13 @@ namespace Skyx.SkyxEditor
 
             position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
 
-            DrawEnumDropdown(position, property, fieldInfo.FieldType, null, false);
+            var fieldType = fieldInfo.FieldType.IsArray
+                ? property.propertyType is SerializedPropertyType.Enum
+                    ? fieldInfo.FieldType.GetElementType()
+                    : throw new Exception($"Property is not an Enum! {property} | {fieldInfo.FieldType}")
+                : fieldInfo.FieldType;
+
+            DrawEnumDropdown(position, property, fieldType, null, false);
 
             EditorGUI.EndProperty();
         }

@@ -187,7 +187,7 @@ namespace Skyx.SkyxEditor
         private static object GetFieldValue(string fieldName, object obj)
         {
             var field = GetField(fieldName, obj);
-            return field != null ? field.GetValue(obj) : default;
+            return field?.GetValue(obj);
         }
 
         private static object GetFieldValueWithIndex(string pathPiece, object obj)
@@ -196,12 +196,13 @@ namespace Skyx.SkyxEditor
             var index = GetPathDigit(pathPiece);
 
             var field = GetField(fieldName, obj);
-            if (field == null) return default;
+            if (field == null) return null;
 
             var list = field.GetValue(obj);
-            if (list.GetType().IsArray) return ((object[])list)[index];
 
-            return list is IEnumerable ? ((IList)list)[index] : default;
+            if (list is Array array) return array.GetValue(index);
+            if (list is IList iList) return iList[index];
+            return null;
         }
 
         private static bool SetFieldValue(string fieldName, object obj, object value)
@@ -223,15 +224,15 @@ namespace Skyx.SkyxEditor
 
             var list = field.GetValue(obj);
 
-            if (list.GetType().IsArray)
+            if (list is Array array)
             {
-                ((object[])list)[index] = value;
+                array.SetValue(value, index);
                 return true;
             }
 
-            if (list is IEnumerable)
+            if (list is IList iList)
             {
-                ((IList)list)[index] = value;
+                iList[index] = value;
                 return true;
             }
 
