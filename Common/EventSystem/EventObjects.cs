@@ -218,6 +218,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 					}
 					catch (Exception exception)
 					{
+						Debug.LogError($"EventObjects {count} listener null ? {_listeners[0] == null}");
 						Debug.LogException(exception);
 					}
 				}
@@ -252,6 +253,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 						}
 						catch (Exception exception)
 						{
+							Debug.LogError($"EventObjects {count} listener null ? {_callList[i] == null}");
 							Debug.LogException(exception);
 						}
 					}
