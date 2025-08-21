@@ -57,34 +57,8 @@ public static class EventExtensions
 	public static void RegisterValidated<T, K>( this IEventRegister<T, K> register, IEventValidator validator, IEventTrigger<T, K> act ) => register.Register( validator.Validated( act ) );
 	public static void RegisterValidated<T, K, J>( this IEventRegister<T, K, J> register, IEventValidator validator, IEventTrigger<T, K, J> act ) => register.Register( validator.Validated( act ) );
 
-	public static void RegisterOnce(this IEventRegister register, Action act) => register.Register(new CallOnce(act));
-	public static void RegisterOnce<T>(this IEventRegister<T> register, Action<T> act) => register.Register(new CallOnce<T>(act));
-
-	public static Action RegisterOnceWrapper(this IEventRegister register, Action act)
-	{
-		Action wrapper = null;
-		wrapper = () =>
-		{
-			register.Unregister(wrapper);
-			act();
-		};
-		register.Register(wrapper);
-
-		return wrapper;
-	}
-
-	public static Action<T> RegisterOnceWrapper<T>(this IEventRegister<T> register, Action<T> act)
-	{
-		Action<T> wrapper = null;
-		wrapper = value =>
-		{
-			register.Unregister(wrapper);
-			act(value);
-		};
-		register.Register(wrapper);
-
-		return wrapper;
-	}
+	public static void RegisterOnce(this IEventRegister register, Action act) => register.Register(new CallOnceCapsule(act));
+	public static void RegisterOnce<T>(this IEventRegister<T> register, Action<T> act) => register.Register(new CallOnceCapsule<T>(act));
 
 	#region Enumerables
 	public static void Register( this IEnumerable<IEventRegister> registers, Action act ) => registers.Register( new ActionCapsule( act ) );

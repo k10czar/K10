@@ -5,35 +5,32 @@ using UnityEngine;
 
 public class ActionSet
 {
-    private readonly Dictionary<Action, (IEventRegister, ActionCapsule)> events = new();
+    private readonly Dictionary<(IEventRegister, Action), ActionCapsule> events = new();
 
     public void Register(IEventRegister target, Action action)
     {
         var capsule = new ActionCapsule(action);
 
-        events.Add(action, (target, capsule));
+        events.Add((target, action), capsule);
         target.Register(capsule);
     }
 
     public void Deregister(IEventRegister target, Action action)
     {
-        if (events.TryGetValue(action, out var entry))
+        if (events.TryGetValue((target, action), out var capsule))
         {
-            var (register, capsule) = entry;
-            Debug.Assert(register == target, $"Found different event register! {register} != {target}");
-
             capsule.Void();
-            register.Unregister(capsule);
+            target.Unregister(capsule);
         }
         else Debug.LogError($"Action was not being tracked by ActionSet! {action}");
     }
 
     public void Void()
     {
-        var values = events.Values.ToList();
+        var entries = events.ToList();
         events.Clear();
 
-        foreach (var (register, capsule) in values)
+        foreach (var ((register, _), capsule) in entries)
         {
             capsule.Void();
             register.Unregister(capsule);
