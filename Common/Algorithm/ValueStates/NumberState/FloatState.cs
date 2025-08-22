@@ -40,6 +40,7 @@ public class FloatState : INumericValueState<float>, ICustomDisposableKill
 
 	public FloatState() : this( default( float ) ) { }
 	public FloatState( float initialValue ) { _value = initialValue; }
+	public FloatState( int eventProvision, int genericEventProvision )  : this() { _onChange = new(eventProvision, genericEventProvision); }
 
 
 	public override string ToString() { return $"FS({_value})"; }

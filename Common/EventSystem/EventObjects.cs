@@ -21,6 +21,17 @@ public class EventSlot : IEvent, ICustomDisposableKill
 	public int CountValidEvents => _listeners.Count( ( et ) => et.IsValid );
 	public bool HasListeners => EventsCount > 0;
 
+	public EventSlot() { }
+
+	public EventSlot(int provision)
+	{
+		if (provision > 0)
+		{
+			_listeners = new(provision);
+			_callList = new(provision);
+		}
+	}
+
 	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	public void Trigger()
 	{
@@ -186,6 +197,21 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 	public bool HasListeners => EventsCount > 0;
 
 	public static implicit operator EventSlot( EventSlot<T> v ) => Lazy.Request( ref v._generic );
+
+	public EventSlot() { }
+
+	public EventSlot(int provision, int genericProvision)
+	{
+		if (provision > 0)
+		{
+			_listeners = new(provision);
+			_callList = new(provision);
+		}
+		if (genericProvision > 0)
+		{
+			_generic = new(genericProvision);
+		}
+	}
 
 	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	public void Trigger( T t )

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -5,14 +6,22 @@ public class CatalogedUniqueStock<Key,Value> : ICustomDisposableKill where Value
 {
     protected readonly Dictionary< Key, Value > _dict = new Dictionary< Key, Value >();
 
-    EventSlot _onEntriesChanged = new EventSlot();
+    EventSlot _onEntriesChanged;
     public IEventRegister OnEntriesChanged => Lazy.Request( ref _onEntriesChanged );
 
+    public CatalogedUniqueStock() { _onEntriesChanged = new EventSlot(); }
+    public CatalogedUniqueStock( int eventProvision ) { _onEntriesChanged = new EventSlot(eventProvision); }
+
 	public void Kill()
-	{
-		_dict?.Clear();
-		_onEntriesChanged?.Kill();
-	}
+    {
+        _dict?.Clear();
+        _onEntriesChanged?.Kill();
+    }
+
+    public virtual void Recycle()
+    {
+        _onEntriesChanged?.Clear();
+    }
 
     public void AddEntry( Key key, Value t )
     {
