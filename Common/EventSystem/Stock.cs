@@ -28,13 +28,18 @@ public class CatalogedUniqueStock<Key,Value> : ICustomDisposableKill where Value
         if (_dict.ContainsKey(key)) _dict.Remove(key);
         _dict.Add( key, t );
         t.IsValid.RegisterOnFalse( () => RemoveEntry( key ) );
+        OnDataChanged();
+    }
+
+    public virtual void OnDataChanged()
+    {
         _onEntriesChanged?.Trigger();
     }
 
-    public bool ContainsKey( Key key ) { return _dict.ContainsKey( key ); }
+    public bool ContainsKey(Key key) { return _dict.ContainsKey(key); }
     public Value GetEntry( Key key ) { return _dict[ key ]; }
 
-    public void RemoveEntry( Key key ) { if( _dict.Remove( key ) ) _onEntriesChanged?.Trigger(); }
+    public void RemoveEntry( Key key ) { if( _dict.Remove( key ) ) OnDataChanged(); }
     public bool TryGetValue( Key key, out Value t ) { return _dict.TryGetValue( key, out t ); }
 
     public int Count => _dict.Count;
