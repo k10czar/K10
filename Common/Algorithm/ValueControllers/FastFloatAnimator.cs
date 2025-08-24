@@ -25,6 +25,22 @@ public struct FastFloatAnimator
         _max = max;
     }
 
+	public void Rebuild(float initialValue, float accel, float deaccel, float maximumSpeed, float min = float.MinValue, float max = float.MaxValue)
+	{
+        _acceleration = accel;
+        _deacceleration = deaccel;
+        _maximumSpeed = maximumSpeed;
+        _desiredValue = _currentValue = initialValue;
+		_currentSpeed = 0;
+	    _min = min;
+        _max = max;
+	}
+
+	public void Rebuild01(float initialValue, float accel, float deaccel, float maximumSpeed)
+	{
+		Rebuild( initialValue, accel, deaccel, maximumSpeed, 0, 1 );
+	}
+
 	public static FastFloatAnimator In( float seconds, float deaccelFactor = 1 )
 	{
 		// .5 = accel * dta² / 2
