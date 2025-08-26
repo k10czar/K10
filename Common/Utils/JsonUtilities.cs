@@ -9,7 +9,7 @@ public static class JsonUtilities
 
 	public static string GenerateLogFileName(string suffix1 = "", string suffix2 = "", string environment = "")
 	{
-		var fileName = DateTime.Now.ToString("yyyyMMddTHHmmssfffffff");
+		var fileName = DateTime.Now.ToString("yyMMddTHHmmssff");
 
 		if (!string.IsNullOrEmpty(suffix1)) fileName = fileName + "_" + suffix1;
 		if (!string.IsNullOrEmpty(suffix2)) fileName = fileName + "_" + suffix2;
@@ -29,7 +29,14 @@ public static class JsonUtilities
 		var fileName = GenerateLogFileName(suffix1, suffix2, environment);
 		var savePath = GenerateSavePath(fileName, ".json");
 
-		FileAdapter.SaveAsUTF8(savePath, formattedJson);
+		try 
+		{
+			FileAdapter.SaveAsUTF8(savePath, formattedJson);
+		} 
+		catch (Exception exception)
+		{
+			Debug.LogError($"Could not save Json Debug file:\n{exception}");
+		}
 #if UNITY_EDITOR
 		Debug.Log(fileName + ": " + formattedJson);
 #endif //UNITY_EDITOR
