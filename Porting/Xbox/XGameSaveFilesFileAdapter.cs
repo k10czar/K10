@@ -29,7 +29,6 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 
 	private void RetrieveSaveFolder()
 	{
-        Debug.Log($"RetrieveSaveFolder");
 		_isInitilized.SetFalse();
         SDK.XGameSaveFilesGetFolderWithUiAsync(_userHandle, _scid, 
             (int hresult, string folderResult) => 
@@ -37,10 +36,6 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 				if (HR.FAILED(hresult))
 				{
 					Debug.LogError($"Couldn't get XGameSaveFiles folder. HResult {hresult} ({HR.NameOf(hresult)})");
-// #if UNITY_EDITOR
-// 					_isInitilized.SetTrue();
-// 					// TODO-Porting Remove this when is really working on PC 
-// #endif
 					return;
 				}
 
