@@ -7,10 +7,11 @@ public class FakePlayerLog : IService
 {
     private string _basePath;
     private int _logsPendingWriting;
-    private bool _isWritingToFile;
     private StringBuilder _stringBuilder = new();
-    private Semaphore WriteToFileSemaphore = new();
+
+    private Task _currentAwaitTask = null;    
     private int _semaphoreIdCount;
+    private Semaphore _writeToFileSemaphore = new();
     
     private const int MAX_LOGS_PENDING_WRITING = 200;
     private const string PLAYER_LOG_FILE_NAME = "Player.log";
@@ -19,10 +20,8 @@ public class FakePlayerLog : IService
     private string PlayerLogPath => Path.Join(_basePath, PLAYER_LOG_FILE_NAME);
     private string PrevPlayerLogPath => Path.Join(_basePath, PREV_PLAYER_LOG_FILE_NAME);
 
-    private Task _currentAwaitTask = null;
-
-
     public bool HasPendingLogs => _logsPendingWriting > 0;
+    public bool IsWritingToFile => !_writeToFileSemaphore.Free;
 
     public FakePlayerLog(string basePath)
     {
@@ -83,7 +82,7 @@ public class FakePlayerLog : IService
     public async Task WriteCompleteLogToFile()
     {
         // Debug.Log($"FPL: Called function with {_semaphoreIdCount}");
-        if (!WriteToFileSemaphore.Free)
+        if (!_writeToFileSemaphore.Free)
         {
             // TODO: the last logs will be missing in this case
             // Debug.Log($"FPL: Waiting... {Time.frameCount}");
@@ -96,7 +95,7 @@ public class FakePlayerLog : IService
 
         string semaphoreId = $"Write_{_semaphoreIdCount++}";
         // Debug.Log($"FPL: Locking {semaphoreId}");
-        WriteToFileSemaphore.Block(semaphoreId);
+        _writeToFileSemaphore.Block(semaphoreId);
 
         string stringToWrite = _stringBuilder.ToString();
         _stringBuilder.Clear();
@@ -109,6 +108,6 @@ public class FakePlayerLog : IService
         // Debug.Log($"FPL: ...written {Time.unscaledTime}");
 
         // Debug.Log($"FPL: Unlocking {semaphoreId}");
-        WriteToFileSemaphore.Release(semaphoreId);
+        _writeToFileSemaphore.Release(semaphoreId);
     }
 }
