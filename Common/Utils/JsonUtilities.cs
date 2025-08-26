@@ -24,7 +24,6 @@ public static class JsonUtilities
 
 	public static void LogToJsonFile(this string rawJson, string suffix1 = "", string suffix2 = "", string environment = "")
 	{
-#if !UNITY_GAMECORE && !MICROSOFT_GDK_SUPPORT
 		var formattedJson = rawJson.FormatAsJson();
 
 		var fileName = GenerateLogFileName(suffix1, suffix2, environment);
@@ -34,7 +33,6 @@ public static class JsonUtilities
 #if UNITY_EDITOR
 		Debug.Log(fileName + ": " + formattedJson);
 #endif //UNITY_EDITOR
-#endif //UNITY_GAMECORE
 	}
 
 	private static readonly StringBuilder sb = new StringBuilder();
