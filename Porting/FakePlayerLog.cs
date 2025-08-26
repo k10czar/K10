@@ -12,7 +12,7 @@ public class FakePlayerLog : IService
     private Semaphore WriteToFileSemaphore = new();
     private int _semaphoreIdCount;
     
-    private const int MAX_LOGS_PENDING_WRITING = 100;
+    private const int MAX_LOGS_PENDING_WRITING = 200;
     private const string PLAYER_LOG_FILE_NAME = "Player.log";
     private const string PREV_PLAYER_LOG_FILE_NAME = "Player-prev.log";
 
@@ -34,14 +34,13 @@ public class FakePlayerLog : IService
         ApplicationEventsRelay.IsSuspended.RegisterOnFalse(OnResume);
         ApplicationEventsRelay.IsSuspended.RegisterOnTrue(OnSuspend);
 
-        Debug.Log($":::><::: Started FakePlayerLog with base path: {basePath}");
+        Debug.Log($"FPL: Started FakePlayerLog with base path: {basePath}");
     }
 
     private void OnResume() => Application.logMessageReceived += OnLogReceived;
     private void OnSuspend()
     {
         Application.logMessageReceived -= OnLogReceived;
-        // TODO: AmReadyToSuspend should wait for this
         WriteCompleteLogToFile();
     }
 
@@ -53,12 +52,12 @@ public class FakePlayerLog : IService
 
         File.Copy(PlayerLogPath, PrevPlayerLogPath, true);
         FileAdapter.Delete(PlayerLogPath);
-        // Debug.Log($":::><::: Moved {PlayerLogPath} to {PREV_PLAYER_LOG_FILE_NAME}");
+        // Debug.Log($"FPL: Moved {PlayerLogPath} to {PREV_PLAYER_LOG_FILE_NAME}");
     }
 
     private void OnLogReceived(string logString, string stackTrace, LogType type)
     {
-        // Debug.Log($":::><::: Received log {_logsPendingWriting}: {logString}");
+        // Debug.Log($"FPL: Received log {_logsPendingWriting}: {logString}");
 
         string formattedLogString;
         switch (type)
