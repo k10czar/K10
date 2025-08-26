@@ -6,7 +6,7 @@ using K10;
 using System.Runtime.CompilerServices;
 
 
-[UnityEngine.HideInInspector]
+[HideInInspector]
 public class EventSlot : IEvent, ICustomDisposableKill
 {
 	bool _killed = false;
@@ -18,8 +18,22 @@ public class EventSlot : IEvent, ICustomDisposableKill
 
 	public bool IsValid => !_killed;
 	public int EventsCount => _listeners?.Count ?? 0;
-	public int CountValidEvents => _listeners.Count( ( et ) => et.IsValid );
-	public bool HasListeners => EventsCount > 0;
+    public int CountValidEvents
+    {
+        get
+        {
+			if (_listeners == null) return 0;
+			int valids = 0;
+			for (int i = 0; i < _listeners.Count; i++)
+			{
+				var listener = _listeners[i];
+				if (listener.IsValid) valids++;
+            }
+			return valids;
+        }
+    }
+
+    public bool HasListeners => EventsCount > 0;
 
 	public EventSlot() { }
 
@@ -70,7 +84,8 @@ public class EventSlot : IEvent, ICustomDisposableKill
 
 		if (_callListIsDirty)
 		{
-			Lazy.RequestPoolable(ref _callList);
+			if (_callList == null) _callList = new();
+			// Lazy.RequestPoolable(ref _callList);
 			for (int i = 0; i < count; i++)
 			{
 				if (i < _callList.Count) _callList[i] = _listeners[i];
@@ -122,7 +137,7 @@ public class EventSlot : IEvent, ICustomDisposableKill
 		if (_listeners != null)
 		{
 			_listeners.Clear();
-			ObjectPool.ReturnAndClearRef(ref _listeners);
+			// ObjectPool.ReturnAndClearRef(ref _listeners);
 		}
 		if (_triggering)
 		{
@@ -131,7 +146,7 @@ public class EventSlot : IEvent, ICustomDisposableKill
 		else if (_callList != null)
 		{
 			_callList.Clear();
-			ObjectPool.ReturnAndClearRef(ref _callList);
+			// ObjectPool.ReturnAndClearRef(ref _callList);
 		}
     }
 
@@ -140,7 +155,7 @@ public class EventSlot : IEvent, ICustomDisposableKill
 	{
 		if (_listeners != null && _listeners.Count == 0 )
 		{
-			ObjectPool.ReturnAndClearRef( ref _listeners );
+			// ObjectPool.ReturnAndClearRef( ref _listeners );
 			TryClearCallList();
 			_callListIsDirty = false;
 		}
@@ -153,15 +168,18 @@ public class EventSlot : IEvent, ICustomDisposableKill
         if (_triggering) return false; //Is been used
 		_clearCallListDelayed = false;
         if (_callList == null) return true; //Already clear
+        if (_callList.Count == 0) return true; //Already clear
         _callList.Clear();
-        ObjectPool.ReturnAndClearRef(ref _callList);
+        // ObjectPool.ReturnAndClearRef(ref _callList);
         return true;
     }
 
     public void Register(IEventTrigger listener)
 	{
 		if (_killed || listener == null) return;
-		Lazy.RequestPoolable(ref _listeners).Add(listener);
+		if (_listeners == null) _listeners = new();
+		// Lazy.RequestPoolable(ref _listeners);
+		_listeners.Add(listener);
 		_callListIsDirty = true;
 	}
 
@@ -192,11 +210,25 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 	bool _clearCallListDelayed = false;
 
 	public bool IsValid => !_killed;
-	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
-	public int CountValidEvents => ( _generic?.CountValidEvents ?? 0 ) + _listeners.Count( ( et ) => et.IsValid );
-	public bool HasListeners => EventsCount > 0;
+	public int EventsCount => ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 );
+    public int CountValidEvents
+    {
+        get
+        {
+			int valids = _generic?.CountValidEvents ?? 0;
+			if (_listeners == null) return valids;
+			for (int i = 0; i < _listeners.Count; i++)
+			{
+				var listener = _listeners[i];
+				if (listener.IsValid) valids++;
+            }
+			return valids;
+        }
+    }
 
-	public static implicit operator EventSlot( EventSlot<T> v ) => Lazy.Request( ref v._generic );
+    public bool HasListeners => EventsCount > 0;
+
+	public static implicit operator EventSlot(EventSlot<T> v) => v._generic ??= new();// Lazy.Request( ref v._generic );
 
 	public EventSlot() { }
 
@@ -252,7 +284,8 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 				{
 					if (_callListIsDirty)
 					{
-						Lazy.RequestPoolable(ref _callList);
+						if (_callList == null) _callList = new();
+						// Lazy.RequestPoolable(ref _callList);
 						for (int i = 0; i < count; i++)
 						{
 							if (i < _callList.Count) _callList[i] = _listeners[i];
@@ -297,7 +330,6 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
         if (_generic != null)
         {
             _generic.Trigger();
-            TryClearGeneric();
         }
     }
 
@@ -313,12 +345,10 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 		if (_listeners != null)
 		{
 			_listeners.Clear();
-			ObjectPool.ReturnAndClearRef( ref _listeners);
 		}
 		if (_generic != null)
 		{
 			_generic.Clear();
-			ObjectPool.ReturnAndClearRef(ref _generic);
 		}
 		if (_triggering)
 		{
@@ -327,15 +357,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 		else if (_callList != null)
 		{
 			_callList.Clear();
-			ObjectPool.ReturnAndClearRef(ref _callList);
 		}
-	}
-
-	[MethodImpl(Optimizations.INLINE_IF_CAN)]
-	private void TryClearGeneric()
-	{
-		if( _generic == null ) return;
-		if (_generic.EventsCount == 0) ObjectPool.ReturnAndClearRef( ref _generic);
 	}
 	
 	[MethodImpl(Optimizations.INLINE_IF_CAN)]
@@ -364,14 +386,18 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 	public void Register( IEventTrigger<T> listener )
 	{
 		if( _killed || listener == null ) return;
-		Lazy.RequestPoolable( ref _listeners ).Add( listener );
+		if (_listeners == null) _listeners = new();
+		// Lazy.RequestPoolable(ref _listeners);
+		_listeners.Add(listener);
 		_callListIsDirty = true;
 	}
 
 	public void Register( IEventTrigger listener )
 	{
 		if( _killed || listener == null ) return;
-		Lazy.RequestPoolable( ref _generic ).Register( listener );
+		if (_generic == null) _generic = new();
+		// Lazy.RequestPoolable( ref _generic );
+		_generic.Register(listener);
 	}
 
 	public bool Unregister( IEventTrigger<T> listener )
@@ -390,7 +416,6 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 	{
 		if( _killed || _generic == null ) return false;
 		bool removed = _generic.Unregister( listener );
-		if( removed ) TryClearGeneric();
 		return removed;
 	}
 
@@ -409,11 +434,24 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 	bool _clearCallListDelayed = false;
 
 	public bool IsValid => !_killed;
-	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
-	public int CountValidEvents => ( _generic?.CountValidEvents ?? 0 ) + _listeners.Count( ( et ) => et.IsValid );
+	public int EventsCount => ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 );
+    public int CountValidEvents
+    {
+        get
+        {
+			int valids = _generic?.CountValidEvents ?? 0;
+			if (_listeners == null) return valids;
+			for (int i = 0; i < _listeners.Count; i++)
+			{
+				var listener = _listeners[i];
+				if (listener.IsValid) valids++;
+            }
+			return valids;
+        }
+    }
 	public bool HasListeners => EventsCount > 0;
 
-	public static implicit operator EventSlot<T>( EventSlot<T, K> v ) => Lazy.Request( ref v._generic );
+	public static implicit operator EventSlot<T>( EventSlot<T, K> v )  => v._generic ??= new();
 
 	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	public void Trigger( T t, K k )
@@ -452,7 +490,8 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 				{
 					if (_callListIsDirty)
 					{
-						Lazy.RequestPoolable(ref _callList);
+						if (_callList == null) _callList = new();
+						// Lazy.RequestPoolable(ref _callList);
 						for (int i = 0; i < count; i++)
 						{
 							if (i < _callList.Count) _callList[i] = _listeners[i];
@@ -564,20 +603,26 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 	public void Register( IEventTrigger<T, K> listener )
 	{
 		if( _killed || listener == null ) return;
-		Lazy.Request( ref _listeners ).Add( listener );
+		if (_listeners == null) _listeners = new();
+		// Lazy.Request(ref _listeners);
+		_listeners.Add( listener );
 		_callListIsDirty = true;
 	}
 
 	public void Register( IEventTrigger<T> listener )
 	{
 		if( _killed || listener == null ) return;
-		Lazy.Request( ref _generic ).Register( listener );
+		if (_generic == null) _generic = new();
+		// Lazy.RequestPoolable( ref _generic );
+		_generic.Register(listener);
 	}
 
 	public void Register( IEventTrigger listener )
 	{
 		if( _killed || listener == null ) return;
-		Lazy.Request( ref _generic ).Register( listener );
+		if (_generic == null) _generic = new();
+		// Lazy.RequestPoolable( ref _generic );
+		_generic.Register(listener);
 	}
 
 	public bool Unregister( IEventTrigger<T, K> listener )
@@ -624,10 +669,23 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 
 	public bool IsValid => !_killed;
 	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
-	public int CountValidEvents => ( _generic?.CountValidEvents ?? 0 ) + _listeners.Count( ( et ) => et.IsValid );
+    public int CountValidEvents
+    {
+        get
+        {
+			int valids = _generic?.CountValidEvents ?? 0;
+			if (_listeners == null) return valids;
+			for (int i = 0; i < _listeners.Count; i++)
+			{
+				var listener = _listeners[i];
+				if (listener.IsValid) valids++;
+            }
+			return valids;
+        }
+    }
 	public bool HasListeners => EventsCount > 0;
 
-	public static implicit operator EventSlot<T, K>( EventSlot<T, K, L> v ) => Lazy.Request( ref v._generic );
+	public static implicit operator EventSlot<T, K>( EventSlot<T, K, L> v ) => v._generic ??= new();
 
 	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	public void Trigger( T t, K k, L l )
@@ -666,7 +724,8 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 				{
 					if (_callListIsDirty)
 					{
-						Lazy.RequestPoolable(ref _callList);
+						if (_callList == null) _callList = new();
+						// Lazy.RequestPoolable(ref _callList);
 						for (int i = 0; i < count; i++)
 						{
 							if (i < _callList.Count) _callList[i] = _listeners[i];
@@ -777,26 +836,34 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 	public void Register( IEventTrigger<T, K, L> listener )
 	{
 		if( _killed || listener == null ) return;
-		Lazy.Request( ref _listeners ).Add( listener );
+		if (_listeners == null) _listeners = new();
+		// Lazy.RequestPoolable( ref _generic );
+		_listeners.Add( listener );
 		_callListIsDirty = true;
 	}
 
 	public void Register( IEventTrigger<T, K> listener )
 	{
 		if( _killed || listener == null ) return;
-		Lazy.Request( ref _generic ).Register( listener );
+		if (_generic == null) _generic = new();
+		// Lazy.RequestPoolable( ref _generic );
+		_generic.Register(listener);
 	}
 
 	public void Register( IEventTrigger<T> listener )
 	{
 		if( _killed || listener == null ) return;
-		Lazy.Request( ref _generic ).Register( listener );
+		if (_generic == null) _generic = new();
+		// Lazy.RequestPoolable( ref _generic );
+		_generic.Register(listener);
 	}
 
 	public void Register( IEventTrigger listener )
 	{
 		if( _killed || listener == null ) return;
-		Lazy.Request( ref _generic ).Register( listener );
+		if (_generic == null) _generic = new();
+		// Lazy.RequestPoolable( ref _generic );
+		_generic.Register(listener);
 	}
 
 	public bool Unregister( IEventTrigger<T, K, L> listener )
