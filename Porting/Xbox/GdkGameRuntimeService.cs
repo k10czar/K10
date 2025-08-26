@@ -321,7 +321,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         {
             if (HR.FAILED(hresult) || userHandle == null)
             {
-                Debug.LogError($"Couldnt add default user {hresult}");
+                Debug.LogError($"Couldn't add default user {hresult}");
                 return;
             }
 
@@ -406,7 +406,6 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
         SDK.XUserResolvePrivilegeWithUiAsync(UserData.userHandle, XUserPrivilegeOptions.None, privilege.xUserPrivilege, 
             (Int32 hresult) => {
-                Debug.Log($">>><<< XUserResolvePrivilegeWithUiAsync = {hresult}");
                 if (HR.SUCCEEDED(hresult))
                 {
                     privilege.isEnabled = true;
