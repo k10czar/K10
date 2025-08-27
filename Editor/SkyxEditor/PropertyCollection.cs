@@ -219,7 +219,7 @@ namespace Skyx.SkyxEditor
             foreach (var entry in including) Draw(entry);
         }
 
-        public void DrawAll(params string[] except)
+        public void DrawExcept(params string[] except)
         {
             foreach (var key in properties.Keys)
             {
@@ -322,7 +322,7 @@ namespace Skyx.SkyxEditor
             list.DoList(rect);
         }
 
-        public void DrawAll(ref Rect rect, params string[] except)
+        public void DrawExcept(ref Rect rect, params string[] except)
         {
             foreach (var key in properties.Keys)
             {
