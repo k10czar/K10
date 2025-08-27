@@ -5,7 +5,11 @@ using UnityEngine;
 
 public static class JsonUtilities
 {
-	public static string DEBUG_FOLDER => ( FileAdapter.debugPersistentDataPath + "/JsonDebug/" );
+#if UNITY_STANDALONE && !MICROSOFT_GDK_SUPPORT
+	public static string DEBUG_FOLDER => ( FileAdapter.persistentDataPath + "/JsonDebug/" );
+#else
+	public static string DEBUG_FOLDER => ( FileAdapter.persistentDataPath + "/JsDbg/" );
+#endif
 
 	public static string GenerateLogFileName(string suffix1 = "", string suffix2 = "", string environment = "")
 	{
