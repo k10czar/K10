@@ -483,7 +483,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     }
 #endregion
 
-#region Controller
+#region Input
 #if UNITY_GAMECORE
     private void HandleDeviceAssociationChange(IntPtr context, ref XUserDeviceAssociationChange change)
     {
@@ -516,6 +516,23 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         _activeControllerDeviceId = deviceId;
         _onUpdatedActiveController.Trigger(ActiveControllerDeviceId);
     }
+
+    public void OpenVirtualKeyboard(Action<string> onSuccess, Action onFail = null, string title = "", string description = "", string defaultText = "", XGameUiTextEntryInputScope inputScope = XGameUiTextEntryInputScope.Default, uint maxTextLength = 0)
+    {
+        SDK.XGameUiShowTextEntryAsync(title, description, defaultText,  inputScope, maxTextLength, 
+            (int hresult, string resultText) =>
+            {
+                if (HR.FAILED(hresult))
+                {
+                    onFail?.Invoke();
+                    return;
+                }
+                
+                onSuccess?.Invoke(resultText);
+            }
+        );
+    }
+
 #endif
 #endregion
 
