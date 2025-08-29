@@ -46,4 +46,12 @@ public struct FastShuffleBag32
         int randomIndex = UnityEngine.Random.Range(0, _count);
         return SearchElementAt(randomIndex);
     }
+
+    public int PopID()
+    {
+        var id = SortID();
+        if (id < 0) return id;
+        Remove(id);
+        return id;
+    }
 }
