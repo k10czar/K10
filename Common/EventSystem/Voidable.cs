@@ -29,14 +29,14 @@ public static class VoidableExtensions
 	}
 }
 
-public class CallOnceEv : IEventTrigger
+public class CallEventOnce : IEventTrigger
 {
 	IEventTrigger _eventToCall;
 
 	bool _preVoided;
 	public bool IsValid => !_preVoided && _eventToCall != null && _eventToCall.IsValid;
 	
-	public CallOnceEv(IEventTrigger callback) { _eventToCall = callback; _preVoided = false; }
+	public CallEventOnce(IEventTrigger callback) { _eventToCall = callback; _preVoided = false; }
     public void Trigger() { if( !IsValid ) return; _preVoided = true; _eventToCall.Trigger(); _eventToCall = null; }
 }
 
