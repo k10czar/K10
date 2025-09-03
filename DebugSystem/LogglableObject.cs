@@ -73,6 +73,12 @@ namespace K10.DebugSystem
 
         public static Color LogColor<T>(this ILoggable<T> obj) where T : IDebugCategory, new() => K10Log<T>.Category.Color;
 
+        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        public static void TryHide<T>(this ILoggable<T> loggable, GameObject obj) where T : IDebugCategory, new()
+        {
+            obj.hideFlags = loggable.SkipVisuals() ? HideFlags.HideAndDontSave : HideFlags.None;
+        }
+
         #endregion
     }
 }

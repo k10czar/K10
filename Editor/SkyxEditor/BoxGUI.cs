@@ -18,7 +18,7 @@ namespace Skyx.SkyxEditor
             headerRect.height = headerHeight - 2;
             headerRect.y += 1;
             headerRect.x += 1;
-            headerRect.width -= 2;
+            headerRect.width -= 3;
         }
     }
 }

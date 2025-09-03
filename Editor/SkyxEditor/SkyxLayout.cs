@@ -70,6 +70,12 @@ namespace Skyx.SkyxEditor
 
         private static Color BoolToColor(bool active) => active ? Colors.Console.Success.WithAlpha(0.4f) : Colors.Console.Danger.WithAlpha(0.4f);
 
+        public static void CompactHeader(string label)
+        {
+            CompactSpace();
+            EditorGUILayout.LabelField(label, SkyxStyles.BoldStyle);
+        }
+
         #endregion
 
         #region Separators
