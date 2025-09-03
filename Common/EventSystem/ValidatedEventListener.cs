@@ -12,7 +12,7 @@ public sealed class ValidatedEventListener : BaseConditionalEventListener, IEven
 	{
 		if( _condition == null || !_condition() ) return;
 		_evnt = evnt;
-		var clearOnce = new CallOnce( Clear );
+		var clearOnce = new CallOnceCapsule( Clear );
 		validator.OnVoid.Register( clearOnce );
 		if( additionalValidator != null ) additionalValidator.OnVoid.Register( clearOnce );
 		if( _evnt != null || _condition != null ) _hashCode = _evnt.GetHashCode() + _condition.GetHashCode();
@@ -45,7 +45,7 @@ public sealed class ValidatedEventListener<T> : BaseConditionalEventListener, IE
 	{
 		if( _condition == null || !_condition() ) return;
 		_evnt = evnt;
-		var clearOnce = new CallOnce( Clear );
+		var clearOnce = new CallOnceCapsule( Clear );
 		validator.OnVoid.Register( clearOnce );
 		if( additionalValidator != null ) additionalValidator.OnVoid.Register( clearOnce );
 		if( _evnt != null || _condition != null ) _hashCode = _evnt.GetHashCode() + _condition.GetHashCode();
@@ -78,7 +78,7 @@ public sealed class ValidatedEventListener<T, K> : BaseConditionalEventListener,
 	{
 		if( _condition == null || !_condition() ) return;
 		_evnt = evnt;
-		var clearOnce = new CallOnce( Clear );
+		var clearOnce = new CallOnceCapsule( Clear );
 		validator.OnVoid.Register( clearOnce );
 		if( additionalValidator != null ) additionalValidator.OnVoid.Register( clearOnce );
 		if( _evnt != null || _condition != null ) _hashCode = _evnt.GetHashCode() + _condition.GetHashCode();
@@ -111,7 +111,7 @@ public sealed class ValidatedEventListener<T,K,J> : BaseConditionalEventListener
 	{
 		if( _condition == null || !_condition() ) return;
 		_evnt = evnt;
-		var clearOnce = new CallOnce( Clear );
+		var clearOnce = new CallOnceCapsule( Clear );
 		validator.OnVoid.Register( clearOnce );
 		if( additionalValidator != null ) additionalValidator.OnVoid.Register( clearOnce );
 		if( _evnt != null || _condition != null ) _hashCode = _evnt.GetHashCode() + _condition.GetHashCode();

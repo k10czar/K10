@@ -3,28 +3,9 @@ using System.Text;
 
 namespace K10
 {
-	[System.Obsolete("Use ObjectPool<T> instead that is thread safe I supose")]
-	public static class ObjectPool
-	{
-		public static void Return<T>(T obj) where T : new() => ObjectPool<T>.Return(obj);
-		public static void Request<T>( out T obj ) where T : new()
-		{
-			obj = ObjectPool<T>.Request();
-		}
-		public static void RequestList<T>( out List<T> obj )
-		{
-			obj = ObjectPool<List<T>>.Request();
-		}
-		public static void RequestListWith<T>( out List<T> obj, IEnumerable<T> elements )
-		{
-			RequestList( out obj );
-			obj.AddRange( elements );
-		}
-	}
-
 	public static class ObjectPool<T> where T : new()
 	{
-		private static readonly Dictionary<System.Threading.Thread,List<T>> _pools = new Dictionary<System.Threading.Thread,List<T>>();
+		private static readonly Dictionary<System.Threading.Thread,List<T>> _pools = new();
 
 		public static T Request()
 		{

@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-public class EventTriggerCapsule : IEventTrigger
+public class EventTriggerCapsule : IEventTrigger, IVoidable
 {
 	private IEventTrigger trigger;
 
@@ -14,7 +14,7 @@ public class EventTriggerCapsule : IEventTrigger
 	public void Void() => trigger = null;
 }
 
-public class EventTriggerCapsule<T> : IEventTrigger<T>
+public class EventTriggerCapsule<T> : IEventTrigger<T>, IVoidable
 {
 	private IEventTrigger<T> trigger;
 
@@ -27,7 +27,7 @@ public class EventTriggerCapsule<T> : IEventTrigger<T>
 	public void Void() => trigger = null;
 }
 
-public class EventTriggerCapsule<T, K> : IEventTrigger<T, K>
+public class EventTriggerCapsule<T, K> : IEventTrigger<T, K>, IVoidable
 {
 	private IEventTrigger<T, K> trigger;
 
@@ -40,7 +40,7 @@ public class EventTriggerCapsule<T, K> : IEventTrigger<T, K>
 	public void Void() => trigger = null;
 }
 
-public class EventTriggerCapsule<T, K, J> : IEventTrigger<T, K, J>
+public class EventTriggerCapsule<T, K, J> : IEventTrigger<T, K, J>, IVoidable
 {
 	private IEventTrigger<T, K, J> trigger;
 

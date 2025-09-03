@@ -67,7 +67,7 @@ public static class ISemaphoreInterectionExtentions
 		source.RegisterOnTrue( semaphore.Validator.Validated( () => semaphore.Block( source ), eventValidation ) );
 		source.RegisterOnFalse( semaphore.Validator.Validated( releaseAction, eventValidation ) );
 
-		eventValidation.OnVoid.Register( new CallOnce( releaseAction ) );
+		eventValidation.OnVoid.Register( new CallOnceCapsule( releaseAction ) );
 	}
 
 	public static void BlockOn(this ISemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation, string nameGameObjectToDebug)
@@ -76,7 +76,7 @@ public static class ISemaphoreInterectionExtentions
 		source.RegisterOnTrue(semaphore.Validator.Validated(() => semaphore.Block(source, true, nameGameObjectToDebug), eventValidation));
 		source.RegisterOnFalse(semaphore.Validator.Validated(releaseAction, eventValidation));
 
-		eventValidation.OnVoid.Register(new CallOnce(releaseAction));
+		eventValidation.OnVoid.Register(new CallOnceCapsule(releaseAction));
 	}
 
 	// public static void BlockOn( this ISemaphoreInterection semaphore, IBoolStateObserver source, Func<bool> eventValidation )
@@ -102,7 +102,7 @@ public static class ISemaphoreInterectionExtentions
 		Action releaseAction = () => semaphore.Release( source );
 		source.RegisterOnTrue( semaphore.Validator.Validated( releaseAction, eventValidation ) );
 		source.RegisterOnFalse( semaphore.Validator.Validated( () => semaphore.Block( source ), eventValidation ) );
-		eventValidation.OnVoid.Register( semaphore.Validator.Validated( new CallOnce( releaseAction ) ) );
+		eventValidation.OnVoid.Register( semaphore.Validator.Validated( new CallOnceCapsule( releaseAction ) ) );
 	}
 
 	public static void BlockOn( this ISemaphoreInterection semaphore, UnityEngine.GameObject go, IBoolStateObserver additionalCondition = null )
@@ -130,7 +130,7 @@ public static class ISemaphoreInterectionExtentions
 		Action releaseLambda = () => semaphore.Release( condition );
 		condition.RegisterOnTrue( validator.Validated( releaseLambda, goLifetime ) );
 		condition.RegisterOnFalse( validator.Validated( () => semaphore.Block( condition ), goLifetime ) );
-		goEvents.OnDestroy.Register( validator.Validated( new CallOnce( releaseLambda ) ) );
+		goEvents.OnDestroy.Register( validator.Validated( new CallOnceCapsule( releaseLambda ) ) );
 	}
 
 	public static BoolState GetBoolObserver(this Semaphore semaphore)

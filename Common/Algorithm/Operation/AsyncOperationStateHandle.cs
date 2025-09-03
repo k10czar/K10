@@ -12,7 +12,7 @@ public static class AsyncOperationObserverExtension
     public static void ExecuteWhenOperationEnd( this IAsyncOperationObserver exec, System.Action act )
     {
         if( exec == null || exec.IsDone.Value ) act();
-        else exec.IsDone.OnTrueState.Register( new CallOnce( act ) );
+        else exec.IsDone.OnTrueState.Register( new CallOnceCapsule( act ) );
     }
 }
 

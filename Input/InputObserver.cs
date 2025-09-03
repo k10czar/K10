@@ -41,7 +41,7 @@ public abstract class InputObserver : IBoolStateObserver, IUpdatableOnDemand
 		_readedState.OnTrueState.Register( group.Validator.Validated( TriggerOnTrueReadedState ) );
 		_readedState.OnFalseState.Register( group.Validator.Validated( TriggerOnFalseReadedState ) );
 
-		group.Validator.OnVoid.Register( new CallOnce( Kill ) );
+		group.Validator.OnVoid.Register( new CallOnceCapsule( Kill ) );
 
 		if( _cancelOnDisable ) _group.CanUpdate.OnFalseState.Register( group.Validator.Validated( _readedState.SetFalse ) );
 	}

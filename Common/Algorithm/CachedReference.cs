@@ -30,10 +30,10 @@ public static class ReferenceHolderExtentions
 
 	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, IReferenceSetter<T> referenceObserver ) { Synchronize( referenceHolder, referenceObserver.ChangeReference ); }
 
-	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action evnt, bool evenDefault ) { Synchronize( referenceHolder, new ActionCapsule( evnt ), evenDefault ); }
-	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action evnt ) { Synchronize( referenceHolder, new ActionCapsule( evnt ) ); }
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, Action evnt, bool evenDefault ) { Synchronize( referenceHolder, new ActionCapsule( evnt ), evenDefault ); }
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, Action evnt ) { Synchronize( referenceHolder, new ActionCapsule( evnt ) ); }
 	// public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action evnt, System.Func<bool> validation ) { Synchronize( referenceHolder, new ConditionalEventListener( evnt, () => validation() ) ); }
-	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action evnt, IEventValidator validator ) { Synchronize( referenceHolder, validator.Validated( evnt ) ); }
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, Action evnt, IEventValidator validator ) { Synchronize( referenceHolder, validator.Validated( evnt ) ); }
 	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, IEventTrigger evnt ) { Synchronize( referenceHolder, evnt, true ); }
 	// public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, IEventTrigger evnt, System.Func<bool> validation ) { Synchronize( referenceHolder, new ConditionalEventListener( evnt, () => validation() && evnt.IsValid ) ); }
 	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, IEventTrigger evnt, IEventValidator validator ) { Synchronize( referenceHolder, validator.Validated( evnt ) ); }
@@ -43,10 +43,10 @@ public static class ReferenceHolderExtentions
 		if( evenDefault || SafeNotDefault( referenceHolder.CurrentReference ) ) evnt.Trigger();
 	}
 
-	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action<T> evnt, bool evenDefault ) { Synchronize( referenceHolder, new ActionCapsule<T>( evnt ), evenDefault ); }
-	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action<T> evnt ) { Synchronize( referenceHolder, new ActionCapsule<T>( evnt ) ); }
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, Action<T> evnt, bool evenDefault ) { Synchronize( referenceHolder, new ActionCapsule<T>( evnt ), evenDefault ); }
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, Action<T> evnt ) { Synchronize( referenceHolder, new ActionCapsule<T>( evnt ) ); }
 	// public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action<T> evnt, System.Func<bool> validation ) { Synchronize<T>( referenceHolder, new ConditionalEventListener<T>( evnt, () => validation() ) ); }
-	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action<T> evnt, IEventValidator validator ) { Synchronize( referenceHolder, validator.Validated<T>( evnt ) ); }
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, Action<T> evnt, IEventValidator validator ) { Synchronize( referenceHolder, validator.Validated<T>( evnt ) ); }
 	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, IEventTrigger<T> evnt ) { Synchronize( referenceHolder, evnt, true ); }
 	// public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, IEventTrigger<T> evnt, System.Func<bool> validation ) { Synchronize<T>( referenceHolder, new ConditionalEventListener<T>( evnt, () => validation() && evnt.IsValid ) ); }
 	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, IEventTrigger<T> evnt, IEventValidator validator )  { Synchronize( referenceHolder, validator.Validated<T>( evnt ) ); }
@@ -57,10 +57,10 @@ public static class ReferenceHolderExtentions
 			evnt.Trigger( referenceHolder.CurrentReference );
 	}
 
-	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action<T,IEventValidator> evnt, bool evenDefault ) { Synchronize( referenceHolder, new ActionCapsule<T,IEventValidator>( evnt ), evenDefault ); }
-	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action<T,IEventValidator> evnt ) { Synchronize( referenceHolder, new ActionCapsule<T,IEventValidator>( evnt ) ); }
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, Action<T,IEventValidator> evnt, bool evenDefault ) { Synchronize( referenceHolder, new ActionCapsule<T,IEventValidator>( evnt ), evenDefault ); }
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, Action<T,IEventValidator> evnt ) { Synchronize( referenceHolder, new ActionCapsule<T,IEventValidator>( evnt ) ); }
 	// public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action<T,IEventValidator> evnt, System.Func<bool> validation ) { Synchronize<T>( referenceHolder, new ConditionalEventListener<T,IEventValidator>( evnt, () => validation() ) ); }
-	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, System.Action<T,IEventValidator> evnt, IEventValidator validator ) { Synchronize( referenceHolder, validator.Validated<T,IEventValidator>( evnt ) ); }
+	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, Action<T,IEventValidator> evnt, IEventValidator validator ) { Synchronize( referenceHolder, validator.Validated<T,IEventValidator>( evnt ) ); }
 	// public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, IEventTrigger<T,IEventValidator> evnt, System.Func<bool> validation ) { Synchronize<T>( referenceHolder, new ConditionalEventListener<T,IEventValidator>( evnt, () => validation() && evnt.IsValid ) ); }
 	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, IEventTrigger<T, IEventValidator> evnt, IEventValidator validator ) { Synchronize( referenceHolder, validator.Validated<T, IEventValidator>( evnt ) ); }
 	public static void Synchronize<T>( this IReferenceHolder<T> referenceHolder, IEventTrigger<T, IEventValidator> evnt, bool evenDefault = true )

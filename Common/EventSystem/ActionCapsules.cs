@@ -1,20 +1,37 @@
 using System;
 using UnityEngine;
 
-public struct ActionCapsule : IEventTrigger, IEquatable<ActionCapsule>
+public struct ActionCapsule : IEventTrigger, IEquatable<ActionCapsule>, IVoidable
 {
 	private readonly Action callback;
+	private readonly IEventRegister observed;
 
 	public ActionCapsule(Action callback)
 	{
 		this.callback = callback;
+		this.observed = null;
+
 		IsValid = callback != null;
+	}
+
+	public ActionCapsule(Action callback, IEventRegister observed)
+	{
+		this.callback = callback;
+		this.observed = observed;
+
+		IsValid = callback != null;
+		if (IsValid) observed.Register(this);
 	}
 
 	[HideInCallstack]
 	public void Trigger() => callback();
 	public bool IsValid { get; private set; }
-	public void Void() => IsValid = false;
+
+	public void Void()
+	{
+		if (IsValid) observed?.Unregister(this);
+		IsValid = false;
+	}
 
 	public override bool Equals(object other)
 	{
@@ -36,20 +53,37 @@ public struct ActionCapsule : IEventTrigger, IEquatable<ActionCapsule>
 	public override int GetHashCode() => callback?.GetHashCode() ?? 0;
 }
 
-public struct ActionCapsule<T> : IEventTrigger<T>, IEquatable<ActionCapsule<T>>
+public struct ActionCapsule<T> : IEventTrigger<T>, IEquatable<ActionCapsule<T>>, IVoidable
 {
 	private readonly Action<T> callback;
+	private readonly IEventRegister<T> observed;
 
 	public ActionCapsule(Action<T> callback)
 	{
 		this.callback = callback;
+		this.observed = null;
+
 		IsValid = callback != null;
+	}
+
+	public ActionCapsule(Action<T> callback, IEventRegister<T> observed)
+	{
+		this.callback = callback;
+		this.observed = observed;
+
+		IsValid = callback != null;
+		if (IsValid) observed.Register(this);
 	}
 
 	[HideInCallstack]
 	public void Trigger(T t) => callback(t);
 	public bool IsValid { get; private set; }
-	public void Void() => IsValid = false;
+
+	public void Void()
+	{
+		if (IsValid) observed?.Unregister(this);
+		IsValid = false;
+	}
 
 	public override bool Equals(object other)
 	{
@@ -71,20 +105,37 @@ public struct ActionCapsule<T> : IEventTrigger<T>, IEquatable<ActionCapsule<T>>
 	public override int GetHashCode() => callback?.GetHashCode() ?? 0;
 }
 
-public struct ActionCapsule<T, K> : IEventTrigger<T, K>, IEquatable<ActionCapsule<T, K>>
+public struct ActionCapsule<T, K> : IEventTrigger<T, K>, IEquatable<ActionCapsule<T, K>>, IVoidable
 {
 	private readonly Action<T, K> callback;
+	private readonly IEventRegister<T, K> observed;
 
 	public ActionCapsule(Action<T, K> callback)
 	{
 		this.callback = callback;
+		this.observed = null;
+
 		IsValid = callback != null;
+	}
+
+	public ActionCapsule(Action<T, K> callback, IEventRegister<T, K> observed)
+	{
+		this.callback = callback;
+		this.observed = observed;
+
+		IsValid = callback != null;
+		if (IsValid) observed.Register(this);
 	}
 
 	[HideInCallstack]
 	public void Trigger(T t, K k) => callback(t, k);
 	public bool IsValid { get; private set; }
-	public void Void() => IsValid = false;
+
+	public void Void()
+	{
+		if (IsValid) observed?.Unregister(this);
+		IsValid = false;
+	}
 
 	public override bool Equals(object obj)
 	{
@@ -111,20 +162,37 @@ public struct ActionCapsule<T, K> : IEventTrigger<T, K>, IEquatable<ActionCapsul
 	}
 }
 
-public struct ActionCapsule<T, K, L> : IEventTrigger<T, K, L>, IEquatable<ActionCapsule<T, K, L>>
+public struct ActionCapsule<T, K, L> : IEventTrigger<T, K, L>, IEquatable<ActionCapsule<T, K, L>>, IVoidable
 {
 	private readonly Action<T, K, L> callback;
+	private readonly IEventRegister<T, K, L> observed;
 
 	public ActionCapsule(Action<T, K, L> callback)
 	{
 		this.callback = callback;
+		this.observed = null;
+
 		IsValid = callback != null;
+	}
+
+	public ActionCapsule(Action<T, K, L> callback, IEventRegister<T, K, L> observed)
+	{
+		this.callback = callback;
+		this.observed = observed;
+
+		IsValid = callback != null;
+		if (IsValid) observed.Register(this);
 	}
 
 	[HideInCallstack]
 	public void Trigger(T t, K k, L l) => callback(t, k, l);
 	public bool IsValid { get; private set; }
-	public void Void() => IsValid = false;
+
+	public void Void()
+	{
+		if (IsValid) observed?.Unregister(this);
+		IsValid = false;
+	}
 
 	public override bool Equals(object other)
 	{

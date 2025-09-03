@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-public struct CallOnceCapsule : IEventTrigger, IEquatable<CallOnceCapsule>
+public struct CallOnceCapsule : IEventTrigger, IEquatable<CallOnceCapsule>, IVoidable
 {
 	private readonly Action callback;
 
@@ -41,7 +41,7 @@ public struct CallOnceCapsule : IEventTrigger, IEquatable<CallOnceCapsule>
 	public override int GetHashCode() => callback?.GetHashCode() ?? 0;
 }
 
-public struct CallOnceCapsule<T> : IEventTrigger<T>, IEquatable<CallOnceCapsule<T>>
+public struct CallOnceCapsule<T> : IEventTrigger<T>, IEquatable<CallOnceCapsule<T>>, IVoidable
 {
 	private readonly Action<T> callback;
 
@@ -81,7 +81,7 @@ public struct CallOnceCapsule<T> : IEventTrigger<T>, IEquatable<CallOnceCapsule<
 	public override int GetHashCode() => callback?.GetHashCode() ?? 0;
 }
 
-public struct CallOnceCapsule<T, K> : IEventTrigger<T, K>, IEquatable<CallOnceCapsule<T, K>>
+public struct CallOnceCapsule<T, K> : IEventTrigger<T, K>, IEquatable<CallOnceCapsule<T, K>>, IVoidable
 {
 	private readonly Action<T, K> callback;
 
@@ -126,7 +126,7 @@ public struct CallOnceCapsule<T, K> : IEventTrigger<T, K>, IEquatable<CallOnceCa
 	}
 }
 
-public struct CallOnceCapsule<T, K, L> : IEventTrigger<T, K, L>, IEquatable<CallOnceCapsule<T, K, L>>
+public struct CallOnceCapsule<T, K, L> : IEventTrigger<T, K, L>, IEquatable<CallOnceCapsule<T, K, L>>, IVoidable
 {
 	private readonly Action<T, K, L> callback;
 

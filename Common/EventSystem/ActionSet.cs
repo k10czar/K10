@@ -1,39 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 public class ActionSet
 {
-    private readonly Dictionary<(IEventRegister, Action), ActionCapsule> events = new();
+    private readonly List<IVoidable> registeredActions = new();
+
+    #region Register Interface
 
     public void Register(IEventRegister target, Action action)
     {
-        var capsule = new ActionCapsule(action);
-
-        events.Add((target, action), capsule);
-        target.Register(capsule);
+        var capsule = new ActionCapsule(action, target);
+        registeredActions.Add(capsule);
     }
 
-    public void Deregister(IEventRegister target, Action action)
+    public void Register<T>(IEventRegister<T> target, Action<T> action)
     {
-        if (events.TryGetValue((target, action), out var capsule))
-        {
-            capsule.Void();
-            target.Unregister(capsule);
-        }
-        else Debug.LogError($"Action was not being tracked by ActionSet! {action}");
+        var capsule = new ActionCapsule<T>(action, target);
+        registeredActions.Add(capsule);
     }
+
+    public void Register<T, K>(IEventRegister<T, K> target, Action<T, K> action)
+    {
+        var capsule = new ActionCapsule<T, K>(action, target);
+        registeredActions.Add(capsule);
+    }
+
+    public void Register<T, K, L>(IEventRegister<T, K, L> target, Action<T, K, L> action)
+    {
+        var capsule = new ActionCapsule<T, K, L>(action, target);
+        registeredActions.Add(capsule);
+    }
+
+    #endregion
 
     public void Void()
     {
-        var entries = events.ToList();
-        events.Clear();
+        var entries = registeredActions.ToList();
+        registeredActions.Clear();
 
-        foreach (var ((register, _), capsule) in entries)
-        {
+        foreach (var capsule in entries)
             capsule.Void();
-            register.Unregister(capsule);
-        }
     }
 }

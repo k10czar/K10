@@ -1,47 +1,41 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
-using System.Linq;
 using K10;
 
-[UnityEngine.HideInInspector]
 public class EventSlot : IEvent, ICustomDisposableKill
 {
-	bool _killed = false;
-	// TODO: LazyOptimization
-	private List<IEventTrigger> _listeners;
-	// private List<IEventTrigger> _listeners = new List<IEventTrigger>();
+	private bool killed = false;
+	private List<IEventTrigger> listeners;
 
-	public bool IsValid => !_killed;
-	public int EventsCount => _listeners?.Count ?? 0;
-	public int CountValidEvents => _listeners?.Count( ( et ) => et.IsValid ) ?? 0;
+	public bool IsValid => !killed;
+	public int EventsCount => listeners?.Count ?? 0;
 	public bool HasListeners => EventsCount > 0;
 
 	public void Trigger()
 	{
-		if( _killed )
+		if (killed)
 		{
-			Debug.LogError( $"Error: Cannot Trigger dead EventSlot" );
+			Debug.LogError($"Error: Cannot Trigger dead EventSlot");
 			return;
 		}
 
-		if( _listeners == null || _listeners.Count == 0 ) return;
+		if (!HasListeners) return;
 
-		var listenersToTrigger = ObjectPool<List<IEventTrigger>>.Request();
-		listenersToTrigger.AddRange( _listeners );
+		var listenersCopy = ObjectPool<List<IEventTrigger>>.Request();
+		listenersCopy.AddRange(listeners);
 
-		var count = listenersToTrigger.Count;
-		for( int i = 0; i < count; i++ )
+		var removedEntries = false;
+		foreach (var listener in listenersCopy)
 		{
 			try
 			{
-				var listener = listenersToTrigger[i];
 				if (listener.IsValid) listener.Trigger();
-				//NOT else Trigger can invalidate listener
-				if (!listener.IsValid)
+
+				if (!listener.IsValid) // Trigger can invalidate listener
 				{
-					_listeners?.Remove(listener);
-					TryClearFullSignatureList();
+					listeners?.Remove(listener);
+					removedEntries = true;
 				}
 			}
 			catch (Exception exception)
@@ -50,82 +44,88 @@ public class EventSlot : IEvent, ICustomDisposableKill
 			}
 		}
 
-		ObjectPool<List<IEventTrigger>>.Return( listenersToTrigger );
+		if (removedEntries) TryReleaseListeners();
+		ObjectPool<List<IEventTrigger>>.Return(listenersCopy);
 	}
 
 	public void Kill()
 	{
-		_killed = true;
+		killed = true;
 		Clear();
-		_listeners = null;
 	}
 
-	public void Clear() => _listeners?.Clear();
-
-	private void TryClearFullSignatureList()
+	public void Clear()
 	{
-		if( _listeners == null || _listeners.Count == 0 ) _listeners = null;
+		ObjectPool<List<IEventTrigger>>.Return(listeners);
+		listeners = null;
 	}
 
-	public void Register( IEventTrigger listener )
+	private void TryReleaseListeners()
 	{
-		if( _killed || listener == null ) return;
-		Lazy.Request( ref _listeners ).Add( listener );
+		if (listeners == null || listeners.Count != 0) return;
+		Clear();
 	}
 
-	public bool Unregister( IEventTrigger listener )
+	public void Register(IEventTrigger listener)
 	{
-		if( _killed || _listeners == null ) return false;
-		bool removed = _listeners.Remove( listener );
-		if( removed ) TryClearFullSignatureList();
+		if (killed || listener == null) return;
+
+		listeners ??= ObjectPool<List<IEventTrigger>>.Request();
+		listeners.Add(listener);
+	}
+
+	public bool Unregister(IEventTrigger listener)
+	{
+		if (killed || listeners == null) return false;
+
+		var removed = listeners.Remove(listener);
+		if (removed) TryReleaseListeners();
+
 		return removed;
 	}
 
-	public override string ToString() { return $"[EventSlot:{EventsCount}]"; }
+	public override string ToString() => $"[EventSlot:{EventsCount}]";
 }
 
-[UnityEngine.HideInInspector]
 public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 {
-	bool _killed = false;
-	// TODO: LazyOptimization
-	private EventSlot _generic;
-	private List<IEventTrigger<T>> _listeners;
-	// private EventSlot _generic = new EventSlot();
-	// private List<IEventTrigger<T>> _listeners = new List<IEventTrigger<T>>();
+	private bool killed;
 
-	public bool IsValid => !_killed;
-	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
-	public int CountValidEvents => ( _generic?.CountValidEvents ?? 0 ) + _listeners.Count( ( et ) => et.IsValid );
+	private EventSlot generic;
+	private List<IEventTrigger<T>> listeners;
+
+	public bool IsValid => !killed;
+	public int EventsCount => (generic?.EventsCount ?? 0) + (listeners?.Count ?? 0);
 	public bool HasListeners => EventsCount > 0;
 
-	public static implicit operator EventSlot( EventSlot<T> v ) => Lazy.Request( ref v._generic );
+	private bool ThisHasListeners => listeners != null && listeners.Count > 0;
 
-	public void Trigger( T t )
+	public static implicit operator EventSlot(EventSlot<T> v) => Lazy.Request(ref v.generic);
+
+	public void Trigger(T t)
 	{
-		if( _killed )
+		if (killed)
 		{
-			Debug.LogError( $"Error: Cannot Trigger dead EventSlot<{typeof( T )}>" );
+			Debug.LogError($"Error: Cannot Trigger dead EventSlot<{typeof(T)}>");
 			return;
 		}
 
-		if( _listeners != null && _listeners.Count > 0 )
+		if (ThisHasListeners)
 		{
-			var listenersToTrigger = ObjectPool<List<IEventTrigger<T>>>.Request();
-			listenersToTrigger.AddRange( _listeners );
+			var listenersCopy = ObjectPool<List<IEventTrigger<T>>>.Request();
+			listenersCopy.AddRange(listeners);
 
-			var count = listenersToTrigger.Count;
-			for( int i = 0; i < count; i++ )
+			var removedEntries = false;
+			foreach (var listener in listenersCopy)
 			{
 				try
 				{
-					var listener = listenersToTrigger[i];
 					if (listener.IsValid) listener.Trigger(t);
-					//NOT else Trigger can invalidate listener
-					if (!listener.IsValid)
+
+					if (!listener.IsValid) // Trigger can invalidate listener
 					{
-						_listeners?.Remove(listener);
-						TryClearFullSignatureList();
+						listeners?.Remove(listener);
+						removedEntries = true;
 					}
 				}
 				catch (Exception exception)
@@ -133,116 +133,132 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 					Debug.LogException(exception);
 				}
 			}
-			ObjectPool<List<IEventTrigger<T>>>.Return( listenersToTrigger );
+
+			if (removedEntries) TryReleaseListeners();
+			ObjectPool<List<IEventTrigger<T>>>.Return(listenersCopy);
 		}
 
-		if( _generic != null )
+		if (generic != null)
 		{
-			_generic.Trigger();
+			generic.Trigger();
 			TryClearGeneric();
 		}
 	}
 
 	public void Kill()
 	{
-		_killed = true;
-		_listeners?.Clear();
-		_generic?.Kill();
-		_listeners = null;
-		_generic = null;
+		killed = true;
+		Clear();
 	}
 
 	public void Clear()
 	{
-		_generic?.Clear();
-		_listeners?.Clear();
+		generic?.Clear();
+		generic = null;
+
+		ReleaseListeners();
+	}
+
+	private void TryReleaseListeners()
+	{
+		if (listeners == null || listeners.Count != 0) return;
+		ReleaseListeners();
+	}
+
+	private void ReleaseListeners()
+	{
+		if (listeners == null) return;
+
+		ObjectPool<List<IEventTrigger<T>>>.Return(listeners);
+		listeners = null;
 	}
 
 	private void TryClearGeneric()
 	{
-		if( _generic == null ) return;
-		if( _generic.EventsCount == 0 ) _generic = null;
-	}
-	private void TryClearFullSignatureList()
-	{
-		if( _listeners == null ) return;
-		if( _listeners.Count == 0 ) _listeners = null;
+		if (generic == null) return;
+		if (generic.EventsCount == 0) generic = null;
 	}
 
-	public void Register( IEventTrigger<T> listener )
+	#region Register Interface
+
+	public void Register(IEventTrigger<T> listener)
 	{
-		if( _killed || listener == null ) return;
-		Lazy.Request( ref _listeners ).Add( listener );
+		if (killed || listener == null) return;
+
+		listeners ??= ObjectPool<List<IEventTrigger<T>>>.Request();
+		listeners.Add(listener);
 	}
 
-	public void Register( IEventTrigger listener )
+	public void Register(IEventTrigger listener)
 	{
-		if( _killed || listener == null ) return;
-		Lazy.Request( ref _generic ).Register( listener );
+		if (killed || listener == null) return;
+		Lazy.Request(ref generic).Register(listener);
 	}
 
-	public bool Unregister( IEventTrigger<T> listener )
+	public bool Unregister(IEventTrigger<T> listener)
 	{
-		if( _killed || _listeners == null ) return false;
-		bool removed = _listeners.Remove( listener );
-		if( removed ) TryClearFullSignatureList();
+		if (killed || listeners == null) return false;
+
+		var removed = listeners.Remove(listener);
+		if (removed) TryReleaseListeners();
+
 		return removed;
 	}
 
-	public bool Unregister( IEventTrigger listener )
+	public bool Unregister(IEventTrigger listener)
 	{
-		if( _killed || _generic == null ) return false;
-		bool removed = _generic.Unregister( listener );
-		if( removed ) TryClearGeneric();
+		if (killed || generic == null) return false;
+
+		var removed = generic.Unregister(listener);
+		if (removed) TryClearGeneric();
+
 		return removed;
 	}
 
+	#endregion
 
-	public override string ToString() { return $"[EventSlot<{typeof(T)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
+	public override string ToString() => $"[EventSlot<{typeof(T)}>:{listeners?.Count ?? 0}, Generic:{generic.ToStringOrNull()}]";
 }
 
-[UnityEngine.HideInInspector]
 public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 {
-	bool _killed = false;
-	// TODO: LazyOptimization
-	private EventSlot<T> _generic;
-	private List<IEventTrigger<T, K>> _listeners;
-	// private EventSlot<T> _generic = new EventSlot<T>();
-	// private List<IEventTrigger<T, K>> _listeners = new List<IEventTrigger<T, K>>();
+	private bool killed;
 
-	public bool IsValid => !_killed;
-	public int EventsCount => ( ( _generic?.EventsCount ?? 0 ) + ( _listeners?.Count ?? 0 ) );
-	public int CountValidEvents => ( _generic?.CountValidEvents ?? 0 ) + _listeners.Count( ( et ) => et.IsValid );
+	private EventSlot<T> generic;
+	private List<IEventTrigger<T, K>> listeners;
+
+	public bool IsValid => !killed;
+	public int EventsCount => (generic?.EventsCount ?? 0) + (listeners?.Count ?? 0);
 	public bool HasListeners => EventsCount > 0;
 
-	public static implicit operator EventSlot<T>( EventSlot<T, K> v ) => Lazy.Request( ref v._generic );
+	private bool ThisHasListeners => listeners != null && listeners.Count > 0;
 
-	public void Trigger( T t, K k )
+	public static implicit operator EventSlot<T>(EventSlot<T, K> v) => Lazy.Request(ref v.generic);
+
+	public void Trigger(T t, K k)
 	{
-		if( _killed )
+		if (killed)
 		{
-			Debug.LogError( $"Error: Cannot Trigger dead EventSlot<{typeof( T )},{typeof( K )}>" );
+			Debug.LogError($"Error: Cannot Trigger dead EventSlot<{typeof(T)},{typeof(K)}>");
 			return;
 		}
 
-		if( _listeners != null && _listeners.Count > 0 )
+		if (ThisHasListeners)
 		{
-			var listenersToTrigger = ObjectPool<List<IEventTrigger<T,K>>>.Request();
-			listenersToTrigger.AddRange( _listeners );
+			var listenersCopy = ObjectPool<List<IEventTrigger<T, K>>>.Request();
+			listenersCopy.AddRange(listeners);
 
-			var count = listenersToTrigger.Count;
-			for( int i = 0; i < count; i++ )
+			var removedEntries = false;
+			foreach (var listener in listenersCopy)
 			{
 				try
 				{
-					var listener = listenersToTrigger[i];
 					if (listener.IsValid) listener.Trigger(t, k);
-					//NOT else Trigger can invalidate listener
-					if (!listener.IsValid)
+
+					if (!listener.IsValid) // Trigger can invalidate listener
 					{
-						_listeners?.Remove(listener);
-						TryClearFullSignatureList();
+						listeners?.Remove(listener);
+						removedEntries = true;
 					}
 				}
 				catch (Exception exception)
@@ -250,129 +266,142 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 					Debug.LogException(exception);
 				}
 			}
-			ObjectPool<List<IEventTrigger<T,K>>>.Return( listenersToTrigger );
+
+			if (removedEntries) TryReleaseListeners();
+			ObjectPool<List<IEventTrigger<T, K>>>.Return(listenersCopy);
 		}
 
-		if( _generic != null )
+		if (generic != null)
 		{
-			_generic.Trigger( t );
+			generic.Trigger(t);
 			TryClearGeneric();
 		}
 	}
 
-	private void TryClearGeneric()
-	{
-		if( _generic == null ) return;
-		if( _generic.EventsCount == 0 ) _generic = null;
-	}
-	private void TryClearFullSignatureList()
-	{
-		if( _listeners == null ) return;
-		if( _listeners.Count == 0 ) _listeners = null;
-	}
-
 	public void Kill()
 	{
-		_killed = true;
-		_listeners?.Clear();
-		_generic?.Kill();
-		_listeners = null;
-		_generic = null;
+		killed = true;
+		Clear();
 	}
 
 	public void Clear()
 	{
-		_generic.Clear();
-		_listeners?.Clear();
+		generic?.Clear();
+		generic = null;
+
+		ReleaseListeners();
 	}
 
-	public void Register( IEventTrigger<T, K> listener )
+	private void TryReleaseListeners()
 	{
-		if( _killed || listener == null ) return;
-		Lazy.Request( ref _listeners ).Add( listener );
+		if (listeners == null || listeners.Count != 0) return;
+		ReleaseListeners();
 	}
 
-	public void Register( IEventTrigger<T> listener )
+	private void ReleaseListeners()
 	{
-		if( _killed || listener == null ) return;
-		Lazy.Request( ref _generic ).Register( listener );
+		if (listeners == null) return;
+
+		ObjectPool<List<IEventTrigger<T,K>>>.Return(listeners);
+		listeners = null;
 	}
 
-	public void Register( IEventTrigger listener )
+	private void TryClearGeneric()
 	{
-		if( _killed || listener == null ) return;
-		Lazy.Request( ref _generic ).Register( listener );
+		if (generic == null) return;
+		if (generic.EventsCount == 0) generic = null;
 	}
 
-	public bool Unregister( IEventTrigger<T, K> listener )
+	#region Register Interface
+
+	public void Register(IEventTrigger<T, K> listener)
 	{
-		if( _killed || _listeners == null ) return false;
-		bool removed = _listeners.Remove( listener );
-		if( removed ) TryClearFullSignatureList();
+		if (killed || listener == null) return;
+
+		listeners ??= ObjectPool<List<IEventTrigger<T, K>>>.Request();
+		listeners.Add(listener);
+	}
+
+	public void Register(IEventTrigger<T> listener)
+	{
+		if (killed || listener == null) return;
+		Lazy.Request(ref generic).Register(listener);
+	}
+
+	public void Register(IEventTrigger listener)
+	{
+		if (killed || listener == null) return;
+		Lazy.Request(ref generic).Register(listener);
+	}
+
+	public bool Unregister(IEventTrigger<T, K> listener)
+	{
+		if (killed || listeners == null) return false;
+		bool removed = listeners.Remove(listener);
+		if (removed) TryReleaseListeners();
 		return removed;
 	}
 
-	public bool Unregister( IEventTrigger<T> listener )
+	public bool Unregister(IEventTrigger<T> listener)
 	{
-		if( _killed || _generic == null ) return false;
-		bool removed = _generic.Unregister( listener );
-		if( removed ) TryClearGeneric();
+		if (killed || generic == null) return false;
+		bool removed = generic.Unregister(listener);
+		if (removed) TryClearGeneric();
 		return removed;
 	}
 
-	public bool Unregister( IEventTrigger listener )
+	public bool Unregister(IEventTrigger listener)
 	{
-		if( _killed || _generic == null ) return false;
-		bool removed = _generic.Unregister( listener );
-		if( removed ) TryClearGeneric();
+		if (killed || generic == null) return false;
+		bool removed = generic.Unregister(listener);
+		if (removed) TryClearGeneric();
 		return removed;
 	}
 
-	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
+	#endregion
+
+	public override string ToString() => $"[EventSlot<{typeof(T)},{typeof(K)}>:{listeners?.Count ?? 0}, Generic:{generic.ToStringOrNull()}]";
 }
 
-[UnityEngine.HideInInspector]
 public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 {
-	bool _killed = false;
-	// TODO: LazyOptimization
-	private EventSlot<T, K> _generic;
-	private List<IEventTrigger<T, K, L>> _listeners;
-	// private EventSlot<T, K> _generic = new EventSlot<T, K>();
-	// private List<IEventTrigger<T, K, L>> _listeners = new List<IEventTrigger<T, K, L>>();
+	private bool killed;
 
-	public bool IsValid => !_killed;
-	public int EventsCount => ( _generic.EventsCount + _listeners.Count );
-	public int CountValidEvents => ( _generic?.CountValidEvents ?? 0 ) + _listeners.Count( ( et ) => et.IsValid );
+	private EventSlot<T, K> generic;
+	private List<IEventTrigger<T, K, L>> listeners;
+
+	public bool IsValid => !killed;
+	public int EventsCount => (generic.EventsCount + listeners.Count);
 	public bool HasListeners => EventsCount > 0;
 
-	public static implicit operator EventSlot<T, K>( EventSlot<T, K, L> v ) => Lazy.Request( ref v._generic );
+	private bool ThisHasListeners => listeners != null && listeners.Count > 0;
 
-	public void Trigger( T t, K k, L l )
+	public static implicit operator EventSlot<T, K>(EventSlot<T, K, L> v) => Lazy.Request(ref v.generic);
+
+	public void Trigger(T t, K k, L l)
 	{
-		if( _killed )
+		if (killed)
 		{
-			Debug.LogError( $"Error: Cannot Trigger dead EventSlot<{typeof( T )},{typeof( K )},{typeof( L )}>" );
+			Debug.LogError($"Error: Cannot Trigger dead EventSlot<{typeof(T)},{typeof(K)},{typeof(L)}>");
 			return;
 		}
 
-		if( _listeners != null && _listeners.Count > 0 )
+		if (ThisHasListeners)
 		{
-			var listenersToTrigger = ObjectPool<List<IEventTrigger<T, K, L>>>.Request();
-			listenersToTrigger.AddRange( _listeners );
+			var listenersCopy = ObjectPool<List<IEventTrigger<T, K, L>>>.Request();
+			listenersCopy.AddRange(listeners);
 
-			var count = listenersToTrigger.Count;
-			for( int i = 0; i < count; i++ )
+			var removedEntries = false;
+			foreach (var listener in listenersCopy)
 			{
 				try
 				{
-					var listener = listenersToTrigger[i];
 					if (listener.IsValid) listener.Trigger(t, k, l);
-					//NOT else Trigger can invalidate listener
-					if (!listener.IsValid)
+
+					if (!listener.IsValid) // Trigger can invalidate listener
 					{
-						_listeners?.Remove(listener);
-						TryClearFullSignatureList();
+						listeners?.Remove(listener);
+						removedEntries = true;
 					}
 				}
 				catch (Exception exception)
@@ -380,96 +409,121 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 					Debug.LogException(exception);
 				}
 			}
-			ObjectPool<List<IEventTrigger<T, K, L>>>.Return( listenersToTrigger );
+
+			if (removedEntries) TryReleaseListeners();
+			ObjectPool<List<IEventTrigger<T, K, L>>>.Return(listenersCopy);
 		}
 
-		if( _generic != null )
+		if (generic != null)
 		{
-			_generic.Trigger( t, k );
+			generic.Trigger(t, k);
 			TryClearGeneric();
 		}
 	}
 
-	private void TryClearGeneric()
-	{
-		if( _generic == null || _generic.EventsCount == 0 ) _generic = null;
-	}
-
-	private void TryClearFullSignatureList()
-	{
-		if( _listeners == null || _listeners.Count == 0 ) _listeners = null;
-	}
-
 	public void Kill()
 	{
-		_killed = true;
-		_listeners?.Clear();
-		_generic?.Kill();
-		_listeners = null;
-		_generic = null;
+		killed = true;
+		Clear();
 	}
 
 	public void Clear()
 	{
-		_generic.Clear();
-		_listeners?.Clear();
+		generic?.Clear();
+		generic = null;
+
+		ReleaseListeners();
 	}
 
-	public void Register( IEventTrigger<T, K, L> listener )
+	private void TryReleaseListeners()
 	{
-		if( _killed || listener == null ) return;
-		Lazy.Request( ref _listeners ).Add( listener );
+		if (listeners == null || listeners.Count != 0) return;
+		ReleaseListeners();
 	}
 
-	public void Register( IEventTrigger<T, K> listener )
+	private void ReleaseListeners()
 	{
-		if( _killed || listener == null ) return;
-		Lazy.Request( ref _generic ).Register( listener );
+		if (listeners == null) return;
+
+		ObjectPool<List<IEventTrigger<T,K,L>>>.Return(listeners);
+		listeners = null;
 	}
 
-	public void Register( IEventTrigger<T> listener )
+	private void TryClearGeneric()
 	{
-		if( _killed || listener == null ) return;
-		Lazy.Request( ref _generic ).Register( listener );
+		if (generic == null) return;
+		if (generic.EventsCount == 0) generic = null;
 	}
 
-	public void Register( IEventTrigger listener )
+	#region Register Interface
+
+	public void Register(IEventTrigger<T, K, L> listener)
 	{
-		if( _killed || listener == null ) return;
-		Lazy.Request( ref _generic ).Register( listener );
+		if (killed || listener == null) return;
+
+		listeners ??= ObjectPool<List<IEventTrigger<T, K, L>>>.Request();
+		listeners.Add(listener);
 	}
 
-	public bool Unregister( IEventTrigger<T, K, L> listener )
+	public void Register(IEventTrigger<T, K> listener)
 	{
-		if( _killed || _listeners == null ) return false;
-		bool removed = _listeners.Remove( listener );
-		if( removed ) TryClearFullSignatureList();
+		if (killed || listener == null) return;
+		Lazy.Request(ref generic).Register(listener);
+	}
+
+	public void Register(IEventTrigger<T> listener)
+	{
+		if (killed || listener == null) return;
+		Lazy.Request(ref generic).Register(listener);
+	}
+
+	public void Register(IEventTrigger listener)
+	{
+		if (killed || listener == null) return;
+		Lazy.Request(ref generic).Register(listener);
+	}
+
+	public bool Unregister(IEventTrigger<T, K, L> listener)
+	{
+		if (killed || listeners == null) return false;
+
+		var removed = listeners.Remove(listener);
+		if (removed) TryReleaseListeners();
+
 		return removed;
 	}
 
-	public bool Unregister( IEventTrigger<T, K> listener )
+	public bool Unregister(IEventTrigger<T, K> listener)
 	{
-		if( _killed || _generic == null ) return false;
-		bool removed = _generic.Unregister( listener );
-		if( removed ) TryClearGeneric();
+		if (killed || generic == null) return false;
+
+		var removed = generic.Unregister(listener);
+		if (removed) TryClearGeneric();
+
 		return removed;
 	}
 
-	public bool Unregister( IEventTrigger<T> listener )
+	public bool Unregister(IEventTrigger<T> listener)
 	{
-		if( _killed || _generic == null ) return false;
-		bool removed = _generic.Unregister( listener );
-		if( removed ) TryClearGeneric();
+		if (killed || generic == null) return false;
+
+		var removed = generic.Unregister(listener);
+		if (removed) TryClearGeneric();
+
 		return removed;
 	}
 
-	public bool Unregister( IEventTrigger listener )
+	public bool Unregister(IEventTrigger listener)
 	{
-		if( _killed || _generic == null ) return false;
-		bool removed = _generic.Unregister( listener );
-		if( removed ) TryClearGeneric();
+		if (killed || generic == null) return false;
+
+		var removed = generic.Unregister(listener);
+		if (removed) TryClearGeneric();
+
 		return removed;
 	}
 
-	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)},{typeof(L)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
+	#endregion
+
+	public override string ToString() => $"[EventSlot<{typeof(T)},{typeof(K)},{typeof(L)}>:{listeners?.Count ?? 0}, Generic:{generic.ToStringOrNull()}]";
 }

@@ -38,13 +38,13 @@ public static class EventExtensions
 	public static void TriggerIfValid<T,K,J>( this IEventTrigger<T,K,J> trigger, T t, K k, J j ) { if( trigger != null && trigger.IsValid ) trigger.Trigger( t, k, j ); }
 	public static void TriggerIfValid<T,K,J,L>( this IEventTrigger<T,K,J,L> trigger, T t, K k, J j, L l ) { if( trigger != null && trigger.IsValid ) trigger.Trigger( t, k, j, l ); }
 
-	public static void Register( this IEventRegister register, Action act ) => register.Register( new ActionCapsule( act ) );
+	public static void Register( this IEventRegister register, Action act ) => _ = new ActionCapsule(act, register);
 	public static void Unregister( this IEventRegister register, Action act ) => register.Unregister( new ActionCapsule( act ) );
-	public static void Register<T>( this IEventRegister<T> register, Action<T> act ) => register.Register( new ActionCapsule<T>( act ) );
+	public static void Register<T>( this IEventRegister<T> register, Action<T> act ) => _ = new ActionCapsule<T>(act, register);
 	public static void Unregister<T>( this IEventRegister<T> register, Action<T> act ) => register.Unregister( new ActionCapsule<T>( act ) );
-	public static void Register<T,K>( this IEventRegister<T,K> register, Action<T,K> act ) => register.Register( new ActionCapsule<T,K>( act ) );
+	public static void Register<T,K>( this IEventRegister<T,K> register, Action<T,K> act ) => _ = new ActionCapsule<T,K>(act, register);
 	public static void Unregister<T,K>( this IEventRegister<T,K> register, Action<T,K> act ) => register.Unregister( new ActionCapsule<T,K>( act ) );
-	public static void Register<T,K,J>( this IEventRegister<T,K,J> register, Action<T,K,J> act ) => register.Register( new ActionCapsule<T,K,J>( act ) );
+	public static void Register<T,K,J>( this IEventRegister<T,K,J> register, Action<T,K,J> act ) => _ = new ActionCapsule<T,K,J>(act, register);
 	public static void Unregister<T,K,J>( this IEventRegister<T,K,J> register, Action<T,K,J> act ) => register.Unregister( new ActionCapsule<T,K,J>( act ) );
 
 	public static void RegisterValidated( this IEventRegister register, IEventValidator validator, Action act ) => register.Register( validator.Validated( act ) );
@@ -69,6 +69,12 @@ public static class EventExtensions
 	#endregion //Enumerables
 
 	public static IEventTrigger<T> Filtered<T, K>( this IEventTrigger<K> register, Func<T, K> filter ) => new EventFilter<T,K>( register, filter );
+}
+
+public interface IVoidable
+{
+	bool IsValid { get; }
+	void Void();
 }
 
 public interface IValidatedObject

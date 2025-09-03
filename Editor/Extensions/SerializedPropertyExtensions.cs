@@ -359,7 +359,7 @@ public static class SerializedPropertyExtensions
 		if( script != null )
 		{
 			var size = 18f;
-			
+
 			if( IconButton.Draw( triggerSummaryRect.RequestRight( size ), UnityIcons.csScriptIcon ) ) AssetDatabase.OpenAsset( script );
 			triggerSummaryRect = triggerSummaryRect.CutRight( size );
 		}
@@ -502,7 +502,7 @@ public static class SerializedPropertyExtensions
 		{
 			if( newDebug )
 			{
-				var debugEvnt = new Voidable<T>( ( value ) => Debug.Log( $"{value} new value on {key}" ) );
+				var debugEvnt = new ActionCapsule<T>((value) => Debug.Log($"{value} new value on {key}"));
 				_events.Add( key, debugEvnt );
 				var obj = property.GetInstance( out var objType );
 				var onChangeProp = objType.GetProperty( BoolState.ON_CHANGE_PROP_NAME );
@@ -525,7 +525,7 @@ public static class SerializedPropertyExtensions
 		{
 			if( newDebug )
 			{
-				var debugEvnt = new Voidable<T>( ( value ) => Debug.Log( $"{value} new value on {key}" ) );
+				var debugEvnt = new ActionCapsule<T>((value) => Debug.Log($"{value} new value on {key}"));
 				_events.Add( key, debugEvnt );
 				var onChangeProp = objType.GetProperty( BoolState.ON_CHANGE_PROP_NAME );
 				var onChangePropValue = onChangeProp.GetValue( obj ) as IEventRegister<T>;

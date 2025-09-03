@@ -51,7 +51,7 @@ public class UpdaterOnDemand : IUpdaterOnDemand
 	public UpdaterOnDemand( MonoBehaviour behaviour, IEventValidator validator = null )
 	{
 		_behaviour = behaviour;
-		if( validator != null ) validator.OnVoid.Register( new CallOnce( Kill ) );
+		if( validator != null ) validator.OnVoid.Register( new CallOnceCapsule( Kill ) );
 	}
 
 	protected virtual void Kill()
