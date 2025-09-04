@@ -195,7 +195,7 @@ public class EventSlot : IEvent, ICustomDisposableKill
 		return removed;
 	}
 
-	public override string ToString() { return $"[EventSlot:{EventsCount}]"; }
+	public override string ToString() { return $"[EventSlot:{_listeners.ToStringOrNull()}]"; }
 	
 #if UNITY_EDITOR
 	public string EDITOR_LogProvision( string identifier )
@@ -283,7 +283,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 					}
 					catch (Exception exception)
 					{
-						Debug.LogError($"EventObjects {count} listener null ? {_listeners[0] == null}");
+						Debug.LogError($"EventObjects {count} listener null ? {_listeners[0] == null}\n{exception.StackTrace}");
 						Debug.LogException(exception);
 					}
 				}
@@ -319,7 +319,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 						}
 						catch (Exception exception)
 						{
-							Debug.LogError($"EventObjects {count} listener null ? {_callList[i] == null}");
+							Debug.LogError($"EventObjects {count} listener {_callList[i].ToStringOrNull()}\n{exception.StackTrace}");
 							Debug.LogException(exception);
 						}
 					}
@@ -426,7 +426,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 		return removed;
 	}
 
-	public override string ToString() { return $"[EventSlot<{typeof(T)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
+	public override string ToString() { return $"[EventSlot<{typeof(T)}>:{_listeners.ToStringOrNull()}, Generic:{_generic.ToStringOrNull()}]"; }
 
 #if UNITY_EDITOR
 	public string EDITOR_LogProvision( string identifier )
@@ -667,7 +667,7 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
 		return removed;
 	}
 
-	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
+	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)}>:{_listeners.ToStringOrNull()}, Generic:{_generic.ToStringOrNull()}]"; }
 
 #if UNITY_EDITOR
 	public string EDITOR_LogSizeData( string identifier )
@@ -923,7 +923,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 		return removed;
 	}
 
-	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)},{typeof(L)}>:{_listeners?.Count ?? 0}, Generic:{_generic.ToStringOrNull()}]"; }
+	public override string ToString() { return $"[EventSlot<{typeof(T)},{typeof(K)},{typeof(L)}>:{_listeners.ToStringOrNull()}, Generic:{_generic.ToStringOrNull()}]"; }
 }
 
 [UnityEngine.HideInInspector]

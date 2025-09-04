@@ -20,7 +20,11 @@ public interface ISemaphoreInterection
 	bool Block( object obj, bool increaseBlock = true , string nameGameObjectToDebug = null);
 	bool BlockButDoNotIncrease( object obj );
 	void Release( object obj );
-	IEventValidator Validator { get; }
+	void Clear();
+}
+
+public interface IValidatedSemaphoreInterection : ISemaphoreInterection
+{	IEventValidator Validator { get; }
 }
 
 public static class ISemaphoreInterectionExtentions
@@ -35,33 +39,33 @@ public static class ISemaphoreInterectionExtentions
 		return semaphore != null && !semaphore.Free;
 	}
 
-	public static void BlockOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> source )
+	public static void BlockOn( this IValidatedSemaphoreInterection semaphore, IValueStateObserver<bool> source )
 	{
 		source.Synchronize( semaphore.Validator.Validated<bool>( ( value ) => { if( value ) semaphore.Block( source ); else semaphore.Release( source ); } ) );
 	}
 
-	public static void ReleaseOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> source )
+	public static void ReleaseOn( this IValidatedSemaphoreInterection semaphore, IValueStateObserver<bool> source )
 	{
 		source.Synchronize( semaphore.Validator.Validated<bool>( ( value ) => { if( value ) semaphore.Release( source ); else semaphore.Block( source ); } ) );
 	}
 
-	// public static void BlockOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> source, Func<bool> eventValidation )
+	// public static void BlockOn( this IValidatedSemaphoreInterection semaphore, IValueStateObserver<bool> source, Func<bool> eventValidation )
 	// {
 	// 	source.Synchronize( semaphore.Validator.LeakedValidated<bool>( ( value ) => { if( value ) semaphore.Block( source ); else semaphore.Release( source ); }, eventValidation ) );
 	// }
 
-	// public static void ReleaseOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> source, Func<bool> eventValidation )
+	// public static void ReleaseOn( this IValidatedSemaphoreInterection semaphore, IValueStateObserver<bool> source, Func<bool> eventValidation )
 	// {
 	// 	source.Synchronize( semaphore.Validator.LeakedValidated<bool>( ( value ) => { if( value ) semaphore.Release( source ); else semaphore.Block( source ); }, eventValidation ) );
 	// }
 
-	public static void BlockOn( this ISemaphoreInterection semaphore, IBoolStateObserver source )
+	public static void BlockOn( this IValidatedSemaphoreInterection semaphore, IBoolStateObserver source )
 	{
 		source.RegisterOnTrue( semaphore.Validator.Validated( () => semaphore.Block( source ) ) );
 		source.RegisterOnFalse( semaphore.Validator.Validated( () => semaphore.Release( source ) ) );
 	}
 
-	public static void BlockOn( this ISemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation )
+	public static void BlockOn( this IValidatedSemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation )
 	{
 		Action releaseAction = () => semaphore.Release( source );
 		source.RegisterOnTrue( semaphore.Validator.Validated( () => semaphore.Block( source ), eventValidation ) );
@@ -70,7 +74,7 @@ public static class ISemaphoreInterectionExtentions
 		eventValidation.OnVoid.Register( new CallOnce( releaseAction ) );
 	}
 
-	public static void BlockOn(this ISemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation, string nameGameObjectToDebug)
+	public static void BlockOn(this IValidatedSemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation, string nameGameObjectToDebug)
 	{
 		Action releaseAction = () => semaphore.Release(source);
 		source.RegisterOnTrue(semaphore.Validator.Validated(() => semaphore.Block(source, true, nameGameObjectToDebug), eventValidation));
@@ -79,25 +83,25 @@ public static class ISemaphoreInterectionExtentions
 		eventValidation.OnVoid.Register(new CallOnce(releaseAction));
 	}
 
-	// public static void BlockOn( this ISemaphoreInterection semaphore, IBoolStateObserver source, Func<bool> eventValidation )
+	// public static void BlockOn( this IValidatedSemaphoreInterection semaphore, IBoolStateObserver source, Func<bool> eventValidation )
 	// {
 	// 	source.RegisterOnTrue( semaphore.Validator.LeakedValidated( () => semaphore.Block( source ), eventValidation ) );
 	// 	source.RegisterOnFalse( semaphore.Validator.LeakedValidated( () => semaphore.Release( source ), eventValidation ) );
 	// }
 
-	public static void ReleaseOn( this ISemaphoreInterection semaphore, IBoolStateObserver source )
+	public static void ReleaseOn( this IValidatedSemaphoreInterection semaphore, IBoolStateObserver source )
 	{
 		source.RegisterOnTrue( semaphore.Validator.Validated( () => semaphore.Release( source ) ) );
 		source.RegisterOnFalse( semaphore.Validator.Validated( () => semaphore.Block( source ) ) );
 	}
 
-	// public static void ReleaseOn( this ISemaphoreInterection semaphore, IBoolStateObserver source, Func<bool> eventValidation )
+	// public static void ReleaseOn( this IValidatedSemaphoreInterection semaphore, IBoolStateObserver source, Func<bool> eventValidation )
 	// {
 	// 	source.RegisterOnTrue( semaphore.Validator.LeakedValidated( () => semaphore.Release( source ), eventValidation ) );
 	// 	source.RegisterOnFalse( semaphore.Validator.LeakedValidated( () => semaphore.Block( source ), eventValidation ) );
 	// }
 
-	public static void ReleaseOn( this ISemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation )
+	public static void ReleaseOn( this IValidatedSemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation )
 	{
 		Action releaseAction = () => semaphore.Release( source );
 		source.RegisterOnTrue( semaphore.Validator.Validated( releaseAction, eventValidation ) );
@@ -105,7 +109,7 @@ public static class ISemaphoreInterectionExtentions
 		eventValidation.OnVoid.Register( semaphore.Validator.Validated( new CallOnce( releaseAction ) ) );
 	}
 
-	public static void BlockOn( this ISemaphoreInterection semaphore, UnityEngine.GameObject go, IBoolStateObserver additionalCondition = null )
+	public static void BlockOn( this IValidatedSemaphoreInterection semaphore, UnityEngine.GameObject go, IBoolStateObserver additionalCondition = null )
 	{
 		var goEvents = go.EventRelay();
 		var name = go.HierarchyNameOrNull();
@@ -119,7 +123,7 @@ public static class ISemaphoreInterectionExtentions
 		goEvents.OnDestroy.Register( validator.Validated( releaseLambda ) );
 	}
 
-	public static void ReleaseOn( this ISemaphoreInterection semaphore, UnityEngine.GameObject go, IBoolStateObserver additionalCondition = null )
+	public static void ReleaseOn( this IValidatedSemaphoreInterection semaphore, UnityEngine.GameObject go, IBoolStateObserver additionalCondition = null )
 	{
 		var goEvents = go.EventRelay();
 		var name = go.HierarchyNameOrNull();
@@ -141,7 +145,11 @@ public static class ISemaphoreInterectionExtentions
 	}
 }
 
-public interface ISemaphore : ISemaphoreInfo, ISemaphoreInterection
+public interface ISimpleSemaphore : ISemaphoreInfo, ISemaphoreInterection
+{
+}
+
+public interface ISemaphore : ISimpleSemaphore, IValidatedSemaphoreInterection
 {
 }
 
@@ -170,17 +178,17 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 	private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
 
 	public IBoolStateObserver Not => _not.Request( this );
-	public IEventRegister OnBlock => Lazy.Request( ref _blockEvent );
-	public IEventRegister OnRelease => Lazy.Request( ref _releaseEvent );
-	public IEventRegister<bool> OnStateChange => Lazy.Request( ref _changeStateEvent );
+	public IEventRegister OnBlock => _blockEvent ??= new();
+	public IEventRegister OnRelease => _releaseEvent ??= new();
+	public IEventRegister<bool> OnStateChange => _changeStateEvent ??= new();
 
 	public bool Value { get { return Free; } }
 	public bool Get() { return Free; }
-	public IEventRegister<bool> OnChange => Lazy.Request( ref _changeStateEvent );
-	public IEventRegister OnTrueState => Lazy.Request( ref _releaseEvent );
-	public IEventRegister OnFalseState => Lazy.Request( ref _blockEvent );
+	public IEventRegister<bool> OnChange => _changeStateEvent ??= new();
+	public IEventRegister OnTrueState => _releaseEvent ??= new();
+	public IEventRegister OnFalseState => _blockEvent ??= new();
 
-	public IEventRegister OnInteraction => Lazy.Request( ref _onInteraction );
+	public IEventRegister OnInteraction => _onInteraction ??= new();
 
 	private OneTimeValidator _validator = new OneTimeValidator();
 	public IEventValidator Validator => _validator;

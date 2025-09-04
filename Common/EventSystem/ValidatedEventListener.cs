@@ -33,6 +33,7 @@ public sealed class ValidatedEventListener : BaseConditionalEventListener, IEven
 
 	private int CalculateHashCode() => ( _evnt != null && _condition != null ) ? ( _evnt.GetHashCode() + _condition.GetHashCode() ) : 0;
 	public override int GetHashCode() => (_hashCode != -1) ? _hashCode : ( _hashCode = CalculateHashCode() );
+	public override string ToString() => $"Validated({_evnt.ToStringOrNull()})";
 }
 
 [UnityEngine.HideInInspector]
@@ -68,6 +69,7 @@ public sealed class ValidatedEventListener<T> : BaseConditionalEventListener, IE
 
 	private int CalculateHashCode() => ( _evnt != null && _condition != null ) ? ( _evnt.GetHashCode() + _condition.GetHashCode() ) : 0;
 	public override int GetHashCode() => (_hashCode != -1) ? _hashCode : ( _hashCode = CalculateHashCode() );
+	public override string ToString() => $"Validated({_evnt.ToStringOrNull()})";
 }
 
 [UnityEngine.HideInInspector]
@@ -104,6 +106,7 @@ public sealed class ValidatedEventListener<T, K> : BaseConditionalEventListener,
 
 	private int CalculateHashCode() => ( _evnt != null && _condition != null ) ? ( _evnt.GetHashCode() + _condition.GetHashCode() ) : 0;
 	public override int GetHashCode() => (_hashCode != -1) ? _hashCode : ( _hashCode = CalculateHashCode() );
+	public override string ToString() => $"Validated({_evnt.ToStringOrNull()})";
 }
 
 [UnityEngine.HideInInspector]
@@ -140,4 +143,5 @@ public sealed class ValidatedEventListener<T,K,J> : BaseConditionalEventListener
 
 	private int CalculateHashCode() => ( _evnt != null && _condition != null ) ? ( _evnt.GetHashCode() + _condition.GetHashCode() ) : 0;
 	public override int GetHashCode() => (_hashCode != -1) ? _hashCode : ( _hashCode = CalculateHashCode() );
+	public override string ToString() => $"Validated({_evnt.ToStringOrNull()})";
 }

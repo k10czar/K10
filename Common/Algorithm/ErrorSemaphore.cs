@@ -3,23 +3,20 @@ using UnityEngine;
 public class ErrorSemaphore : ISemaphore
 {
 	public bool Free => true;
+	public bool Value => Free;
+	public bool Get() => Free;
+
 	private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
 
 	public IEventRegister OnBlock => ErrorEvent.Ref;
-
 	public IEventRegister OnRelease => ErrorEvent.Ref;
-
-	public IEventRegister<bool> OnStateChange => ErrorEvent<bool>.Ref;
-
 	public IEventRegister OnTrueState => ErrorEvent.Ref;
-
 	public IEventRegister OnFalseState => ErrorEvent.Ref;
 
-	public IBoolStateObserver Not => _not.Request( this );
-
-	public bool Value => Free;
-
 	public IEventRegister<bool> OnChange => ErrorEvent<bool>.Ref;
+	public IEventRegister<bool> OnStateChange => ErrorEvent<bool>.Ref;
+
+	public IBoolStateObserver Not => _not.Request( this );
 	
 	public IEventValidator Validator => NullValidator.Instance;
 
@@ -36,9 +33,9 @@ public class ErrorSemaphore : ISemaphore
 		return true;
 	}
 
-	public bool Get() => Free;
+	public void Clear() { Debug.LogError( $"Cleared a ERROR Semaphore" ); }
 
-	private ErrorSemaphore() { }
+    private ErrorSemaphore() { }
 
 	[ConstLike] private static readonly ErrorSemaphore _instance = new ErrorSemaphore();
 	public static ISemaphore Ref => _instance;
