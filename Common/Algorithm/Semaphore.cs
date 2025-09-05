@@ -137,6 +137,28 @@ public static class ISemaphoreInterectionExtentions
 		goEvents.OnDestroy.Register( validator.Validated( new CallOnce( releaseLambda ) ) );
 	}
 
+	public static void UnvalidatedBlockOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> condition )
+	{
+		condition.OnChange.Register(
+			(condState) =>
+			{
+				if (condState) semaphore.BlockButDoNotIncrease(condition);
+				else semaphore.Release(condition);
+			}
+		);
+	}
+
+	public static void UnvalidatedReleaseOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> condition )
+	{
+		condition.OnChange.Register(
+			(condState) =>
+			{
+				if (condState) semaphore.Release(condition);
+				else semaphore.BlockButDoNotIncrease(condition);
+			}
+		);
+	}
+
 	public static BoolState GetBoolObserver(this Semaphore semaphore)
 	{
 		var boolState = new BoolState();
