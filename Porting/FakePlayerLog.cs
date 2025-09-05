@@ -14,11 +14,11 @@ public class FakePlayerLog : IService
     private Semaphore _writeToFileSemaphore = new();
     
     private const int MAX_LOGS_PENDING_WRITING = 200;
-    private const string PLAYER_LOG_FILE_NAME = "Player.log";
-    private const string PREV_PLAYER_LOG_FILE_NAME = "Player-prev.log";
+    public const string PLAYER_LOG_FILE_NAME = "Player.log";
+    public const string PREV_PLAYER_LOG_FILE_NAME = "Player-prev.log";
 
-    private string PlayerLogPath => Path.Join(_basePath, PLAYER_LOG_FILE_NAME);
-    private string PrevPlayerLogPath => Path.Join(_basePath, PREV_PLAYER_LOG_FILE_NAME);
+    private static string PlayerLogPath(string basePath) => Path.Join(basePath, PLAYER_LOG_FILE_NAME);
+    private static string PrevPlayerLogPath(string basePath) => Path.Join(basePath, PREV_PLAYER_LOG_FILE_NAME);
 
     public bool HasPendingLogs => _logsPendingWriting > 0;
     public bool IsWritingToFile => !_writeToFileSemaphore.Free;
@@ -43,14 +43,19 @@ public class FakePlayerLog : IService
         WriteCompleteLogToFile();
     }
 
+    public static void Clean( string basePath )
+    {
+        FileAdapter.Delete( PlayerLogPath(basePath) );
+        FileAdapter.Delete( PrevPlayerLogPath(basePath) );
+    }
 
     private void MoveToPrevPlayerLog()
     {
-        if (!FileAdapter.Exists(PlayerLogPath))
+        if (!FileAdapter.Exists(PlayerLogPath(_basePath)))
             return;
 
-        File.Copy(PlayerLogPath, PrevPlayerLogPath, true);
-        FileAdapter.Delete(PlayerLogPath);
+        File.Copy(PlayerLogPath(_basePath), PrevPlayerLogPath(_basePath), true);
+        FileAdapter.Delete(PlayerLogPath(_basePath));
         // Debug.Log($"FPL: Moved {PlayerLogPath} to {PREV_PLAYER_LOG_FILE_NAME}");
     }
 
@@ -102,7 +107,7 @@ public class FakePlayerLog : IService
         _logsPendingWriting = 0;
 
         // Debug.Log($"FPL: Writing... {Time.unscaledTime}");
-        _currentAwaitTask = File.AppendAllTextAsync(PlayerLogPath, stringToWrite);
+        _currentAwaitTask = File.AppendAllTextAsync(PlayerLogPath(_basePath), stringToWrite);
         await _currentAwaitTask;
         // await Task.Delay(3000);
         // Debug.Log($"FPL: ...written {Time.unscaledTime}");

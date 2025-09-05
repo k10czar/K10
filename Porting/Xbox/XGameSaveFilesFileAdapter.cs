@@ -45,6 +45,10 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 				_isInitilized.SetTrue();
                 Debug.Log($"Successfully initialized XGameSaveFiles folder: {folderResult}");
 
+				#if UNITY_GAMECORE
+				FakePlayerLog.Clean( GetPersistentDataPath() );
+				#endif
+
 				DebugFiles();
             }
         );
