@@ -277,7 +277,21 @@ namespace Skyx.SkyxEditor
             using var backgroundScope = BackgroundColorScope.Set(backgroundColor);
             var result = GUI.Button(rect, label, style);
 
-            if (!string.IsNullOrEmpty(hint)) DrawHintOverlay(ref rect, hint);
+            DrawHintOverlay(ref rect, hint);
+
+            return result;
+        }
+
+        // see: https://github.com/halak/unity-editor-icons
+        public static bool ButtonBuiltInIcon(ref Rect rect, string builtInIconName, EColor color, string hint, bool fromEnd = false)
+        {
+            var buttonRect = ExtractRect(ref rect, SkyxStyles.MiniButtonSize, fromEnd);
+
+            using var backgroundScope = BackgroundColorScope.Set(color);
+            var icon = EditorGUIUtility.IconContent(builtInIconName);
+            var result = GUI.Button(buttonRect, icon, SkyxStyles.ButtonStyle);
+
+            DrawHintOverlay(ref buttonRect, hint);
 
             return result;
         }

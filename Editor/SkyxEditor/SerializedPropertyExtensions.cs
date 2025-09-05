@@ -335,6 +335,21 @@ namespace Skyx.SkyxEditor
 
         private static string RemoveBackingField(string path) => path.Replace(".<", ".").Replace("<", "").Replace(">k__BackingField", "");
 
+        public static bool SimpleIsValid(this SerializedProperty property)
+        {
+            return property != null &&
+                   property.serializedObject != null &&
+                   property.serializedObject.targetObject != null &&
+                   property.propertyType != SerializedPropertyType.Generic;
+        }
+
+        public static bool TargetsSameProperty(this SerializedProperty a, SerializedProperty b)
+        {
+            return a != null && b != null &&
+                   a.serializedObject.targetObject == b.serializedObject.targetObject &&
+                   a.propertyPath == b.propertyPath;
+        }
+
         #endregion
 
         #region Common Setters
