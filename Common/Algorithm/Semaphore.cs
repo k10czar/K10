@@ -183,10 +183,10 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 		public string NameDebug { get; set; }
 	}
 
-	private readonly Dictionary<object, SemaphoreObject> _semaphores = new();
-	public bool Free => _semaphores.Count == 0;
-	public bool IsLocked => _semaphores.Count > 0;
-	public int BlockCount => _semaphores.Count;
+	private Dictionary<object, SemaphoreObject> _semaphores;
+	public bool Free => _semaphores == null || _semaphores.Count == 0;
+	public bool IsLocked => _semaphores != null && _semaphores.Count > 0;
+	public int BlockCount => _semaphores != null ? _semaphores.Count : 0;
 
 	// TODO: LazyOptimization
 	private EventSlot _blockEvent;
@@ -212,11 +212,11 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 
 	public IEventRegister OnInteraction => _onInteraction ??= new();
 
-	private OneTimeValidator _validator = new OneTimeValidator();
-	public IEventValidator Validator => _validator;
+	private OneTimeValidator _validator;
+	public IEventValidator Validator => _validator ??= new OneTimeValidator();
 
-	public void RegisterAndStart( IEventTrigger<bool> evnt ) { Lazy.Request( ref _changeStateEvent ).Register( _validator.Validated( evnt ) ); evnt.Trigger( Free ); }
-	public void RegisterAndStart( System.Action<bool> evnt ) { Lazy.Request( ref _changeStateEvent ).Register( _validator.Validated( evnt ) ); evnt( Free ); }
+	public void RegisterAndStart( IEventTrigger<bool> evnt ) { Lazy.Request( ref _changeStateEvent ).Register( Validator.Validated( evnt ) ); evnt.Trigger( Free ); }
+	public void RegisterAndStart( System.Action<bool> evnt ) { Lazy.Request( ref _changeStateEvent ).Register( Validator.Validated( evnt ) ); evnt( Free ); }
 
 	public void Kill()
 	{
@@ -225,41 +225,39 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 		_releaseEvent?.Kill();
 		_changeStateEvent?.Kill();
 		_validator?.Kill();
-		_semaphores.Clear();
+		_semaphores?.Clear();
 	}
-
-	public IDictionary<object, SemaphoreObject> Semaphores { get { return _semaphores; } }
 
 	public void BlockOn( IBoolStateObserver source )
 	{
 		if( source == null ) return;
-		source.RegisterOnTrue( _validator.Validated( () => Block( source ) ) );
-		source.RegisterOnFalse( _validator.Validated( () => Release( source ) ) );
+		source.RegisterOnTrue( Validator.Validated( () => Block( source ) ) );
+		source.RegisterOnFalse( Validator.Validated( () => Release( source ) ) );
 	}
 
 	// public void BlockOn( IBoolStateObserver source, Func<bool> eventValidation )
 	// {
 	// 	if( source == null ) return;
-	// 	source.RegisterOnTrue( _validator.LeakedValidated( () => Block( source ), eventValidation ) );
-	// 	source.RegisterOnFalse( _validator.LeakedValidated( () => Release( source ), eventValidation ) );
+	// 	source.RegisterOnTrue( Validator.LeakedValidated( () => Block( source ), eventValidation ) );
+	// 	source.RegisterOnFalse( Validator.LeakedValidated( () => Release( source ), eventValidation ) );
 	// }
 
 	public void ReleaseOn( IBoolStateObserver source )
 	{
 		if( source == null ) return;
-		source.RegisterOnTrue( _validator.Validated( () => Release( source ) ) );
-		source.RegisterOnFalse( _validator.Validated( () => Block( source ) ) );
+		source.RegisterOnTrue( Validator.Validated( () => Release( source ) ) );
+		source.RegisterOnFalse( Validator.Validated( () => Block( source ) ) );
 	}
 
 	// public void ReleaseOn( IBoolStateObserver source, Func<bool> eventValidation )
 	// {
-	// 	source.RegisterOnTrue( _validator.LeakedValidated( () => Release( source ), eventValidation ) );
-	// 	source.RegisterOnFalse( _validator.LeakedValidated( () => Block( source ), eventValidation ) );
+	// 	source.RegisterOnTrue( Validator.LeakedValidated( () => Release( source ), eventValidation ) );
+	// 	source.RegisterOnFalse( Validator.LeakedValidated( () => Block( source ), eventValidation ) );
 	// }
 
 	public void Toggle( object obj )
 	{
-		if( _semaphores.ContainsKey( obj ) ) Release( obj );
+		if( _semaphores != null && _semaphores.ContainsKey( obj ) ) Release( obj );
 		else Block( obj );
 	}
 
@@ -277,14 +275,15 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 
 		bool trigger = Free;
 
-		SemaphoreObject s;
-		bool newKey = !_semaphores.TryGetValue( obj, out s );
+		SemaphoreObject s = null;
+		bool newKey = _semaphores == null || !_semaphores.TryGetValue( obj, out s );
 		if( newKey || increaseBlock )
 		{
 			if( newKey )
 			{
 				s = new SemaphoreObject();
 				s.NameDebug = nameDebug;
+				_semaphores ??= new();
 				_semaphores.Add( obj, s );
 			}
 			s.Value++;
@@ -304,7 +303,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 
 	public void Release( object obj )
 	{
-		if( Free || obj == null )
+		if( Free || obj == null || _semaphores == null )
 			return;
 
 		SemaphoreObject s;
@@ -327,7 +326,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 	public virtual void Clear()
 	{
 		var initialState = Free;
-		_semaphores.Clear();
+		_semaphores?.Clear();
 		if( !initialState && Free )
 		{
 			_releaseEvent?.Trigger();
@@ -337,7 +336,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 
 	public void Reset()
 	{
-		_semaphores.Clear();
+		_semaphores?.Clear();
 
 		_blockEvent.Clear();
 		_releaseEvent.Clear();
@@ -355,13 +354,13 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 
 	public int GetBlockCount(object key)
     {
-		if(_semaphores.TryGetValue(key, out SemaphoreObject s))
+		if( _semaphores != null && _semaphores.TryGetValue(key, out SemaphoreObject s))
 			return s.Value;
 
 		return 0;
     }
 
-	public bool HasBlocker(object key) => _semaphores.ContainsKey(key);
+	public bool HasBlocker(object key) => _semaphores != null && _semaphores.ContainsKey(key);
 
 	int _toStringCount;
 	public override string ToString()
@@ -369,8 +368,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 		var freeStr = ( Free ? "Free" : "Blocked" );
 		if( _toStringCount > 0 ) return $"**InfinityLoopCondition_{freeStr}Semaphore({this.GetHashCode()})**";
 		_toStringCount++;
-		var elementsStrings = _semaphores.ToList().ConvertAll( ( obj ) => $"{obj.Value.NameDebug}{KeyName( obj.Key.ToStringOrNull() )}({obj.Value.Value})" );
-		var elements = String.Join( ", \n", elementsStrings );
+		var elements = _semaphores != null ? String.Join( ", \n", _semaphores.ToList().ConvertAll( ( obj ) => $"{obj.Value.NameDebug}{KeyName( obj.Key.ToStringOrNull() )}({obj.Value.Value})" ) ) : "NULL";
 		_toStringCount--;
 		return $"( [{freeStr} Semaphore({this.GetHashCode()}) => {{ {elements} }}] )";
 	}
