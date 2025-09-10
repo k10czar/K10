@@ -36,7 +36,7 @@ public class ConditionalEventsCollection : IVoidableEventValidator
 	Func<bool> _currentValidationCheck;
 	EventSlot _onVoid;
 
-	public IEventRegister OnVoid => _onVoid ?? ( _onVoid = new EventSlot() );
+	public IEventRegister OnVoid => _onVoid ??= new();
 
 	public Func<bool> CurrentValidationCheck
 	{
@@ -67,7 +67,7 @@ public class ConditionalEventsCollection : IVoidableEventValidator
 	{
 		if( _validatorParity < 0 ) return;
 		_currentValidationCheck = null;
-		_validatorParity = ( _validatorParity + 1 ) % int.MaxValue;
+		_validatorParity = ( _validatorParity + 1 ) % ( int.MaxValue - 1 );
 		_onVoid?.Trigger();
 	}
 }
