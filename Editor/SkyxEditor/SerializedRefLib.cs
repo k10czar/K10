@@ -19,7 +19,22 @@ namespace Skyx.SkyxEditor
                 }
 
                 var customDrawer = CustomDrawersCache.Get(property);
-                if (customDrawer != null) customDrawer.OnGUI(rect, property, new GUIContent(label));
+                if (customDrawer != null)
+                {
+                    try
+                    {
+                        customDrawer.OnGUI(rect, property, new GUIContent(label));
+                    }
+                    catch (Exception exception)
+                    {
+                        CustomDrawersCache.ClearCache();
+                        SerializedPropertyExtension.ClearCache();
+                        PropertyCollection.ClearCollections();
+
+                        Debug.LogError($"Failed to draw managed property {property.propertyPath}. Clearing Caches!");
+                        Debug.LogException(exception);
+                    }
+                }
                 else if (boxManagedReferences) DrawManagedReferenceBoxed(ref rect, property, label);
                 else DrawManagedReference(ref rect, property);
             }

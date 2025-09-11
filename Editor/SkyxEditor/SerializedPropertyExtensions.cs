@@ -251,6 +251,9 @@ namespace Skyx.SkyxEditor
             return $"{targetType.FullName}.{normalizedPath}";
         }
 
+        [MenuItem("Disyphus/Editor/Clear Property Type Cache")]
+        public static void ClearCache() => propertyTypeCache.Clear();
+
         #endregion
 
         #region Utils

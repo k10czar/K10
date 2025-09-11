@@ -98,9 +98,6 @@ namespace Skyx.SkyxEditor
         }
 
         [MenuItem("Disyphus/Editor/Clear CustomDrawersCache")]
-        private static void ClearSerializedRefDrawers()
-        {
-            cache.Clear();
-        }
+        public static void ClearCache() => cache.Clear();
     }
 }

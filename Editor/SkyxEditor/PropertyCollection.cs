@@ -153,7 +153,7 @@ namespace Skyx.SkyxEditor
         }
 
         [MenuItem("Disyphus/Editor/Clear PropertyCollections")]
-        private static void ClearPropertyCollections()
+        public static void ClearCollections()
         {
             collections.Clear();
             scheduledResets.Clear();

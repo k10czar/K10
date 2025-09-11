@@ -1,5 +1,4 @@
-﻿using System;
-using Unity.Profiling;
+﻿using Unity.Profiling;
 using UnityEditor;
 using UnityEngine;
 
