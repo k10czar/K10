@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using K10;
 
 public class ActionSet
 {
-    private readonly List<IVoidable> registeredActions = new();
+    private readonly List<IVoidable> registeredActions = ObjectPool<List<IVoidable>>.Request();
 
     #region Register Interface
 
@@ -42,4 +43,6 @@ public class ActionSet
         foreach (var capsule in entries)
             capsule.Void();
     }
+
+    ~ActionSet() => ObjectPool<List<IVoidable>>.Return(registeredActions);
 }
