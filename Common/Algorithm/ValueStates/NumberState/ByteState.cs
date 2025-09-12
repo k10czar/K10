@@ -25,12 +25,12 @@ public class ByteState : INumericValueState<byte>, ICustomDisposableKill
 	public void Kill()
 	{
 		_onChange?.Kill();
-		_onChange = null;
+		// _onChange = null;
 	}
 
-	public IEventRegister<byte> OnChange => Lazy.Request( ref _onChange );
+	public IEventRegister<byte> OnChange => _onChange ??= new();
 
-	public ByteState( byte initialValue = default( byte ) ) { _value = initialValue; }
+	public ByteState( byte initialValue = default ) { _value = initialValue; }
 
 	public override string ToString() { return $"ByS({_value})"; }
 }

@@ -26,12 +26,12 @@ public class LongState : INumericValueState<long>, ICustomDisposableKill
 	public void Kill()
 	{
 		_onChange?.Kill();
-		_onChange = null;
+		// _onChange = null;
 	}
 
-    public IEventRegister<long> OnChange => Lazy.Request( ref _onChange );
+    public IEventRegister<long> OnChange => _onChange ??= new();
 
-    public LongState( long initialValue = default( long) ) { _value = initialValue; }
+    public LongState( long initialValue = default ) { _value = initialValue; }
 
 	public override string ToString() { return $"LS({_value})"; }
 }

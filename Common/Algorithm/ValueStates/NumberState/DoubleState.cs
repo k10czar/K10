@@ -29,12 +29,12 @@ public class DoubleState : INumericValueState<double>, ICustomDisposableKill
 	public void Kill()
 	{
 		_onChange?.Kill();
-		_onChange = null;
+		// _onChange = null;
 	}
 
-	public IEventRegister<double> OnChange => Lazy.Request( ref _onChange );
+	public IEventRegister<double> OnChange => _onChange ??= new();
 
-	public DoubleState( double initialValue = default( double ) ) { _value = initialValue; }
+	public DoubleState( double initialValue = default ) { _value = initialValue; }
 
 
 	public override string ToString() { return $"DS({_value})"; }

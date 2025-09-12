@@ -25,12 +25,12 @@ public class UIntState : INumericValueState<uint>, ICustomDisposableKill
 	public void Kill()
 	{
 		_onChange?.Kill();
-		_onChange = null;
+		// _onChange = null;
 	}
 
-	public IEventRegister<uint> OnChange => Lazy.Request( ref _onChange );
+	public IEventRegister<uint> OnChange => _onChange ??= new();
 
-	public UIntState( uint initialValue = default( uint ) ) { _value = initialValue; }
+	public UIntState( uint initialValue = default ) { _value = initialValue; }
 
 
 	public override string ToString() { return $"US({_value})"; }

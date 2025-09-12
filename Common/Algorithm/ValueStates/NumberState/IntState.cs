@@ -6,7 +6,7 @@ public class IntState : INumericValueState<int>, ICustomDisposableKill
     [SerializeField] int _value;
     [System.NonSerialized] EventSlot<int> _onChange;
 
-	public IEventRegister<int> OnChange => Lazy.Request( ref _onChange );
+	public IEventRegister<int> OnChange => _onChange ??= new();
     public int Value { get { return _value; } set { Setter( value ); } }
 
     public int Get() { return _value; }
@@ -30,10 +30,10 @@ public class IntState : INumericValueState<int>, ICustomDisposableKill
 	public void Kill()
 	{
 		_onChange?.Kill();
-		_onChange = null;
+		// _onChange = null;
 	}
 
-    public IntState( int initialValue = default( int ) ) { _value = initialValue; }
+    public IntState( int initialValue = default ) { _value = initialValue; }
 
 
 	public override string ToString() { return $"IS({_value})"; }
