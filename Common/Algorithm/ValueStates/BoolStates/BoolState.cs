@@ -51,10 +51,10 @@ public class BoolState : IBoolState, ICustomDisposableKill
 		_onTrue = null;
 		_onFalse = null;
 	}
-	
-	public IEventRegister<bool> OnChange => Lazy.Request( ref _onChange, _killed );
-	public IEventRegister OnTrueState => Lazy.Request( ref _onTrue, _killed );
-	public IEventRegister OnFalseState => Lazy.Request( ref _onFalse, _killed );
+
+	public IEventRegister<bool> OnChange => _killed ? _onChange : _onChange ??= new();// Lazy.Request( ref _onChange, _killed );
+	public IEventRegister OnTrueState => _killed ? _onTrue : _onTrue ??= new();//Lazy.Request( ref _onTrue, _killed );
+	public IEventRegister OnFalseState => _killed ? _onFalse : _onFalse ??= new();//Lazy.Request( ref _onFalse, _killed );
 
 	public BoolState() : this( false ) { }
 	public BoolState( bool initialValue ) { _value = initialValue; }
