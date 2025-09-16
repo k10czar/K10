@@ -31,9 +31,11 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 	void Start()
 	{
 		if (_services == null) return;
+		this.Log( $"{this.HierarchyNameOrNullColored(Colors.Console.Fields)} starting services" );
 		for( int i = 0; i < _services.Length; i++ )
 		{
 			var service = _services[i];
+			this.Log( $"Starting service <{service.TypeNameOrNullColored(Colors.Console.TypeName)}>: {service.ToStringOrNull()}" );
 			if ( service is IStartable startable )
 			{
 				if( service is IActivatable act && !act.IsActive.Value ) continue;
@@ -56,14 +58,25 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 		for( int i = 0; i < _services.Length; i++ )
 		{
 			var service = _services[i];
-			// if( service is IActivatable act )
-			// {
-			// 	if( !act.IsActive.Value ) continue;
-			// 	if( service is IStartableService startable && !startable.IsReady ) startable.Start();
-			// }
+			if( service is IActivatable act && !act.IsActive.Value ) continue;
 			if (service is IUpdatable updatable )
 			{
 				updatable.Update( deltaTime );
+			}
+		}
+	}
+
+	void LateUpdate()
+	{
+		if (_services == null) return;
+		var deltaTime = Time.unscaledDeltaTime;
+		for( int i = 0; i < _services.Length; i++ )
+		{
+			var service = _services[i];
+			if( service is IActivatable act && !act.IsActive.Value ) continue;
+			if (service is ILateUpdatable updatable )
+			{
+				updatable.LateUpdate( deltaTime );
 			}
 		}
 	}
@@ -98,6 +111,7 @@ public class ServicesProvider : KomposedDebugableMonoBehavior, IDrawGizmosOnSele
 			if (service == null) continue;
 			ServiceLocator.Unregister(service);
 			if (service is ICustomDisposableKill killable) killable.Kill();
+			if (service is IDisposable disposable) disposable.Dispose();
 			_services[i] = null;
 		}
 		_services = null;

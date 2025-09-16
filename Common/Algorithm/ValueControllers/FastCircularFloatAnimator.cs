@@ -7,6 +7,8 @@ public struct FastCircularFloatAnimator
     float _realRangeDelta;
     public float _currentValue;
 
+    public float DesiredValue => _animator._desiredValue;
+
     public FastCircularFloatAnimator( float initialValue, float accel, float deaccel, float maximumSpeed, float min, float max )
     {
         _currentValue = initialValue;

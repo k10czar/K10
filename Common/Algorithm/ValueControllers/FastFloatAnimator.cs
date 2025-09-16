@@ -25,7 +25,52 @@ public struct FastFloatAnimator
         _max = max;
     }
 
-	public bool IsOnDesired() { return Mathf.Approximately( _currentValue, _desiredValue ); }
+	public void Rebuild(float initialValue, float accel, float deaccel, float maximumSpeed, float min = float.MinValue, float max = float.MaxValue)
+	{
+        _acceleration = accel;
+        _deacceleration = deaccel;
+        _maximumSpeed = maximumSpeed;
+        _desiredValue = _currentValue = initialValue;
+		_currentSpeed = 0;
+	    _min = min;
+        _max = max;
+	}
+
+	public void Rebuild01(float initialValue, float accel, float deaccel, float maximumSpeed)
+	{
+		Rebuild( initialValue, accel, deaccel, maximumSpeed, 0, 1 );
+	}
+
+	public static FastFloatAnimator In( float seconds, float deaccelFactor = 1 )
+	{
+		// .5 = accel * dta² / 2
+		// .5 = accel * deaccelFactor * dtd² / 2
+
+		// dt = dta + dtd
+
+		// accel * dta² = accel * deaccelFactor * dtd²
+		// dta² = deaccelFactor * dtd²
+		// dta² / dtd² = deaccelFactor
+		// dta / dtd = sqrt( deaccelFactor )
+		// ( dt - dtd ) / dtd = sqrt( deaccelFactor )
+		// dt / dtd - 1 = sqrt( deaccelFactor )
+		// dt / dtd = sqrt( deaccelFactor ) + 1
+		// dtd = dt / ( sqrt( deaccelFactor ) + 1 )
+
+		// dta = dt - dtd
+
+		var dtd = seconds / ( MathAdapter.sqrt( deaccelFactor ) + 1 );
+		var dta = seconds - dtd;
+
+		// accel = 1 / dta²
+        var accel = 1 / ( dta * dta );
+        var deaccel = 1 / ( dtd * dtd );
+        var maxSpeed = float.MaxValue;
+
+		return new FastFloatAnimator( 0, accel, deaccel, maxSpeed, 0, 1 );
+	}
+
+	public bool IsOnDesired() { return MathAdapter.Approximately( _currentValue, _desiredValue ); }
 
 	public void Reset( float value )
 	{
@@ -64,7 +109,7 @@ public struct FastFloatAnimator
 		if( diff < float.Epsilon ) diffSign = -1f;
 
         var acceleratedSpeed = _currentSpeed + diffSign * _acceleration * deltaTime;
-        var deacceleratedSpeed = Mathf.Sqrt( 2 * _deacceleration * diff * diffSign );
+        var deacceleratedSpeed = MathAdapter.sqrt( 2 * _deacceleration * diff * diffSign );
 
 		var speedDirectionSign = 1f;
 		if( acceleratedSpeed < float.Epsilon ) speedDirectionSign = -1f;

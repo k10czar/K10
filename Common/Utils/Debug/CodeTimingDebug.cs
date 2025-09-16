@@ -23,6 +23,7 @@ public static class CodeTimingDebug
 			Calls += functionTime.Calls;
 		}
 	}
+
 	class FrameData
 	{
 		public int FrameNumber { get; }
@@ -54,15 +55,22 @@ public static class CodeTimingDebug
 	static int firstSampleFrame = 0;
 
 	static bool enabled = false;
+	static bool deep = false;
 
-	public static void Enable() 
+	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
+    public static void ToogleDeep() => deep = !deep;
+
+	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
+    public static void Enable() 
 	{ 
-		#if UNITY_EDITOR || CHEATS_ENABLED
+		// #if UNITY_EDITOR || CHEATS_ENABLED
 		enabled = true; 
-		#else
-		enabled = false;
-		#endif
+		// #else
+		// enabled = false;
+		// #endif
 	}
+	
+	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
 	public static void Disable() 
 	{ 
 		if( !enabled ) return;
@@ -77,25 +85,42 @@ public static class CodeTimingDebug
 
 
 	private static Stopwatch _logStopwatch = new Stopwatch();
+	
+	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
+	public static void LogDeepStart( string tag )
+	{
+		if( !enabled ) return;
+		if( !deep ) return;
+		LogStart( tag );
+	}
 
+
+	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
 	public static void LogStart( string tag )
 	{
 		if( !enabled ) return;
 		LogEnd( tag );
 
-		var sw = new Stopwatch();
+		var sw = StopwatchPool.RequestStarted();
 		_watches[tag] = sw;
-		sw.Start();
+	}
+	
+	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
+	public static void LogDeepEnd( string tag )
+	{
+		if( !enabled ) return;
+		if( !deep ) return;
+		LogEnd( tag );
 	}
 
-	public static double LogEnd( string tag )
+	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
+	public static void LogEnd( string tag )
 	{
-		if( !enabled ) return 0;
+		if( !enabled ) return;
 
-		if( !_watches.TryGetValue( tag, out var osw ) ) return 0;
+		if( !_watches.TryGetValue( tag, out var osw ) ) return;
 		if( osw.IsRunning ) osw.Stop();
 		_watches.Remove( tag );
-		
 
 		int currentFrame = Time.frameCount;
 		if (_framesData.Count == 0 || _framesData[_framesData.Count - 1].FrameNumber != currentFrame)
@@ -107,12 +132,12 @@ public static class CodeTimingDebug
 
 		var frameData = _framesData[_framesData.Count - 1];
 
-		var elapsed = osw.Elapsed.TotalMilliseconds;
-		frameData.AddTimingData(tag, elapsed);
+		frameData.AddTimingData(tag, osw.ReturnToPoolAndGetElapsedMs() );
 
-		return elapsed;
+		// return elapsed;
 	}
 
+	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
 	public static void ClearUnusedData()
 	{
 		_watches.Clear();
@@ -215,13 +240,13 @@ public static class CodeTimingDebug
 
 					SB.Append( " " );
 					SB.Append( percentageString );
-					SB.Append( "%" );
+					SB.Append( "% " );
 				}
 			}
 			else
 			{
 				// SB.Append("Frame: [0] 0.000ms 0.0%");
-				SB.Append("Frame: ----------------");
+				SB.Append("Frame: ------------------------");
 			}
 
 			SB.Append( "\t" );
@@ -229,13 +254,31 @@ public static class CodeTimingDebug
 			SB.Append( "Avg: [");
 			SB.Append( Mathf.Round((float)kvp.Value.Calls / nFramesInSample) );
 			SB.Append( "] " );
+			
+			SB.Append( "Avg: [");
+			SB.Append( Mathf.Round((float)kvp.Value.Calls / nFramesInSample) );
+			SB.Append( "] " );
 
 			SB.Append( averageMs.ToString( msFormat ) );
 			SB.Append( "ms " );
 
+			var avg = averageMs;
+
 			averageMs = kvp.Value.AccumulatedTimings;
 			SB.Append( ( averageMs * 100 / totalSampleMs ).ToString( percentageFormat ) );
-			SB.Append( "%" );
+			SB.Append( "% " );
+			
+			if( avg > MathAdapter.EP2 ) 
+			{
+				var pFps = Mathf.RoundToInt( (float)( 1000f / avg ) );
+				if( pFps < 100000 ) SB.Append( "  " );
+				if( pFps < 10000 ) SB.Append( "  " );
+				if( pFps < 1000 ) SB.Append( "  " );
+				if( pFps < 100 ) SB.Append( "  " );
+				SB.Append( (1000f / avg).ToString( "N0" ) );
+			}
+			else SB.Append( "      ∞" );
+			SB.Append( "pfps " );
 
 			SB.Append( "\t" );
 			SB.Append( tag );

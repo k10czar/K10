@@ -208,9 +208,9 @@ public static class SerializedPropertyExtensions
 	}
 
 	public static bool ChangeActiveButton( bool isActive, float size = 18f )
-		=> IconButton.Layout( isActive ? "on" : "off",
+		=> IconButton.Layout( isActive ? "greenLight" : "lightOff",
 								size,
-								isActive ? 'O' : '-',
+								isActive ? 'A' : '-',
 								isActive ? "Active" : "Inactive",
 								isActive ? Color.green : Color.red );
 
@@ -312,7 +312,7 @@ public static class SerializedPropertyExtensions
 		 return false;
 	}
 
-	public static bool ChangeActiveButton( Rect rect, bool isActive ) => IconButton.Draw( rect, isActive ? "on" : "off", isActive ? 'O' : '-' );
+	public static bool ChangeActiveButton( Rect rect, bool isActive ) => IconButton.Draw( rect, isActive ? "greenLight" : "lightOff", isActive ? 'A' : '-' );
 
 	public static void DrawSerializedReference( this SerializedProperty prop, Rect rect, bool includeChildren = true, bool showName = false, float spacing = 0 )
     {
@@ -493,11 +493,15 @@ public static class SerializedPropertyExtensions
 
 	public static string GetKey( this SerializedProperty property ) => $"({property.serializedObject.targetObject.NameOrNull()}).{property.propertyPath}";
 
+
+	const string DEBUG_ON = UnityIcons.DebugEnabled;
+	const string DEBUG_OFF = UnityIcons.DebugDisabled;
+
 	public static void DebugWatcherField<T>( this SerializedProperty property, Rect debugRect )
 	{
 		var key = property.GetKey();
 		var debug = _events.TryGetValue( key, out var evnt );
-		var newDebug = IconButton.Toggle.Draw( debugRect, debug, "DebugOn", "DebugOff" );
+		var newDebug = IconButton.Toggle.Draw( debugRect, debug, DEBUG_ON, DEBUG_OFF );
 		if( newDebug != debug )
 		{
 			if( newDebug )
@@ -520,7 +524,7 @@ public static class SerializedPropertyExtensions
 	public static void DebugWatcherField<T>( string key, object obj, System.Type objType, Rect rect )
 	{
 		var debug = _events.TryGetValue( key, out var evnt );
-		var newDebug = IconButton.Toggle.Draw( rect, debug, "DebugOn", "DebugOff" );
+		var newDebug = IconButton.Toggle.Draw( rect, debug, DEBUG_ON, DEBUG_OFF );
 		if( newDebug != debug )
 		{
 			if( newDebug )

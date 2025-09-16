@@ -76,8 +76,18 @@ public static class ColorExtensions
 		return Color.HSVToRGB(result, s, v);
 	}
 
-	public static Color WithAlpha( this Color color, float amount )
-	{
+    public static Color WithAlpha1(this Color color)
+    {
+        return color.WithAlpha(1);
+    }
+
+    public static Color WithAlpha0(this Color color)
+    {
+        return color.WithAlpha(0);
+    }
+
+	public static Color WithAlpha( this Color color, float amount ) 
+	{ 
 		color.a = amount;
 		return color;
 	}

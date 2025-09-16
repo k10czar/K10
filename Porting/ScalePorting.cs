@@ -38,7 +38,8 @@ public class ScalePorting : MonoBehaviour
 			return _forceMobileSize ? _forcedMobileSize : SIZE;
 			#else
 //			if( _forcePcSize ) return _forcedPcSize;
-			return _forceMobileSize ? _forcedMobileSize : SIZE;
+			// return _forceMobileSize ? _forcedMobileSize : SIZE;
+			return SIZE;
 			#endif
 		}
 	}

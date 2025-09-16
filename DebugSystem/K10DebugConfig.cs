@@ -49,7 +49,7 @@ namespace K10.DebugSystem
             Save();
         }
 
-        public void SetDebug(Type categoryType, EDebugType debugType, bool value)
+        public void SetDebug(Type categoryType, EDebugType debugType, bool value, bool save = true)
         {
             var list = GetCorrespondingList(debugType);
             var target = categoryType.Name;
@@ -61,7 +61,7 @@ namespace K10.DebugSystem
             }
             else list.Remove(target);
 
-            Save();
+            if( save ) Save();
         }
 
         public void ToggleValidOwner(string target)
@@ -91,38 +91,24 @@ namespace K10.DebugSystem
             Save();
         }
 
-        public async void Save()
+        public void Save()
         {
+#if !UNITY_GAMECORE && !MICROSOFT_GDK_SUPPORT
             var path = GetPath();
-
-            for (int i = 0; i < 5; i++)
-            {
-                try
-                {
-                    await File.WriteAllTextAsync(path, JsonUtility.ToJson(this, true));
-                    return;
-                }
-                catch (Exception e)
-                {
-                    if (i < 4) await Task.Delay(500);
-                    else Debug.LogError($"Failed to save! {e}");
-                }
-            }
+            FileAdapter.SaveAsUTF8(path, JsonUtility.ToJson(this, true));
+#endif
         }
 
-        private static string GetPath() => Path.Combine(Application.persistentDataPath, SaveKey);
+        private static string GetPath() => Path.Combine(FileAdapter.persistentDataPath, SaveKey);
 
         public static K10DebugConfig Load()
         {
             var path = GetPath();
 
-            if (File.Exists(path))
+            if (FileAdapter.Exists(path))
             {
-                var file = File.OpenText(path);
-                var data = JsonUtility.FromJson<K10DebugConfig>(file.ReadToEnd());
-                file.Close();
-
-                return data;
+                var file = FileAdapter.ReadAsUTF8(path);
+                return JsonUtility.FromJson<K10DebugConfig>(file);
             }
 
             var config = new K10DebugConfig();

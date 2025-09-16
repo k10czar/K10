@@ -20,5 +20,7 @@ namespace Automation.Unity
 		public string GetMessage() => _processor?.Execute( _message ) ?? _message;
 
 		public override string ToString() => $"🧻 {"DebugLogOperation".Colorfy( Colors.Console.Verbs )}( {_logType} ): \"{GetMessage()}\"";
+
+		public Object[] LogOwners { get; } = { null };
 	}
 }

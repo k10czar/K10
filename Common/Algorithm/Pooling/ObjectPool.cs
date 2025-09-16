@@ -1,8 +1,40 @@
 using System.Collections.Generic;
-using System.Text;
+using System.Runtime.CompilerServices;
 
 namespace K10
 {
+	public static class ObjectPool
+	{
+		[MethodImpl(Optimizations.INLINE_IF_CAN)]
+		public static void Return<T>(T obj) where T : new() => ObjectPool<T>.Return(obj);
+
+		[MethodImpl(Optimizations.INLINE_IF_CAN)]
+		public static void ReturnAndClearRef<T>(ref T obj) where T : new()
+		{
+			ObjectPool<T>.Return(obj);
+			obj = default;
+		}
+
+		[MethodImpl(Optimizations.INLINE_IF_CAN)]
+		public static void Request<T>(out T obj) where T : new()
+		{
+			obj = ObjectPool<T>.Request();
+		}
+
+		[MethodImpl(Optimizations.INLINE_IF_CAN)]
+		public static void RequestList<T>(out List<T> obj)
+		{
+			obj = ObjectPool<List<T>>.Request();
+		}
+
+		[MethodImpl(Optimizations.INLINE_IF_CAN)]
+		public static void RequestListWith<T>(out List<T> obj, IEnumerable<T> elements)
+		{
+			RequestList(out obj);
+			obj.AddRange(elements);
+		}
+	}
+
 	public static class ObjectPool<T> where T : new()
 	{
 		private static readonly Dictionary<System.Threading.Thread,List<T>> _pools = new();
@@ -26,7 +58,7 @@ namespace K10
 		{
 			if( t == null ) return;
 			if( t is System.Collections.IList list ) list.Clear();
-			if( t is StringBuilder sb ) sb.Clear();
+			if( t is System.Text.StringBuilder sb ) sb.Clear();
 			var thread = System.Threading.Thread.CurrentThread;
 			if( !_pools.TryGetValue( thread, out var pool ) )
 			{

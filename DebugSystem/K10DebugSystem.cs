@@ -59,7 +59,7 @@ namespace K10.DebugSystem
         }
 
         public static void ToggleCategory(Type categoryType, EDebugType debugType) => config.ToggleDebug(categoryType, debugType);
-        public static void SetCategory(Type categoryType, EDebugType debugType, bool value) => config.SetDebug(categoryType, debugType, value);
+        public static void SetCategory(Type categoryType, EDebugType debugType, bool value, bool save = true) => config.SetDebug(categoryType, debugType, value, save);
 
         #endregion
 

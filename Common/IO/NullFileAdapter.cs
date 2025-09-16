@@ -21,4 +21,5 @@ public class NullFileAdapter : IFileAdapter
 	public void Delete( string path ) { LogWarningOnce(); }
 	public void DeleteDir( string path, bool recursive ) { LogWarningOnce(); }
 	public void SavePlayerPrefs() { LogWarningOnce(); }
+	public void Copy( string source, string destination ) { LogWarningOnce(); }
 }

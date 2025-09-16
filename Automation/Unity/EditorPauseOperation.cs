@@ -17,5 +17,7 @@ namespace Automation.Unity
 		}
 
 		public override string ToString() => $"✋ {"EditorPauseOperation".Colorfy( Colors.Console.Verbs )}";
+
+		public Object[] LogOwners { get; } = { null };
 	}
 }

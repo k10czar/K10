@@ -1,6 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
+public interface IEventBinderReference : IEventRegister
+{
+	
+}
+
 public interface IEvent : IEventRegister, IEventTrigger { }
 public interface IEvent<T> : IEventRegister<T>, IEventRegister, IEventTrigger<T> { }
 public interface IEvent<T, K> : IEventRegister<T, K>, IEventRegister<T>, IEventRegister, IEventTrigger<T, K> { }

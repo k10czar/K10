@@ -11,10 +11,13 @@ public interface IUnityEventsRelay
 
 public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 {
+    private static GameObjectEventsRelay _sceneRelay;
+
 	bool _destroyed = false;
 	private EventSlot<GameObject> _onDestroy;
 
 	private EventSlot<GameObject> _onDisable;
+	private EventSlot _onUpdate;
 
 	// private EventSlot _onLateDestroy;
 	private BoolState _isActive;
@@ -52,7 +55,20 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 
 	public IEventValidator LifetimeValidator => _lifetimeValidator ?? NewLifetimeValidator();
 
-	IEventValidator NewLifetimeValidator()
+    public static GameObjectEventsRelay SceneObject
+	{
+		get
+		{
+			if (_sceneRelay == null)
+			{
+				GameObject obj = new GameObject($"SceneObjectEventRelay");
+				_sceneRelay = obj.AddComponent<GameObjectEventsRelay>();
+			}
+			return _sceneRelay;
+		}
+	}
+
+    IEventValidator NewLifetimeValidator()
 	{
 		if (_destroyed) return NullValidator.Instance;
 		// Debug.Log( $"GameObjectEventsRelay.NewLifetime( {DebugName} ) => {GetStateDebug()}" );

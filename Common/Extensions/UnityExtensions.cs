@@ -99,6 +99,7 @@ public static class K10UnityExtensions
 	[MethodImpl( AggrInline )] public static Rect RequestHeight( this Rect r, float height ) { return new Rect( r.x, r.y + ( r.height - height ) / 2, r.width, height ); }
 	[MethodImpl( AggrInline )] public static Rect RequestWidth( this Rect r, float width ) { return new Rect( r.x + ( r.width - width ) / 2, r.y, width, r.height ); }
 	[MethodImpl( AggrInline )] public static Rect Move( this Rect r, Vector2 offset ) { return new Rect( r.x + offset.x, r.y + offset.y, r.width, r.height ); }
+	[MethodImpl( AggrInline )] public static Rect Move( this Rect r, float x, float y ) { return new Rect( r.x + x, r.y + y, r.width, r.height ); }
 	[MethodImpl( AggrInline )] public static Rect MoveUp( this Rect r, float distance ) { return new Rect( r.x, r.y - distance, r.width, r.height ); }
 	[MethodImpl( AggrInline )] public static Rect MoveDown( this Rect r, float distance ) { return new Rect( r.x, r.y + distance, r.width, r.height ); }
 	[MethodImpl( AggrInline )] public static Rect MoveLeft( this Rect r, float distance ) { return new Rect( r.x - distance, r.y, r.width, r.height ); }
@@ -135,6 +136,20 @@ public static class K10UnityExtensions
 		var column = rect.RequestRight( width );
 		rect = rect.CutRight( width + spacing );
 		return column;
+	}
+	
+	[MethodImpl(AggrInline)] public static Vector2 Clamp( this Rect thisRect , Vector2 pos )
+	{
+		pos.x = MathAdapter.clamp(pos.x, thisRect.xMin, thisRect.xMax);
+		pos.y = MathAdapter.clamp(pos.y, thisRect.yMin, thisRect.yMax);
+		return pos;
+	}
+	
+	[MethodImpl(AggrInline)] public static Vector2 SoftClamp( this Rect rect, Vector2 pos, float softMargin = .2f, float virtualMargin = 2f )
+	{
+		pos.x = MathAdapter.SoftClamp( pos.x, rect.xMin, rect.xMax, softMargin, virtualMargin );
+		pos.y = MathAdapter.SoftClamp( pos.y, rect.yMin, rect.yMax, softMargin, virtualMargin );
+		return pos;
 	}
 
 	[MethodImpl( AggrInline )] public static Rect ExpandTop( this Rect r, float height ) { return new Rect( r.x, r.y - height, r.width, r.height + height ); }
@@ -492,6 +507,8 @@ public static class K10UnityExtensions
 		box.center = center;
 	}
 	#endregion Colliders
+
+	[MethodImpl( AggrInline )] public static string NameAndType( this Object obj, string nullString = ConstsK10.NULL_STRING ) => ( obj != null ) ? $"{obj.name}<{obj.TypeNameOrNull()}>" : nullString;
 
 	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, string nullString = ConstsK10.NULL_STRING ) => ( obj != null ) ? $"{obj.name.Colorfy(Colors.Console.Names)}<{obj.TypeNameOrNullColored(Colors.Console.TypeName)}>" : nullString.Colorfy(Colors.Console.Negation);
 	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, Color nameColor, string nullString = ConstsK10.NULL_STRING ) => ( obj != null ) ? $"{obj.name.Colorfy(nameColor)}<{obj.TypeNameOrNullColored(Colors.Console.TypeName)}>" : nullString.Colorfy(Colors.Console.Negation);

@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using K10;
+using UnityEngine;
+
 
 public class GuaranteedSO<T> where T : ScriptableObject, new()
 {
@@ -15,11 +17,21 @@ public class GuaranteedSO<T> where T : ScriptableObject, new()
 
 	public GuaranteedSO( string path ) { _path = path; }
 
-	static T RequestSO( ref T field, string collectionName )
+	static T RequestSO( ref T field, string soName )
 	{
-		if( field == null ) field = Resources.Load<T>( collectionName );
+		if( field == null ) 
+		{
+			var metricsCode = $"Resources.Load( <color=cyan>{soName}</color> )";
+#if CODE_METRICS
+            CodeMetrics.Start( metricsCode );
+#endif
+			field = Resources.Load<T>( soName );
+#if CODE_METRICS
+            CodeMetrics.Finish( metricsCode );
+#endif
+		}
 #if UNITY_EDITOR
-		if( field == null && !Application.isPlaying ) field = RequestResource( collectionName );
+		if( field == null && !Application.isPlaying ) field = RequestResource( soName );
 #endif
 		if( field == null ) field = new T();
 		return field;

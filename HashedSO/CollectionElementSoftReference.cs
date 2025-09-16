@@ -201,6 +201,8 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 
 	public int HashID => _id;
 
+	public string Name => GetReference().name;
+
 #if UNITY_EDITOR
     public bool HasReference => _id >= 0 && !string.IsNullOrEmpty( _editorAssetRefGuid );
 #else
@@ -280,7 +282,7 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 #if UNITY_EDITOR
 
 #endif //UNITY_EDITOR
-		if( _id >= 0 && _assetRuntimeReference == null ) 
+		if( _id >= 0 && _assetRuntimeReference == null || (_assetRuntimeReference != null &&_assetRuntimeReference.HashID != _id )) 
 		{
 			var collection = GetCollection();
             if( collection == null ) return null;

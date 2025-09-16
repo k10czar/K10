@@ -1,4 +1,4 @@
-public class UnityIcons
+public static class UnityIcons
 {
 	public const string ScriptableObjectIcon = "ScriptableObject Icon";
 	public const string _Popup = "_Popup";
@@ -111,7 +111,14 @@ public class UnityIcons
 	public const string lightMeter_redLight = "lightMeter/redLight";
 	public const string lightMeter_orangeLight = "lightMeter/orangeLight";
 	public const string lightMeter_lightRim = "lightMeter/lightRim";
+	public const string lightMeter_lightOff = "lightMeter/lightOff";
 	public const string lightMeter_greenLight = "lightMeter/greenLight";
+	public const string LampIconColored = "Light Icon";
+	public const string LampIconGrey = "SceneViewLighting@2x";
+	public const string LampIconWhite = "d_Lighting@2x";
+	public const string DebugAttached = "DebuggerAttached@2x";
+	public const string DebugDisabled = "DebuggerDisabled@2x";
+	public const string DebugEnabled = "DebuggerEnabled@2x";
 	public const string Animation_AddEvent = "Animation.AddEvent";
 	public const string SceneviewAudio = "SceneviewAudio";
 	public const string SceneviewLighting = "SceneviewLighting";

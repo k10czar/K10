@@ -20,6 +20,14 @@ public class OnlyOnPlaymodeObject : MonoBehaviour
 
 #endif
 
+public abstract class Singleton
+{
+	public static void SayHello<T>( T candidate ) where T : UnityEngine.Component
+	{
+		Singleton<T>.SayHello( candidate );
+	}
+}
+
 
 public abstract class Singleton<T> where T : UnityEngine.Component
 {
@@ -34,7 +42,9 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 				var stopwatch = new System.Diagnostics.Stopwatch();
 				stopwatch.Start();
 				var candidate = Object.FindFirstObjectByType<T>();
+#if UNITY_EDITOR || DEBUG			
 				Debug.Log( $"{"Shame".Colorfy( Negation )} {"Singleton".Colorfy(TypeName)}<{typeof(T).Name.Colorfy(Keyword)}>.Instance Didn't have a cached object of type! So called {"FindObjectOfType()".Colorfy(Danger)} took:{$"{stopwatch.Elapsed.TotalMilliseconds:N2}ms".Colorfy(Numbers)} {((candidate!=null)?$"{"Found".Colorfy(Verbs)} @ {candidate.HierarchyNameOrNull()}":"Fail".Colorfy(Negation))} on {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.Colorfy(Names)}" );
+#endif
 				stopwatch.Stop();
 				_instance.RegisterNewReference( candidate );
 				if( candidate == null )

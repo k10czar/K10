@@ -77,7 +77,8 @@ public class UpdaterOnDemand : IUpdaterOnDemand
 		{
 			_updating.Add( updateRequester );
 			while( _behaviour != null && updateRequester.Update( Time.deltaTime ) ) { yield return null; }
-			_updating.Remove( updateRequester );
+			if (_updating != null)
+				_updating.Remove( updateRequester );
 		}
 	}
 }

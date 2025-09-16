@@ -11,7 +11,7 @@ public class AutomationLogCategory : IDebugCategory
 
 namespace Automation
 {
-	public interface IOperation
+	public interface IOperation : ILoggable<AutomationLogCategory>
 	{
 		IEnumerator ExecutionCoroutine( bool log = false );
 	}
