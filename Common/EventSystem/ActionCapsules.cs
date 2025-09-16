@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public struct ActionCapsule : IEventTrigger, IEquatable<ActionCapsule>, IVoidable
+public class ActionCapsule : IEventTrigger, IEquatable<ActionCapsule>, IVoidable
 {
 	private readonly Action callback;
 	private readonly IEventRegister observed;
@@ -41,19 +41,19 @@ public struct ActionCapsule : IEventTrigger, IEquatable<ActionCapsule>, IVoidabl
 		if (other is ActionCapsule cap)
 			return callback?.Equals(cap.callback) ?? cap.callback == null;
 
-		return base.Equals(other);
+		return false;
 	}
 
 	public bool Equals(ActionCapsule other)
 	{
-		if (GetHashCode() != other.GetHashCode()) return false;
+		if (GetHashCode() != other?.GetHashCode()) return false;
 		return callback?.Equals(other.callback) ?? other.callback == null;
 	}
 
 	public override int GetHashCode() => callback?.GetHashCode() ?? 0;
 }
 
-public struct ActionCapsule<T> : IEventTrigger<T>, IEquatable<ActionCapsule<T>>, IVoidable
+public class ActionCapsule<T> : IEventTrigger<T>, IEquatable<ActionCapsule<T>>, IVoidable
 {
 	private readonly Action<T> callback;
 	private readonly IEventRegister<T> observed;
@@ -93,19 +93,19 @@ public struct ActionCapsule<T> : IEventTrigger<T>, IEquatable<ActionCapsule<T>>,
 		if (other is ActionCapsule<T> cap)
 			return callback?.Equals(cap.callback) ?? cap.callback == null;
 
-		return base.Equals(other);
+		return false;
 	}
 
 	public bool Equals(ActionCapsule<T> other)
 	{
-		if (GetHashCode() != other.GetHashCode()) return false;
+		if (GetHashCode() != other?.GetHashCode()) return false;
 		return callback?.Equals(other.callback) ?? other.callback == null;
 	}
 
 	public override int GetHashCode() => callback?.GetHashCode() ?? 0;
 }
 
-public struct ActionCapsule<T, K> : IEventTrigger<T, K>, IEquatable<ActionCapsule<T, K>>, IVoidable
+public class ActionCapsule<T, K> : IEventTrigger<T, K>, IEquatable<ActionCapsule<T, K>>, IVoidable
 {
 	private readonly Action<T, K> callback;
 	private readonly IEventRegister<T, K> observed;
@@ -147,12 +147,12 @@ public struct ActionCapsule<T, K> : IEventTrigger<T, K>, IEquatable<ActionCapsul
 			return cap.callback.Equals(null);
 		}
 
-		return base.Equals(obj);
+		return false;
 	}
 
 	public bool Equals(ActionCapsule<T, K> other)
 	{
-		if (GetHashCode() != other.GetHashCode()) return false;
+		if (GetHashCode() != other?.GetHashCode()) return false;
 		return callback?.Equals(other.callback) ?? other.callback == null;
 	}
 
@@ -162,7 +162,7 @@ public struct ActionCapsule<T, K> : IEventTrigger<T, K>, IEquatable<ActionCapsul
 	}
 }
 
-public struct ActionCapsule<T, K, L> : IEventTrigger<T, K, L>, IEquatable<ActionCapsule<T, K, L>>, IVoidable
+public class ActionCapsule<T, K, L> : IEventTrigger<T, K, L>, IEquatable<ActionCapsule<T, K, L>>, IVoidable
 {
 	private readonly Action<T, K, L> callback;
 	private readonly IEventRegister<T, K, L> observed;
@@ -202,12 +202,12 @@ public struct ActionCapsule<T, K, L> : IEventTrigger<T, K, L>, IEquatable<Action
 		if (other is ActionCapsule<T, K, L> cap)
 			return callback?.Equals(cap.callback) ?? cap.callback == null;
 
-		return base.Equals(other);
+		return false;
 	}
 
 	public bool Equals(ActionCapsule<T, K, L> other)
 	{
-		if (GetHashCode() != other.GetHashCode()) return false;
+		if (GetHashCode() != other?.GetHashCode()) return false;
 		return callback?.Equals(other.callback) ?? other.callback == null;
 	}
 
