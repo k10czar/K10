@@ -4,6 +4,7 @@ using UnityEngine;
 [System.Serializable]
 public class DoubleState : INumericValueState<double>, ICustomDisposableKill
 {
+	[System.NonSerialized] bool _killed;
 	[SerializeField] double _value;
 	[System.NonSerialized] private EventSlot<double> _onChange;
 
@@ -17,6 +18,7 @@ public class DoubleState : INumericValueState<double>, ICustomDisposableKill
 		var diff = _value - value;
 		if( diff < double.Epsilon && diff > -double.Epsilon ) return;
 		_value = value;
+		if (_killed) return;
 		_onChange?.Trigger( value );
 	}
 
@@ -28,11 +30,12 @@ public class DoubleState : INumericValueState<double>, ICustomDisposableKill
 
 	public void Kill()
 	{
+		_killed = true;
 		_onChange?.Kill();
-		// _onChange = null;
+		_onChange = null;
 	}
 
-	public IEventRegister<double> OnChange => _onChange ??= new();
+	public IEventRegister<double> OnChange => _killed ? _onChange : _onChange ??= new();
 
 	public DoubleState( double initialValue = default ) { _value = initialValue; }
 

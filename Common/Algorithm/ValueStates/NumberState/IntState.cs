@@ -3,10 +3,11 @@ using UnityEngine;
 [System.Serializable]
 public class IntState : INumericValueState<int>, ICustomDisposableKill
 {
+	[System.NonSerialized] bool _killed = false;
     [SerializeField] int _value;
     [System.NonSerialized] EventSlot<int> _onChange;
 
-	public IEventRegister<int> OnChange => _onChange ??= new();
+	public IEventRegister<int> OnChange => _killed ? _onChange : _onChange ??= new();
     public int Value { get { return _value; } set { Setter( value ); } }
 
     public int Get() { return _value; }
@@ -15,7 +16,8 @@ public class IntState : INumericValueState<int>, ICustomDisposableKill
     {
         if( _value == value ) return;
         _value = value;
-        _onChange?.Trigger( value );
+		if (_killed) return;
+		_onChange?.Trigger( value );
 	}
 
 	public void Increment( int value = 1 )
@@ -29,8 +31,9 @@ public class IntState : INumericValueState<int>, ICustomDisposableKill
 
 	public void Kill()
 	{
+		_killed = true;
 		_onChange?.Kill();
-		// _onChange = null;
+		_onChange = null;
 	}
 
     public IntState( int initialValue = default ) { _value = initialValue; }

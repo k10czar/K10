@@ -16,7 +16,7 @@ public class BoolState : IBoolState, ICustomDisposableKill
 {
 	public const string SET_METHOD_NAME = nameof( Setter );
 	public const string ON_CHANGE_PROP_NAME = nameof( OnChange );
-	bool _killed;
+	[System.NonSerialized] bool _killed;
 	[SerializeField] bool _value;
 
 	[System.NonSerialized] private EventSlot<bool> _onChange;
@@ -35,6 +35,7 @@ public class BoolState : IBoolState, ICustomDisposableKill
 		if( _value == value ) return;
 		_value = value;
 
+		if (_killed) return;
 		_onChange?.Trigger( value );
 		if( value ) _onTrue?.Trigger();
 		else _onFalse?.Trigger();
@@ -52,9 +53,9 @@ public class BoolState : IBoolState, ICustomDisposableKill
 		_onFalse = null;
 	}
 
-	public IEventRegister<bool> OnChange => _killed ? _onChange : _onChange ??= new();// Lazy.Request( ref _onChange, _killed );
-	public IEventRegister OnTrueState => _killed ? _onTrue : _onTrue ??= new();//Lazy.Request( ref _onTrue, _killed );
-	public IEventRegister OnFalseState => _killed ? _onFalse : _onFalse ??= new();//Lazy.Request( ref _onFalse, _killed );
+	public IEventRegister<bool> OnChange => _killed ? _onChange : _onChange ??= new();
+	public IEventRegister OnTrueState => _killed ? _onTrue : _onTrue ??= new();
+	public IEventRegister OnFalseState => _killed ? _onFalse : _onFalse ??= new();
 
 	public BoolState() : this( false ) { }
 	public BoolState( bool initialValue ) { _value = initialValue; }

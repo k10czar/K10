@@ -3,6 +3,7 @@ using UnityEngine;
 [System.Serializable]
 public class UIntState : INumericValueState<uint>, ICustomDisposableKill
 {
+	[System.NonSerialized] bool _killed = false;
 	[SerializeField] uint _value;
 	[System.NonSerialized] EventSlot<uint> _onChange;
 
@@ -13,6 +14,7 @@ public class UIntState : INumericValueState<uint>, ICustomDisposableKill
 	{
 		if( _value == value ) return;
 		_value = value;
+		if (_killed) return;
 		_onChange?.Trigger( value );
 	}
 
@@ -24,11 +26,12 @@ public class UIntState : INumericValueState<uint>, ICustomDisposableKill
 
 	public void Kill()
 	{
+		_killed = true;
 		_onChange?.Kill();
-		// _onChange = null;
+		_onChange = null;
 	}
 
-	public IEventRegister<uint> OnChange => _onChange ??= new();
+	public IEventRegister<uint> OnChange => _killed ? _onChange : _onChange ??= new();
 
 	public UIntState( uint initialValue = default ) { _value = initialValue; }
 
