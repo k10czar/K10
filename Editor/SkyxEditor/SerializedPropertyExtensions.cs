@@ -20,7 +20,7 @@ namespace Skyx.SkyxEditor
 
         public static void PrepareForChanges(this SerializedProperty property, string reason) => Undo.RecordObject(property.serializedObject.targetObject, reason);
 
-        public static void ApplyDirectChanges(this SerializedProperty property, string reason)
+        public static void ApplyDirectChanges(this SerializedProperty property)
         {
             EditorUtility.SetDirty(property.serializedObject.targetObject);
             property.serializedObject.Update();
@@ -84,7 +84,7 @@ namespace Skyx.SkyxEditor
                 {
                     newElement.PrepareForChanges("Resetting new element!");
                     newElement.SetValue(newElement.GenerateDefaultValue());
-                    newElement.ApplyDirectChanges("Resetting new element!");
+                    newElement.ApplyDirectChanges();
                 }
             }
         }
@@ -97,7 +97,7 @@ namespace Skyx.SkyxEditor
         private static readonly Regex extractArrayPieceRegex = new(@"\[\d+\]", RegexOptions.Compiled);
         private const BindingFlags Bindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
-        public static T GetParentValue<T>(this SerializedProperty property)
+        public static T GetParentValue<T>(this SerializedProperty property, bool canInherit = false)
         {
             object obj = property.serializedObject.targetObject;
             var fieldStructure = GetPathStructure(property);
@@ -111,7 +111,11 @@ namespace Skyx.SkyxEditor
                     ? GetFieldValueWithIndex(pathPiece, obj)
                     : GetFieldValue(pathPiece, obj);
 
-                if (obj.GetType() == targetType) return (T) obj;
+                if (canInherit)
+                {
+                    if (targetType.IsAssignableFrom(obj.GetType())) return (T) obj;
+                }
+                else if (obj.GetType() == targetType) return (T) obj;
             }
 
             throw new Exception($"{targetType} was not found in property: {property.propertyPath}");
@@ -459,7 +463,7 @@ namespace Skyx.SkyxEditor
             var deserializedObject = JsonConvert.DeserializeObject(json, valueType, GetSerializationSettings());
             SetValue(property, deserializedObject);
 
-            ApplyDirectChanges(property, reason);
+            ApplyDirectChanges(property);
         }
 
         private static JsonSerializerSettings GetSerializationSettings() => new()

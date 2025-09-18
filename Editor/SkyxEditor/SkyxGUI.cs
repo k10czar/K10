@@ -55,10 +55,13 @@ namespace Skyx.SkyxEditor
 
         public static void DrawTextAreaField(Rect rect, SerializedProperty property, string hint)
         {
-            property.stringValue = EditorGUI.TextArea(rect, property.stringValue);
+            var old = EditorGUI.indentLevel;
+            EditorGUI.indentLevel = 0;
+            property.stringValue = EditorGUI.TextArea(rect, property.stringValue, SkyxStyles.TextAreaStyle);
             DrawHintOverlay(ref rect, hint);
 
             if (string.IsNullOrEmpty(property.stringValue)) DrawHindInlaid(rect, hint);
+            EditorGUI.indentLevel = old;
         }
 
         public static void DrawIntField(Rect rect, SerializedProperty property, string hint)

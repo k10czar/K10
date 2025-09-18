@@ -7,7 +7,7 @@ namespace Skyx.SkyxEditor
     public static class HeaderList
     {
         private const float ExtraElementHeight = SkyxStyles.ElementsMargin + 3; // from separator
-        private const float NewElementHeight = SkyxStyles.FullLineHeight;
+        private const float NewElementHeight = SkyxStyles.FullLineHeight + SkyxStyles.ElementsMargin;
         private const float HorizontalThreshold = SkyxStyles.ListControlButtonSize * 3;
 
         public static void DrawLayout(SerializedProperty property, string title = null, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, string newText = null, Action<SerializedProperty> onNewElement = null)

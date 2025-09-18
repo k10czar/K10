@@ -46,7 +46,8 @@ namespace Skyx.SkyxEditor
         public const int BigFontSize = 16;
         public const int HugeFontSize = 19;
 
-        private static readonly RectOffset noPadding = new (3, 3, 0, 0);
+        private static readonly RectOffset noPadding = new (0, 0, 0, 0);
+        private static readonly RectOffset miniPadding = new (3, 3, 0, 0);
         private static readonly RectOffset defaultPadding = new (6, 6, 2, 2);
         private static readonly RectOffset bigPadding = new (8, 8, 5, 5);
         private static readonly RectOffset hugePadding = new (8, 8, 8, 8);
@@ -76,8 +77,9 @@ namespace Skyx.SkyxEditor
 
         public static GUIStyle ButtonStyle => Style("button", GUI.skin.button, DefaultFontSize, padding: defaultPadding);
         public static GUIStyle HeaderButtonStyle => Style("HeaderButton", GUI.skin.button, BigFontSize, padding: bigPadding);
-        public static GUIStyle MiniButtonStyle => Style("MiniButton", GUI.skin.button, padding: noPadding);
+        public static GUIStyle MiniButtonStyle => Style("MiniButton", GUI.skin.button, padding: miniPadding);
         public static GUIStyle BoldButtonStyle => Style("BoldButton", ButtonStyle, FontStyle.Bold);
+        public static GUIStyle TextAreaStyle => Style("TextArea", GUI.skin.textArea, margin: noPadding, padding: defaultPadding);
 
         public static GUIStyle DropDownButton = new("DropDownToggleButton");
 
@@ -126,7 +128,7 @@ namespace Skyx.SkyxEditor
         private static GUIStyle Style(string name, GUIStyle baseStyle, FontStyle fontStyle, TextAnchor alignment)
             => Style(name, baseStyle, fontStyle: fontStyle, hasFontStyle: true, alignment: alignment, hasAlignment: true);
 
-        private static GUIStyle Style(string name, GUIStyle baseStyle, int fontSize = 0, bool hasAlignment = false, TextAnchor alignment = TextAnchor.MiddleLeft, bool hasFontStyle = false, FontStyle fontStyle = FontStyle.Bold, RectOffset padding = null, Texture2D background = null, RectOffset margin = null, Color? textColor = null)
+        private static GUIStyle Style(string name, GUIStyle baseStyle, int fontSize = 0, bool hasAlignment = false, TextAnchor alignment = TextAnchor.MiddleLeft, bool hasFontStyle = false, FontStyle fontStyle = FontStyle.Bold, RectOffset padding = null, Texture2D background = null, RectOffset margin = null, Color? textColor = null, RectOffset border = null)
         {
             if (loadedStyles.TryGetValue(name, out var style)) return style;
 
@@ -139,6 +141,7 @@ namespace Skyx.SkyxEditor
             if (hasAlignment) newStyle.alignment = alignment;
             if (hasFontStyle) newStyle.fontStyle = fontStyle;
             if (padding != null) newStyle.padding = padding;
+            if (border != null) newStyle.border = border;
             if (fontSize != 0) newStyle.fontSize = fontSize;
             if (background != null) newStyle.normal.background = background;
             if (margin != null) newStyle.margin = margin;
