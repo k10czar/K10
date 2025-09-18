@@ -145,7 +145,7 @@ namespace Skyx.SkyxEditor
 
         #region Extensions
 
-        public static void SetNewReferenceType(this SerializedProperty property, Type newType, bool forceRecreate)
+        private static void SetNewReferenceType(this SerializedProperty property, Type newType, bool forceRecreate)
         {
             var currentType = property.managedReferenceValue?.GetType();
             if (!forceRecreate && currentType == newType) return;

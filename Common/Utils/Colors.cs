@@ -133,10 +133,12 @@ public static class Colors
         [ConstLike] public static readonly Color DarkerDark = DarkCharcoal;
         [ConstLike] public static readonly Color DarkBackground = AlmostBlack.WithAlpha(.4f);
 
-        [ConstLike] public static readonly Color SuccessBackground = Avocado;
-        [ConstLike] public static readonly Color WarningBackground = Warning.WithAlpha(.6f);
+        [ConstLike] public static readonly Color SuccessBackground = Avocado.WithAlpha(.45f);
+        [ConstLike] public static readonly Color SuccessBackgroundVar = SuccessBackground.WithAlpha(.35f);
+        [ConstLike] public static readonly Color WarningBackground = Warning.WithAlpha(.45f);
+        [ConstLike] public static readonly Color WarningBackgroundVar = WarningBackground.WithAlpha(.35f);
         [ConstLike] public static readonly Color SpecialBackground = From(62, 45, 64);
-        [ConstLike] public static readonly Color SpecialSelectedBackground = From(75, 40, 75);
+        [ConstLike] public static readonly Color SpecialBackgroundVar = From(75, 40, 75);
 
         [ConstLike] public static readonly Color Primary = Azure;
         [ConstLike] public static readonly Color Secondary = Cerulean;

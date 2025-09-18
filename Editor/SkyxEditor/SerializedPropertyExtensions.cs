@@ -97,8 +97,6 @@ namespace Skyx.SkyxEditor
         private static readonly Regex extractArrayPieceRegex = new(@"\[\d+\]", RegexOptions.Compiled);
         private const BindingFlags Bindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
-        private static readonly Dictionary<string, Type> propertyTypeCache = new();
-
         public static T GetParentValue<T>(this SerializedProperty property)
         {
             object obj = property.serializedObject.targetObject;
@@ -153,21 +151,6 @@ namespace Skyx.SkyxEditor
             return lastPathPiece.Contains("[")
                 ? SetFieldValueWithIndex(lastPathPiece, obj, value)
                 : SetFieldValue(lastPathPiece, obj, value);
-        }
-
-        public static Type GetCachedType(this SerializedProperty property)
-        {
-            var cacheKey = GetFieldInfoCacheKey(property);
-            if (propertyTypeCache.TryGetValue(cacheKey, out var cachedType)) return cachedType;
-
-            var value = GetValue(property);
-            if (value == null) return null;
-
-            var type = value.GetType();
-
-            propertyTypeCache[cacheKey] = type;
-
-            return type;
         }
 
         private static FieldInfo GetField(string fieldName, object obj)
@@ -243,12 +226,50 @@ namespace Skyx.SkyxEditor
 
         private static string[] GetPathStructure(SerializedProperty property) => property.propertyPath.Replace(".Array.data", "").Split('.');
 
+
+        #endregion
+
+        #region Field Type Caching
+
+        private static readonly Dictionary<string, Dictionary<string, Type>> propertyTypeCache = new();
+
+        public static string GetCacheID(this SerializedObject serializedObject)
+            => serializedObject.targetObject.GetInstanceID().ToString();
+
+        public static Type GetCachedType(this SerializedProperty property)
+        {
+            var cacheID = property.serializedObject.GetCacheID();
+            if (!propertyTypeCache.TryGetValue(cacheID, out var cache))
+            {
+                cache = new Dictionary<string, Type>();
+                propertyTypeCache[cacheID] = cache;
+            }
+
+            if (cache.TryGetValue(property.propertyPath, out var cachedType))
+                return cachedType;
+
+            var value = GetValue(property);
+            if (value == null) return null;
+
+            var type = value.GetType();
+            cache[property.propertyPath] = type;
+
+            return type;
+        }
+
+        public static void InvalidateTypeCache(this SerializedObject serializedObject)
+        {
+            var cacheID = serializedObject.GetCacheID();
+            propertyTypeCache.Remove(cacheID);
+        }
+
         private static string GetFieldInfoCacheKey(SerializedProperty property)
         {
+
             var targetType = property.serializedObject.targetObject.GetType();
             var normalizedPath = extractArrayPieceRegex.Replace(property.propertyPath, "[]");
 
-            return $"{targetType.FullName}.{normalizedPath}";
+            return $"{property.serializedObject.targetObject.GetInstanceID()} {targetType.FullName}.{normalizedPath}";
         }
 
         [MenuItem("Disyphus/Editor/Clear Property Type Cache")]

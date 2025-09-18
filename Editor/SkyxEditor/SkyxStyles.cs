@@ -58,6 +58,8 @@ namespace Skyx.SkyxEditor
         public static GUIStyle RightLabel => Style("rightLabel", DefaultLabel, TextAnchor.MiddleRight);
         public static GUIStyle SmallLabel => Style("smallLabel", EditorStyles.label, SmallFontSize);
         public static GUIStyle BoldStyle => Style("boldLabel", EditorStyles.label, FontStyle.Bold);
+        public static GUIStyle BigBoldStyle => Style("bigBoldLabel", BoldStyle, BigFontSize);
+        public static GUIStyle HugeBoldStyle => Style("hugeBoldLabel", BoldStyle, HugeFontSize);
         public static GUIStyle CenterBoldStyle => Style("centerBoldLabel", BoldStyle, TextAnchor.MiddleCenter);
         public static GUIStyle Header => Style("header", CenterBoldStyle, BigFontSize, padding: bigPadding);
         public static GUIStyle HugeHeader => Style("hugeHeader", Header, HugeFontSize, padding: hugePadding);
@@ -228,7 +230,7 @@ namespace Skyx.SkyxEditor
             new("HelpBox"), // Disabled
         };
 
-        public static GUIStyle HeaderText(EElementSize size, EColor color) => headerText[(int)color][(int)size];
+        public static GUIStyle HeaderStyle(EElementSize size, EColor color) => headerText[(int)color][(int)size];
         public static float HeaderHeight(EElementSize size) => headerHeights[(int)size];
         public static float ScopeTotalExtraHeight(EElementSize size) => headerHeights[(int)size] + (3 * ElementsMargin);
         public static float ClosedScopeHeight(EElementSize size) => headerHeights[(int)size] + ElementsMargin;

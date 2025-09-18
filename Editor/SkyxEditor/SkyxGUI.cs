@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -172,25 +171,6 @@ namespace Skyx.SkyxEditor
             if (EditorGUI.EndChangeCheck()) property.Apply();
         }
 
-        public static void Draw(SerializedProperty property, string label = null)
-        {
-            var labelGUI = new GUIContent(label ?? property.displayName);
-
-            switch (property.propertyType)
-            {
-                case SerializedPropertyType.String:
-                    EditorGUILayout.DelayedTextField(property, labelGUI); break;
-
-                case SerializedPropertyType.Integer:
-                    EditorGUILayout.DelayedIntField(property, labelGUI); break;
-
-                case SerializedPropertyType.Float:
-                    EditorGUILayout.DelayedFloatField(property, labelGUI); break;
-
-                default: EditorGUILayout.PropertyField(property, labelGUI); break;
-            }
-        }
-
         #endregion
 
         #region Toggles
@@ -289,7 +269,7 @@ namespace Skyx.SkyxEditor
 
             using var backgroundScope = BackgroundColorScope.Set(color);
             var icon = EditorGUIUtility.IconContent(builtInIconName);
-            var result = GUI.Button(buttonRect, icon, SkyxStyles.ButtonStyle);
+            var result = GUI.Button(buttonRect, icon, SkyxStyles.MiniButtonStyle);
 
             DrawHintOverlay(ref buttonRect, hint);
 
@@ -385,18 +365,33 @@ namespace Skyx.SkyxEditor
         public static void PlainBGLabel(Rect rect, string label, EColor color, EElementSize size)
         {
             using var backgroundScope = BackgroundColorScope.Set(SkyxStyles.HeaderColor(color));
-            EditorGUI.LabelField(rect, label, SkyxStyles.HeaderText(size, color));
+            EditorGUI.LabelField(rect, label, SkyxStyles.HeaderStyle(size, color));
+        }
+
+        public static void Foldout(ref Rect rect, SerializedProperty property, string label, EElementSize size)
+        {
+            rect.height = SkyxStyles.HeaderHeight(size);
+
+            if (rect.TryUseClick(false))
+                property.isExpanded = !property.isExpanded;
+
+            var style = size switch
+            {
+                EElementSize.Primary => SkyxStyles.HugeBoldStyle,
+                EElementSize.Secondary => SkyxStyles.BigBoldStyle,
+                EElementSize.SingleLine => SkyxStyles.BoldStyle,
+                _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
+            };
+
+            var foldRect = rect;
+            GUI.Toggle(foldRect.ExtractMiniButton(), property.isExpanded, GUIContent.none, EditorStyles.foldout);
+            EditorGUI.LabelField(foldRect, label, style);
+
+            rect.y += rect.height;
+            if (property.isExpanded) Separator(ref rect);
         }
 
         #region Rect Control
-
-        public static Rect GetDividedControlRect(int divisions)
-        {
-            var rect = EditorGUILayout.GetControlRect();
-            rect.DivideRect(divisions);
-
-            return rect;
-        }
 
         public static void SlideRect(ref Rect rect, float newWidth, float margin = SkyxStyles.ElementsMargin)
         {
@@ -413,19 +408,17 @@ namespace Skyx.SkyxEditor
             rect.width = endX - rect.x;
         }
 
-        public static void NextLine(ref Rect rect, float startX, float totalWidth, float extraMargin = 0)
+        public static void NextLine(ref Rect rect, float startX, float totalWidth)
         {
             rect.x = startX;
-            rect.y += SkyxStyles.FullLineHeight + extraMargin;
+            rect.y += SkyxStyles.FullLineHeight;
             rect.width = totalWidth;
         }
 
         public static void NextDividedLine(ref Rect rect, float startX, float totalWidth, int divideCount)
             => NextLine(ref rect, startX, DivideRect(totalWidth, divideCount));
 
-        public static void NextSameLine(ref Rect rect) => NextLine(ref rect, rect.x, rect.width);
-
-        public static float DivideRect(float totalWidth, int elementsCount)
+        private static float DivideRect(float totalWidth, int elementsCount)
         {
             return (totalWidth - (SkyxStyles.ElementsMargin * (elementsCount - 1))) / elementsCount;
         }
@@ -473,47 +466,6 @@ namespace Skyx.SkyxEditor
         public static Rect ExtractSmallButton(ref Rect rect, bool fromEnd = false) => ExtractRect(ref rect, SkyxStyles.SmallButtonSize, fromEnd);
         public static Rect ExtractMiniButton(ref Rect rect, bool fromEnd = false) => ExtractRect(ref rect, SkyxStyles.MiniButtonSize, fromEnd);
         public static Rect ExtractHint(ref Rect rect, bool fromEnd = false) => ExtractRect(ref rect, SkyxStyles.HintIconWidth, fromEnd);
-
-        public static void AdjustRectToLine(ref Rect rect, bool applyMargin = true)
-        {
-            rect.height = SkyxStyles.LineHeight;
-            if (applyMargin) rect.y += 2;
-        }
-
-        public static void ExtractLineDef(ref Rect rect, out float startX, out float totalWidth)
-        {
-            startX = rect.x;
-            totalWidth = rect.width;
-        }
-
-        public static void ApplyStartMargin(ref Rect rect, float margin)
-        {
-            rect.x += margin;
-            rect.width -= margin;
-        }
-
-        public static void ApplyMargin(ref Rect rect, float margin, bool vertical, bool horizontal)
-        {
-            if (vertical)
-            {
-                rect.y += margin;
-                rect.height -= 2 * margin;
-            }
-
-            if (horizontal)
-            {
-                rect.x += margin;
-                rect.width -= 2 * margin;
-            }
-        }
-
-        public static void ApplyBoxMargin(ref Rect rect, float headerHeight)
-        {
-            rect.y += headerHeight + SkyxStyles.ElementsMargin;
-            rect.height -= headerHeight - 2 * SkyxStyles.ElementsMargin;
-            rect.x += SkyxStyles.BoxMargin;
-            rect.width -= SkyxStyles.BoxMargin * 2;
-        }
 
         #endregion
     }

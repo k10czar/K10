@@ -20,8 +20,6 @@ namespace Skyx.SkyxEditor
         [ResetedOnLoad] private static readonly Dictionary<string, Dictionary<string, PropertyCollection>> collections = new();
         [ResetedOnLoad] private static readonly HashSet<SerializedObject> scheduledResets = new();
 
-        private static string GetID(SerializedObject target) => target.targetObject.GetHashCode().ToString();
-
         public static PropertyCollection Get(SerializedObject serializedObject) => Get(serializedObject, "");
         public static PropertyCollection Get(SerializedProperty property) => Get(property.serializedObject, property.propertyPath);
 
@@ -29,7 +27,7 @@ namespace Skyx.SkyxEditor
         {
             using var profilerMarker = getCollectionMarker.Auto();
 
-            var id = GetID(root);
+            var id = root.GetCacheID();
             if (!collections.TryGetValue(id, out var objectCollections))
             {
                 objectCollections = new Dictionary<string, PropertyCollection>();
@@ -70,21 +68,26 @@ namespace Skyx.SkyxEditor
 
         public static void ScheduleReset(SerializedObject serializedObject)
         {
-            if (scheduledResets.Count == 0) EditorUtils.RunDelayedOnce(ResetCollections);
             scheduledResets.Add(serializedObject);
+
+            if (scheduledResets.Count == 1)
+                EditorUtils.RunDelayedOnce(ResetCollections);
         }
 
         private static void ResetCollections()
         {
             foreach (var serializedObject in scheduledResets)
+            {
+                serializedObject.InvalidateTypeCache();
                 ResetCollections(serializedObject);
+            }
 
             scheduledResets.Clear();
         }
 
         private static void ResetCollections(SerializedObject serializedObject)
         {
-            var id = GetID(serializedObject);
+            var id = serializedObject.GetCacheID();
             if (!collections.TryGetValue(id, out var objectCollections)) return;
 
             serializedObject.Update();
@@ -112,7 +115,7 @@ namespace Skyx.SkyxEditor
 
         public static void Release(SerializedObject root)
         {
-            var id = GetID(root);
+            var id = root.GetCacheID();
             if (!collections.ContainsKey(id)) return;
 
             Log($"Releasing PropertyCollections for {root.targetObject.name}");
@@ -191,7 +194,7 @@ namespace Skyx.SkyxEditor
             if (!TryGet(propertyName, isBacking, out var property)) return;
 
             EditorGUI.BeginChangeCheck();
-            SkyxGUI.Draw(property);
+            SkyxLayout.Draw(property);
             if (EditorGUI.EndChangeCheck()) property.Apply();
         }
 
@@ -210,7 +213,7 @@ namespace Skyx.SkyxEditor
             if (!TryGet(propertyName, isBacking, out var property)) return;
 
             EditorGUI.BeginChangeCheck();
-            SkyxGUI.Draw(property, label);
+            SkyxLayout.Draw(property, label);
             if (EditorGUI.EndChangeCheck()) property.Apply();
         }
 
@@ -409,7 +412,7 @@ namespace Skyx.SkyxEditor
                 else
                 {
                     var color = isElementHighlighted?.Invoke(property.GetArrayElementAtIndex(index)) ?? false
-                        ? (isActive ? Colors.Console.SpecialSelectedBackground : Colors.Console.SpecialBackground)
+                        ? (isActive ? Colors.Console.SpecialBackgroundVar : Colors.Console.SpecialBackground)
                         : (isFocused ? Colors.CeruleanBlue : (index % 2 == 0 ? Colors.Console.Dark: Colors.Console.DarkerDark));
 
                     EditorGUI.DrawRect(rect, color);

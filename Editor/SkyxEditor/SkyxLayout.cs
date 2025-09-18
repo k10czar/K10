@@ -1,10 +1,31 @@
+using System;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Skyx.SkyxEditor
 {
     public static class SkyxLayout
     {
+        public static void Draw(SerializedProperty property, string label = null)
+        {
+            var labelGUI = new GUIContent(label ?? property.displayName);
+
+            switch (property.propertyType)
+            {
+                case SerializedPropertyType.String:
+                    EditorGUILayout.DelayedTextField(property, labelGUI); break;
+
+                case SerializedPropertyType.Integer:
+                    EditorGUILayout.DelayedIntField(property, labelGUI); break;
+
+                case SerializedPropertyType.Float:
+                    EditorGUILayout.DelayedFloatField(property, labelGUI); break;
+
+                default: EditorGUILayout.PropertyField(property, labelGUI); break;
+            }
+        }
+
         #region Buttons
 
         private static GUIStyle noBackgroundButton;
