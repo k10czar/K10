@@ -14,6 +14,8 @@ public struct CallOnceCapsule : IEventTrigger, IEquatable<CallOnceCapsule>, IVoi
 	[HideInCallstack]
 	public void Trigger()
 	{
+		if (!IsValid) return;
+
 		IsValid = false;
 		callback();
 	}
