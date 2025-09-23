@@ -1,20 +1,27 @@
 using UnityEngine;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 public class FakePlayerLog : IService
 {
     private string _basePath;
     private int _logsPendingWriting;
     private StringBuilder _stringBuilder = new();
-    private const int MAX_LOGS_PENDING_WRITING = 100;
-    private const string PLAYER_LOG_FILE_NAME = "Player.log";
-    private const string PREV_PLAYER_LOG_FILE_NAME = "Player-prev.log";
-    private string PlayerLogPath => Path.Join(_basePath, PLAYER_LOG_FILE_NAME);
-    private string PrevPlayerLogPath => Path.Join(_basePath, PREV_PLAYER_LOG_FILE_NAME);
 
+    private Task _currentAwaitTask = null;    
+    private int _semaphoreIdCount;
+    private Semaphore _writeToFileSemaphore = new();
+    
+    private const int MAX_LOGS_PENDING_WRITING = 200;
+    public const string PLAYER_LOG_FILE_NAME = "Player.log";
+    public const string PREV_PLAYER_LOG_FILE_NAME = "Player-prev.log";
+
+    private static string PlayerLogPath(string basePath) => Path.Join(basePath, PLAYER_LOG_FILE_NAME);
+    private static string PrevPlayerLogPath(string basePath) => Path.Join(basePath, PREV_PLAYER_LOG_FILE_NAME);
 
     public bool HasPendingLogs => _logsPendingWriting > 0;
+    public bool IsWritingToFile => !_writeToFileSemaphore.Free;
 
     public FakePlayerLog(string basePath)
     {
@@ -26,30 +33,35 @@ public class FakePlayerLog : IService
         ApplicationEventsRelay.IsSuspended.RegisterOnFalse(OnResume);
         ApplicationEventsRelay.IsSuspended.RegisterOnTrue(OnSuspend);
 
-        Debug.Log($":::><::: Started FakePlayerLog with base path: {basePath}");
+        Debug.Log($"FPL: Started FakePlayerLog with base path: {basePath}");
     }
 
     private void OnResume() => Application.logMessageReceived += OnLogReceived;
     private void OnSuspend()
     {
         Application.logMessageReceived -= OnLogReceived;
-        WriteToFile();
+        WriteCompleteLogToFile();
     }
 
+    public static void Clean( string basePath )
+    {
+        FileAdapter.Delete( PlayerLogPath(basePath) );
+        FileAdapter.Delete( PrevPlayerLogPath(basePath) );
+    }
 
     private void MoveToPrevPlayerLog()
     {
-        if (!FileAdapter.Exists(PlayerLogPath))
+        if (!FileAdapter.Exists(PlayerLogPath(_basePath)))
             return;
 
-        File.Copy(PlayerLogPath, PrevPlayerLogPath, true);
-        FileAdapter.Delete(PlayerLogPath);
-        // Debug.Log($":::><::: Moved {PlayerLogPath} to {PREV_PLAYER_LOG_FILE_NAME}");
+        File.Copy(PlayerLogPath(_basePath), PrevPlayerLogPath(_basePath), true);
+        FileAdapter.Delete(PlayerLogPath(_basePath));
+        // Debug.Log($"FPL: Moved {PlayerLogPath} to {PREV_PLAYER_LOG_FILE_NAME}");
     }
 
     private void OnLogReceived(string logString, string stackTrace, LogType type)
     {
-        // Debug.Log($":::><::: Received log {_logsPendingWriting}: {logString}");
+        // Debug.Log($"FPL: Received log {_logsPendingWriting}: {logString}");
 
         string formattedLogString;
         switch (type)
@@ -69,19 +81,38 @@ public class FakePlayerLog : IService
         _stringBuilder.Append(logMessage);
 
         if (++_logsPendingWriting >= MAX_LOGS_PENDING_WRITING)
-            WriteToFile();
+            WriteCompleteLogToFile();
     }
 
-    // TODO: Is Async Needed?
-    public void WriteToFile()
+    public async Task WriteCompleteLogToFile()
     {
-        Debug.Log($":::><::: WritingToFile {_logsPendingWriting} files: {PlayerLogPath}");
+        // Debug.Log($"FPL: Called function with {_semaphoreIdCount}");
+        if (!_writeToFileSemaphore.Free)
+        {
+            // TODO: the last logs will be missing in this case
+            // Debug.Log($"FPL: Waiting... {Time.frameCount}");
+            await _currentAwaitTask;
+            return;
+        }
+
         if (!HasPendingLogs)
             return;
 
-        File.AppendAllText(PlayerLogPath, _stringBuilder.ToString());
+        string semaphoreId = $"Write_{_semaphoreIdCount++}";
+        // Debug.Log($"FPL: Locking {semaphoreId}");
+        _writeToFileSemaphore.Block(semaphoreId);
+
+        string stringToWrite = _stringBuilder.ToString();
         _stringBuilder.Clear();
         _logsPendingWriting = 0;
 
+        // Debug.Log($"FPL: Writing... {Time.unscaledTime}");
+        _currentAwaitTask = File.AppendAllTextAsync(PlayerLogPath(_basePath), stringToWrite);
+        await _currentAwaitTask;
+        // await Task.Delay(3000);
+        // Debug.Log($"FPL: ...written {Time.unscaledTime}");
+
+        // Debug.Log($"FPL: Unlocking {semaphoreId}");
+        _writeToFileSemaphore.Release(semaphoreId);
     }
 }
