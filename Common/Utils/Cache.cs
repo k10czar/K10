@@ -45,7 +45,7 @@ public static class Cache
 
 	public static List<GameObject> Add( GameObject reference, int copies , bool dontDestroyOnLoad = false)
 	{
-		Debug.Log( $"Cache {copies} {reference}" );
+		// Debug.Log( $"Cache {copies} {reference}" );
 		var cacheList = RequestCacheList( reference );
 
 		var parent = CacheParent;

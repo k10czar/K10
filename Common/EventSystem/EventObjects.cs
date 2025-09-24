@@ -51,7 +51,9 @@ public class EventSlot : IEvent, ICustomDisposableKill
 	{
 		if( _killed )
 		{
+#if UNITY_EDITOR
 			Debug.LogError( $"Error: Cannot Trigger dead EventSlot" );
+#endif
 			return;
 		}
 
@@ -257,7 +259,9 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 	{
 		if (_killed)
 		{
+#if UNITY_EDITOR
 			Debug.LogError($"Error: Cannot Trigger dead EventSlot<{typeof(T)}>");
+#endif
 			return;
 		}
 
@@ -472,7 +476,9 @@ public class EventSlot<T, K> : IEvent<T, K>, ICustomDisposableKill
     {
         if (_killed)
         {
+#if UNITY_EDITOR
             Debug.LogError($"Error: Cannot Trigger dead EventSlot<{typeof(T)},{typeof(K)}>");
+#endif
             return;
         }
 
@@ -713,7 +719,9 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 	{
 		if( _killed )
 		{
+#if UNITY_EDITOR
 			Debug.LogError( $"Error: Cannot Trigger dead EventSlot<{typeof( T )},{typeof( K )},{typeof( L )}>" );
+#endif
 			return;
 		}
 
