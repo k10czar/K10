@@ -533,6 +533,7 @@ public static class K10UnityExtensions
 				sb.Append(e.ToStringOrNull());
 			}
 			sb.Append( " }}" );
+			return sb.ReturnToPoolAndCast();
 		}
         return obj.ToString();
     }
