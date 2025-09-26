@@ -25,6 +25,7 @@ namespace Skyx.SkyxEditor
                     {
                         customDrawer.OnGUI(rect, property, new GUIContent(label));
                     }
+                    catch (ExitGUIException) { throw; }
                     catch (Exception exception)
                     {
                         CustomDrawersCache.ClearCache();

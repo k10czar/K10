@@ -37,7 +37,7 @@ namespace Skyx.SkyxEditor
         public const int MiniFontSize = 12;
         public const int DefaultFontSize = 13;
         public const int BigFontSize = 16;
-        public const int HugeFontSize = 19;
+        public const int HugeFontSize = 18;
 
         private static readonly RectOffset noPadding = new (0, 0, 0, 0);
         private static readonly RectOffset miniPadding = new (3, 3, 0, 0);
@@ -184,7 +184,7 @@ namespace Skyx.SkyxEditor
 
             var padding = size switch
             {
-                EElementSize.Primary => hugePadding,
+                EElementSize.Primary => bigPadding,
                 EElementSize.Secondary => bigPadding,
                 EElementSize.SingleLine => defaultPadding,
                 EElementSize.Mini => miniPadding,
@@ -211,6 +211,7 @@ namespace Skyx.SkyxEditor
             EColor.Special => Colors.LightGray,
             EColor.Disabled => Colors.LightGray,
             EColor.Clear => Colors.LightGray,
+            EColor.Backdrop => Colors.LightGray,
             _ => throw new ArgumentOutOfRangeException(nameof(color), color, null)
         };
 
@@ -267,6 +268,7 @@ namespace Skyx.SkyxEditor
             Color.clear, // Special
             Colors.Console.Dark.AddLight(-.08f), // Disabled
             Color.clear, // Clear
+            Colors.Transparent02, // Backdrop
         };
 
         private static readonly Color[] boxColors =

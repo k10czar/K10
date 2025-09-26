@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public enum EColor { Primary, Secondary, Info, Success, Warning, Danger, Support, Special, Disabled, Clear }
+public enum EColor { Primary, Secondary, Info, Success, Warning, Danger, Support, Special, Disabled, Clear, Backdrop }
 
 public static class Colors
 {
@@ -49,7 +49,7 @@ public static class Colors
     #region EColor Usages
 
     [LazyConst] private static Color[] eColorSequence;
-    public static Color[] EColorSequence => eColorSequence ??= new [] { Console.Primary, Console.Secondary, Console.Info, Console.Success, Console.Warning, Console.Danger, Console.Support, Console.Special, Console.Disabled, Color.clear };
+    public static Color[] EColorSequence => eColorSequence ??= new [] { Console.Primary, Console.Secondary, Console.Info, Console.Success, Console.Warning, Console.Danger, Console.Support, Console.Special, Console.Disabled, Color.clear, Transparent02 };
 
     public static Color FromSequence<T>(T value) where T : Enum => FromSequence((int)(object)value);
     public static Color FromSequence(int index)

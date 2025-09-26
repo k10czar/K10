@@ -341,12 +341,12 @@ namespace Skyx.SkyxEditor
             DrawHintOverlay(ref rect, hint);
         }
 
-        public static void Separator(ref Rect rect, float margin = SkyxStyles.ElementsMargin, EColor color = EColor.Clear)
+        public static void Separator(ref Rect rect, float margin = SkyxStyles.ElementsMargin, EColor color = EColor.Clear, int size = 1)
         {
-            var separator = new Rect(rect.x, rect.y, rect.width, 1);
+            var separator = new Rect(rect.x, rect.y, rect.width, size);
             EditorGUI.DrawRect(separator, color is EColor.Clear ? Colors.Transparent02 : color.Get());
 
-            rect.y += 1 + margin;
+            rect.y += size + margin;
         }
 
         public static void ShadowLabel(Rect rect, string label, GUIStyle style)

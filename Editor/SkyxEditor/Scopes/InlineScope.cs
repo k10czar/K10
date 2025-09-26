@@ -97,7 +97,7 @@ namespace Skyx.SkyxEditor
                 boxRect.yMax = drawingRect.yMax;
             }
 
-            return ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size, property);
+            return ReallyDraw(ref headerRect, ref boxRect, title, ref isExpandedRef, color, size, property);
         }
 
         private static bool Begin(ref Rect initialRect, string title, SerializedProperty property, EColor color, EElementSize size)
@@ -110,7 +110,7 @@ namespace Skyx.SkyxEditor
 
         private static bool Begin(ref Rect initialRect, string title, ref bool isExpandedRef, EColor color, EElementSize size, SerializedProperty property)
         {
-            initialRect.height -= SkyxStyles.ElementsMargin;
+            initialRect.height -= 2f * SkyxStyles.ElementsMargin;
 
             // Reversing outer box margin
             initialRect.x -= SkyxStyles.BoxMargin - 1;
@@ -123,10 +123,10 @@ namespace Skyx.SkyxEditor
             var boxRect = initialRect;
             initialRect.ApplyBoxMargin(headerHeight);
 
-            return ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size, property);
+            return ReallyDraw(ref headerRect, ref boxRect, title, ref isExpandedRef, color, size, property);
         }
 
-        private static bool ReallyDraw(Rect headerRect, Rect boxRect, string title, ref bool isExpandedRef, EColor color, EElementSize size, SerializedProperty property)
+        private static bool ReallyDraw(ref Rect headerRect, ref Rect boxRect, string title, ref bool isExpandedRef, EColor color, EElementSize size, SerializedProperty property)
         {
             var current = Event.current;
             var isHovered = headerRect.Contains(current.mousePosition);
@@ -148,17 +148,16 @@ namespace Skyx.SkyxEditor
             using (AllColorsScope.Set(Color.clear))
                 GUI.Button(headerRect, GUIContent.none); // This forces repaint on hover
 
-            var headerColor = isHovered || !isExpandedRef ? color : EColor.Clear;
+            var headerColor = isHovered || !isExpandedRef ? color : EColor.Backdrop;
             SkyxGUI.Button(headerRect, title, headerColor, size, EButtonType.Plain);
 
-            boxRect.ExtractVertical(headerRect.height, 0);
-            SkyxGUI.Separator(ref boxRect, 0, isExpandedRef ? color : EColor.Clear);
+            SkyxGUI.Separator(ref boxRect, 0);
+            boxRect.ExtractVertical(headerRect.height, -2);
+            SkyxGUI.Separator(ref boxRect, 0, size: 2);
 
             if (isExpandedRef)
             {
-                EditorGUI.DrawRect(boxRect, Colors.Transparent01);
                 boxRect.SlideVertically(1, 0);
-                boxRect.y--;
                 SkyxGUI.Separator(ref boxRect, 0, color);
             }
 

@@ -7,7 +7,7 @@ namespace Skyx.SkyxEditor
     public static class HeaderList
     {
         private const float ExtraElementHeight = SkyxStyles.ElementsMargin + 3; // from separator
-        private const float NewElementHeight = SkyxStyles.FullLineHeight;
+        private const float NewElementHeight = SkyxStyles.LineHeight + SkyxStyles.ElementsMargin;
         private const float HorizontalThreshold = SkyxStyles.ListControlButtonSize * 3;
 
         public static void DrawLayout(SerializedProperty property, string title = null, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, EScopeType scopeType = EScopeType.Header, string newText = null, Action<SerializedProperty> onNewElement = null)
@@ -23,11 +23,14 @@ namespace Skyx.SkyxEditor
             title = string.IsNullOrEmpty(title) ? property.PrettyName() : title;
             newText = string.IsNullOrEmpty(newText) ? "New Entry" : newText;
 
-            using var scope = SkyxStyles.Open(scopeType, ref rect, property, title, color, size);
+            var drawingRect = rect;
+            rect.SlideSameVertically(0);
+
+            using var scope = SkyxStyles.Open(scopeType, ref drawingRect, property, title, color, size);
             if (!scope.IsExpanded) return;
 
-            DrawElements(ref rect, property, true);
-            DrawNewElement(rect, property, newText, onNewElement);
+            DrawElements(ref drawingRect, property, true);
+            DrawNewElement(drawingRect, property, newText, onNewElement);
         }
 
         public static void DrawHeaderlessLayout(SerializedProperty property, string newText = null, Action<SerializedProperty> onNewElement = null, bool canMoveElements = true)
@@ -44,7 +47,7 @@ namespace Skyx.SkyxEditor
             DrawElements(ref rect, property, canMoveElements);
             DrawNewElement(rect, property, newText, onNewElement);
 
-            rect.y += SkyxStyles.FullLineHeight + 2;
+            rect.y += SkyxStyles.FullLineHeight + SkyxStyles.ElementsMargin;
         }
 
         private static void DrawNewElement(Rect rect, SerializedProperty property, string newText, Action<SerializedProperty> onNewElement)

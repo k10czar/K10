@@ -481,7 +481,7 @@ namespace Skyx.SkyxEditor
 
         #region Getters
 
-        public float GetTotalHeight(params string[] excludeFields)
+        public float GetTotalHeightExcluding(params string[] excludeFields)
         {
             var total = 0f;
 
