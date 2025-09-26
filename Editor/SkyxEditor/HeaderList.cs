@@ -7,24 +7,24 @@ namespace Skyx.SkyxEditor
     public static class HeaderList
     {
         private const float ExtraElementHeight = SkyxStyles.ElementsMargin + 3; // from separator
-        private const float NewElementHeight = SkyxStyles.FullLineHeight + SkyxStyles.ElementsMargin;
+        private const float NewElementHeight = SkyxStyles.FullLineHeight;
         private const float HorizontalThreshold = SkyxStyles.ListControlButtonSize * 3;
 
-        public static void DrawLayout(SerializedProperty property, string title = null, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, string newText = null, Action<SerializedProperty> onNewElement = null)
+        public static void DrawLayout(SerializedProperty property, string title = null, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, EScopeType scopeType = EScopeType.Header, string newText = null, Action<SerializedProperty> onNewElement = null)
         {
             var rect = EditorGUILayout.GetControlRect(false, GetPropertyHeight(property, false, size));
-            Draw(ref rect, property, title, color, size, newText, onNewElement, false);
+            Draw(ref rect, property, title, color, size, scopeType, newText, onNewElement, false);
         }
 
-        public static void Draw(ref Rect rect, SerializedProperty property, string title = null, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, string newText = null, Action<SerializedProperty> onNewElement = null, bool resetHeight = true)
+        public static void Draw(ref Rect rect, SerializedProperty property, string title = null, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, EScopeType scopeType = EScopeType.Header, string newText = null, Action<SerializedProperty> onNewElement = null, bool resetHeight = true)
         {
-            if (resetHeight) rect.height = GetPropertyHeight(property, true);
+            if (resetHeight) rect.height = GetPropertyHeight(property, false);
 
             title = string.IsNullOrEmpty(title) ? property.PrettyName() : title;
             newText = string.IsNullOrEmpty(newText) ? "New Entry" : newText;
 
-            using var scope = HeaderScope.Open(ref rect, property, title, color, size);
-            if (!scope.isExpanded) return;
+            using var scope = SkyxStyles.Open(scopeType, ref rect, property, title, color, size);
+            if (!scope.IsExpanded) return;
 
             DrawElements(ref rect, property, true);
             DrawNewElement(rect, property, newText, onNewElement);
@@ -90,7 +90,7 @@ namespace Skyx.SkyxEditor
                 rect.y += elementRect.height + 2;
                 var separator = rect;
                 separator.height = 1;
-                EditorGUI.DrawRect(separator, SkyxStyles.defaultSeparatorColor);
+                EditorGUI.DrawRect(separator, Colors.Transparent02);
 
                 rect.y += SkyxStyles.ElementsMargin;
             }

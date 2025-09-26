@@ -1,17 +1,18 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Pool;
 
 namespace Skyx.SkyxEditor
 {
-    public class HeaderScope : ILayoutScope
+    public class InlineScope : ILayoutScope
     {
         #region Interface
 
-        public static HeaderScope Open(SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+        public static InlineScope Open(SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
             => Open(property, property.PrettyName(), color, size);
 
-        public static HeaderScope Open(SerializedProperty property, string title, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+        public static InlineScope Open(SerializedProperty property, string title, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
         {
             var scope = pool.Get();
 
@@ -21,7 +22,7 @@ namespace Skyx.SkyxEditor
             return scope;
         }
 
-        public static HeaderScope Open(string title, ref bool isExpandedRef, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+        public static InlineScope Open(string title, ref bool isExpandedRef, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
         {
             var scope = pool.Get();
 
@@ -33,10 +34,10 @@ namespace Skyx.SkyxEditor
             return scope;
         }
 
-        public static HeaderScope Open(ref Rect rect, SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+        public static InlineScope Open(ref Rect rect, SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
             => Open(ref rect, property, property.PrettyName(), color, size);
 
-        public static HeaderScope Open(ref Rect rect, SerializedProperty property, string title, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+        public static InlineScope Open(ref Rect rect, SerializedProperty property, string title, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
         {
             var scope = pool.Get();
 
@@ -46,7 +47,7 @@ namespace Skyx.SkyxEditor
             return scope;
         }
 
-        public static HeaderScope Open(ref Rect rect, string title, ref bool isExpandedRef, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+        public static InlineScope Open(ref Rect rect, string title, ref bool isExpandedRef, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
         {
             var scope = pool.Get();
 
@@ -85,14 +86,14 @@ namespace Skyx.SkyxEditor
         private static bool Begin(string title, ref bool isExpandedRef, EColor color, EElementSize size, SerializedProperty property)
         {
             var headerHeight = SkyxStyles.HeaderHeight(size);
-            var headerRect = EditorGUILayout.GetControlRect(false, headerHeight);
-            var boxRect = headerRect;
+            var boxRect = EditorGUILayout.GetControlRect(false, headerHeight);
 
-            BoxGUI.ShrinkHeaderRect(ref headerRect, headerHeight);
+            var headerRect = boxRect;
+            headerRect.height = headerHeight;
 
             if (isExpandedRef)
             {
-                var drawingRect = EditorGUILayout.BeginVertical(SkyxStyles.borderBoxHeaderStyle);
+                var drawingRect = EditorGUILayout.BeginVertical();
                 boxRect.yMax = drawingRect.yMax;
             }
 
@@ -111,12 +112,15 @@ namespace Skyx.SkyxEditor
         {
             initialRect.height -= SkyxStyles.ElementsMargin;
 
+            // Reversing outer box margin
+            initialRect.x -= SkyxStyles.BoxMargin - 1;
+            initialRect.width += (SkyxStyles.BoxMargin - 1) * 2;
+
             var headerHeight = SkyxStyles.HeaderHeight(size);
             var headerRect = initialRect;
-            BoxGUI.ShrinkHeaderRect(ref headerRect, headerHeight);
+            headerRect.height = headerHeight;
 
             var boxRect = initialRect;
-
             initialRect.ApplyBoxMargin(headerHeight);
 
             return ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size, property);
@@ -124,11 +128,10 @@ namespace Skyx.SkyxEditor
 
         private static bool ReallyDraw(Rect headerRect, Rect boxRect, string title, ref bool isExpandedRef, EColor color, EElementSize size, SerializedProperty property)
         {
-            BoxGUI.DrawBox(boxRect, color);
-
             var current = Event.current;
+            var isHovered = headerRect.Contains(current.mousePosition);
 
-            if (current.type == EventType.MouseDown && headerRect.Contains(current.mousePosition))
+            if (current.type == EventType.MouseDown && isHovered)
             {
                 if (current.button == 0)
                 {
@@ -142,8 +145,22 @@ namespace Skyx.SkyxEditor
                 }
             }
 
-            GUI.Button(headerRect, GUIContent.none); // This forces repaint on hover
-            SkyxGUI.Button(headerRect, title, color, size, EButtonType.Plain, null);
+            using (AllColorsScope.Set(Color.clear))
+                GUI.Button(headerRect, GUIContent.none); // This forces repaint on hover
+
+            var headerColor = isHovered || !isExpandedRef ? color : EColor.Clear;
+            SkyxGUI.Button(headerRect, title, headerColor, size, EButtonType.Plain);
+
+            boxRect.ExtractVertical(headerRect.height, 0);
+            SkyxGUI.Separator(ref boxRect, 0, isExpandedRef ? color : EColor.Clear);
+
+            if (isExpandedRef)
+            {
+                EditorGUI.DrawRect(boxRect, Colors.Transparent01);
+                boxRect.SlideVertically(1, 0);
+                boxRect.y--;
+                SkyxGUI.Separator(ref boxRect, 0, color);
+            }
 
             return isExpandedRef;
         }
@@ -152,8 +169,8 @@ namespace Skyx.SkyxEditor
 
         #region Pool
 
-        private static readonly ObjectPool<HeaderScope> pool = new(CreateScope);
-        private static HeaderScope CreateScope() => new();
+        private static readonly ObjectPool<InlineScope> pool = new(CreateScope);
+        private static InlineScope CreateScope() => new();
 
         #endregion
     }

@@ -107,9 +107,9 @@ namespace Skyx.SkyxEditor
             GUILayout.Space(margin.y);
         }
 
-        public static void Separator() => Separator(SkyxStyles.defaultSeparatorColor, SkyxStyles.DefaultSeparatorSize, SkyxStyles.defaultSeparatorMargin);
-        public static void SmallSeparator() => Separator(SkyxStyles.defaultSeparatorColor, SkyxStyles.DefaultSeparatorSize, SkyxStyles.smallSeparatorMargin);
-        public static void NoMarginSeparator() => Separator(SkyxStyles.defaultSeparatorColor, SkyxStyles.DefaultSeparatorSize, SkyxStyles.noSeparatorMargin);
+        public static void Separator() => Separator(Colors.Transparent02, SkyxStyles.DefaultSeparatorSize, SkyxStyles.defaultSeparatorMargin);
+        public static void SmallSeparator() => Separator(Colors.Transparent02, SkyxStyles.DefaultSeparatorSize, SkyxStyles.smallSeparatorMargin);
+        public static void NoMarginSeparator() => Separator(Colors.Transparent02, SkyxStyles.DefaultSeparatorSize, SkyxStyles.noSeparatorMargin);
 
         public static void GroupSeparator(Rect start, Rect end, Color color, float yOffset = -1, float size = SkyxStyles.DefaultSeparatorSize)
         {

@@ -248,7 +248,7 @@ namespace Skyx.SkyxEditor
         #region Buttons
 
         public static bool Button(Rect rect, string label, EColor color = EColor.Support, EElementSize size = EElementSize.SingleLine, EButtonType type = EButtonType.Default, string hint = null)
-            => Button(rect, label, color.Get(), type.GetButton(size, color), hint);
+            => Button(rect, label, type is EButtonType.Plain ? SkyxStyles.HeaderColor(color) : color.Get(), type.GetButton(size, color), hint);
 
         public static bool Button(Rect rect, string label, Color backgroundColor, GUIStyle style = null, string hint = null)
         {
@@ -341,10 +341,10 @@ namespace Skyx.SkyxEditor
             DrawHintOverlay(ref rect, hint);
         }
 
-        public static void Separator(ref Rect rect, float margin = SkyxStyles.ElementsMargin)
+        public static void Separator(ref Rect rect, float margin = SkyxStyles.ElementsMargin, EColor color = EColor.Clear)
         {
             var separator = new Rect(rect.x, rect.y, rect.width, 1);
-            EditorGUI.DrawRect(separator, SkyxStyles.defaultSeparatorColor);
+            EditorGUI.DrawRect(separator, color is EColor.Clear ? Colors.Transparent02 : color.Get());
 
             rect.y += 1 + margin;
         }

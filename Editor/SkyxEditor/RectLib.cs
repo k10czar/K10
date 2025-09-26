@@ -59,7 +59,7 @@ namespace Skyx.SkyxEditor
         public static void SlideSameVertically(this ref Rect rect, float margin = SkyxStyles.ElementsMargin)
             => rect.y += rect.height + margin;
 
-        public static void SlideVertically(ref Rect rect, float height, float margin = SkyxStyles.ElementsMargin)
+        public static void SlideVertically(this ref Rect rect, float height, float margin = SkyxStyles.ElementsMargin)
         {
             rect.y += rect.height + margin;
             rect.height = height;
@@ -93,7 +93,7 @@ namespace Skyx.SkyxEditor
             rect.height = height;
             var newRect = new Rect(rect);
 
-            SlideVertically(ref rect, remaining, margin);
+            rect.SlideVertically(remaining, margin);
 
             return newRect;
         }

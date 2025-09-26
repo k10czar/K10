@@ -48,7 +48,7 @@ namespace Skyx.SkyxEditor
         {
             label ??= property.displayName.AppendInfo(property.managedReferenceValue?.GetType().Name, EColor.Warning, EElementSize.SingleLine);
             using var scope = FoldoutScope.Open(ref rect, property, label, indent: true);
-            if (!scope.isExpanded) return;
+            if (!scope.IsExpanded) return;
 
             DrawManagedReference(ref rect, property);
         }

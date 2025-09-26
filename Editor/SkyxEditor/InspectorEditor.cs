@@ -84,7 +84,7 @@ namespace Skyx.SkyxEditor
                 SkyxLayout.Space();
 
                 using var scope = HeaderScope.Open("Configs", ref isConfigsExpanded);
-                if (scope.isExpanded) DrawConfigsInternal();
+                if (scope.IsExpanded) DrawConfigsInternal();
             }
             else
             {
@@ -252,7 +252,7 @@ namespace Skyx.SkyxEditor
         private void TryShowModifications(PropertyModification[] modifications)
         {
             using var scope = FoldoutScope.Open($"⚠️ {modifications.Length} Modifications!", ref showModifications, EColor.Warning);
-            if (!scope.isExpanded) return;
+            if (!scope.IsExpanded) return;
 
             foreach (PropertyModification modification in modifications)
                 EditorGUILayout.LabelField($"{serializedObject.GetReadablePath(modification.propertyPath)}: {modification.value}");

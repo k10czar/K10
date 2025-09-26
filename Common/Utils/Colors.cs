@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public enum EColor { Primary, Secondary, Info, Success, Warning, Danger, Support, Special, Disabled }
+public enum EColor { Primary, Secondary, Info, Success, Warning, Danger, Support, Special, Disabled, Clear }
 
 public static class Colors
 {
@@ -49,7 +49,7 @@ public static class Colors
     #region EColor Usages
 
     [LazyConst] private static Color[] eColorSequence;
-    public static Color[] EColorSequence => eColorSequence ??= new [] { Console.Primary, Console.Secondary, Console.Info, Console.Success, Console.Warning, Console.Danger, Console.Support, Console.Special, Console.Disabled };
+    public static Color[] EColorSequence => eColorSequence ??= new [] { Console.Primary, Console.Secondary, Console.Info, Console.Success, Console.Warning, Console.Danger, Console.Support, Console.Special, Console.Disabled, Color.clear };
 
     public static Color FromSequence<T>(T value) where T : Enum => FromSequence((int)(object)value);
     public static Color FromSequence(int index)
@@ -358,6 +358,7 @@ public static class Colors
     [ConstLike] public static readonly Color Linen = From( 250, 240, 230);
     [ConstLike] public static readonly Color LavenderBlush = From( 255, 240, 245);
     [ConstLike] public static readonly Color MistyRose = From( 255, 228, 225);
+    [ConstLike] public static readonly Color AlmostWhite = From( 235, 235, 235);
     [ConstLike] public static readonly Color Gainsboro = From( 220, 220, 220);
     [ConstLike] public static readonly Color LightGray = From( 211, 211, 211);
     [ConstLike] public static readonly Color Silver = From( 192, 192, 192);
@@ -372,9 +373,14 @@ public static class Colors
     [ConstLike] public static readonly Color AlmostBlack = From( 25, 25, 25);
     [ConstLike] public static readonly Color Black = From( 0, 0, 0);
 
-    //Old Dark Tones
+    // Old Dark Tones
     [ConstLike] public static readonly Color OliveDrabCamouflage = From( 84, 79, 61 );
     [ConstLike] public static readonly Color BlackOlive = From( 59, 60, 54 );
+
+    // Transparencies
+    [ConstLike] public static readonly Color Transparent01 = new(0f, 0f, 0f, 0.1f);
+    [ConstLike] public static readonly Color Transparent02 = new(0f, 0f, 0f, 0.2f);
+
 
     #endregion
 }

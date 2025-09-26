@@ -5,7 +5,7 @@ using UnityEngine.Pool;
 
 namespace Skyx.SkyxEditor
 {
-    public class FoldoutScope : IDisposable
+    public class FoldoutScope : ILayoutScope
     {
         #region Interface
 
@@ -18,7 +18,7 @@ namespace Skyx.SkyxEditor
 
             scope.indent = indent;
             scope.usesLayout = true;
-            scope.isExpanded = scope.BeginWrapper(title, property, color, size);
+            scope.IsExpanded = scope.BeginWrapper(title, property, color, size);
 
             return scope;
         }
@@ -29,7 +29,7 @@ namespace Skyx.SkyxEditor
 
             scope.indent = indent;
             scope.usesLayout = true;
-            scope.isExpanded = scope.GetDrawingRects(title, ref isExpandedRef, color, size, null);
+            scope.IsExpanded = scope.GetDrawingRects(title, ref isExpandedRef, color, size, null);
 
             return scope;
         }
@@ -40,7 +40,7 @@ namespace Skyx.SkyxEditor
 
             scope.indent = indent;
             scope.usesLayout = false;
-            scope.isExpanded = scope.AdjustAvailableRect(ref rect, title, ref isExpandedRef, color, size, null);
+            scope.IsExpanded = scope.AdjustAvailableRect(ref rect, title, ref isExpandedRef, color, size, null);
 
             return scope;
         }
@@ -54,7 +54,7 @@ namespace Skyx.SkyxEditor
 
             scope.indent = indent;
             scope.usesLayout = false;
-            scope.isExpanded = scope.BeginWrapper(ref rect, title, property, color, size);
+            scope.IsExpanded = scope.BeginWrapper(ref rect, title, property, color, size);
 
             return scope;
         }
@@ -63,13 +63,13 @@ namespace Skyx.SkyxEditor
 
         #region Instance Info
 
-        public bool isExpanded;
+        public bool IsExpanded { get; private set; }
         private bool usesLayout;
         private bool indent;
 
         public void Dispose()
         {
-            if (isExpanded)
+            if (IsExpanded)
             {
                 if (usesLayout) EditorGUILayout.EndVertical();
                 if (indent) EditorGUI.indentLevel--;

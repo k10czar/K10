@@ -5,28 +5,10 @@ using UnityEngine;
 
 namespace Skyx.SkyxEditor
 {
-    public enum EElementSize
-    {
-        Primary,
-        Secondary,
-        SingleLine,
-        Mini,
-    }
-
-    public enum EButtonType
-    {
-        Default,
-        DropDown,
-        Plain,
-        Toolbar,
-        DropDownToolbar,
-    }
-
     public static class SkyxStyles
     {
         #region Constants
 
-        public static readonly Color defaultSeparatorColor = new(0f, 0f, 0f, 0.2f);
         public static readonly Vector2 defaultSeparatorMargin = new(10f, 10f);
         public static readonly Vector2 smallSeparatorMargin = new(2f, 2f);
         public static readonly Vector2 noSeparatorMargin = new(-1f, -1f);
@@ -63,7 +45,7 @@ namespace Skyx.SkyxEditor
         private static readonly RectOffset bigPadding = new (8, 8, 5, 5);
         private static readonly RectOffset hugePadding = new (8, 8, 8, 8);
 
-        private static Texture2D CreateTexture(Color color)
+        public static Texture2D CreateTexture(Color color)
         {
             var texture = new Texture2D(1, 1);
             texture.SetPixel(0, 0, color);
@@ -84,7 +66,7 @@ namespace Skyx.SkyxEditor
         public static GUIStyle CenterBoldStyle => Style("centerBoldLabel", BoldStyle, TextAnchor.MiddleCenter);
         public static GUIStyle Header => Style("header", CenterBoldStyle, BigFontSize, padding: bigPadding);
         public static GUIStyle HugeHeader => Style("hugeHeader", Header, HugeFontSize, padding: hugePadding);
-        public static GUIStyle PlainBGLabel => Style("plainBGLabel", CenterBoldStyle, padding: bigPadding, background: EditorGUIUtility.whiteTexture, hoverBackground: CreateTexture(Colors.LightGray));
+        public static GUIStyle PlainBGLabel => Style("plainBGLabel", CenterBoldStyle, padding: bigPadding, background: EditorGUIUtility.whiteTexture, hoverBackground: CreateTexture(Colors.AlmostWhite));
         public static GUIStyle PlainBGHeader => Style("plainBGHeader", Header, background: EditorGUIUtility.whiteTexture);
         public static GUIStyle InlaidHintLabel => Style("InlaidHint", DefaultLabel, TextAnchor.MiddleRight);
 
@@ -102,6 +84,12 @@ namespace Skyx.SkyxEditor
         public static GUIStyle TextAreaStyle => Style("TextArea", GUI.skin.textArea, margin: noPadding, padding: defaultPadding);
 
         public static GUIStyle DropDownButton = new("DropDownToggleButton");
+        public static GUIStyle InvisibleButton => new GUIStyle(GUI.skin.button)
+        {
+            normal = { background = null },
+            active = { background = null },
+            hover = { background = null },
+        };
 
         public static GUIStyle GetPlainBG(this EElementSize size) => size switch
         {
@@ -142,6 +130,8 @@ namespace Skyx.SkyxEditor
             if (border != null) newStyle.border = border;
             if (fontSize != 0) newStyle.fontSize = fontSize;
             if (background != null) newStyle.normal.background = background;
+            if (hoverBackground != null) newStyle.hover.background = hoverBackground;
+
             if (margin != null) newStyle.margin = margin;
 
             loadedStyles[name] = newStyle;
@@ -177,8 +167,11 @@ namespace Skyx.SkyxEditor
                 EButtonType.Plain => PlainBGLabel,
                 EButtonType.Toolbar => new GUIStyle("toolbarbutton") { fixedHeight = 0 },
                 EButtonType.DropDownToolbar => EditorStyles.toolbarDropDown,
+                EButtonType.Inlaid => PlainBGLabel,
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
+
+            // baseStyle.
 
             var fontSize = size switch
             {
@@ -189,9 +182,18 @@ namespace Skyx.SkyxEditor
                 _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
             };
 
+            var padding = size switch
+            {
+                EElementSize.Primary => hugePadding,
+                EElementSize.Secondary => bigPadding,
+                EElementSize.SingleLine => defaultPadding,
+                EElementSize.Mini => miniPadding,
+                _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
+            };
+
             var textColor = type is EButtonType.Plain ? color.GetButtonLabelColor() : DefaultLabel.normal.textColor;
 
-            style = Style($"{type}.{size}.{color}", baseStyle, textColor: textColor, fontSize: fontSize);
+            style = Style($"{type}.{size}.{color}", baseStyle, textColor: textColor, fontSize: fontSize, padding: padding);
 
             buttonStyles[(type, size, color)] = style;
             return style;
@@ -201,19 +203,20 @@ namespace Skyx.SkyxEditor
         {
             EColor.Primary => Colors.LightGray,
             EColor.Secondary => Colors.LightGray,
-            EColor.Info => Colors.AlmostBlack,
+            EColor.Info => Colors.LightGray,
             EColor.Success => Colors.AlmostBlack,
             EColor.Warning => Colors.LightGray,
             EColor.Danger => Colors.LightGray,
             EColor.Support => Colors.AlmostBlack,
             EColor.Special => Colors.LightGray,
             EColor.Disabled => Colors.LightGray,
+            EColor.Clear => Colors.LightGray,
             _ => throw new ArgumentOutOfRangeException(nameof(color), color, null)
         };
 
         #endregion
 
-        #region Box
+        #region Scopes
 
         public const float ListControlButtonSize = MiniButtonSize;
         public const float BoxMargin = 5;
@@ -263,6 +266,7 @@ namespace Skyx.SkyxEditor
             Color.clear, // Support
             Color.clear, // Special
             Colors.Console.Dark.AddLight(-.08f), // Disabled
+            Color.clear, // Clear
         };
 
         private static readonly Color[] boxColors =
@@ -305,6 +309,48 @@ namespace Skyx.SkyxEditor
             margin = new RectOffset(3, 3, 2, 2),
             padding = new RectOffset(5, 5, 2, 5)
         };
+
+        public static ILayoutScope Open(EScopeType scopeType, SerializedProperty property, EColor color, EElementSize size)
+            => Open(scopeType, property, property.PrettyName(), color, size);
+
+        public static ILayoutScope Open(EScopeType scopeType, SerializedProperty property, string title, EColor color, EElementSize size) =>
+            scopeType switch
+            {
+                EScopeType.Header => HeaderScope.Open(property, title, color, size),
+                EScopeType.Foldout => FoldoutScope.Open(property, title, color, size),
+                EScopeType.Inline => InlineScope.Open(property, title, color, size),
+                _ => throw new ArgumentOutOfRangeException(nameof(scopeType), scopeType, null)
+            };
+
+        public static ILayoutScope Open(EScopeType scopeType, string title, ref bool isExpandedRef, EColor color, EElementSize size) =>
+            scopeType switch
+            {
+                EScopeType.Header => HeaderScope.Open(title, ref isExpandedRef, color, size),
+                EScopeType.Foldout => FoldoutScope.Open(title, ref isExpandedRef, color, size),
+                EScopeType.Inline => InlineScope.Open(title, ref isExpandedRef, color, size),
+                _ => throw new ArgumentOutOfRangeException(nameof(scopeType), scopeType, null)
+            };
+
+        public static ILayoutScope Open(EScopeType scopeType, ref Rect rect, SerializedProperty property, EColor color, EElementSize size)
+            => Open(scopeType, ref rect, property, property.PrettyName(), color, size);
+
+        public static ILayoutScope Open(EScopeType scopeType, ref Rect rect, SerializedProperty property, string title, EColor color, EElementSize size) =>
+            scopeType switch
+            {
+                EScopeType.Header => HeaderScope.Open(ref rect, property, title, color, size),
+                EScopeType.Foldout => FoldoutScope.Open(ref rect, property, title, color, size),
+                EScopeType.Inline => InlineScope.Open(ref rect, property, title, color, size),
+                _ => throw new ArgumentOutOfRangeException(nameof(scopeType), scopeType, null)
+            };
+
+        public static ILayoutScope Open(EScopeType scopeType, ref Rect rect, string title, ref bool isExpandedRef, EColor color, EElementSize size) =>
+            scopeType switch
+            {
+                EScopeType.Header => HeaderScope.Open(ref rect, title, ref isExpandedRef, color, size),
+                EScopeType.Foldout => FoldoutScope.Open(ref rect, title, ref isExpandedRef, color, size),
+                EScopeType.Inline => InlineScope.Open(ref rect, title, ref isExpandedRef, color, size),
+                _ => throw new ArgumentOutOfRangeException(nameof(scopeType), scopeType, null)
+            };
 
         #endregion
     }
