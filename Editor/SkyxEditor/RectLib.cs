@@ -54,10 +54,16 @@ namespace Skyx.SkyxEditor
             => SkyxGUI.DivideRect(ref rect, totalWidth, elementsCount);
 
         public static void DivideVertically(this ref Rect rect, int elementsCount)
-            => SkyxGUI.DivideRectVertically(ref rect, elementsCount);
+            => rect.height = (rect.height - (SkyxStyles.ElementsMargin * (elementsCount - 1))) / elementsCount;
 
-        public static void SlideSameVertically(this ref Rect rect)
-            => SkyxGUI.SlideSameVertically(ref rect);
+        public static void SlideSameVertically(this ref Rect rect, float margin = SkyxStyles.ElementsMargin)
+            => rect.y += rect.height + margin;
+
+        public static void SlideVertically(ref Rect rect, float height, float margin = SkyxStyles.ElementsMargin)
+        {
+            rect.y += rect.height + margin;
+            rect.height = height;
+        }
 
         public static Rect ExtractRect(this ref Rect rect, float width, bool fromEnd = false)
             => SkyxGUI.ExtractRect(ref rect, width, fromEnd);
@@ -79,6 +85,18 @@ namespace Skyx.SkyxEditor
 
         public static Rect ExtractHint(this ref Rect rect, bool fromEnd = false)
             => SkyxGUI.ExtractHint(ref rect, fromEnd);
+
+        public static Rect ExtractVertical(this ref Rect rect, float height, float margin = SkyxStyles.ElementsMargin)
+        {
+            var remaining = rect.height - height - margin;
+
+            rect.height = height;
+            var newRect = new Rect(rect);
+
+            SlideVertically(ref rect, remaining, margin);
+
+            return newRect;
+        }
 
         public static void AdjustToLine(this ref Rect rect, bool applyMargin = true)
         {

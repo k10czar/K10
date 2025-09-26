@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -28,25 +29,23 @@ namespace Skyx.SkyxEditor
 
         #region Buttons
 
-        private static GUIStyle noBackgroundButton;
-
-        public static bool PrimaryButton(string label, params GUILayoutOption[] layouts) => Button(label, Colors.Console.Dark, null, layouts);
-        public static bool SecondaryButton(string label, params GUILayoutOption[] layouts) => Button(label, Colors.Console.GrayOut, null, layouts);
-        public static bool DangerButton(string label, params GUILayoutOption[] layouts) => Button(label, Colors.Console.Danger, null, layouts);
-
         public static bool PlainBGButton(string label, EColor color, EElementSize size = EElementSize.SingleLine)
             => Button(label, SkyxStyles.HeaderColor(color), size.GetPlainBG());
 
-        public static bool PlainBGButton(string label, Color color, EElementSize size = EElementSize.SingleLine)
-            => Button(label, color, size.GetPlainBG());
-
         public static bool PlainBGHeaderButton(string label, EColor color) => Button(label, color.Get(), SkyxStyles.PlainBGHeader);
         public static bool PlainBGHeaderButton(string label, Color color) => Button(label, color, SkyxStyles.PlainBGHeader);
-        public static bool PlainBGHeaderButton(string label, bool success) => Button(label, success ? Colors.Console.Success : Colors.Console.Danger, SkyxStyles.PlainBGHeader);
 
-        public static bool Button(string label) => Button(label, Color.white, SkyxStyles.ButtonStyle);
-        public static bool Button(string label, EColor color) => Button(label, color.Get(), SkyxStyles.ButtonStyle);
-        public static bool Button(string label, EColor color, EElementSize size) => Button(label, color.Get(), size.GetButton());
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static bool Button(string label) => Button(label, Color.white, SkyxStyles.ButtonStyle);
+        //
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static bool Button(string label, EColor color) => Button(label, color.Get(), SkyxStyles.ButtonStyle);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Button(string label, EColor color = EColor.Support, EElementSize size = EElementSize.SingleLine, EButtonType type = EButtonType.Default)
+            => Button(label, color.Get(), type.GetButton(size, color));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Button(string label, Color backgroundColor) => Button(label, backgroundColor, SkyxStyles.ButtonStyle);
 
         public static bool Button(string label, Color backgroundColor, GUIStyle style, params GUILayoutOption[] layouts)
@@ -58,8 +57,6 @@ namespace Skyx.SkyxEditor
 
             return result;
         }
-
-        public static bool FixedSizePrimaryButton(string label, float size) => PrimaryButton(label, GUILayout.Width(size));
 
         #endregion
 

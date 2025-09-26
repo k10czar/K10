@@ -247,11 +247,8 @@ namespace Skyx.SkyxEditor
 
         #region Buttons
 
-        public static bool HeaderButton(Rect rect, string label, EColor color, EElementSize size)
-            => Button(rect, label, color.Get(), size.GetButton());
-
-        public static bool Button(Rect rect, string label, EColor color, string hint = null)
-            => Button(rect, label, color.Get(), SkyxStyles.ButtonStyle, hint);
+        public static bool Button(Rect rect, string label, EColor color = EColor.Support, EElementSize size = EElementSize.SingleLine, EButtonType type = EButtonType.Default, string hint = null)
+            => Button(rect, label, color.Get(), type.GetButton(size, color), hint);
 
         public static bool Button(Rect rect, string label, Color backgroundColor, GUIStyle style = null, string hint = null)
         {
@@ -266,13 +263,13 @@ namespace Skyx.SkyxEditor
         }
 
         // see: https://github.com/halak/unity-editor-icons
-        public static bool ButtonBuiltInIcon(ref Rect rect, string builtInIconName, EColor color, string hint, bool fromEnd = false)
+        public static bool ButtonBuiltInIcon(ref Rect rect, string builtInIconName, EColor color, string hint, bool fromEnd = false, EElementSize size = EElementSize.Mini, EButtonType type = EButtonType.Default)
         {
             var buttonRect = ExtractRect(ref rect, SkyxStyles.MiniButtonSize, fromEnd);
 
             using var backgroundScope = BackgroundColorScope.Set(color);
             var icon = EditorGUIUtility.IconContent(builtInIconName);
-            var result = GUI.Button(buttonRect, icon, SkyxStyles.MiniButtonStyle);
+            var result = GUI.Button(buttonRect, icon, type.GetButton(size, color));
 
             DrawHintOverlay(ref buttonRect, hint);
 
@@ -280,19 +277,19 @@ namespace Skyx.SkyxEditor
         }
 
         public static bool MiniSuccessButton(ref Rect rect, string label, string hint, bool fromEnd = false)
-            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Success, SkyxStyles.MiniButtonStyle, hint);
+            => Button(ExtractMiniButton(ref rect, fromEnd), label, EColor.Success, EElementSize.Mini, EButtonType.Default, hint);
 
         public static bool MiniEnableButton(ref Rect rect, string label, string hint, bool fromEnd = false)
-            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Secondary, SkyxStyles.MiniButtonStyle, hint);
+            => Button(ExtractMiniButton(ref rect, fromEnd), label, EColor.Secondary, EElementSize.Mini, EButtonType.Default, hint);
 
         public static bool MiniWarningButton(ref Rect rect, string label, string hint, bool fromEnd = false)
-            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Warning, SkyxStyles.MiniButtonStyle, hint);
+            => Button(ExtractMiniButton(ref rect, fromEnd), label, EColor.Warning, EElementSize.Mini, EButtonType.Default, hint);
 
         public static bool MiniDangerButton(ref Rect rect, string label, string hint, bool fromEnd = false)
-            => Button(ExtractMiniButton(ref rect, fromEnd), label, Colors.Console.Danger, SkyxStyles.MiniButtonStyle, hint);
+            => Button(ExtractMiniButton(ref rect, fromEnd), label, EColor.Danger, EElementSize.Mini, EButtonType.Default, hint);
 
         public static bool MiniButton(ref Rect rect, string label, EColor color, string hint = null, bool fromEnd = false)
-            => Button(ExtractMiniButton(ref rect, fromEnd), label, color.Get(), SkyxStyles.MiniButtonStyle, hint);
+            => Button(ExtractMiniButton(ref rect, fromEnd), label, color, EElementSize.Mini, EButtonType.Default, hint);
 
         #endregion
 
@@ -433,13 +430,6 @@ namespace Skyx.SkyxEditor
         {
             rect.width = DivideRect(totalWidth, elementsCount);
         }
-
-        public static void DivideRectVertically(ref Rect rect, int elementsCount)
-        {
-            rect.height = (rect.height - (SkyxStyles.ElementsMargin * (elementsCount - 1))) / elementsCount;
-        }
-
-        public static void SlideSameVertically(ref Rect rect) => rect.y += rect.height + SkyxStyles.ElementsMargin;
 
         public static Rect ExtractRect(ref Rect rect, float width, bool fromEnd = false)
         {

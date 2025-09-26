@@ -10,6 +10,16 @@ namespace Skyx.SkyxEditor
         Primary,
         Secondary,
         SingleLine,
+        Mini,
+    }
+
+    public enum EButtonType
+    {
+        Default,
+        DropDown,
+        Plain,
+        Toolbar,
+        DropDownToolbar,
     }
 
     public static class SkyxStyles
@@ -39,9 +49,10 @@ namespace Skyx.SkyxEditor
 
         #region GUIStyles
 
-        #region Support Data
+        #region Support
 
         public const int SmallFontSize = 10;
+        public const int MiniFontSize = 12;
         public const int DefaultFontSize = 13;
         public const int BigFontSize = 16;
         public const int HugeFontSize = 19;
@@ -51,6 +62,15 @@ namespace Skyx.SkyxEditor
         private static readonly RectOffset defaultPadding = new (6, 6, 2, 2);
         private static readonly RectOffset bigPadding = new (8, 8, 5, 5);
         private static readonly RectOffset hugePadding = new (8, 8, 8, 8);
+
+        private static Texture2D CreateTexture(Color color)
+        {
+            var texture = new Texture2D(1, 1);
+            texture.SetPixel(0, 0, color);
+            texture.Apply();
+
+            return texture;
+        }
 
         #endregion
 
@@ -64,7 +84,7 @@ namespace Skyx.SkyxEditor
         public static GUIStyle CenterBoldStyle => Style("centerBoldLabel", BoldStyle, TextAnchor.MiddleCenter);
         public static GUIStyle Header => Style("header", CenterBoldStyle, BigFontSize, padding: bigPadding);
         public static GUIStyle HugeHeader => Style("hugeHeader", Header, HugeFontSize, padding: hugePadding);
-        public static GUIStyle PlainBGLabel => Style("plainBGLabel", CenterBoldStyle, padding: bigPadding, background: EditorGUIUtility.whiteTexture);
+        public static GUIStyle PlainBGLabel => Style("plainBGLabel", CenterBoldStyle, padding: bigPadding, background: EditorGUIUtility.whiteTexture, hoverBackground: CreateTexture(Colors.LightGray));
         public static GUIStyle PlainBGHeader => Style("plainBGHeader", Header, background: EditorGUIUtility.whiteTexture);
         public static GUIStyle InlaidHintLabel => Style("InlaidHint", DefaultLabel, TextAnchor.MiddleRight);
 
@@ -83,14 +103,6 @@ namespace Skyx.SkyxEditor
 
         public static GUIStyle DropDownButton = new("DropDownToggleButton");
 
-        public static GUIStyle GetButton(this EElementSize size) => size switch
-        {
-            EElementSize.Primary => HeaderButtonStyle,
-            EElementSize.Secondary => HeaderButtonStyle,
-            EElementSize.SingleLine => ButtonStyle,
-            _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
-        };
-
         public static GUIStyle GetPlainBG(this EElementSize size) => size switch
         {
             EElementSize.Primary => PlainBGHeader,
@@ -99,21 +111,7 @@ namespace Skyx.SkyxEditor
             _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
         };
 
-        public static GUIStyle GetPlainBG(this EElementSize size, EColor color) => GetPlainBG(size).With(color.GetPlainBGLabelColor());
-
-        public static Color GetPlainBGLabelColor(this EColor color) => color switch
-        {
-            EColor.Primary => Colors.LightGray,
-            EColor.Secondary => Colors.LightGray,
-            EColor.Info => Colors.AlmostBlack,
-            EColor.Success => Colors.AlmostBlack,
-            EColor.Warning => Colors.LightGray,
-            EColor.Danger => Colors.LightGray,
-            EColor.Support => Colors.AlmostBlack,
-            EColor.Special => Colors.LightGray,
-            EColor.Disabled => Colors.LightGray,
-            _ => throw new ArgumentOutOfRangeException(nameof(color), color, null)
-        };
+        public static GUIStyle GetPlainBG(this EElementSize size, EColor color) => GetPlainBG(size).With(color.GetButtonLabelColor());
 
         #region Styles Management
 
@@ -128,7 +126,7 @@ namespace Skyx.SkyxEditor
         private static GUIStyle Style(string name, GUIStyle baseStyle, FontStyle fontStyle, TextAnchor alignment)
             => Style(name, baseStyle, fontStyle: fontStyle, hasFontStyle: true, alignment: alignment, hasAlignment: true);
 
-        private static GUIStyle Style(string name, GUIStyle baseStyle, int fontSize = 0, bool hasAlignment = false, TextAnchor alignment = TextAnchor.MiddleLeft, bool hasFontStyle = false, FontStyle fontStyle = FontStyle.Bold, RectOffset padding = null, Texture2D background = null, RectOffset margin = null, Color? textColor = null, RectOffset border = null)
+        private static GUIStyle Style(string name, GUIStyle baseStyle, int fontSize = 0, bool hasAlignment = false, TextAnchor alignment = TextAnchor.MiddleLeft, bool hasFontStyle = false, FontStyle fontStyle = FontStyle.Bold, RectOffset padding = null, Texture2D background = null, RectOffset margin = null, Color? textColor = null, RectOffset border = null, Texture2D hoverBackground = null)
         {
             if (loadedStyles.TryGetValue(name, out var style)) return style;
 
@@ -152,6 +150,66 @@ namespace Skyx.SkyxEditor
         }
 
         #endregion
+
+        #endregion
+
+        #region Buttons
+
+        private static readonly Dictionary<(EButtonType, EElementSize, EColor), GUIStyle> buttonStyles = new();
+
+        public static GUIStyle GetButton(this EElementSize size) => size switch
+        {
+            EElementSize.Primary => HeaderButtonStyle,
+            EElementSize.Secondary => HeaderButtonStyle,
+            EElementSize.SingleLine => ButtonStyle,
+            _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
+        };
+
+        public static GUIStyle GetButton(this EButtonType type, EElementSize size, EColor color)
+        {
+            if (buttonStyles.TryGetValue((type, size, color), out var style)) return style;
+
+            var baseStyle = type switch
+            {
+                EButtonType.Default when size is EElementSize.Mini => MiniButtonStyle,
+                EButtonType.Default => GUI.skin.button,
+                EButtonType.DropDown => EditorStyles.popup,
+                EButtonType.Plain => PlainBGLabel,
+                EButtonType.Toolbar => new GUIStyle("toolbarbutton") { fixedHeight = 0 },
+                EButtonType.DropDownToolbar => EditorStyles.toolbarDropDown,
+                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+            };
+
+            var fontSize = size switch
+            {
+                EElementSize.Primary => HugeFontSize,
+                EElementSize.Secondary => BigFontSize,
+                EElementSize.SingleLine => DefaultFontSize,
+                EElementSize.Mini => MiniFontSize,
+                _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
+            };
+
+            var textColor = type is EButtonType.Plain ? color.GetButtonLabelColor() : DefaultLabel.normal.textColor;
+
+            style = Style($"{type}.{size}.{color}", baseStyle, textColor: textColor, fontSize: fontSize);
+
+            buttonStyles[(type, size, color)] = style;
+            return style;
+        }
+
+        private static Color GetButtonLabelColor(this EColor color) => color switch
+        {
+            EColor.Primary => Colors.LightGray,
+            EColor.Secondary => Colors.LightGray,
+            EColor.Info => Colors.AlmostBlack,
+            EColor.Success => Colors.AlmostBlack,
+            EColor.Warning => Colors.LightGray,
+            EColor.Danger => Colors.LightGray,
+            EColor.Support => Colors.AlmostBlack,
+            EColor.Special => Colors.LightGray,
+            EColor.Disabled => Colors.LightGray,
+            _ => throw new ArgumentOutOfRangeException(nameof(color), color, null)
+        };
 
         #endregion
 
@@ -247,37 +305,6 @@ namespace Skyx.SkyxEditor
             margin = new RectOffset(3, 3, 2, 2),
             padding = new RectOffset(5, 5, 2, 5)
         };
-
-        #endregion
-
-        #region Icons & Textures
-
-        public static GUIStyle IconButton => GUI.skin.FindStyle("IconButton");
-        public static readonly GUIContent plusIcon = EditorGUIUtility.TrIconContent("Toolbar Plus", "Add Item");
-        public static readonly GUIContent minusIcon = EditorGUIUtility.TrIconContent("Toolbar Minus", "Remove Item");
-        public static readonly GUIContent trashIcon = EditorGUIUtility.TrIconContent("TreeEditor.Trash", "Remove Item");
-        public static readonly GUIContent refreshIcon = EditorGUIUtility.TrIconContent("Refresh", "Refresh");
-        public static readonly GUIContent linkedIcon = EditorGUIUtility.TrIconContent("Linked");
-        public static readonly GUIContent unLinkedIcon = EditorGUIUtility.TrIconContent("Unlinked");
-        public static readonly GUIContent databaseIcon = EditorGUIUtility.TrIconContent("Package Manager");
-        public static readonly GUIContent greenLightIcon = EditorGUIUtility.TrIconContent("greenLight");
-        public static readonly GUIContent orangeLightIcon = EditorGUIUtility.TrIconContent("orangeLight");
-        public static readonly GUIContent downArrowIcon = EditorGUIUtility.TrIconContent("CollabPull");
-        public static readonly GUIContent upArrowIcon = EditorGUIUtility.TrIconContent("CollabPush");
-
-
-        public static Texture2D TransparentCheckerTexture
-        {
-            get
-            {
-                if (EditorGUIUtility.isProSkin)
-                {
-                    return EditorGUIUtility.LoadRequired("Previews/Textures/textureCheckerDark.png") as Texture2D;
-                }
-
-                return EditorGUIUtility.LoadRequired("Previews/Textures/textureChecker.png") as Texture2D;
-            }
-        }
 
         #endregion
     }
