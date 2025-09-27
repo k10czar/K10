@@ -8,8 +8,8 @@ namespace Skyx.SkyxEditor
     {
         private static readonly ProfilerMarker drawMarker = new("PropertyEditor.Draw");
 
-        protected T GetTarget<T>(SerializedProperty property) where T: class => property.GetValue<T>();
-        protected PropertyCollection GetProperties(SerializedProperty property) => PropertyCollection.Get(property);
+        protected static T GetTarget<T>(SerializedProperty property) where T: class => property.GetValue<T>();
+        protected static PropertyCollection GetProperties(SerializedProperty property) => PropertyCollection.Get(property);
 
         protected abstract void Draw(Rect rect, SerializedProperty property, GUIContent label);
 

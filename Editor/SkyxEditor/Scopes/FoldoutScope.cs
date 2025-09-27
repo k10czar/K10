@@ -83,7 +83,7 @@ namespace Skyx.SkyxEditor
 
         private bool ReallyDraw(Rect headerRect, Rect boxRect, string title, ref bool isExpandedRef, EColor color, EElementSize size, SerializedProperty property)
         {
-            BoxGUI.DrawBox(boxRect, color);
+            BoxGUI.DrawBox(ref boxRect, color);
 
             var drawingRect = headerRect;
             drawingRect.ApplyStartMargin(10);

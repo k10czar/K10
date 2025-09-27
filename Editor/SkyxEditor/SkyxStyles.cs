@@ -84,12 +84,6 @@ namespace Skyx.SkyxEditor
         public static GUIStyle TextAreaStyle => Style("TextArea", GUI.skin.textArea, margin: noPadding, padding: defaultPadding);
 
         public static GUIStyle DropDownButton = new("DropDownToggleButton");
-        public static GUIStyle InvisibleButton => new GUIStyle(GUI.skin.button)
-        {
-            normal = { background = null },
-            active = { background = null },
-            hover = { background = null },
-        };
 
         public static GUIStyle GetPlainBG(this EElementSize size) => size switch
         {
@@ -100,6 +94,22 @@ namespace Skyx.SkyxEditor
         };
 
         public static GUIStyle GetPlainBG(this EElementSize size, EColor color) => GetPlainBG(size).With(color.GetButtonLabelColor());
+
+        private static Color GetButtonLabelColor(this EColor color) => color switch
+        {
+            EColor.Primary => Colors.LightGray,
+            EColor.Secondary => Colors.LightGray,
+            EColor.Info => Colors.LightGray,
+            EColor.Success => Colors.LightGray,
+            EColor.Warning => Colors.LightGray,
+            EColor.Danger => Colors.LightGray,
+            EColor.Support => Colors.AlmostBlack,
+            EColor.Special => Colors.LightGray,
+            EColor.Disabled => Colors.LightGray,
+            EColor.Clear => Colors.LightGray,
+            EColor.Backdrop => Colors.LightGray,
+            _ => throw new ArgumentOutOfRangeException(nameof(color), color, null)
+        };
 
         #region Styles Management
 
@@ -171,8 +181,6 @@ namespace Skyx.SkyxEditor
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
 
-            // baseStyle.
-
             var fontSize = size switch
             {
                 EElementSize.Primary => HugeFontSize,
@@ -191,29 +199,11 @@ namespace Skyx.SkyxEditor
                 _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
             };
 
-            var textColor = type is EButtonType.Plain ? color.GetButtonLabelColor() : DefaultLabel.normal.textColor;
-
-            style = Style($"{type}.{size}.{color}", baseStyle, textColor: textColor, fontSize: fontSize, padding: padding);
+            style = Style($"{type}.{size}.{color}", baseStyle, textColor: Colors.LightGray, fontSize: fontSize, padding: padding);
 
             buttonStyles[(type, size, color)] = style;
             return style;
         }
-
-        private static Color GetButtonLabelColor(this EColor color) => color switch
-        {
-            EColor.Primary => Colors.LightGray,
-            EColor.Secondary => Colors.LightGray,
-            EColor.Info => Colors.LightGray,
-            EColor.Success => Colors.AlmostBlack,
-            EColor.Warning => Colors.LightGray,
-            EColor.Danger => Colors.LightGray,
-            EColor.Support => Colors.AlmostBlack,
-            EColor.Special => Colors.LightGray,
-            EColor.Disabled => Colors.LightGray,
-            EColor.Clear => Colors.LightGray,
-            EColor.Backdrop => Colors.LightGray,
-            _ => throw new ArgumentOutOfRangeException(nameof(color), color, null)
-        };
 
         #endregion
 
@@ -277,11 +267,13 @@ namespace Skyx.SkyxEditor
             Colors.Console.Dark,
             Color.white,
             Color.white,
-            Colors.Yellow, // Warningw
-            Colors.LightSalmon,
-            Color.white,
-            Colors.Console.Special,
-            Colors.Console.Dark,
+            Colors.Yellow, // Warning
+            Colors.LightSalmon, // Danger
+            Color.white, // Support
+            Colors.Console.Special, // Special
+            Colors.Console.Dark, // Disabled
+            Color.clear, // Clear,
+            Color.white, // Backdrop
         };
 
         private static readonly GUIStyle[] boxStyles =
@@ -295,16 +287,18 @@ namespace Skyx.SkyxEditor
             new("TE BoxBackground"), // Support
             new("HelpBox"), // Special
             new("HelpBox"), // Disabled
+            new(GUIStyle.none), // Clear
+            new("Wizard Box"), // Backdrop
         };
 
         public static GUIStyle HeaderStyle(EElementSize size, EColor color) => headerText[(int)color][(int)size];
-        public static float HeaderHeight(EElementSize size) => headerHeights[(int)size];
-        public static float ScopeTotalExtraHeight(EElementSize size) => headerHeights[(int)size] + (3 * ElementsMargin);
-        public static float ClosedScopeHeight(EElementSize size) => headerHeights[(int)size] + ElementsMargin;
-
         public static GUIStyle BoxStyle(EColor color) => boxStyles[(int)color];
         public static Color HeaderColor(EColor color) => headerColors[(int)color];
         public static Color BoxColor(EColor color) => boxColors[(int)color];
+
+        public static float HeaderHeight(EElementSize size) => headerHeights[(int)size];
+        public static float ScopeTotalExtraHeight(EElementSize size) => headerHeights[(int)size] + (3 * ElementsMargin);
+        public static float ClosedScopeHeight(EElementSize size) => headerHeights[(int)size] + ElementsMargin;
 
         public static readonly GUIStyle borderBoxHeaderStyle = new()
         {

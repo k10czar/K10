@@ -111,7 +111,7 @@ namespace Skyx.SkyxEditor
 
             rect.height = (isHorizontal ? 1 : count) * SkyxStyles.ListControlButtonSize;
 
-            BoxGUI.DrawBox(rect, EColor.Secondary);
+            BoxGUI.DrawBox(ref rect, EColor.Secondary);
             rect.ApplyMargin(3);
 
             if (isHorizontal) rect.DivideRect(count);

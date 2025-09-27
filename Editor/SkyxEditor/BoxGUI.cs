@@ -5,9 +5,9 @@ namespace Skyx.SkyxEditor
 {
     public static class BoxGUI
     {
-        public static void DrawBox(Rect rect, EColor color) => DrawBox(rect, SkyxStyles.BoxColor(color), SkyxStyles.BoxStyle(color));
+        public static void DrawBox(ref Rect rect, EColor color) => DrawBox(ref rect, SkyxStyles.BoxColor(color), SkyxStyles.BoxStyle(color));
 
-        public static void DrawBox(Rect rect, Color color, GUIStyle boxStyle)
+        public static void DrawBox(ref Rect rect, Color color, GUIStyle boxStyle)
         {
             using var scope = BackgroundColorScope.Set(color);
             GUI.Box(rect, GUIContent.none, boxStyle);
