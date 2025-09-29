@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEditor;
 
@@ -34,5 +35,7 @@ namespace Skyx.SkyxEditor
         public static string Pretty(this string value) => ObjectNames.NicifyVariableName(value);
 
         public static string Clean(this string source) => Regex.Replace(source, "[^a-zA-Z0-9]", "");
+
+        public static int LineCount(this string source) => source.Count(entry => entry == '\n');
     }
 }

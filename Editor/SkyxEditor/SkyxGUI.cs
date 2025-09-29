@@ -255,9 +255,7 @@ namespace Skyx.SkyxEditor
             style ??= SkyxStyles.ButtonStyle;
 
             using var backgroundScope = BackgroundColorScope.Set(backgroundColor);
-            var result = GUI.Button(rect, label, style);
-
-            DrawHintOverlay(ref rect, hint);
+            var result = GUI.Button(rect, new GUIContent(label, hint), style);
 
             return result;
         }

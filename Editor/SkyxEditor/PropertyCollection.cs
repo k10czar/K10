@@ -520,6 +520,8 @@ namespace Skyx.SkyxEditor
             return false;
         }
 
+        public int PropertyCountExcluding(params string[] excludeFields) => properties.Keys.Except(excludeFields).Count();
+
         #endregion
 
         #region Setup & Dispose
