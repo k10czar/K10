@@ -60,5 +60,13 @@ namespace K10
 			yield return new WaitForSeconds(delay);
 			callback.Invoke();
 		}
+
+		public static Coroutine CallNextFrame(Action callback) => Play(CallNextFrameCoroutine(callback));
+
+		private static IEnumerator CallNextFrameCoroutine(Action callback)
+		{
+			yield return new WaitForEndOfFrame();
+			callback.Invoke();
+		}
 	}
 }
