@@ -122,7 +122,7 @@ namespace Skyx.SkyxEditor
             rect.width -= margin;
         }
 
-        public static void ApplyMargin(this ref Rect rect, float margin, bool vertical = true, bool horizontal = true)
+        public static void ApplyMargin(this ref Rect rect, float margin, bool vertical, bool horizontal)
         {
             if (vertical)
             {

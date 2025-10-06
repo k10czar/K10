@@ -255,7 +255,7 @@ namespace Skyx.SkyxEditor
             Colors.Console.Warning.AddLight(-.4f).AddSaturation(-.1f), // Warning
             Colors.DarkRed, // Danger
             Color.clear, // Support
-            Color.clear, // Special
+            Colors.Console.Special, // Special
             Colors.Console.Dark.AddLight(-.08f), // Disabled
             Color.clear, // Clear
             Colors.Transparent02, // Backdrop

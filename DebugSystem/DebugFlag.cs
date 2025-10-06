@@ -13,11 +13,13 @@ namespace K10.DebugSystem
             K10DebugSystem.ToggleFlag(flag);
 
             if (onDebug != null) Debug.Log(IsEnabled ? onDebug : offDebug);
-            else Debug.Log($"DebugFlag {flag} set to {IsEnabled}");
+            else Debug.Log($"DebugFlag <b>{flag}</b> set to {IsEnabled}");
         }
 
         private bool IsEnabled => K10DebugSystem.CanDebugFlag(flag);
         public static implicit operator bool(DebugFlag flag) => flag.IsEnabled;
+
+        public override string ToString() => flag;
 
         public DebugFlag(string flag, string onDebug = null, string offDebug = null)
         {

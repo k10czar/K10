@@ -325,6 +325,18 @@ namespace Skyx.SkyxEditor
             list.DoList(rect);
         }
 
+        public void DrawIncluding(ref Rect rect, params string[] including)
+        {
+            foreach (var key in including)
+            {
+                var target = properties[key];
+
+                rect.height = EditorGUI.GetPropertyHeight(target, true);
+                SkyxGUI.Draw(rect, target, true);
+                rect.y += rect.height + SkyxStyles.ElementsMargin;
+            }
+        }
+
         public void DrawExcept(ref Rect rect, params string[] except)
         {
             foreach (var key in properties.Keys)

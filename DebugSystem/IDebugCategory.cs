@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace K10.DebugSystem
 {
@@ -6,8 +7,9 @@ namespace K10.DebugSystem
     {
         string Name { get; }
         Color Color { get; }
-        string[] CustomFlags => null;
         Color SecondaryColor => Color.AddLight(-.1f);
+
+        DebugFlag[] Flags => Array.Empty<DebugFlag>();
     }
 
     public class TempDebugCategory : IDebugCategory
