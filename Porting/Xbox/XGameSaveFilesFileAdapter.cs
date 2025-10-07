@@ -24,21 +24,18 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 		RetrieveSaveFolder();
 		
 		_validator.Void();
-		ApplicationEventsRelay.IsSuspended.RegisterOnFalse(_validator.Validated(RetrieveSaveFolder));
+		ApplicationEventsRelay.IsSuspended.OnFalseState.Register(_validator.Validated(RetrieveSaveFolder));
     }
 
 	private void RetrieveSaveFolder()
 	{
+		_isInitilized.SetFalse();
         SDK.XGameSaveFilesGetFolderWithUiAsync(_userHandle, _scid, 
             (int hresult, string folderResult) => 
             {
 				if (HR.FAILED(hresult))
 				{
 					Debug.LogError($"Couldn't get XGameSaveFiles folder. HResult {hresult} ({HR.NameOf(hresult)})");
-// #if UNITY_EDITOR
-// 					_isInitilized.SetTrue();
-// 					// TODO-Porting Remove this when is really working on PC 
-// #endif
 					return;
 				}
 
@@ -47,6 +44,10 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 
 				_isInitilized.SetTrue();
                 Debug.Log($"Successfully initialized XGameSaveFiles folder: {folderResult}");
+
+				#if UNITY_GAMECORE
+				FakePlayerLog.Clean( GetPersistentDataPath() );
+				#endif
 
 				DebugFiles();
             }
@@ -109,7 +110,7 @@ public class XGameSaveFilesFileAdapter : IFileAdapter
 		return _folderPath; 
 	}
 	
-	public string GetDebugPersistentDataPath() { return GetPersistentDataPath() +"/Debug"; }
+	public string GetDebugPersistentDataPath() { return GetPersistentDataPath() +"/Dbg"; }
 	public bool Exists( string path ) { return File.Exists( path ); }
 	public byte[] ReadAllBytes( string path ) { return Exists( path ) ? File.ReadAllBytes( path ) : Array.Empty<byte>(); } public void WriteAllBytes( string path, byte[] bytes ) { File.WriteAllBytes( path, bytes ); }
 	public void RequestDirectory( string dir ) { if( !Directory.Exists(dir) ) Directory.CreateDirectory( dir ); }

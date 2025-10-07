@@ -3,6 +3,7 @@ using UnityEngine;
 [System.Serializable]
 public class FloatState : INumericValueState<float>, ICustomDisposableKill
 {
+	[System.NonSerialized] bool _killed = false;
 	[SerializeField] float _value;
 	[System.NonSerialized] private EventSlot<float> _onChange;
 
@@ -16,6 +17,7 @@ public class FloatState : INumericValueState<float>, ICustomDisposableKill
 		var diff = _value - value;
 		if( diff < MathAdapter.EP2 && diff > MathAdapter.NEG_EP2 ) return;
 		_value = value;
+		if (_killed) return;
 		_onChange?.Trigger( value );
 	}
 
@@ -27,14 +29,21 @@ public class FloatState : INumericValueState<float>, ICustomDisposableKill
 
 	public void Kill()
 	{
+		_killed = true;
 		_onChange?.Kill();
 		_onChange = null;
 	}
 
-	public IEventRegister<float> OnChange => Lazy.Request( ref _onChange );
+	public void Recycle()
+	{
+		_onChange.Clear();
+	}
 
-	public FloatState() : this( default( float ) ) { }
+	public IEventRegister<float> OnChange => _killed ? _onChange : _onChange ??= new();
+
+	public FloatState() : this( default ) { }
 	public FloatState( float initialValue ) { _value = initialValue; }
+	public FloatState( int eventProvision, int genericEventProvision )  : this() { _onChange = new(eventProvision, genericEventProvision); }
 
 
 	public override string ToString() { return $"FS({_value})"; }

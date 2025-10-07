@@ -2,12 +2,12 @@
 public class OneTimeValidator : IVoidableEventValidator, ICustomDisposableKill
 {
 	bool _killed = false;
+	System.Func<bool> _cachedValidation;
 
-	public System.Func<bool> CurrentValidationCheck => CheckIsValid;
+	public System.Func<bool> CurrentValidationCheck => _cachedValidation ??= CheckIsValid;
 
 	EventSlot _onVoid;
-
-	public IEventRegister OnVoid => Lazy.Request( ref _onVoid );
+	public IEventRegister OnVoid => _onVoid ??= new();
 
 	public void Kill()
 	{

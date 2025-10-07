@@ -3,8 +3,9 @@ using UnityEngine;
 [System.Serializable]
 public class ByteState : INumericValueState<byte>, ICustomDisposableKill
 {
+	[System.NonSerialized] bool _killed;
 	[SerializeField] byte _value;
-	[System.NonSerialized] EventSlot<byte> _onChange = new EventSlot<byte>();
+	[System.NonSerialized] EventSlot<byte> _onChange;
 
 	public byte Value { get { return _value; } set { Setter( value ); } }
 	public byte Get() { return _value; }
@@ -13,6 +14,7 @@ public class ByteState : INumericValueState<byte>, ICustomDisposableKill
 	{
 		if( _value == value ) return;
 		_value = value;
+		if (_killed) return;
 		_onChange?.Trigger( value );
 	}
 
@@ -24,13 +26,14 @@ public class ByteState : INumericValueState<byte>, ICustomDisposableKill
 
 	public void Kill()
 	{
+		_killed = true;
 		_onChange?.Kill();
 		_onChange = null;
 	}
 
-	public IEventRegister<byte> OnChange => Lazy.Request( ref _onChange );
+	public IEventRegister<byte> OnChange => _killed ? _onChange : _onChange ??= new();
 
-	public ByteState( byte initialValue = default( byte ) ) { _value = initialValue; }
+	public ByteState( byte initialValue = default ) { _value = initialValue; }
 
 	public override string ToString() { return $"ByS({_value})"; }
 }

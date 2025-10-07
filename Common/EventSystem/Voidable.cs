@@ -12,40 +12,80 @@ public interface IVoidable
 
 public static class VoidableExtensions
 {
-	public static void VoidWhenTrue( this IVoidable voidable, System.Func<bool> validationQuery )
+	public static void VoidWhenTrue(this IVoidable voidable, System.Func<bool> validationQuery)
 	{
-		ExternalCoroutine.StartCoroutine( UntilCoroutine( voidable, () => !validationQuery() ) );
+		ExternalCoroutine.StartCoroutine(UntilCoroutine(voidable, () => !validationQuery()));
 	}
 
-	public static void VoidWhenFalse( this IVoidable voidable, System.Func<bool> validationQuery )
+	public static void VoidWhenFalse(this IVoidable voidable, System.Func<bool> validationQuery)
 	{
-		ExternalCoroutine.StartCoroutine( UntilCoroutine( voidable, validationQuery ) );
+		ExternalCoroutine.StartCoroutine(UntilCoroutine(voidable, validationQuery));
 	}
 
-	private static System.Collections.IEnumerator UntilCoroutine( IVoidable voidable, System.Func<bool> validationQuery )
+	private static System.Collections.IEnumerator UntilCoroutine(IVoidable voidable, System.Func<bool> validationQuery)
 	{
-		while( voidable.IsValid && validationQuery() ) yield return null;
+		while (voidable.IsValid && validationQuery()) yield return null;
 		voidable.Void();
 	}
 }
 
-[UnityEngine.HideInInspector]
-public class CallOnce : IEventTrigger, IVoidable
+public class CallEventOnce : IEventTrigger
 {
-	Voidable _voidable;
+	IEventTrigger _eventToCall;
 
 	bool _preVoided;
-	public bool IsValid => !_preVoided && _voidable.IsValid;
+	public bool IsValid => !_preVoided && _eventToCall != null && _eventToCall.IsValid;
+	
+	public CallEventOnce(IEventTrigger callback) { _eventToCall = callback; _preVoided = false; }
+    public void Trigger() { if( !IsValid ) return; _preVoided = true; _eventToCall.Trigger(); _eventToCall = null; }
+}
 
-	public CallOnce( IEventTrigger callback ) { _voidable = new Voidable( callback ); _preVoided = false; }
-	public CallOnce( System.Action act ) { _voidable = new Voidable( act ); _preVoided = false; }
-	public CallOnce( IEventValidator validator, IEventTrigger callback ) { _voidable = new Voidable( validator.Validated( callback ) ); _preVoided = false; }
-	public CallOnce( IEventValidator validator, System.Action act ) { _voidable = new Voidable( validator.Validated( act ) ); _preVoided = false; }
+[UnityEngine.HideInInspector]
+public class CallOnce : IEventTrigger
+{
+	Action _actionToCall;
 
-    public void Trigger() { if( !IsValid ) return; _preVoided = true; _voidable.Trigger(); _voidable.Void(); }
+	bool _preVoided;
+	public bool IsValid => !_preVoided && _actionToCall != null;
 
-	public IEventRegister OnVoid => _voidable.OnVoid;
-	public void Void() { _voidable.Void(); }
+	public CallOnce( Action act ) { _actionToCall = act; _preVoided = false; }
+
+    public void Trigger() { if( !IsValid ) return; _preVoided = true; _actionToCall(); _actionToCall = null; }
+}
+
+[UnityEngine.HideInInspector]
+public class VoidableCallOnce : IEventTrigger, IVoidable
+{
+	Action _actionToCall;
+
+	bool _preVoided;
+	public bool IsValid => !_preVoided && _actionToCall != null;
+	
+	private EventSlot _onVoid;
+	public IEventRegister OnVoid => _onVoid ??= new EventSlot();
+
+    public VoidableCallOnce( Action act ) { _actionToCall = act; _preVoided = false; }
+
+    public void Trigger() { if( !IsValid ) return; _preVoided = true; _actionToCall(); _actionToCall = null; }
+
+    public void Void()
+    {
+        if( _actionToCall == null ) return; _onVoid?.Trigger(); _actionToCall = null; _onVoid?.Kill();
+    }
+}
+
+[UnityEngine.HideInInspector]
+public class CallOnceValidated : IEventTrigger
+{
+	System.Action _actionToCall;
+	IEventValidator _validator;
+
+	bool _preVoided;
+	public bool IsValid => !_preVoided && _actionToCall != null && _validator != null && _validator.CurrentValidationCheck();
+
+	public CallOnceValidated( IEventValidator validator, System.Action act ) { _actionToCall = act; _validator = validator; _preVoided = false; }
+
+    public void Trigger() { if( !IsValid ) return; _preVoided = true; _actionToCall(); _actionToCall = null; _validator = null; }
 }
 
 [UnityEngine.HideInInspector]

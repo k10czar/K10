@@ -13,27 +13,27 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 
 	IUpdaterOnDemand _updater;
 
-	[SerializeField] FloatAnimator01 _r;
-	[SerializeField] FloatAnimator01 _g;
-	[SerializeField] FloatAnimator01 _b;
-	[SerializeField] FloatAnimator01 _a;
+	FastFloatAnimator _r;
+	FastFloatAnimator _g;
+	FastFloatAnimator _b;
+	FastFloatAnimator _a;
 
 	Color _cachedColor = Color.white;
 	float _transitionTime = 0;
 	bool _dirty = false;
 
-	EventSlot<Color> _desiredReach = new EventSlot<Color>();
-	public IEventRegister<Color> OnDesiredReach { get { return _desiredReach; } }
+	EventSlot<Color> _desiredReach;
+	public IEventRegister<Color> OnDesiredReach => Lazy.Request( ref _desiredReach );
 
 	public Color Value { get { return _cachedColor; } }
 	public Color Get() { return _cachedColor; }
 	public Color GetColor() { return _cachedColor; }
 
-	public float CurrentDuration => _transitionTime - (_transitionTime * _r.Value);
-	EventSlot<Color> _colorUpdate = new EventSlot<Color>();
-	public IEventRegister<Color> OnChange { get { return _colorUpdate; } }
+	public float CurrentDuration => _transitionTime - (_transitionTime * _r._currentValue);
+	EventSlot<Color> _colorUpdate;
+	public IEventRegister<Color> OnChange  => Lazy.Request( ref _colorUpdate );
 
-	public Color Desired { get { return new Color( _r.DesiredValue, _g.DesiredValue, _b.DesiredValue, _a.DesiredValue ); } }
+	public Color Desired { get { return new Color( _r._desiredValue, _g._desiredValue, _b._desiredValue, _a._desiredValue ); } }
 
 	public ColorAnimator() : this( null ) { }
 	public ColorAnimator( float acceleration, float deceleration, float maxSpeed ) : this( null, acceleration, deceleration, maxSpeed ) { }
@@ -42,12 +42,10 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 	{
 		_updater = updater;
 
-		_r = new FloatAnimator01( acceleration, deceleration, maxSpeed );
-		_g = new FloatAnimator01( acceleration, deceleration, maxSpeed );
-		_b = new FloatAnimator01( acceleration, deceleration, maxSpeed );
-		_a = new FloatAnimator01( acceleration, deceleration, maxSpeed );
-
-		Start();
+		_r.Rebuild01( _cachedColor.r, acceleration, deceleration, maxSpeed );
+		_g.Rebuild01( _cachedColor.g, acceleration, deceleration, maxSpeed );
+		_b.Rebuild01( _cachedColor.b, acceleration, deceleration, maxSpeed );
+		_a.Rebuild01( _cachedColor.a, acceleration, deceleration, maxSpeed );
 	}
 
 	public ColorAnimator( float transitionTime ) : this( null, transitionTime ) { }
@@ -55,35 +53,31 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 	{
 		_transitionTime = transitionTime;
 		_updater = updater;
-		var val = Mathf.Approximately( transitionTime, 0 ) ? Mathf.Infinity : ( 2 / ( transitionTime * transitionTime ) );
+		var val = MathAdapter.Approximately( transitionTime, 0 ) ? Mathf.Infinity : ( 2 / ( transitionTime * transitionTime ) );
 
-		_r = new FloatAnimator01( val, val, float.MaxValue );
-		_g = new FloatAnimator01( val, val, float.MaxValue );
-		_b = new FloatAnimator01( val, val, float.MaxValue );
-		_a = new FloatAnimator01( val, val, float.MaxValue );
-
-		Start();
+		_r.Rebuild01( _cachedColor.r, val, val, float.MaxValue );
+		_g.Rebuild01( _cachedColor.g, val, val, float.MaxValue );
+		_b.Rebuild01( _cachedColor.b, val, val, float.MaxValue );
+		_a.Rebuild01( _cachedColor.a, val, val, float.MaxValue );
 	}
 
 	public ColorAnimator( IUpdaterOnDemand updater, float acceleration, float deceleration, float maxSpeed, float alphaAcceleration, float alphaDeceleration, float alphaMaxSpeed )
 	{
 		_updater = updater;
 
-		_r = new FloatAnimator01( acceleration, deceleration, maxSpeed );
-		_g = new FloatAnimator01( acceleration, deceleration, maxSpeed );
-		_b = new FloatAnimator01( acceleration, deceleration, maxSpeed );
-		_a = new FloatAnimator01( alphaAcceleration, alphaDeceleration, alphaMaxSpeed );
-
-		Start();
+		_r.Rebuild01( _cachedColor.r, acceleration, deceleration, maxSpeed );
+		_g.Rebuild01( _cachedColor.g, acceleration, deceleration, maxSpeed );
+		_b.Rebuild01( _cachedColor.b, acceleration, deceleration, maxSpeed );
+		_a.Rebuild01( _cachedColor.a, alphaAcceleration, alphaDeceleration, alphaMaxSpeed );
 	}
 
 	public void Start()
 	{
-		_r.Start( _cachedColor.r );
-		_g.Start( _cachedColor.g );
-		_b.Start( _cachedColor.b );
-		_a.Start( _cachedColor.a );
-		_colorUpdate.Trigger( _cachedColor );
+		_r.Reset( _cachedColor.r );
+		_g.Reset( _cachedColor.g );
+		_b.Reset( _cachedColor.b );
+		_a.Reset( _cachedColor.a );
+		_colorUpdate?.Trigger( _cachedColor );
 	}
 
 	public void Start( Color color )
@@ -95,12 +89,12 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 	public void Reset(float transitionTime)
 	{
 		_transitionTime = transitionTime;
-		var val = Mathf.Approximately( transitionTime, 0 ) ? Mathf.Infinity : ( 2 / ( transitionTime * transitionTime ) );
+		var val = MathAdapter.Approximately( transitionTime, 0 ) ? Mathf.Infinity : ( 2 / ( transitionTime * transitionTime ) );
 
-		_r.Reset(val, val, float.MaxValue);
-		_g.Reset(val, val, float.MaxValue);
-		_b.Reset(val, val, float.MaxValue);
-		_a.Reset(val, val, float.MaxValue);
+		_r.Rebuild01(0, val, val, float.MaxValue);
+		_g.Rebuild01(0, val, val, float.MaxValue);
+		_b.Rebuild01(0, val, val, float.MaxValue);
+		_a.Rebuild01(0, val, val, float.MaxValue);
 	}
 
 	public bool Update( float delta )
@@ -111,44 +105,44 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 		_dirty = false;
 		bool changed = false;
 
-		if( !_r.IsOnDesired.Value )
+		if( !_r.IsOnDesired() )
 		{
 			updated = true;
 			_r.Update( delta );
-			_cachedColor.r = _r.Value;
-			_dirty |= !_r.IsOnDesired.Value;
+			_cachedColor.r = _r._currentValue;
+			_dirty |= !_r.IsOnDesired();
 			changed = true;
 		}
 
-		if( !_g.IsOnDesired.Value )
+		if( !_g.IsOnDesired() )
 		{
 			updated = true;
 			_g.Update( delta );
-			_cachedColor.g = _g.Value;
-			_dirty |= !_b.IsOnDesired.Value;
+			_cachedColor.g = _g._currentValue;
+			_dirty |= !_b.IsOnDesired();
 			changed = true;
 		}
 
-		if( !_b.IsOnDesired.Value )
+		if( !_b.IsOnDesired() )
 		{
 			updated = true;
 			_b.Update( delta );
-			_cachedColor.b = _b.Value;
-			_dirty |= !_g.IsOnDesired.Value;
+			_cachedColor.b = _b._currentValue;
+			_dirty |= !_g.IsOnDesired();
 			changed = true;
 		}
 
-		if( !_a.IsOnDesired.Value )
+		if( !_a.IsOnDesired() )
 		{
 			updated = true;
 			_a.Update( delta );
-			_cachedColor.a = _a.Value;
-			_dirty |= !_a.IsOnDesired.Value;
+			_cachedColor.a = _a._currentValue;
+			_dirty |= !_a.IsOnDesired();
 			changed = true;
 		}
 
-		if( updated ) _colorUpdate.Trigger( _cachedColor );
-		if( !_dirty && changed ) _desiredReach.Trigger( _cachedColor );
+		if( updated ) _colorUpdate?.Trigger( _cachedColor );
+		if( !_dirty && changed ) _desiredReach?.Trigger( _cachedColor );
 
 		return _dirty;
 	}
@@ -161,7 +155,7 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 		_b.SetDesire( color.b );
 		if( useAlpha ) _a.SetDesire( color.a );
 
-		bool needsUpdate = ( !_r.IsOnDesired.Value || !_g.IsOnDesired.Value || !_b.IsOnDesired.Value || !_a.IsOnDesired.Value );
+		bool needsUpdate = !_r.IsOnDesired() || !_g.IsOnDesired() || !_b.IsOnDesired() || !_a.IsOnDesired();
 		_dirty |= needsUpdate;
 
 		if( _updater != null && needsUpdate ) _updater.RequestUpdate( this );
@@ -171,7 +165,7 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 	{
 		_a.SetDesire( value );
 
-		bool needsUpdate = !_a.IsOnDesired.Value;
+		bool needsUpdate = !_a.IsOnDesired();
 		_dirty |= needsUpdate;
 
 		if( _updater != null && needsUpdate ) _updater.RequestUpdate( this );
@@ -182,19 +176,15 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 
 	public void GoToEnd()
 	{
-		_r.GoToEnd();
-		_g.GoToEnd();
-		_b.GoToEnd();
-		_a.GoToEnd();
+		_r.ForceToDesired();
+		_g.ForceToDesired();
+		_b.ForceToDesired();
+		_a.ForceToDesired();
 	}
 
 	public void Kill()
 	{
 		_killed = true;
-		_r?.Kill();
-		_g?.Kill();
-		_b?.Kill();
-		_a?.Kill();
 		_desiredReach?.Kill();
 		_colorUpdate?.Kill();
 		_updater = null;

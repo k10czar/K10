@@ -28,6 +28,7 @@ public struct ActionEventCapsule : IEventTrigger//, ICustomDisposableKill
 		return base.Equals( obj );
 	}
 	public override int GetHashCode() { return _callback?.GetHashCode() ?? 0; }
+	public override string ToString() => _callback.ToStringOrNull();
 }
 
 [UnityEngine.HideInInspector]
@@ -56,6 +57,7 @@ public struct ActionEventCapsule<T> : IEventTrigger<T>//, ICustomDisposableKill
 		return base.Equals( obj );
 	}
 	public override int GetHashCode() { return _callback?.GetHashCode() ?? 0; }
+	public override string ToString() => _callback.ToStringOrNull();
 }
 
 [UnityEngine.HideInInspector]
@@ -84,6 +86,7 @@ public struct ActionEventCapsule<T, K> : IEventTrigger<T, K>//, ICustomDisposabl
 		return base.Equals( obj );
 	}
 	public override int GetHashCode() { return _callback?.GetHashCode() ?? 0; }
+	public override string ToString() => _callback.ToStringOrNull();
 }
 
 
@@ -114,4 +117,5 @@ public struct ActionEventCapsule<T, K, L> : IEventTrigger<T, K, L>//, ICustomDis
 	}
 
 	public override int GetHashCode() { return _callback?.GetHashCode() ?? 0; }
+	public override string ToString() => _callback.ToStringOrNull();
 }

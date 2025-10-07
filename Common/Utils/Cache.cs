@@ -45,6 +45,7 @@ public static class Cache
 
 	public static List<GameObject> Add( GameObject reference, int copies , bool dontDestroyOnLoad = false)
 	{
+		// Debug.Log( $"Cache {copies} {reference}" );
 		var cacheList = RequestCacheList( reference );
 
 		var parent = CacheParent;
@@ -54,7 +55,7 @@ public static class Cache
 
 		cacheList.Add( template );
 
-		for (int i = 0; i < copies; i++)
+		for (int i = 0; i <= copies; i++)
 		{
 			GameObject newObj = GameObject.Instantiate(template, Vector3.zero, Quaternion.identity, parent);
 			cacheList.Add( newObj );
