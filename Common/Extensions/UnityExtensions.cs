@@ -516,7 +516,14 @@ public static class K10UnityExtensions
 	[MethodImpl( AggrInline )] public static string NameAndTypeColored( this Object obj, Color nameColor, Color typeColor, Color nullColor, string nullString = ConstsK10.NULL_STRING )=> ( obj != null ) ? $"{obj.name.Colorfy(nameColor)}<{obj.TypeNameOrNullColored(typeColor)}>" : nullString.Colorfy(nullColor);
 
 	[MethodImpl( AggrInline )] public static string NameOrNull( this Object obj, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.name : nullString;
-	[MethodImpl( AggrInline )] public static string ToStringColored( this bool boolValue ) => boolValue.ToString().Colorfy( boolValue ? Colors.Console.Numbers : Colors.Console.Negation );
+	[MethodImpl(AggrInline)] public static string DebugNameOrNull(this object obj, string nullString = ConstsK10.NULL_STRING)
+	{
+		if (obj == null) return nullString;
+		if (obj is IDebugName dName) return dName.DebugName;
+		var uObj = obj as Object;
+		return uObj.NameOrNull(nullString);
+	}
+	[MethodImpl(AggrInline)] public static string ToStringColored( this bool boolValue ) => boolValue.ToString().Colorfy( boolValue ? Colors.Console.Numbers : Colors.Console.Negation );
 	[MethodImpl( AggrInline )] public static string ToStringColored( this object obj, Color valueColor ) => obj.ToString().Colorfy(valueColor);
     [MethodImpl(AggrInline)]
     public static string ToStringOrNull(this object obj, string nullString = ConstsK10.NULL_STRING)
