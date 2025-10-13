@@ -16,7 +16,7 @@ public abstract class SerializablePermanentHashedSOReference<T> : BaseSerializab
 }
 
 [System.Serializable]
-public abstract class BaseSerializablePermanentHashedSOReference<T> where T : HashedScriptableObject
+public abstract class BaseSerializablePermanentHashedSOReference<T> : IReferenceOf<T> where T : HashedScriptableObject
 {
 	[SerializeField] int _referenceHashID;
 	[System.NonSerialized] T _reference;
