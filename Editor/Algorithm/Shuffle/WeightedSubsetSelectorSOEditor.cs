@@ -1,0 +1,550 @@
+using UnityEditor;
+using UnityEngine;
+using K10.EditorGUIExtention;
+using System.Collections.Generic;
+using System.Linq;
+
+public class WeightedSubsetSelectorSOEditor<T> : WeightedSubsetSelectorSOEditor
+{
+	protected override System.Type ElementType => typeof(T);
+}
+
+[CustomEditor(typeof(BaseWeightedSubsetSelectorSO))]
+public class WeightedSubsetSelectorSOEditor : Editor
+{
+	const float COLOR_LERP_FACTOR = .075f;
+	static readonly Color BLUE = Color.Lerp(Color.white, Color.blue, COLOR_LERP_FACTOR);
+	static readonly Color GREEN = Color.Lerp(Color.white, Color.green, COLOR_LERP_FACTOR / 2);
+	static readonly Color RED_ERROR = Color.Lerp(Color.white, Color.red, .5f);
+
+	SerializedProperty _ruleProp;
+	SerializedProperty _minProp;
+	SerializedProperty _maxProp;
+	SerializedProperty _entriesProp;
+	SerializedProperty _rangeWeightsProp;
+
+	KReorderableList _list;
+
+	private PersistentValue<bool> _hide;
+	private PersistentValue<bool> _showDetails;
+
+	float _sumWeight, _sumCaps;
+	bool _hasInfiniteCap = false;
+
+	bool IsFixed => _ruleProp.enumValueIndex == (int)ESubsetGeneratorRule.FIXED_COUNT;
+	bool IsBiased => _ruleProp.enumValueIndex == (int)ESubsetGeneratorRule.BIASED_RANGE;
+
+	protected virtual System.Type ElementType => typeof(ScriptableObject);
+
+	public override void OnInspectorGUI()
+	{
+		PreProcessData();
+		serializedObject.Update();
+		DrawRollsRangeBox(BLUE);
+		_list.DoLayoutList();
+		serializedObject.ApplyModifiedProperties();
+
+		if (IsFixed) return;
+
+		if (GUILayout.Button( new GUIContent( "Debug Roll", IconCache.Get( UnityIcons.WelcomeScreen_AssetStoreLogo ).Texture ), K10GuiStyles.bigbuttonStyle))
+		{
+			var squad = target as ISubsetSelector;
+			var result = squad.Roll<object>();
+			Debug.Log($"<color=#BA55D3>Debug Roll</color> of <color=#7CFC00>{squad.DebugNameOrNull()}</color> result in roll with <color=#87CEFA>{result.Count()}</color>\n\t-{string.Join( "\n\t-",result.ToList().ConvertAll( DebugName ) )}\n");
+		}
+
+		DrawPredictions(CalculateBacktracking);
+	}
+
+	private object DebugName(object enemy) => enemy.DebugNameOrNull();
+
+	public virtual void OnEnable()
+	{
+		_ruleProp = serializedObject.FindProperty("_rule");
+		_minProp = serializedObject.FindProperty("_min");
+		_maxProp = serializedObject.FindProperty("_max");
+		_entriesProp = serializedObject.FindProperty("_entries");
+		_rangeWeightsProp = serializedObject.FindProperty("_rangeWeights");
+
+		_list = new KReorderableList( serializedObject, _entriesProp, "Entries", IconCache.Get( "chest" ).Texture );
+		_list.List.drawElementCallback = DrawSquadElement;
+
+		_hide = PersistentValue<bool>.At("Temp/SubsetSelector/tablePrediction.tgg");
+		_showDetails = PersistentValue<bool>.At("Temp/SubsetSelector/tablePredictionDetails.tgg");
+	}
+
+    void OnDisable()
+    {
+		serializedObject.Update();
+		var min = _minProp.intValue;
+		var max = _maxProp.intValue;
+		var range = max + 1 - min;
+		_rangeWeightsProp.arraySize = range;
+		serializedObject.ApplyModifiedProperties();
+    }
+
+    void DrawSquadElement(Rect rect, int index, bool isActive, bool isFocused)
+	{
+		rect = rect.RequestHeight(EditorGUIUtility.singleLineHeight);
+
+		var element = _entriesProp.GetArrayElementAtIndex(index);
+
+		var group = element.FindPropertyRelative("_element");
+
+		var cap = element.FindPropertyRelative("_cap");
+		if (IsFixed)
+		{
+			ScriptableObjectField.Draw(rect.CutLeft(32), group, ElementType);
+			EditorGUI.PropertyField(rect.RequestLeft(32), cap, GUIContent.none);
+			return;
+		}
+
+		var guiElements = 7;
+		ScriptableObjectField.Draw(rect.VerticalSlice(0, guiElements, 2), group, ElementType);
+		GuiLabelWidthManager.New(25);
+		var guaranteed = element.FindPropertyRelative("_guaranteed");
+		EditorGUI.PropertyField(rect.VerticalSlice(2, guiElements), guaranteed,new GUIContent("Min"));
+		guaranteed.intValue = Mathf.Max(guaranteed.intValue, 0);
+
+		GuiLabelWidthManager.New(27);
+
+		var capV = cap.intValue;
+		var guaV = guaranteed.intValue;
+
+		var wrongCap = capV != 0 && capV < guaV;
+		if (wrongCap)
+		{
+			GuiColorManager.New(RED_ERROR);
+			string tooltip = $"Cap({capV}) is lower than Guaranteed Rolls({guaV})!";
+			GUIContent label = new GUIContent("Cap", tooltip);
+			EditorGUI.PropertyField(rect.VerticalSlice(3, guiElements), cap, label);
+			GuiColorManager.Revert();
+		}
+		else
+		{
+			EditorGUI.PropertyField(rect.VerticalSlice(3, guiElements), cap);
+		}
+		cap.intValue = Mathf.Max(cap.intValue, 0);
+
+		var w = element.FindPropertyRelative("_weight");
+		var size = Mathf.Clamp(rect.width / 4, 35, 75);
+		GuiLabelWidthManager.New(size - 33);
+		EditorGUI.PropertyField(rect.VerticalSlice(4, guiElements), w);
+		w.floatValue = Mathf.Max(w.floatValue, 0);
+
+		GuiLabelWidthManager.Revert(3);
+
+		GUIProgressBar.Draw(rect.VerticalSlice(5, guiElements, 2), w.floatValue / _sumWeight );
+
+		// var val = ( Mathf.Approximately( _sumWeight, 0 ) ) ? 0 : w.floatValue / _sumWeight;
+		// var percentage = ( val * 100 );
+		// EditorGUI.ProgressBar( rect.VerticalSlice( 5, guiElements ), val, $"{percentage:N1}%" );
+	}
+
+	private void PreProcessData()
+	{
+		_sumWeight = 0;
+		_sumCaps = 0;
+		_hasInfiniteCap = false;
+
+		for( int i = 0; i < _entriesProp.arraySize; i++ )
+		{
+			var element = _entriesProp.GetArrayElementAtIndex( i );
+			_sumWeight += element.FindPropertyRelative( "_weight" ).floatValue;
+			var cap = element.FindPropertyRelative( "_cap" ).intValue;
+			var guaranteed = element.FindPropertyRelative( "_guaranteed" ).intValue;
+
+			_hasInfiniteCap |= cap < 0;
+
+			_sumCaps += Mathf.Max( guaranteed, cap );
+		}
+	}
+	
+	static GUILayoutOption ROLLS_HEIGHT = GUILayout.Height(25);
+
+	private void DrawRollsRangeBox( Color color )
+	{
+		GuiColorManager.New( color );
+		EditorGUILayout.BeginVertical( GUI.skin.box );
+		GuiColorManager.Revert();
+		EditorGUILayout.BeginHorizontal();
+
+		string errorMsg = string.Empty;
+		EditorGUILayout.BeginVertical( GUI.skin.box, GUILayout.Width(84), ROLLS_HEIGHT );
+		// GUILayout.Space( 3 );
+		var newRule = EditorGUILayout.EnumPopup( GUIContent.none, (ESubsetGeneratorRule)_ruleProp.enumValueIndex, GUILayout.Width(120), ROLLS_HEIGHT );
+		EditorGUILayout.EndVertical();
+		_ruleProp.enumValueIndex = (int)(ESubsetGeneratorRule)newRule;
+		
+		if( (int)(ESubsetGeneratorRule)newRule != _ruleProp.enumValueIndex )Debug.Log( $"{_ruleProp.enumValueIndex} => {newRule}" );
+
+		if (IsFixed)
+		{
+			var count = 0;
+			for (int i = 0; i < _entriesProp.arraySize; i++)
+			{
+				var element = _entriesProp.GetArrayElementAtIndex(i);
+				var cap = element.FindPropertyRelative("_cap").intValue;
+				if (cap > 0) count += cap;
+			}
+			EditorGUILayout.LabelField($"with {count} element{(count > 1 ? "s" : "")}", K10GuiStyles.boldStyle, ROLLS_HEIGHT);
+		}
+		else
+		{
+			EditorGUILayout.LabelField("Rolls", K10GuiStyles.boldStyle, GUILayout.Width(45), ROLLS_HEIGHT);
+
+			EditorGUILayout.BeginVertical();
+			GUILayout.Space(5);
+			EditorGUILayout.BeginHorizontal();
+
+			GuiLabelWidthManager.New(23);
+
+			var wrongMin = !_hasInfiniteCap && (_minProp.intValue > _sumCaps);
+
+			if (wrongMin) GuiColorManager.New(RED_ERROR);
+			EditorGUILayout.PropertyField(_minProp, new GUIContent("Min"), GUILayout.MinWidth(40));
+			if (wrongMin) GuiColorManager.Revert();
+
+			var wrongMax = !_hasInfiniteCap && (_maxProp.intValue > _sumCaps);
+
+			GuiLabelWidthManager.New(28);
+
+			if (wrongMax) GuiColorManager.New(RED_ERROR);
+			EditorGUILayout.PropertyField(_maxProp, new GUIContent("Max"), GUILayout.MinWidth(45));
+			if (wrongMax) GuiColorManager.Revert();
+
+			GuiLabelWidthManager.Revert(2);
+
+			EditorGUILayout.EndHorizontal();
+
+			EditorGUILayout.EndVertical();
+
+			if (wrongMin || wrongMax) errorMsg = $"The maximum number of rolls is {_sumCaps}, due the sum of entries cap limit or guaranteed rolls";
+		}
+
+		EditorGUILayout.EndHorizontal();
+
+		if( !string.IsNullOrEmpty( errorMsg ) )
+		{
+			GuiColorManager.New( RED_ERROR );
+			GUILayout.Label( errorMsg, GUI.skin.box, GUILayout.ExpandWidth( true ) );
+			GuiColorManager.Revert();
+		}
+
+		if (IsBiased)
+		{
+			var min = _minProp.intValue;
+			var max = _maxProp.intValue;
+			var range = max + 1 - min;
+
+			var oldSize = _rangeWeightsProp.arraySize;
+			if( oldSize < range ) _rangeWeightsProp.arraySize = range;
+			if (range > 0)
+			{
+				for (int i = oldSize; i < range; i++)
+				{
+					var e = _rangeWeightsProp.GetArrayElementAtIndex(i);
+					e.floatValue = 1;
+				}
+				var sumWeight = 0f;
+				for (int i = 0; i < range; i++) sumWeight += _rangeWeightsProp.GetArrayElementAtIndex(i).floatValue;
+
+				EditorGUILayout.BeginVertical(GUI.skin.box);
+				
+				for (int i = 0; i < range; i++)
+				{
+					var rolls = min + i;
+					var element = _rangeWeightsProp.GetArrayElementAtIndex(i);
+
+					EditorGUILayout.BeginHorizontal(GUI.skin.box);
+					GuiLabelWidthManager.New(72);
+					var newVal = EditorGUILayout.FloatField($"[{rolls}]Weight", element.floatValue, GUILayout.Width(120));
+					GuiLabelWidthManager.Revert();
+					element.floatValue = newVal;
+					GUIProgressBar.DrawLayout( newVal / sumWeight );
+					EditorGUILayout.EndHorizontal();
+				}
+				EditorGUILayout.EndVertical();
+			}
+		}
+
+		EditorGUILayout.EndVertical();
+	}
+
+	private void DrawPredictions( System.Action<int, int[], int[], float[], int, int, double[,,]> Calculation )
+	{
+		var count = _entriesProp.arraySize;
+
+		int[] min = new int[count];
+		int[] max = new int[count];
+		float[] chances = new float[count];
+
+		var rMin = Mathf.Max( serializedObject.FindProperty( "_min" ).intValue, 0 );
+		var rMax = Mathf.Max( serializedObject.FindProperty( "_max" ).intValue, 0 );
+		var maxElements = rMax;
+
+		int minSum = 0;
+
+		for( int i = 0; i < count; i++ )
+		{
+			var element = _entriesProp.GetArrayElementAtIndex( i );
+			chances[i] = element.FindPropertyRelative( "_weight" ).floatValue / _sumWeight;
+			min[i] = element.FindPropertyRelative( "_guaranteed" ).intValue;
+			max[i] = element.FindPropertyRelative( "_cap" ).intValue;
+
+			var realCap = rMax;
+			if( max[i] != 0 ) realCap = Mathf.Min( realCap, max[i] );
+			if( realCap < min[i] ) realCap = min[i];
+
+			maxElements = Mathf.Max( maxElements, realCap );
+			minSum += min[i];
+		}
+
+		double[,,] M = new double[count, maxElements + 1, rMax + 1];
+		Calculation( count, min, max, chances, rMax, maxElements, M );
+
+		double[] acc = new double[rMax + 1];
+		CalculateAcc( count, rMax, maxElements, M, acc );
+
+		DrawPredictionsTable( count, rMin, rMax, maxElements, M, acc );
+	}
+
+	static void RebasePoolElements( float newBase, List<(int id, int max, float chance)> pool )
+	{
+		for( int i = 0; i < pool.Count; i++ )
+		{
+			var element = pool[i];
+			element.chance /= newBase;
+			pool[i] = element;
+		}
+	}
+
+	static void TryExpand( double chance, int total, int maxTotal, int[] elements, List<int> sequence, List<(int id, int max, float chance)> pool, double[,,] M )
+	{
+		var newTotal = total + 1;
+		if( newTotal > maxTotal ) return;
+
+		for( int i = 0; i < pool.Count; i++ )
+		{
+			var e = pool[i];
+
+			var newCount = elements[e.id] + 1;
+			elements[e.id] = newCount;
+			var removeFromPool = e.max != 0 && newCount >= e.max;
+			if( removeFromPool )
+			{
+				pool.RemoveAt( i );
+				RebasePoolElements( 1 - e.chance, pool );
+			}
+
+			chance *= e.chance;
+			sequence.Add( e.id );
+			// var countStr = string.Join( ", ", System.Array.ConvertAll<int, string>( sequence.ToArray(), ( int v ) => v.ToString() ) );
+			// Debug.Log( $"{{ {countStr} }}[{sequence.Count}] => {( chance * 100 ):N1}%" );
+
+			for( int j = 0; j < elements.Length; j++ )
+			{
+				var c = elements[j];
+				M[j, c, newTotal] += chance;
+			}
+
+			TryExpand( chance, newTotal, maxTotal, elements, sequence, pool, M );
+
+			sequence.RemoveAt( sequence.Count - 1 );
+			chance /= e.chance;
+			elements[e.id] = newCount - 1;
+			if( removeFromPool )
+			{
+				RebasePoolElements( 1 / ( 1 - e.chance ), pool );
+				pool.Insert( i, e );
+			}
+		}
+	}
+
+	private static void CalculateBacktracking( int count, int[] min, int[] max, float[] chances, int rMax, int maxElements, double[,,] M )
+	{
+		var pool = new List<(int id, int max, float chance)>();
+		var sequence = new List<int>();
+		var elements = new int[count];
+		var total = 0;
+
+		var basePercentage = 1f;
+		for( int i = 0; i < count; i++ )
+		{
+			var g = min[i];
+			elements[i] = g;
+			total += g;
+			for( int j = 0; j < g; j++ ) sequence.Add( i );
+			var chance = chances[i];
+			var addToPool = ( ( max[i] == 0 || g < max[i] ) && chance > 0 );
+			if( addToPool ) pool.Add( (i, max[i], chance) );
+			else basePercentage -= chance;
+		}
+
+		RebasePoolElements( basePercentage, pool );
+
+		for( int i = 0; i <= total && i <= rMax; i++ )
+		{
+			for( int j = 0; j < count; j++ )
+			{
+				var c = elements[j];
+				M[j, c, i] = 1;
+			}
+		}
+
+		TryExpand( 1, total, rMax, elements, sequence, pool, M );
+	}
+
+	private static void CalculateAcc( int count, int rMax, int maxElements, double[,,] M, double[] acc )
+	{
+		for( int i = 0; i < count; i++ )
+		{
+			for( int k = 1; k <= rMax; k++ )
+			{
+				for( int j = 0; j <= maxElements; j++ )
+				{
+					acc[k] += M[i, j, k];
+				}
+			}
+		}
+	}
+
+	private void DrawPredictionsTable( int count, int rMin, int rMax, int maxElements, double[,,] M, double[] acc )
+	{
+		string[] name = new string[count];
+		for( int i = 0; i < count; i++ )
+		{
+			var element = _entriesProp.GetArrayElementAtIndex( i );
+			var group = element.FindPropertyRelative( "_element" );
+			var obj = group.objectReferenceValue;
+			if (obj == null) name[i] = "NOTHING";
+			else name[i] = obj.DebugNameOrNull( "NOTHING" );
+		}
+
+		var lh = EditorGUIUtility.singleLineHeight;
+		GuiColorManager.New( GREEN );
+		EditorGUILayout.BeginVertical( GUI.skin.box );
+		GuiColorManager.Revert();
+
+		var rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh ) );
+		rect.RequestTop( lh );
+		GUILayout.Space( lh );
+
+		var toggle = _hide.Get;
+		var content = new GUIContent( "Chances Prediction", IconCache.Get( !toggle ? "ToggleOn" : "ToggleOff" ).Texture );
+		var change = GUI.Button( rect, content, K10GuiStyles.smallBoldCenterStyle );
+		if( change ) _hide.Set = !toggle;
+		EditorGUILayout.EndHorizontal();
+
+		if( !_hide.Get )
+		{
+			int minE = int.MaxValue;
+			int maxE = int.MinValue;
+			for( int k = rMin; k <= rMax; k++ )
+			{
+				for( int i = 0; i < count; i++ )
+				{
+					for( int j = 0; j <= maxElements; j++ )
+					{
+						if( Mathf.Approximately( (float)M[i, j, k], 0 ) ) continue;
+						minE = Mathf.Min( j, minE );
+						maxE = Mathf.Max( j, maxE );
+					}
+				}
+			}
+
+			var slices = ( maxE - minE ) + 2;
+			if( rMin != rMax )
+			{
+				rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh + 3 ) );
+				rect.RequestTop( lh + 3 );
+				GUILayout.Space( lh + 3 );
+				GUI.Label( rect.VerticalSlice( 0, slices ), "Average", GUI.skin.box );
+				for( int j = minE; j <= maxE; j++ ) GUI.Label( rect.VerticalSlice( ( j - minE ) + 1, slices ), $"{j}", GUI.skin.box );
+				EditorGUILayout.EndHorizontal();
+				
+				var range = Mathf.Max( rMax - rMin, 0 ) + 1;
+				float sumWeight = range;
+				
+				if (IsBiased && _rangeWeightsProp.arraySize >= range)
+				{
+					sumWeight = 0;
+					for (int i = 0; i < range; i++)
+					{
+						sumWeight += _rangeWeightsProp.GetArrayElementAtIndex(i).floatValue;
+					}
+				}
+
+				for( int i = 0; i < count; i++ )
+				{
+					rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh ) );
+					rect.RequestTop( lh );
+					GUILayout.Space( lh );
+					GUI.Label( rect.VerticalSlice( 0, slices ), name[i] );
+					for( int j = minE; j <= maxE; j++ )
+					{
+						double val = 0;
+						for (int k = rMin; k <= rMax; k++)
+						{
+							var chance = M[i, j, k];
+							if (IsBiased) chance *= _rangeWeightsProp.GetArrayElementAtIndex(k - rMin).floatValue;
+							val += chance;
+						}
+						val /= sumWeight;
+						val = System.Math.Max( val, 0 );
+
+						var r = rect.VerticalSlice( ( j - minE ) + 1, slices );
+						GUIProgressBar.Draw( r, (float)val );
+					}
+					EditorGUILayout.EndHorizontal();
+				}
+			}
+
+			toggle = _showDetails.Get;
+			content = new GUIContent( "Detailed rolls", IconCache.Get( !toggle ? "ToggleOn" : "ToggleOff" ).Texture );
+			rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh + 3 ) );
+			rect.RequestTop( lh + 3 );
+			GUILayout.Space( lh + 3 );
+			change = GUI.Button( rect, content, K10GuiStyles.smallBoldCenterStyle );
+			if( change ) _showDetails.Set = !toggle;
+			EditorGUILayout.EndHorizontal();
+
+			if( _showDetails.Get )
+			{
+				// for( int k = 0; k <= rMax; k++ )
+				for( int k = rMin; k <= rMax; k++ )
+				{
+					rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh + 3 ) );
+					rect.RequestTop( lh + 3 );
+					GUILayout.Space( lh + 3 );
+					GUI.Label( rect.VerticalSlice( 0, slices ), $"Rolls({k})", GUI.skin.box );
+					// GUI.Label( rect.VerticalSlice( 0, slices ), $"Rolls({k}) {( acc[k] * 100 ):N1}%", GUI.skin.box );
+					for( int j = minE; j <= maxE; j++ ) GUI.Label( rect.VerticalSlice( ( j - minE ) + 1, slices ), $"{j}", GUI.skin.box );
+					EditorGUILayout.EndHorizontal();
+
+					for( int i = 0; i < count; i++ )
+					{
+						// double prob = 0;
+						// for( int j = minE; j <= maxE; j++ ) prob += M[i, j, k];
+
+						rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh ) );
+						rect.RequestTop( lh );
+						GUILayout.Space( lh );
+						// var probLabel = $"{( prob * 100 ):N1}%";
+						// GUI.Label( rect.VerticalSlice( 0, slices ), probLabel + " " + name[i] );
+						GUI.Label( rect.VerticalSlice( 0, slices ), name[i] );
+						for( int j = minE; j <= maxE; j++ )
+						{
+							var val = M[i, j, k];
+							var r = rect.VerticalSlice( ( j - minE ) + 1, slices );
+							GUIProgressBar.Draw( r, (float)val );
+						}
+						EditorGUILayout.EndHorizontal();
+					}
+				}
+			}
+		}
+
+		EditorGUILayout.EndVertical();
+	}
+}
