@@ -53,10 +53,10 @@ public static class GUIProgressBar
 		GUI.Label( r, label, K10GuiStyles.smallCenterStyle );
 	}
 	
-    public static void DrawLayout(float val) => DrawLayout(val, GetDefaultColor(val));
-	public static void DrawLayout(float val, Color color)
+    public static void DrawLayout(float val, params GUILayoutOption[] options) => DrawLayout(val, GetDefaultColor(val),options);
+	public static void DrawLayout(float val, Color color, params GUILayoutOption[] options)
 	{
-		var rect = GUILayoutUtility.GetRect( GUIContent.none, GUIStyle.none );
+		var rect = GUILayoutUtility.GetRect( GUIContent.none, GUIStyle.none,options );
 		Draw(rect,val,color);
 	}
 	

@@ -269,4 +269,7 @@ public static class UnityIcons
 
 	public const string Search_Icon = "Search Icon";
 	public const string Search_On_Icon = "Search On Icon";
+
+	public const string SortingGroup_Icon = "SortingGroup Icon";
+	public const string d_SortingGroup_Icon = "d_SortingGroup Icon";
 }

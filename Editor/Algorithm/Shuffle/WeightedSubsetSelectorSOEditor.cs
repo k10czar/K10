@@ -3,6 +3,8 @@ using UnityEngine;
 using K10.EditorGUIExtention;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditorInternal;
+using System;
 
 public class WeightedSubsetSelectorSOEditor<T> : WeightedSubsetSelectorSOEditor
 {
@@ -25,8 +27,9 @@ public class WeightedSubsetSelectorSOEditor : Editor
 
 	KReorderableList _list;
 
-	private PersistentValue<bool> _hide;
+	private PersistentValue<bool> _hidePredictions;
 	private PersistentValue<bool> _showDetails;
+	private PersistentValue<bool> _showPermutations;
 
 	float _sumWeight, _sumCaps;
 	bool _hasInfiniteCap = false;
@@ -35,9 +38,16 @@ public class WeightedSubsetSelectorSOEditor : Editor
 	bool IsBiased => _ruleProp.enumValueIndex == (int)ESubsetGeneratorRule.BIASED_RANGE;
 
 	protected virtual System.Type ElementType => typeof(ScriptableObject);
+	
+	public GUIStyle rollButton;
+    // private Rect lastLabelRect;
 
 	public override void OnInspectorGUI()
 	{
+        // lastLabelRect = GUILayoutUtility.GetLastRect();
+		// float currentLabelWidth = lastLabelRect.width;
+		
+		if (_entriesProp == null) return;
 		PreProcessData();
 		serializedObject.Update();
 		DrawRollsRangeBox(BLUE);
@@ -46,7 +56,9 @@ public class WeightedSubsetSelectorSOEditor : Editor
 
 		if (IsFixed) return;
 
-		if (GUILayout.Button( new GUIContent( "Debug Roll", IconCache.Get( UnityIcons.WelcomeScreen_AssetStoreLogo ).Texture ), K10GuiStyles.bigbuttonStyle))
+		FillCaches();
+
+		if (GUILayout.Button( new GUIContent( "Debug Roll", IconCache.Get( "icons/PlayDices.png" ).Texture ), rollButton ) )
 		{
 			var squad = target as ISubsetSelector;
 			var result = squad.Roll<object>();
@@ -60,6 +72,12 @@ public class WeightedSubsetSelectorSOEditor : Editor
 
 	public virtual void OnEnable()
 	{
+		try
+		{
+			rollButton = new GUIStyle(EditorStyles.miniButton) { fontSize = 18, fontStyle = FontStyle.Bold, fixedHeight = 72, padding = new RectOffset(8, 8, 12, 12) };
+		}
+		catch (Exception ex) { }
+		
 		_ruleProp = serializedObject.FindProperty("_rule");
 		_minProp = serializedObject.FindProperty("_min");
 		_maxProp = serializedObject.FindProperty("_max");
@@ -68,13 +86,27 @@ public class WeightedSubsetSelectorSOEditor : Editor
 
 		_list = new KReorderableList( serializedObject, _entriesProp, "Entries", IconCache.Get( "chest" ).Texture );
 		_list.List.drawElementCallback = DrawSquadElement;
+		_list.List.onAddCallback = AddSquadElement;
 
-		_hide = PersistentValue<bool>.At("Temp/SubsetSelector/tablePrediction.tgg");
+		_hidePredictions = PersistentValue<bool>.At("Temp/SubsetSelector/tablePrediction.tgg");
 		_showDetails = PersistentValue<bool>.At("Temp/SubsetSelector/tablePredictionDetails.tgg");
+		_showPermutations = PersistentValue<bool>.At("Temp/SubsetSelector/tablePredictionPermutations.tgg");
 	}
+
+    private void AddSquadElement(ReorderableList list)
+	{
+		var pos = _entriesProp.arraySize;
+		_entriesProp.arraySize++;
+		var entry = _entriesProp.GetArrayElementAtIndex(pos);
+		entry.FindPropertyRelative("_weight").floatValue = 1;
+		entry.FindPropertyRelative("_cap").intValue = IsFixed ? 1 : _maxProp.intValue;
+    }
 
     void OnDisable()
     {
+		if (_minProp == null) return;
+		if (_maxProp == null) return;
+		if (_rangeWeightsProp == null) return;
 		serializedObject.Update();
 		var min = _minProp.intValue;
 		var max = _maxProp.intValue;
@@ -270,6 +302,41 @@ public class WeightedSubsetSelectorSOEditor : Editor
 
 		EditorGUILayout.EndVertical();
 	}
+	
+	void FillCaches()
+	{
+		var count = _entriesProp.arraySize;
+
+		if (_minCache == null || _minCache.Length != count) _minCache = new int[count];
+		if (_maxCache == null || _maxCache.Length != count) _maxCache = new int[count];
+		if (_namesCache == null || _namesCache.Length != count) _namesCache = new string[count];
+		if (_chancesCache == null || _chancesCache.Length != count) _chancesCache = new float[count];
+
+		for (int i = 0; i < count; i++)
+		{
+			var element = _entriesProp.GetArrayElementAtIndex(i);
+			_chancesCache[i] = element.FindPropertyRelative("_weight").floatValue / _sumWeight;
+			_minCache[i] = element.FindPropertyRelative("_guaranteed").intValue;
+			_maxCache[i] = element.FindPropertyRelative("_cap").intValue;
+			var objRef = element.FindPropertyRelative("_element").objectReferenceValue;
+			_namesCache[i] = objRef.DebugNameOrNull();
+		}
+
+		if (!IsBiased)
+		{
+			_rollChancesCache = null;
+			return;
+		}
+
+		var rCount = _rangeWeightsProp.arraySize;
+		if( _rollChancesCache == null || _rollChancesCache.Length != rCount ) _rollChancesCache = new float[rCount];
+		
+		for (int i = 0; i < rCount; i++)
+        {
+			var element = _rangeWeightsProp.GetArrayElementAtIndex(i);
+			_rollChancesCache[i] = element.floatValue;
+        }
+    }
 
 	private void DrawPredictions( System.Action<int, int[], int[], float[], int, int, double[,,]> Calculation )
 	{
@@ -361,7 +428,7 @@ public class WeightedSubsetSelectorSOEditor : Editor
 		}
 	}
 
-	private static void CalculateBacktracking( int count, int[] min, int[] max, float[] chances, int rMax, int maxElements, double[,,] M )
+	private static void CalculateBacktracking( int count, int[] min, int[] max, float[] chances, int rMax, int maxElements, double[,,] Predictions )
 	{
 		var pool = new List<(int id, int max, float chance)>();
 		var sequence = new List<int>();
@@ -388,11 +455,11 @@ public class WeightedSubsetSelectorSOEditor : Editor
 			for( int j = 0; j < count; j++ )
 			{
 				var c = elements[j];
-				M[j, c, i] = 1;
+				Predictions[j, c, i] = 1;
 			}
 		}
 
-		TryExpand( 1, total, rMax, elements, sequence, pool, M );
+		TryExpand( 1, total, rMax, elements, sequence, pool, Predictions );
 	}
 
 	private static void CalculateAcc( int count, int rMax, int maxElements, double[,,] M, double[] acc )
@@ -409,7 +476,7 @@ public class WeightedSubsetSelectorSOEditor : Editor
 		}
 	}
 
-	private void DrawPredictionsTable( int count, int rMin, int rMax, int maxElements, double[,,] M, double[] acc )
+	private void DrawPredictionsTable( int count, int rMin, int rMax, int maxElements, double[,,] Predictions, double[] acc )
 	{
 		string[] name = new string[count];
 		for( int i = 0; i < count; i++ )
@@ -418,7 +485,7 @@ public class WeightedSubsetSelectorSOEditor : Editor
 			var group = element.FindPropertyRelative( "_element" );
 			var obj = group.objectReferenceValue;
 			if (obj == null) name[i] = "NOTHING";
-			else name[i] = obj.DebugNameOrNull( "NOTHING" );
+			else name[i] = obj.DebugNameOrNull("NOTHING");
 		}
 
 		var lh = EditorGUIUtility.singleLineHeight;
@@ -426,17 +493,7 @@ public class WeightedSubsetSelectorSOEditor : Editor
 		EditorGUILayout.BeginVertical( GUI.skin.box );
 		GuiColorManager.Revert();
 
-		var rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh ) );
-		rect.RequestTop( lh );
-		GUILayout.Space( lh );
-
-		var toggle = _hide.Get;
-		var content = new GUIContent( "Chances Prediction", IconCache.Get( !toggle ? "ToggleOn" : "ToggleOff" ).Texture );
-		var change = GUI.Button( rect, content, K10GuiStyles.smallBoldCenterStyle );
-		if( change ) _hide.Set = !toggle;
-		EditorGUILayout.EndHorizontal();
-
-		if( !_hide.Get )
+		if( !ToogleButton( _hidePredictions, "Chances Prediction", "icons/dices.png" ) )
 		{
 			int minE = int.MaxValue;
 			int maxE = int.MinValue;
@@ -446,7 +503,7 @@ public class WeightedSubsetSelectorSOEditor : Editor
 				{
 					for( int j = 0; j <= maxElements; j++ )
 					{
-						if( Mathf.Approximately( (float)M[i, j, k], 0 ) ) continue;
+						if( Mathf.Approximately( (float)Predictions[i, j, k], 0 ) ) continue;
 						minE = Mathf.Min( j, minE );
 						maxE = Mathf.Max( j, maxE );
 					}
@@ -456,7 +513,7 @@ public class WeightedSubsetSelectorSOEditor : Editor
 			var slices = ( maxE - minE ) + 2;
 			if( rMin != rMax )
 			{
-				rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh + 3 ) );
+				var rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh + 3 ) );
 				rect.RequestTop( lh + 3 );
 				GUILayout.Space( lh + 3 );
 				GUI.Label( rect.VerticalSlice( 0, slices ), "Average", GUI.skin.box );
@@ -486,7 +543,7 @@ public class WeightedSubsetSelectorSOEditor : Editor
 						double val = 0;
 						for (int k = rMin; k <= rMax; k++)
 						{
-							var chance = M[i, j, k];
+							var chance = Predictions[i, j, k];
 							if (IsBiased) chance *= _rangeWeightsProp.GetArrayElementAtIndex(k - rMin).floatValue;
 							val += chance;
 						}
@@ -500,25 +557,14 @@ public class WeightedSubsetSelectorSOEditor : Editor
 				}
 			}
 
-			toggle = _showDetails.Get;
-			content = new GUIContent( "Detailed rolls", IconCache.Get( !toggle ? "ToggleOn" : "ToggleOff" ).Texture );
-			rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh + 3 ) );
-			rect.RequestTop( lh + 3 );
-			GUILayout.Space( lh + 3 );
-			change = GUI.Button( rect, content, K10GuiStyles.smallBoldCenterStyle );
-			if( change ) _showDetails.Set = !toggle;
-			EditorGUILayout.EndHorizontal();
-
-			if( _showDetails.Get )
+			if( ToogleButton( _showDetails, "Detailed rolls", UnityIcons.ViewToolZoomOn, UnityIcons.ViewToolZoom ) )
 			{
-				// for( int k = 0; k <= rMax; k++ )
 				for( int k = rMin; k <= rMax; k++ )
 				{
-					rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh + 3 ) );
+					var rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh + 3 ) );
 					rect.RequestTop( lh + 3 );
 					GUILayout.Space( lh + 3 );
-					GUI.Label( rect.VerticalSlice( 0, slices ), $"Rolls({k})", GUI.skin.box );
-					// GUI.Label( rect.VerticalSlice( 0, slices ), $"Rolls({k}) {( acc[k] * 100 ):N1}%", GUI.skin.box );
+					GUI.Label( rect.VerticalSlice( 0, slices ), $"{k} Roll{(k>1?"s":"")}", GUI.skin.box );
 					for( int j = minE; j <= maxE; j++ ) GUI.Label( rect.VerticalSlice( ( j - minE ) + 1, slices ), $"{j}", GUI.skin.box );
 					EditorGUILayout.EndHorizontal();
 
@@ -535,7 +581,7 @@ public class WeightedSubsetSelectorSOEditor : Editor
 						GUI.Label( rect.VerticalSlice( 0, slices ), name[i] );
 						for( int j = minE; j <= maxE; j++ )
 						{
-							var val = M[i, j, k];
+							var val = Predictions[i, j, k];
 							var r = rect.VerticalSlice( ( j - minE ) + 1, slices );
 							GUIProgressBar.Draw( r, (float)val );
 						}
@@ -543,8 +589,131 @@ public class WeightedSubsetSelectorSOEditor : Editor
 					}
 				}
 			}
+
+			if( ToogleButton( _showPermutations, "Permutations", UnityIcons.d_SortingGroup_Icon, UnityIcons.SortingGroup_Icon ) )
+			{
+				Permutations( rMin, rMax );
+				_permutations.Sort(PermutationSorting);
+				EditorGUILayout.BeginVertical();
+				var maxSize = 24f;
+        		GUIStyle labelStyle = GUI.skin.label;
+				foreach(var permutation in _permutations ) maxSize = MathAdapter.max( maxSize, labelStyle.CalcSize(new GUIContent(permutation.name)).x );
+				var labelWidth = GUILayout.Width(maxSize);
+				var labelHeight = GUILayout.Height( EditorGUIUtility.singleLineHeight );
+
+				foreach(var permutation in _permutations )
+                {
+					EditorGUILayout.BeginHorizontal( labelHeight );
+					GUILayout.Label( permutation.name, labelStyle, labelWidth, labelHeight );
+					GUIProgressBar.DrawLayout( permutation.percentage, GUILayout.MinWidth( 32 ) );
+					EditorGUILayout.EndHorizontal();
+                }
+				EditorGUILayout.EndVertical();
+            }
 		}
 
 		EditorGUILayout.EndVertical();
 	}
+
+    private int PermutationSorting((string, float) x, (string, float) y) => y.Item2.CompareTo( x.Item2 );
+
+    int[] _countCache;
+	float[] _rollChancesCache;
+	int[] _minCache;
+	int[] _maxCache;
+	float[] _chancesCache;
+	string[] _namesCache;
+	List<(string name, float percentage)> _permutations = new();
+
+	void Permutations( int rMin, int rMax )
+	{
+		var rollsCount = rMax + 1 - rMin;
+		var defaultChance = 1f / rollsCount;
+		var rChanLen = _rollChancesCache?.Length ?? 0;
+		var biased = rChanLen > 0;
+
+		var count = _minCache.Length;
+		if( _countCache == null || _countCache.Length < count ) _countCache = new int[count];
+
+		var baseMins = 0;
+		for (int i = 0; i < _minCache.Length; i++)
+		{
+			baseMins += _minCache[i];
+			_countCache[i] = _minCache[i];
+		}
+
+		_permutations.Clear();
+
+		var rwSum = 0f;
+		for (int i = 0; i < rChanLen; i++) rwSum += _rollChancesCache[i];
+
+        for( int i = 0; i < rollsCount; i++ )
+		{
+			var rolls = i + rMin;
+			var chance = defaultChance;
+			if( biased ) chance = _rollChancesCache[ Mathf.Min( i, rChanLen - 1 )] / rwSum;
+			Permute(baseMins, rolls, chance );
+        }
+    }
+	
+	void Permute( int it, int maxPermute, float currChance )
+	{
+		if( it >= maxPermute )
+        {
+			_permutations.Add((NameCombination(_countCache, _namesCache, it), currChance));
+			return;
+        }
+		var sumWeights = 0f;
+
+		var count = _maxCache.Length;
+		for( int k = 0; k < count; k++ )
+		{
+			if (_maxCache[k] <= _countCache[k]) continue;
+			var eChan = _chancesCache[k];
+			sumWeights += eChan;
+		}
+		
+		for( int k = 0; k < count; k++ )
+		{
+			if (_maxCache[k] <= _countCache[k]) continue;
+			var eChan = _chancesCache[k];
+			_countCache[k]++;
+			Permute( it + 1, maxPermute, currChance * ( eChan / sumWeights ) );
+			_countCache[k]--;
+		}
+    }
+
+    private string NameCombination( int[] _countCache, string[] names, int maxRolls = int.MaxValue)
+	{
+		var sb = StringBuilderPool.RequestEmpty();
+
+		var first = true;
+		for (int i = 0; i < _countCache.Length; i++)
+		{
+			var count = Mathf.Min( _countCache[i], maxRolls );
+			if (count > 0)
+			{
+				if( !first ) sb.Append( ", " );
+				sb.Append($"{count} {names[i]}");
+				first = false;
+			}
+			maxRolls -= count;
+		}
+
+		return sb.ReturnToPoolAndCast();
+    }
+
+    bool ToogleButton( IValueCapsule<bool> toggleValue, string label, string iconNameOn, string iconNameOff = null )
+    {
+		var toggle = toggleValue.Get;
+		var content = new GUIContent( label, IconCache.Get( toggle ? iconNameOn : ( iconNameOff ?? iconNameOn ) ).Texture );
+		var lh = EditorGUIUtility.singleLineHeight;
+		var rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh + 3 ) );
+		rect.RequestTop( lh + 3 );
+		GUILayout.Space( lh + 3 );
+		var change = GUI.Button( rect, content, K10GuiStyles.smallBoldCenterStyle );
+		if( change ) toggleValue.Set = !toggle;
+		EditorGUILayout.EndHorizontal();
+		return toggleValue.Get;
+    }
 }
