@@ -642,7 +642,7 @@ public class WeightedSubsetSelectorSOEditor : Editor
 			_countCache[i] = _minCache[i];
 		}
 
-		_permutations.Clear();
+		_permutationChances.Clear();
 
 		var rwSum = 0f;
 		for (int i = 0; i < rChanLen; i++) rwSum += _rollChancesCache[i];
@@ -654,13 +654,21 @@ public class WeightedSubsetSelectorSOEditor : Editor
 			if( biased ) chance = _rollChancesCache[ Mathf.Min( i, rChanLen - 1 )] / rwSum;
 			Permute(baseMins, rolls, chance );
         }
+
+		_permutations.Clear();
+		foreach( var e in _permutationChances ) _permutations.Add( ( e.Key, e.Value ) );
+		_permutationChances.Clear();
     }
+
+	Dictionary<string, float> _permutationChances = new();
 	
 	void Permute( int it, int maxPermute, float currChance )
 	{
 		if( it >= maxPermute )
-        {
-			_permutations.Add((NameCombination(_countCache, _namesCache, it), currChance));
+		{
+			var name = NameCombination(_countCache, _namesCache, it);
+			_permutationChances.TryGetValue(name, out var chance);
+			_permutationChances[name] = chance + currChance;
 			return;
         }
 		var sumWeights = 0f;
