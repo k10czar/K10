@@ -27,7 +27,7 @@ public class FakeAction<T>
 }
 
 
-public class FakeEvent<T> : IEventRegister<T>
+public class FakeEvent<T> : IEventRegister<T>, IEventRegister
 {
 	private static readonly FakeEvent<T> _instance = new FakeEvent<T>();
 	public static IEventRegister<T> Instance => _instance;
@@ -41,7 +41,7 @@ public class FakeEvent<T> : IEventRegister<T>
 }
 
 
-public class FakeEvent<T, K> : IEventRegister<T, K>
+public class FakeEvent<T, K> : IEventRegister<T, K>, IEventRegister<T>, IEventRegister
 {
 	private static readonly FakeEvent<T, K> _instance = new FakeEvent<T, K>();
 	public static IEventRegister<T, K> Instance => _instance;
@@ -57,7 +57,7 @@ public class FakeEvent<T, K> : IEventRegister<T, K>
 }
 
 
-public class FakeEvent<T, K, J> : IEventRegister<T, K, J>
+public class FakeEvent<T, K, J> : IEventRegister<T, K, J>, IEventRegister<T, K>, IEventRegister<T>, IEventRegister
 {
 	private static readonly FakeEvent<T,K,J> _instance = new FakeEvent<T,K,J>();
 	public static IEventRegister<T,K,J> Instance => _instance;

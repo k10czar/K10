@@ -54,6 +54,12 @@ namespace K10
 			}
 		}
 
+		public static void Return(ref T field)
+		{
+			Return(field);
+			field = default;
+		}
+
 		public static void Return( T t )
 		{
 			if( t == null ) return;

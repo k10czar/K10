@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class ActionCapsule : IEventTrigger, IEquatable<ActionCapsule>, IVoidable
 {
-	private readonly Action callback;
+	public readonly Action callback;
 	private readonly IEventRegister observed;
 
 	public ActionCapsule(Action callback)
@@ -55,7 +55,7 @@ public class ActionCapsule : IEventTrigger, IEquatable<ActionCapsule>, IVoidable
 
 public class ActionCapsule<T> : IEventTrigger<T>, IEquatable<ActionCapsule<T>>, IVoidable
 {
-	private readonly Action<T> callback;
+	public readonly Action<T> callback;
 	private readonly IEventRegister<T> observed;
 
 	public ActionCapsule(Action<T> callback)
@@ -107,7 +107,7 @@ public class ActionCapsule<T> : IEventTrigger<T>, IEquatable<ActionCapsule<T>>, 
 
 public class ActionCapsule<T, K> : IEventTrigger<T, K>, IEquatable<ActionCapsule<T, K>>, IVoidable
 {
-	private readonly Action<T, K> callback;
+	public readonly Action<T, K> callback;
 	private readonly IEventRegister<T, K> observed;
 
 	public ActionCapsule(Action<T, K> callback)
@@ -164,7 +164,7 @@ public class ActionCapsule<T, K> : IEventTrigger<T, K>, IEquatable<ActionCapsule
 
 public class ActionCapsule<T, K, L> : IEventTrigger<T, K, L>, IEquatable<ActionCapsule<T, K, L>>, IVoidable
 {
-	private readonly Action<T, K, L> callback;
+	public readonly Action<T, K, L> callback;
 	private readonly IEventRegister<T, K, L> observed;
 
 	public ActionCapsule(Action<T, K, L> callback)

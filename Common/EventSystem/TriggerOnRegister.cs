@@ -4,7 +4,7 @@ public struct TriggerOnRegister : IEventRegister
     public bool Unregister(IEventTrigger listener) => true;
 }
 
-public struct TriggerOnRegister<T> : IEventRegister<T>
+public struct TriggerOnRegister<T> : IEventRegister<T>, IEventRegister
 {
     T _valueToTrigger;
 
@@ -20,7 +20,7 @@ public struct TriggerOnRegister<T> : IEventRegister<T>
     public bool Unregister(IEventTrigger<T> listener) => true;
 }
 
-public struct TriggerOnRegister<T,K> : IEventRegister<T,K>
+public struct TriggerOnRegister<T,K> : IEventRegister<T,K>, IEventRegister<T>, IEventRegister
 {
     T _t;
     K _k;
