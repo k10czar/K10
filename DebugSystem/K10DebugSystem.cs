@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -142,13 +143,16 @@ namespace K10.DebugSystem
                 category.HiddenObjects?.Clear();
         }
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void ForceLoad() => _ = Categories;
+
         static K10DebugSystem()
         {
             config = K10DebugConfig.Load();
             getOwnerKey = DefaultGetOwnerKey;
 
-            if (Application.isPlaying)
-                SceneManager.sceneUnloaded += OnSceneUnloaded;
+            SceneManager.sceneUnloaded -= OnSceneUnloaded;
+            SceneManager.sceneUnloaded += OnSceneUnloaded;
         }
     }
 }
