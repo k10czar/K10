@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace K10.DebugSystem
@@ -38,6 +39,16 @@ namespace K10.DebugSystem
 
                 return categories;
             }
+        }
+
+        public static T GetCategory<T>() where T : IDebugCategory
+        {
+            foreach (var candidate in Categories)
+            {
+                if (candidate is T t) return t;
+            }
+
+            throw new Exception($"Category {typeof(T).Name} not found!");
         }
 
         #region Debug Type
@@ -125,10 +136,19 @@ namespace K10.DebugSystem
 
         #endregion
 
+        private static void OnSceneUnloaded(Scene _)
+        {
+            foreach (var category in Categories)
+                category.HiddenObjects?.Clear();
+        }
+
         static K10DebugSystem()
         {
             config = K10DebugConfig.Load();
             getOwnerKey = DefaultGetOwnerKey;
+
+            if (Application.isPlaying)
+                SceneManager.sceneUnloaded += OnSceneUnloaded;
         }
     }
 }

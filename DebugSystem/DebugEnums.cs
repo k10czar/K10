@@ -14,6 +14,7 @@
         Verbose,
         Visual,
         InGame,
+        Hide,
     }
 
     public enum LogSeverity

@@ -16,6 +16,7 @@ namespace K10.DebugSystem
         public List<string> verbose = new();
         public List<string> visual = new();
         public List<string> inGame = new();
+        public List<string> hide = new();
 
         public EDebugOwnerBehaviour ownerBehaviour = EDebugOwnerBehaviour.Ignore;
         public List<string> validOwners = new();
@@ -28,6 +29,7 @@ namespace K10.DebugSystem
             EDebugType.Verbose => verbose,
             EDebugType.Visual => visual,
             EDebugType.InGame => inGame,
+            EDebugType.Hide => hide,
 
             _ => throw new ArgumentOutOfRangeException(nameof(debugType), debugType, null)
         };

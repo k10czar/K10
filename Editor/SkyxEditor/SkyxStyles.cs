@@ -199,7 +199,13 @@ namespace Skyx.SkyxEditor
                 _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
             };
 
-            style = Style($"{type}.{size}.{color}", baseStyle, textColor: Colors.LightGray, fontSize: fontSize, padding: padding);
+            var textColor = color switch
+            {
+                EColor.Disabled => Colors.DimGray,
+                _ => Colors.LightGray,
+            };
+
+            style = Style($"{type}.{size}.{color}", baseStyle, textColor: textColor, fontSize: fontSize, padding: padding);
 
             buttonStyles[(type, size, color)] = style;
             return style;

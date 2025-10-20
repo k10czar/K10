@@ -5,7 +5,9 @@ namespace K10.DebugSystem
 {
     public interface ILoggable<T> where T : IDebugCategory, new()
     {
-        Object[] LogOwners { get; }
+        private static readonly Object[] nullOwners = { null };
+
+        Object[] LogOwners => nullOwners;
         Object MainLogOwner => LogOwners[0];
     }
 
@@ -77,6 +79,28 @@ namespace K10.DebugSystem
         public static void TryHide<T>(this ILoggable<T> loggable, GameObject obj) where T : IDebugCategory, new()
         {
             obj.hideFlags = loggable.SkipVisuals() ? HideFlags.HideAndDontSave : HideFlags.None;
+        }
+
+        #endregion
+
+        #region Hide
+
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        public static void HideInEditor<T>(this ILoggable<T> obj, Component target) where T : IDebugCategory, new()
+            => HideInEditor(obj, target.gameObject);
+
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        public static void HideInEditor<T>(this ILoggable<T> obj, GameObject target) where T : IDebugCategory, new()
+        {
+            var shouldHide = K10DebugSystem.CanDebug<T>(EDebugType.Hide);
+            var flags = Application.isPlaying
+                ? shouldHide ? HideFlags.HideInHierarchy : HideFlags.None
+                : shouldHide ? HideFlags.HideAndDontSave : HideFlags.DontSave;
+
+            target.hideFlags = flags;
+
+            var category = K10DebugSystem.GetCategory<T>();
+            category.HiddenObjects.Add(target);
         }
 
         #endregion

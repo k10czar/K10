@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace K10.DebugSystem
@@ -10,6 +11,7 @@ namespace K10.DebugSystem
         Color SecondaryColor => Color.AddLight(-.1f);
 
         DebugFlag[] Flags => Array.Empty<DebugFlag>();
+        List<GameObject> HiddenObjects => null;
     }
 
     public class TempDebugCategory : IDebugCategory

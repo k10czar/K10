@@ -9,7 +9,7 @@ namespace K10.DebugSystem
 {
     public static class K10Log<T> where T : IDebugCategory, new()
     {
-        static readonly T category = new();
+        private static readonly T category = K10DebugSystem.GetCategory<T>();
 
         public static string Name => category.Name;
         public static T Category => category;
