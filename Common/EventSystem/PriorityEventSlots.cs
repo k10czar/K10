@@ -14,9 +14,9 @@ namespace K10.EventSystem
         public int EventsCount => listeners?.Count ?? 0;
         public bool HasListeners => EventsCount > 0;
 
-        private bool IsTriggering => triggerIndex > 0;
+        private bool IsTriggering => triggerIndex >= 0;
 
-        private int triggerIndex;
+        private int triggerIndex = -1;
         private bool stopRequested;
         private bool removedCurrent;
 
