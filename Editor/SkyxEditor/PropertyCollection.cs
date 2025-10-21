@@ -261,6 +261,17 @@ namespace Skyx.SkyxEditor
             if (slideRect) rect.SlideSameRect();
         }
 
+        public void DrawEnumAndLabel<T>(ref Rect rect, string propertyName, EColor color = EColor.Primary, string label = null, string hint = null, bool isBacking = false) where T: Enum
+        {
+            var property = Get(propertyName, isBacking);
+
+            var inner = rect;
+            EditorGUI.LabelField(inner.ExtractLabelRect(), label ?? property.displayName);
+            EnumTreeGUI.DrawEnum<T>(inner, property, color, hint);
+
+            rect.NextSameLine();
+        }
+
         public void DrawEnum<T>(ref Rect rect, string propertyName, EColor color = EColor.Primary, string hint = null, bool slideRect = true, bool isBacking = false) where T: Enum
         {
             EnumTreeGUI.DrawEnum<T>(rect, Get(propertyName, isBacking), color, hint);

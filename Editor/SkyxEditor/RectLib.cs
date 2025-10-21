@@ -116,10 +116,18 @@ namespace Skyx.SkyxEditor
             totalWidth = rect.width;
         }
 
-        public static void ApplyStartMargin(this ref Rect rect, float margin = SkyxStyles.ElementsMargin)
+        public static void ApplyStartMargin(this ref Rect rect, float margin = SkyxStyles.ElementsMargin, bool horizontal = true)
         {
-            rect.x += margin;
-            rect.width -= margin;
+            if (horizontal)
+            {
+                rect.x += margin;
+                rect.width -= margin;
+            }
+            else
+            {
+                rect.y += margin;
+                rect.height -= margin;
+            }
         }
 
         public static void ApplyMargin(this ref Rect rect, float margin, bool vertical, bool horizontal)
