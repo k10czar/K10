@@ -131,19 +131,11 @@ namespace Skyx.SkyxEditor
             var current = Event.current;
             var isHovered = headerRect.Contains(current.mousePosition);
 
-            if (current.type == EventType.MouseDown && isHovered)
-            {
-                if (current.button == 0)
-                {
-                    isExpandedRef = !isExpandedRef;
-                    current.Use();
-                }
-                else if (current.button == 1 && property != null)
-                {
-                    PropertyContextMenu.Open(property);
-                    current.Use();
-                }
-            }
+            if (headerRect.TryUseClick(false))
+                isExpandedRef = !isExpandedRef;
+
+            if (property != null)
+                PropertyContextMenu.ContextGUI(ref headerRect, property);
 
             using (AllColorsScope.Set(Color.clear))
                 GUI.Button(headerRect, GUIContent.none); // This forces repaint on hover

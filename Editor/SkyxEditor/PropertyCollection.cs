@@ -435,10 +435,10 @@ namespace Skyx.SkyxEditor
             {
                 var innerProp = property.GetArrayElementAtIndex(index);
 
+                PropertyContextMenu.ContextGUI(ref rect, innerProp, newElementSetup);
+
                 if (customDrawElement == null) SkyxGUI.Draw(rect, innerProp);
                 else customDrawElement(rect, index, isActive, isFocused);
-
-                if (rect.TryUseClick(true)) PropertyContextMenu.Open(innerProp, newElementSetup);
             }
 
             float ElementHeightCallback(int index)
@@ -449,10 +449,10 @@ namespace Skyx.SkyxEditor
 
             void DrawHeaderCallback(Rect rect)
             {
+                PropertyContextMenu.ContextGUI(ref rect, property, newElementSetup);
+
                 if (customHeader == null) EditorGUI.LabelField(rect, property.PrettyName());
                 else customHeader(rect);
-
-                if (rect.TryUseClick(true)) PropertyContextMenu.Open(property, newElementSetup);
             }
 
             void OnAddCallback(ReorderableList thisList)

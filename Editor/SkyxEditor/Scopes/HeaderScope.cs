@@ -126,21 +126,11 @@ namespace Skyx.SkyxEditor
         {
             BoxGUI.DrawBox(ref boxRect, color);
 
-            var current = Event.current;
+            if (headerRect.TryUseClick(false))
+                isExpandedRef = !isExpandedRef;
 
-            if (current.type == EventType.MouseDown && headerRect.Contains(current.mousePosition))
-            {
-                if (current.button == 0)
-                {
-                    isExpandedRef = !isExpandedRef;
-                    current.Use();
-                }
-                else if (current.button == 1 && property != null)
-                {
-                    PropertyContextMenu.Open(property);
-                    current.Use();
-                }
-            }
+            if (property != null)
+                PropertyContextMenu.ContextGUI(ref headerRect, property);
 
             GUI.Button(headerRect, GUIContent.none); // This forces repaint on hover
             SkyxGUI.Button(headerRect, title, color, size, EButtonType.Plain, null);

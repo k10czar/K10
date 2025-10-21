@@ -93,8 +93,9 @@ namespace Skyx.SkyxEditor
 
         #region Reflection Getters / Setters
 
-        private static readonly Regex isArrayEntryRegex = new(@"\.Array\.data\[\d+\]$", RegexOptions.Compiled);
+        private static readonly Regex arrayIndexRegex = new(@"\.Array\.data\[(\d+)\]$", RegexOptions.Compiled);
         private static readonly Regex extractArrayPieceRegex = new(@"\[\d+\]", RegexOptions.Compiled);
+
         private const BindingFlags Bindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
         public static T GetParentValue<T>(this SerializedProperty property, bool canInherit = false)
@@ -230,6 +231,34 @@ namespace Skyx.SkyxEditor
 
         private static string[] GetPathStructure(SerializedProperty property) => property.propertyPath.Replace(".Array.data", "").Split('.');
 
+        public static bool RemoveSelfFromArray(this SerializedProperty property)
+        {
+            var path = property.propertyPath;
+            var match = arrayIndexRegex.Match(path);
+
+            if (!match.Success)
+            {
+                Debug.LogError($"Property '{property.displayName}' is not part of an array.");
+                return false;
+            }
+
+            var index = int.Parse(match.Groups[1].Value);
+            var parentPath = path[..match.Index];
+
+            var parentArray = property.serializedObject.FindProperty(parentPath);
+
+            if (parentArray == null || !parentArray.isArray)
+            {
+                Debug.LogError($"Could not find parent array for '{property.displayName}' at path '{parentPath}'.");
+                return false;
+            }
+
+            parentArray.DeleteArrayElementAtIndex(index);
+            parentArray.Apply();
+
+            return true;
+        }
+
 
         #endregion
 
@@ -283,7 +312,7 @@ namespace Skyx.SkyxEditor
 
         #region Utils
 
-        public static bool IsArrayEntry(this SerializedProperty property) => isArrayEntryRegex.IsMatch(property.propertyPath);
+        public static bool IsArrayEntry(this SerializedProperty property) => arrayIndexRegex.IsMatch(property.propertyPath);
         public static string PrettyName(this SerializedProperty property) => ObjectNames.NicifyVariableName(property.name);
 
         public static SerializedProperty FindBackingProperty(this SerializedProperty property, string propertyName)

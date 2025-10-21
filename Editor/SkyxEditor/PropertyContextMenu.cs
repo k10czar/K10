@@ -12,18 +12,58 @@ namespace Skyx.SkyxEditor
 
         private static Type copiedType;
         private static string copiedDisplayInfo;
+        private static string copiedID;
 
         private static Type selectedType;
         private static string selectedDisplayInfo;
         private static SerializedProperty selectedProperty;
         private static Action<SerializedProperty> selectedElementSetup;
 
+        public static void ContextGUI(ref Rect rect, SerializedProperty property, Action<SerializedProperty> newElementSetup = null)
+        {
+            var current = Event.current;
+            if (!rect.Contains(current.mousePosition)) return;
+
+            if (current.type == EventType.MouseDown && current.button == 1)
+            {
+                current.Use();
+                Open(property, newElementSetup);
+                return;
+            }
+
+            if (!current.control || current.type != EventType.KeyDown) return;
+
+            if (current.keyCode == KeyCode.C)
+            {
+                TrackProperty(property, newElementSetup);
+                OnCopy();
+            }
+            else if (current.keyCode == KeyCode.V)
+            {
+                TrackProperty(property, newElementSetup);
+
+                if (!HasPasteData) Debug.LogError("No Paste Data!");
+                else if (!IsValidPasteTarget) Debug.LogError($"Invalid Paste Target! {copiedType.Name}(Copied) != {selectedType.Name}(Target)");
+                else OnPaste();
+            }
+            else if (current.keyCode == KeyCode.X)
+            {
+                if (!property.IsArrayEntry())
+                {
+                    Debug.LogWarning("Trying to cut a non-array entry!");
+                    return;
+                }
+
+                TrackProperty(property, newElementSetup);
+                OnCopy();
+
+                EditorUtils.RunDelayedOnce(() => property.RemoveSelfFromArray());
+            }
+        }
+
         public static void Open(SerializedProperty property, Action<SerializedProperty> newElementSetup = null)
         {
-            selectedProperty = property;
-            selectedType = property.GetValue().GetType();
-            selectedDisplayInfo = $"{property.displayName} ({selectedType})";
-            selectedElementSetup = newElementSetup;
+            TrackProperty(property, newElementSetup);
 
             var menu = new GenericMenu();
 
@@ -50,6 +90,14 @@ namespace Skyx.SkyxEditor
             menu.ShowAsContext();
         }
 
+        private static void TrackProperty(SerializedProperty property, Action<SerializedProperty> newElementSetup)
+        {
+            selectedProperty = property;
+            selectedType = property.GetValue().GetType();
+            selectedDisplayInfo = $"{property.displayName} ({selectedType.Name})";
+            selectedElementSetup = newElementSetup;
+        }
+
         private static void OnCopy()
         {
             var json = selectedProperty.GetJson();
@@ -67,6 +115,8 @@ namespace Skyx.SkyxEditor
                 copiedType = selectedType;
                 copiedDisplayInfo = selectedDisplayInfo;
                 EditorGUIUtility.systemCopyBuffer = json;
+
+                Debug.Log($"Copied {copiedDisplayInfo}");
             }
         }
 
@@ -87,7 +137,16 @@ namespace Skyx.SkyxEditor
         private static void OnPaste()
         {
             if (!CanPaste) return;
-            selectedProperty.SetValueFromJson(EditorGUIUtility.systemCopyBuffer, copiedType, $"Pasted data from clipboard to {selectedDisplayInfo}");
+            try
+            {
+                selectedProperty.SetValueFromJson(EditorGUIUtility.systemCopyBuffer, copiedType, $"Pasted data from clipboard to {selectedDisplayInfo}");
+
+                Debug.Log($"Pasted {copiedDisplayInfo} to {selectedProperty.propertyPath}");
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
         }
 
         private static void OnInsertElementAbove()

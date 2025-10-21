@@ -98,20 +98,11 @@ namespace Skyx.SkyxEditor
                 if (indent) EditorGUI.indentLevel++;
             }
 
-            var current = Event.current;
-            if (current.type == EventType.MouseDown && headerRect.Contains(current.mousePosition))
-            {
-                if (current.button == 0)
-                {
-                    isExpandedRef = !isExpandedRef;
-                    current.Use();
-                }
-                else if (current.button == 1 && property != null)
-                {
-                    PropertyContextMenu.Open(property);
-                    current.Use();
-                }
-            }
+            if (headerRect.TryUseClick(false))
+                isExpandedRef = !isExpandedRef;
+
+            if (property != null)
+                PropertyContextMenu.ContextGUI(ref headerRect, property);
 
             return isExpandedRef;
         }
