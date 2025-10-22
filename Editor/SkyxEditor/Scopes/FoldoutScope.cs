@@ -87,6 +87,13 @@ namespace Skyx.SkyxEditor
 
             var drawingRect = headerRect;
             drawingRect.ApplyStartMargin(10);
+
+            if (headerRect.TryUseClick(false))
+                isExpandedRef = !isExpandedRef;
+
+            if (property != null)
+                PropertyContextMenu.ContextGUI(ref headerRect, property);
+
             GUI.Toggle(drawingRect.ExtractMiniButton(), isExpandedRef, GUIContent.none, EditorStyles.foldout);
             EditorGUI.LabelField(drawingRect, title, SkyxStyles.DefaultLabel);
 
@@ -97,12 +104,6 @@ namespace Skyx.SkyxEditor
 
                 if (indent) EditorGUI.indentLevel++;
             }
-
-            if (headerRect.TryUseClick(false))
-                isExpandedRef = !isExpandedRef;
-
-            if (property != null)
-                PropertyContextMenu.ContextGUI(ref headerRect, property);
 
             return isExpandedRef;
         }
