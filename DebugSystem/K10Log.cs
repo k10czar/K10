@@ -17,7 +17,7 @@ namespace K10.DebugSystem
         public static Color SecondaryColor => category.SecondaryColor;
 
         private static bool ShouldAlwaysDebug(LogSeverity severity)
-            => severity is LogSeverity.Error || typeof(T) == typeof(TempDebugCategory);
+            => severity is LogSeverity.Error || typeof(T) == typeof(TempDebug);
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
         public static void Log(LogSeverity severity, string log, bool verbose, Object consoleTarget, IEnumerable<Object> owners)

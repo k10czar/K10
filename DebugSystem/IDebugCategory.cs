@@ -14,7 +14,7 @@ namespace K10.DebugSystem
         List<GameObject> HiddenObjects => null;
     }
 
-    public class TempDebugCategory : IDebugCategory
+    public class TempDebug : IDebugCategory
     {
         public string Name => "Temp";
         public Color Color => Colors.Orange;

@@ -10,7 +10,7 @@ namespace K10.DebugSystem
 {
     public static class K10DebugSystem
     {
-        private static readonly Type tempCategory = typeof(TempDebugCategory);
+        private static readonly Type tempCategory = typeof(TempDebug);
         private static readonly K10DebugConfig config;
 
         private static List<IDebugCategory> categories;
@@ -24,8 +24,6 @@ namespace K10.DebugSystem
 
                 foreach (var catType in TypeListDataCache.GetFrom(typeof(IDebugCategory)).GetTypes())
                 {
-                    if (catType == typeof(TempDebugCategory)) continue;
-
                     try
                     {
                         categories.Add((IDebugCategory) catType.CreateInstance());
