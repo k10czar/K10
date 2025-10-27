@@ -5,8 +5,9 @@ using System;
 
 public enum ESubsetGeneratorRule
 {
-    FIXED_COUNT,
-    SIMPLE_RANGE,
+    MAX_ROLL,
+    FIXED_ROLLS,
+    UNIFORM_RANGE,
     BIASED_RANGE,
 }
 
@@ -44,7 +45,7 @@ public static class SubsetSelectorExtension
     public static IEnumerable<T> Roll<T>(this ISubsetSelector selector)
     {
         var entriesCount = selector.EntriesCount;
-        if (selector.Rule == ESubsetGeneratorRule.FIXED_COUNT)
+        if (selector.Rule == ESubsetGeneratorRule.MAX_ROLL)
         {
             var fixedResult = new List<T>();
             for (int i = 0; i < entriesCount; i++)
@@ -58,7 +59,11 @@ public static class SubsetSelectorExtension
         var rolls = 0;
         switch (selector.Rule)
         {
-            case ESubsetGeneratorRule.SIMPLE_RANGE:
+            case ESubsetGeneratorRule.FIXED_ROLLS:
+                rolls = selector.Max;
+                break;
+
+            case ESubsetGeneratorRule.UNIFORM_RANGE:
                 rolls = K10Random.Interval(selector.Min, selector.Max + 1);
                 break;
 
@@ -125,6 +130,22 @@ public static class SubsetSelectorExtension
     }
 }
 
+[Serializable]
+public class WeightedSubsetEntry<T> : IWeightedSubsetEntry<T>
+{
+    [SerializeField] T _element;
+    [SerializeField] int _guaranteed = 0;
+    [SerializeField] int _cap = -1;
+    [SerializeField] float _weight = 1;
+
+    public bool IsValid => _element != null;
+    public T Element => _element;
+    public object ElementAsObject => _element;
+    public int Guaranteed => _guaranteed;
+    public int Cap => _cap;
+    public float Weight => _weight;
+}
+
 public class BaseWeightedSubsetSelectorSO : ScriptableObject { }
 
 public class WeightedSubsetSelectorSO<T> : BaseWeightedSubsetSelectorSO, ISubsetSelector<T> where T : ScriptableObject
@@ -132,7 +153,7 @@ public class WeightedSubsetSelectorSO<T> : BaseWeightedSubsetSelectorSO, ISubset
     [SerializeField] ESubsetGeneratorRule _rule;
     [SerializeField] int _min;
     [SerializeField] int _max;
-    [SerializeField] Entry[] _entries;
+    [SerializeField] WeightedSubsetEntry<T>[] _entries;
     [SerializeField] float[] _rangeWeights;
 
     public ESubsetGeneratorRule Rule => _rule;
@@ -151,20 +172,31 @@ public class WeightedSubsetSelectorSO<T> : BaseWeightedSubsetSelectorSO, ISubset
         if( id >= len ) return _rangeWeights[len-1];
         return _rangeWeights[id];
     }
+}
 
-    [System.Serializable]
-    public class Entry : IWeightedSubsetEntry<T>
+[Serializable]
+public class WeightedSubsetSelector<T> : ISubsetSelector<T>
+{
+    [SerializeField] ESubsetGeneratorRule _rule;
+    [SerializeField] int _min;
+    [SerializeField] int _max;
+    [SerializeField] WeightedSubsetEntry<T>[] _entries;
+    [SerializeField] float[] _rangeWeights;
+
+    public ESubsetGeneratorRule Rule => _rule;
+    public int Min => _min;
+    public int Max => _max;
+    public int EntriesCount => _entries.Length;
+    public IWeightedSubsetEntry<T> GetEntry(int id) => _entries[id];
+    public IWeightedSubsetEntry GetEntryObject(int id) => GetEntry(id);
+
+    public float GetBiasWeight(int rolls)
     {
-        [SerializeField] T _element;
-        [SerializeField] int _guaranteed = 0;
-        [SerializeField] int _cap = -1;
-        [SerializeField] float _weight = 1;
-
-        public bool IsValid => _element != null;
-        public T Element => _element;
-        public object ElementAsObject => _element;
-        public int Guaranteed => _guaranteed;
-        public int Cap => _cap;
-        public float Weight => _weight;
+        var id = rolls - _min;
+        if (id < 0) return 0;
+        var len = _rangeWeights.Length;
+        if (len == 0) return 1;
+        if (id >= len) return _rangeWeights[len - 1];
+        return _rangeWeights[id];
     }
 }
