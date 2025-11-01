@@ -10,13 +10,13 @@ namespace Skyx.SkyxEditor
         private const float NewElementHeight = SkyxStyles.LineHeight + SkyxStyles.ElementsMargin;
         private const float HorizontalThreshold = SkyxStyles.ListControlButtonSize * 3;
 
-        public static void DrawLayout(SerializedProperty property, string title = null, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, EScopeType scopeType = EScopeType.Header, string newText = null, Action<SerializedProperty> onNewElement = null)
+        public static void DrawLayout(SerializedProperty property, string title = null, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, EScopeType scopeType = EScopeType.Header, string newText = null, Action<SerializedProperty> onNewElement = null, bool canMoveElements = true)
         {
             var rect = EditorGUILayout.GetControlRect(false, GetPropertyHeight(property, false, size));
-            Draw(ref rect, property, title, color, size, scopeType, newText, onNewElement, false);
+            Draw(ref rect, property, title, color, size, scopeType, newText, onNewElement, canMoveElements, false);
         }
 
-        public static void Draw(ref Rect rect, SerializedProperty property, string title = null, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, EScopeType scopeType = EScopeType.Header, string newText = null, Action<SerializedProperty> onNewElement = null, bool resetHeight = true)
+        public static void Draw(ref Rect rect, SerializedProperty property, string title = null, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, EScopeType scopeType = EScopeType.Header, string newText = null, Action<SerializedProperty> onNewElement = null, bool canMoveElements = true, bool resetHeight = true)
         {
             if (resetHeight) rect.height = GetPropertyHeight(property, false);
 
@@ -29,7 +29,7 @@ namespace Skyx.SkyxEditor
             using var scope = SkyxStyles.Open(scopeType, ref drawingRect, property, title, color, size);
             if (!scope.IsExpanded) return;
 
-            DrawElements(ref drawingRect, property, true);
+            DrawElements(ref drawingRect, property, canMoveElements);
             DrawNewElement(drawingRect, property, newText, onNewElement);
         }
 
