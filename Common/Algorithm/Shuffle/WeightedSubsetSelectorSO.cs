@@ -2,6 +2,7 @@ using K10;
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 
 public enum ESubsetGeneratorRule
 {
@@ -41,6 +42,56 @@ public interface IWeightedSubsetEntry<T> : IWeightedSubsetEntry
 
 public static class SubsetSelectorExtension
 {
+    public static bool IsEmpty(this ISubsetSelector selector) => selector.EntriesCount == 0 || (selector.Rule != ESubsetGeneratorRule.FIXED_ROLLS && selector.Max == 0);
+    
+    public static string Stringfy(this ISubsetSelector selector)
+    {
+        if (selector.Rule == ESubsetGeneratorRule.MAX_ROLL)
+        {
+            var sbmr = StringBuilderPool.RequestEmpty();
+            sbmr.Append("{");
+            for (int i = 0; i < selector.EntriesCount; i++)
+            {
+                var entry = selector.GetEntryObject(i);
+                sbmr.Append($"{(i > 0 ? ", " : "")}{entry.Cap}:{entry.ElementAsObject.ToStringOrNull()}");
+            }
+            sbmr.Append("}");
+            return sbmr.ReturnToPoolAndCast();
+        }
+        var totalWeight = 0f;
+        for (int i = 0; i < selector.EntriesCount; i++) totalWeight += selector.GetEntryObject(i).Weight;
+        
+        var sb = StringBuilderPool.RequestEmpty();
+        for (int i = 0; i < selector.EntriesCount; i++)
+        {
+            var entry = selector.GetEntryObject(i);
+            sb.Append($"{(i > 0 ? ", " : "")}{entry.ElementAsObject.ToStringOrNull()}[{entry.Guaranteed},{entry.Cap}]({entry.Weight*100/totalWeight:N0}%)");
+        }
+        var elements = sb.ReturnToPoolAndCast();
+        switch (selector.Rule)
+        {
+            case ESubsetGeneratorRule.FIXED_ROLLS: return $"{selector.Max} of {{ {elements} }}";
+            case ESubsetGeneratorRule.UNIFORM_RANGE: return $"[{selector.Min},{selector.Max}] of {{ {elements} }}";
+        }
+        if (selector.Rule == ESubsetGeneratorRule.BIASED_RANGE)
+        {
+            var ranges = $"[{selector.Min},{selector.Max}]";
+            var sumRangesWeights = 0f;
+            var delta = selector.Max + 1 - selector.Min;
+            for (int i = 0; i < delta; i++) sumRangesWeights += selector.GetBiasWeight( i );
+            if ( !MathAdapter.Approximately( sumRangesWeights, 0 ) )
+            {
+                sb = StringBuilderPool.RequestEmpty();
+                sb.Append("{");
+                for (int i = 0; i < delta; i++) sb.Append($"{(i > 0 ? ", " : "")}{i + selector.Min}({100 * selector.GetBiasWeight(i) / sumRangesWeights:N0}%)");
+                sb.Append("}");
+                ranges = sb.ReturnToPoolAndCast();
+            }
+            return $"{ranges} of {{ {elements} }}";
+        }
+        return $"UNDENTIFIED";
+    }
+
     public static IEnumerable<T> Roll<T>(this ISubsetSelector<T> selector) => ((ISubsetSelector)selector).Roll<T>();
     public static IEnumerable<T> Roll<T>(this ISubsetSelector selector)
     {
@@ -199,4 +250,6 @@ public class WeightedSubsetSelector<T> : ISubsetSelector<T>
         if (id >= len) return _rangeWeights[len - 1];
         return _rangeWeights[id];
     }
+
+    public override string ToString() => this.Stringfy();
 }

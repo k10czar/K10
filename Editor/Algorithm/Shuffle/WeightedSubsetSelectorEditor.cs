@@ -31,6 +31,8 @@ public class WeightedSubsetSelectorEditor
 	float _sumWeight, _sumCaps;
 	bool _hasInfiniteCap = false;
 
+	bool _isDirty = true;
+
 	bool IsFixedAllElements => _ruleProp.enumValueIndex == (int)ESubsetGeneratorRule.MAX_ROLL;
 	bool IsFixedRolls => _ruleProp.enumValueIndex == (int)ESubsetGeneratorRule.FIXED_ROLLS;
 	bool IsBiased => _ruleProp.enumValueIndex == (int)ESubsetGeneratorRule.BIASED_RANGE;
@@ -129,7 +131,10 @@ public class WeightedSubsetSelectorEditor
 		if (_entriesProp == null) return;
 		PreProcessData();
 		DrawRollsRangeBox(BLUE);
+
+		EditorGUI.BeginChangeCheck();
 		_list.DoLayoutList();
+		_isDirty |= EditorGUI.EndChangeCheck();
 
 		if (IsFixedAllElements) return;
 
@@ -375,6 +380,7 @@ public class WeightedSubsetSelectorEditor
 	
 	void FillCaches()
 	{
+		if (!_isDirty) return;
 		var count = _entriesProp.arraySize;
 
 		if (_minCache == null || _minCache.Length != count) _minCache = new int[count];
@@ -400,12 +406,14 @@ public class WeightedSubsetSelectorEditor
 
 		var rCount = _rangeWeightsProp.arraySize;
 		if( _rollChancesCache == null || _rollChancesCache.Length != rCount ) _rollChancesCache = new float[rCount];
-		
+
 		for (int i = 0; i < rCount; i++)
-        {
+		{
 			var element = _rangeWeightsProp.GetArrayElementAtIndex(i);
 			_rollChancesCache[i] = element.floatValue;
-        }
+		}
+
+		_isDirty = false;
     }
 
 	private void DrawPredictions( System.Action<int, int[], int[], float[], int, int, double[,,]> Calculation )

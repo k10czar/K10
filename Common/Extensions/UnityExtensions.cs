@@ -16,6 +16,7 @@ public static class K10UnityExtensions
 		var retList = new List<T>();
 
 		while( olist.Count > 0 )
+			// retList.Add( olist.RandomPop() );
 		{
 			var id = K10Random.Less( olist.Count );
 			var element = olist[id];
