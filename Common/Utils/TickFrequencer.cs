@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using Unity.Mathematics;
 
 public struct TickFrequencer
 {
@@ -15,7 +14,7 @@ public struct TickFrequencer
     [MethodImpl(Optimizations.INLINE_IF_CAN)]
     public void SetFrequency(float frequency)
     {
-        _interval = 1f / math.max( 0.000001f, frequency );
+        _interval = 1f / MathAdapter.max( 0.000001f, frequency );
     }
 
     [MethodImpl(Optimizations.INLINE_IF_CAN)]

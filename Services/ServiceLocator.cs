@@ -321,6 +321,6 @@ public static class ServiceLocator
 		LogVerbose(SB.ToString());
 	}
 
-	[HideInCallstack] private static void LogVerbose( string message ) => K10Log<ServicesLogCategory>.LogVerbose( message );
-	[HideInCallstack] private static void LogError(string message) => K10Log<ServicesLogCategory>.Log( LogSeverity.Error, message );
+	private static void LogVerbose( string message ) => K10Log<ServicesLogCategory>.LogVerbose( message );
+	private static void LogError(string message) => K10Log<ServicesLogCategory>.Log( LogSeverity.Error, message );
 }

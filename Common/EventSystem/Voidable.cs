@@ -51,6 +51,7 @@ public class CallOnce : IEventTrigger
 	public CallOnce( Action act ) { _actionToCall = act; _preVoided = false; }
 
     public void Trigger() { if( !IsValid ) return; _preVoided = true; _actionToCall(); _actionToCall = null; }
+	public void Void() { _preVoided = true; _actionToCall = null; }
 }
 
 [UnityEngine.HideInInspector]
