@@ -592,6 +592,7 @@ namespace Skyx.SkyxEditor
             do
             {
                 if (SerializedProperty.EqualContents(iterator, endProperty)) break;
+                if (iterator.name == "m_Script") continue;
                 properties.Add(iterator.name, iterator.Copy());
             }
             while (iterator.NextVisible(false));
