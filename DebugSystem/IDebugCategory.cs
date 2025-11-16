@@ -19,4 +19,12 @@ namespace K10.DebugSystem
         public string Name => "Temp";
         public Color Color => Colors.Orange;
     }
+
+    public class EditorDebug : IDebugCategory
+    {
+        public string Name => "Editor";
+        public Color Color => Colors.Beige;
+
+        public List<GameObject> HiddenObjects { get; } = new();
+    }
 }

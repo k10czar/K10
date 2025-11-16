@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 
 namespace Skyx.SkyxEditor
 {
-    public class PropertyCollection : ILoggable<EditorDebugCategory>
+    public class PropertyCollection : ILoggable<EditorDebug>
     {
         #region Static
 
@@ -172,10 +172,10 @@ namespace Skyx.SkyxEditor
         private static string PropertyName(string path) => string.IsNullOrEmpty(path) ? "_ROOT_" : path;
 
         [HideInCallstack]
-        private static void Log(string log, LogSeverity severity = LogSeverity.Info) => K10Log<EditorDebugCategory>.Log(severity, log);
+        private static void Log(string log, LogSeverity severity = LogSeverity.Info) => K10Log<EditorDebug>.Log(severity, log);
 
         [HideInCallstack]
-        private static void LogVerbose(string log) => K10Log<EditorDebugCategory>.LogVerbose(log);
+        private static void LogVerbose(string log) => K10Log<EditorDebug>.LogVerbose(log);
 
         #endregion
 
