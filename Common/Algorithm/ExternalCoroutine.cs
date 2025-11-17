@@ -43,6 +43,8 @@ namespace K10
 
 		public static void Stop(ref Coroutine cacheVariable)
 		{
+			if (cacheVariable == null) return;
+
 			Stop(cacheVariable);
 			cacheVariable = null;
 		}
