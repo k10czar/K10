@@ -25,7 +25,7 @@ public static class GUIProgressBar
 			var br = r;
 			br.width = r.width * val;
 			GuiColorManager.New(color);
-			GUI.DrawTexture(br, DefaultTextures.HorizontalBar);
+			GUI.DrawTexture(br.Shrink(2), DefaultTextures.HorizontalBar);
 			GuiColorManager.Revert();
 		}
 		GUI.Label(r, label, K10GuiStyles.smallCenterStyle);

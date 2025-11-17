@@ -22,6 +22,17 @@ public interface ISubsetSelector
     public IWeightedSubsetEntry GetEntryObject(int id);
 }
 
+public interface IAggregatedSubsetSelector
+{
+    System.Type ElementType { get; }   
+}
+
+public interface IAggregatedSubsetSelector<T> : IAggregatedSubsetSelector
+{
+    public int Count { get; }
+    public ISubsetSelector<T> GetEntry(int id);
+}
+
 public interface ISubsetSelector<T> : ISubsetSelector
 {
     public IWeightedSubsetEntry<T> GetEntry(int id);
@@ -197,22 +208,16 @@ public class WeightedSubsetEntry<T> : IWeightedSubsetEntry<T>
     public float Weight => _weight;
 }
 
-public class BaseWeightedSubsetSelectorSO : ScriptableObject { }
-
-public class WeightedSubsetSelectorSO<T> : BaseWeightedSubsetSelectorSO, ISubsetSelector<T> where T : ScriptableObject
+public abstract class BaseWeightedSubsetSelectorSO : ScriptableObject
 {
     [SerializeField] ESubsetGeneratorRule _rule;
     [SerializeField] int _min;
     [SerializeField] int _max;
-    [SerializeField] WeightedSubsetEntry<T>[] _entries;
     [SerializeField] float[] _rangeWeights;
 
     public ESubsetGeneratorRule Rule => _rule;
     public int Min => _min;
     public int Max => _max;
-    public int EntriesCount => _entries.Length;
-    public IWeightedSubsetEntry<T> GetEntry(int id) => _entries[id];
-    public IWeightedSubsetEntry GetEntryObject(int id) => GetEntry(id);
 
     public float GetBiasWeight(int rolls)
     {
@@ -223,6 +228,15 @@ public class WeightedSubsetSelectorSO<T> : BaseWeightedSubsetSelectorSO, ISubset
         if( id >= len ) return _rangeWeights[len-1];
         return _rangeWeights[id];
     }
+}
+
+public class WeightedSubsetSelectorSO<T> : BaseWeightedSubsetSelectorSO, ISubsetSelector<T> where T : ScriptableObject
+{
+    [SerializeField] WeightedSubsetEntry<T>[] _entries;
+
+    public int EntriesCount => _entries.Length;
+    public IWeightedSubsetEntry<T> GetEntry(int id) => _entries[id];
+    public IWeightedSubsetEntry GetEntryObject(int id) => GetEntry(id);
 }
 
 [Serializable]
@@ -252,4 +266,20 @@ public class WeightedSubsetSelector<T> : ISubsetSelector<T>
     }
 
     public override string ToString() => this.Stringfy();
+}
+
+public abstract class BaseAggregatedSelectorSO : ScriptableObject, IAggregatedSubsetSelector
+{
+    public abstract Type ElementType { get; }
+}
+
+public class AggregatedSelectorSO<T> : BaseAggregatedSelectorSO, IAggregatedSubsetSelector<T> where T : ScriptableObject
+{
+    [SerializeField] WeightedSubsetSelector<T>[] _entries;
+
+    public int Count => _entries.Length;
+
+    public override Type ElementType => typeof(T);
+
+    public ISubsetSelector<T> GetEntry(int id) => _entries[id];
 }
