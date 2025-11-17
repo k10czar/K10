@@ -97,6 +97,7 @@ namespace Skyx.SkyxEditor
         private static readonly Regex extractArrayPieceRegex = new(@"\[\d+\]", RegexOptions.Compiled);
 
         private const BindingFlags Bindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+        private const BindingFlags InstanceOnlyBindings = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
         public static T GetParentValue<T>(this SerializedProperty property, bool canInherit = false)
         {
@@ -262,7 +263,7 @@ namespace Skyx.SkyxEditor
 
         #endregion
 
-        #region Field Type Caching
+        #region Type Queries
 
         private static readonly Dictionary<string, Dictionary<string, Type>> propertyTypeCache = new();
 
@@ -296,17 +297,42 @@ namespace Skyx.SkyxEditor
             propertyTypeCache.Remove(cacheID);
         }
 
-        private static string GetFieldInfoCacheKey(SerializedProperty property)
-        {
-
-            var targetType = property.serializedObject.targetObject.GetType();
-            var normalizedPath = extractArrayPieceRegex.Replace(property.propertyPath, "[]");
-
-            return $"{property.serializedObject.targetObject.GetInstanceID()} {targetType.FullName}.{normalizedPath}";
-        }
-
         [MenuItem("Disyphus/Editor/Clear Property Type Cache")]
         public static void ClearCache() => propertyTypeCache.Clear();
+
+        public static Type GetObjectReferenceType(this SerializedProperty property)
+        {
+            if (property.propertyType != SerializedPropertyType.ObjectReference)
+            {
+                Debug.LogError($"Trying to get type from non-ObjectReference property: {property.propertyPath}");
+                return null;
+            }
+
+            return property.objectReferenceValue != null
+                ? property.objectReferenceValue.GetType()
+                : GetTypeFromPropertyTypeString(property);
+        }
+
+        private static Type GetTypeFromPropertyTypeString(SerializedProperty property)
+        {
+            var typeName = property.type;
+
+            if (string.IsNullOrEmpty(typeName) || !typeName.StartsWith("PPtr<") || !typeName.EndsWith(">"))
+            {
+                Debug.LogError($"Don't know how to parse property type: {typeName}");
+                return null;
+            }
+
+            typeName = typeName.Substring(5, typeName.Length - 6).TrimStart('$');
+
+            foreach (var type in TypeCache.GetTypesDerivedFrom<Object>())
+            {
+                if (type.Name == typeName) return type;
+            }
+
+            Debug.LogError($"Couldn't find type matching property type: {typeName}");
+            return null;
+        }
 
         #endregion
 
@@ -371,7 +397,7 @@ namespace Skyx.SkyxEditor
                 }
                 else
                 {
-                    var field = currentType.GetField(part, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    var field = currentType.GetField(part, InstanceOnlyBindings);
 
                     if (field != null)
                     {
@@ -411,62 +437,48 @@ namespace Skyx.SkyxEditor
 
         #region Common Setters
 
-        public static void FillWithExisting<T>(this SerializedProperty property, bool fillWithGameObject, bool force, bool searchChildren = true, bool searchParent = true) where T : Component
-        {
-            if (!force && HasValidTarget<T>(property, fillWithGameObject)) return;
+        public static void FillWithExisting<T>(this SerializedProperty property, bool searchChildren = true, bool searchParent = true, bool force = true) where T : Component
+            => FillWithExisting(property, typeof(T), force, searchChildren, searchParent);
 
-            var component = GetComponent<T>(property, searchChildren, searchParent);
+        public static void FillWithExisting(this SerializedProperty property, Type targetType, bool searchChildren = true, bool searchParent = true, bool force = true)
+        {
+            if (!force && HasValidTarget(property, targetType)) return;
+
+            var component = GetComponent(property, targetType, searchChildren, searchParent);
             if (component == null)
             {
-                Debug.LogError($"Could not find {typeof(T)} in {property.serializedObject.targetObject.name}");
+                Debug.LogError($"Could not find {targetType} in {property.serializedObject.targetObject.name}");
                 return;
             }
 
-            property.objectReferenceValue = fillWithGameObject ? component.gameObject : component;
+            property.objectReferenceValue = component;
             property.Apply();
         }
 
-        private static T GetComponent<T>(SerializedProperty property, bool searchChildren, bool searchParent) where T : Component
+        private static Component GetComponent(SerializedProperty property, Type targetType, bool searchChildren, bool searchParent)
         {
             var root = (MonoBehaviour) property.serializedObject.targetObject;
 
             if (searchChildren)
             {
-                var candidate = root.GetComponentInChildren<T>(true);
+                var candidate = root.GetComponentInChildren(targetType, true);
                 if (candidate != null) return candidate;
             }
 
             if (searchParent)
             {
-                var candidate = root.GetComponentInParent<T>(true);
+                var candidate = root.GetComponentInParent(targetType, true);
                 if (candidate != null) return candidate;
             }
 
             return null;
         }
 
-        public static bool HasValidTarget<T>(SerializedProperty property, bool filledWithGameObject)
+        public static bool HasValidTarget<T>(SerializedProperty property) => HasValidTarget(property, typeof(T));
+
+        private static bool HasValidTarget(SerializedProperty property, Type targetType)
         {
-            if (filledWithGameObject)
-            {
-                var selectedSource = property.objectReferenceValue as GameObject;
-                return selectedSource != null && selectedSource.TryGetComponent<T>(out _);
-            }
-
-            return property.objectReferenceValue != null && property.objectReferenceValue is T;
-        }
-
-        public static void TryClearWrongTarget<T>(this SerializedProperty property, bool filledWithGameObject)
-        {
-            var selectedSource = property.objectReferenceValue;
-
-            if (selectedSource == null) return;
-            if (HasValidTarget<T>(property, filledWithGameObject)) return;
-
-            Debug.LogError($"Provided object {selectedSource} is not a {typeof(T)}!", selectedSource);
-
-            property.objectReferenceValue = null;
-            property.Apply();
+            return property.objectReferenceValue != null && targetType.IsAssignableFrom(property.objectReferenceValue.GetType());
         }
 
         #endregion

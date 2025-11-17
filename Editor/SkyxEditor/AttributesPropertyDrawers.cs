@@ -73,4 +73,22 @@ namespace Skyx.SkyxEditor
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => SkyxStyles.CompactListElement;
     }
+
+    [CustomPropertyDrawer(typeof(AutoPickerAttribute))]
+    public class AutoPickerPropertyDrawer : PropertyDrawer
+    {
+        public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
+        {
+            if (SkyxGUI.MiniButton(ref rect, "⚙️", EColor.Special, "Auto Pick", true))
+            {
+                var pickerAtt = (AutoPickerAttribute) attribute;
+                var targetType = property.GetObjectReferenceType();
+                property.FillWithExisting(targetType, pickerAtt.searchChildren, pickerAtt.searchParent);
+            }
+
+            EditorGUI.PropertyField(rect, property);
+        }
+
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => SkyxStyles.LineHeight;
+    }
 }
