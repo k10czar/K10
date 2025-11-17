@@ -103,7 +103,8 @@ namespace Skyx.SkyxEditor
                 var isNumeric = int.TryParse(boxedEnumValue.ToString(), out _);
 
                 if (isNumeric) return;
-                else previousEnumName = boxedEnumValue.ToString();
+
+                previousEnumName = $" {boxedEnumValue} ";
             }
         }
 
