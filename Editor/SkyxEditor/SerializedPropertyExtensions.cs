@@ -99,13 +99,12 @@ namespace Skyx.SkyxEditor
         private const BindingFlags Bindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
         private const BindingFlags InstanceOnlyBindings = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        public static T GetParentValue<T>(this SerializedProperty property, bool canInherit = false)
+        public static object GetParentValue(this SerializedProperty property, Type targetType, bool canInherit = false)
         {
             object obj = property.serializedObject.targetObject;
             var fieldStructure = GetPathStructure(property);
-            var targetType = typeof(T);
 
-            if (obj.GetType() == targetType) return (T) obj;
+            if (obj.GetType() == targetType) return obj;
 
             foreach (var pathPiece in fieldStructure)
             {
@@ -115,13 +114,16 @@ namespace Skyx.SkyxEditor
 
                 if (canInherit)
                 {
-                    if (targetType.IsAssignableFrom(obj.GetType())) return (T) obj;
+                    if (targetType.IsAssignableFrom(obj.GetType())) return obj;
                 }
-                else if (obj.GetType() == targetType) return (T) obj;
+                else if (obj.GetType() == targetType) return obj;
             }
 
             throw new Exception($"{targetType} was not found in property: {property.propertyPath}");
         }
+
+        public static T GetParentValue<T>(this SerializedProperty property, bool canInherit = false) where T : class
+            => GetParentValue(property, typeof(T), canInherit) as T;
 
         public static object GetValue(this SerializedProperty property)
         {
@@ -140,7 +142,7 @@ namespace Skyx.SkyxEditor
 
         public static T GetValue<T>(this SerializedProperty property) where T : class => GetValue(property) as T;
 
-        public static bool SetValue<T>(this SerializedProperty property, T value) where T : class
+        public static bool SetValue(this SerializedProperty property, object value)
         {
             object obj = property.serializedObject.targetObject;
             var fieldStructure = GetPathStructure(property);

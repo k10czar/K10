@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System.Reflection;
+using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -82,8 +83,24 @@ namespace Skyx.SkyxEditor
             if (SkyxGUI.MiniButton(ref rect, "⚙️", EColor.Special, "Auto Pick", true))
             {
                 var pickerAtt = (AutoPickerAttribute) attribute;
-                var targetType = property.GetObjectReferenceType();
-                property.FillWithExisting(targetType, pickerAtt.searchChildren, pickerAtt.searchParent);
+
+                if (pickerAtt.getterMethod == null)
+                {
+                    var targetType = property.GetObjectReferenceType();
+                    property.FillWithExisting(targetType, pickerAtt.searchChildren, pickerAtt.searchParent);
+                }
+                else
+                {
+                    var ownerType = property.serializedObject.targetObject.GetType();
+                    var method = ownerType.GetMethod(pickerAtt.getterMethod, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+
+                    var parent = property.GetParentValue(ownerType);
+                    var result = method!.Invoke(parent, null);
+
+                    property.PrepareForChanges("Auto picker");
+                    property.SetValue(result);
+                    property.ApplyDirectChanges();
+                }
             }
 
             EditorGUI.PropertyField(rect, property);
