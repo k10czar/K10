@@ -530,11 +530,13 @@ public static class K10UnityExtensions
     public static string ToStringOrNull(this object obj, string nullString = ConstsK10.NULL_STRING)
     {
 		if( obj == null ) return nullString;
-		if (obj is ICollection collection)
+		if (obj is IEnumerable enumerable)
 		{
-			var sb = StringBuilderPool.RequestWith($"<{obj.TypeNameOrNull()}>[{collection.Count}]{{ ");
+			var count = "...";
+			if (obj is ICollection collection) count = collection.Count.ToString();
+			var sb = StringBuilderPool.RequestWith($"<{obj.TypeNameOrNull()}>[{count}]{{ ");
 			bool first = true;
-			foreach (var e in collection)
+			foreach (var e in enumerable)
 			{
 				if( !first ) sb.Append(", ");
 				first = false;

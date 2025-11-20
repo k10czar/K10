@@ -22,17 +22,6 @@ public interface ISubsetSelector
     public IWeightedSubsetEntry GetEntryObject(int id);
 }
 
-public interface IAggregatedSubsetSelector
-{
-    System.Type ElementType { get; }   
-}
-
-public interface IAggregatedSubsetSelector<T> : IAggregatedSubsetSelector
-{
-    public int Count { get; }
-    public ISubsetSelector<T> GetEntry(int id);
-}
-
 public interface ISubsetSelector<T> : ISubsetSelector
 {
     public IWeightedSubsetEntry<T> GetEntry(int id);
@@ -266,20 +255,4 @@ public class WeightedSubsetSelector<T> : ISubsetSelector<T>
     }
 
     public override string ToString() => this.Stringfy();
-}
-
-public abstract class BaseAggregatedSelectorSO : ScriptableObject, IAggregatedSubsetSelector
-{
-    public abstract Type ElementType { get; }
-}
-
-public class AggregatedSelectorSO<T> : BaseAggregatedSelectorSO, IAggregatedSubsetSelector<T> where T : ScriptableObject
-{
-    [SerializeField] WeightedSubsetSelector<T>[] _entries;
-
-    public int Count => _entries.Length;
-
-    public override Type ElementType => typeof(T);
-
-    public ISubsetSelector<T> GetEntry(int id) => _entries[id];
 }

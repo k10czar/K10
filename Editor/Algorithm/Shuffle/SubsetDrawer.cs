@@ -23,12 +23,14 @@ public class SubsetDrawer : PropertyDrawer
 	System.Type _elementType = typeof(ScriptableObject);
 	protected virtual System.Type ElementType => _elementType;
 
-	public SubsetDrawer() : this( typeof(ScriptableObject) ) { }
+	System.Func<SerializedProperty,Color> _elementColoringFunc = null;
 
-	public SubsetDrawer( System.Type elementType )
+	public SubsetDrawer( System.Func<SerializedProperty,Color> elementColoringFunc = null ) : this( typeof(ScriptableObject), elementColoringFunc ) { }
+
+	public SubsetDrawer( System.Type elementType, System.Func<SerializedProperty,Color> elementColoringFunc = null )
     {
         _elementType = elementType;
-		Debug.Log( $"SubsetDrawer( {elementType} )" );
+		_elementColoringFunc = elementColoringFunc;
     }
 
 	public ReorderableList GetList( SerializedProperty prop )
@@ -38,6 +40,21 @@ public class SubsetDrawer : PropertyDrawer
 
 		reorderableList = new ReorderableList(prop.serializedObject, prop, true, false, true, true);
 		_listsCache.Add( path, reorderableList );
+
+		if( _elementColoringFunc != null )
+        {
+			void DrawElementBackground(Rect rect, int index, bool isActive, bool isFocused)
+			{
+				if (prop.arraySize<=index) return;
+				SerializedProperty element = prop.GetArrayElementAtIndex(index);
+				if (index<0) return;
+				var entry = prop.GetArrayElementAtIndex(index);
+				var color = _elementColoringFunc(entry);
+				EditorGUI.DrawRect(rect, color.WithValue(.75f));
+			}
+
+            reorderableList.drawElementBackgroundCallback = DrawElementBackground;
+        }
 		
 		reorderableList.drawElementCallback = (Rect rect, int index, bool isActive, bool isFocused) =>
 		{
@@ -108,7 +125,7 @@ public class SubsetDrawer : PropertyDrawer
 	{
 		var slh = EditorGUIUtility.singleLineHeight;
 		
-		var displayName = prop.displayName;
+		// var displayName = prop.displayName;
 		var ruleProp = prop.FindPropertyRelative("_rule");
 		var minProp = prop.FindPropertyRelative("_min");
 		var maxProp = prop.FindPropertyRelative("_max");
@@ -132,8 +149,8 @@ public class SubsetDrawer : PropertyDrawer
 		var rulesSize = slh + MARGIN2;
 		if( ruleProp.enumValueIndex == (int)ESubsetGeneratorRule.BIASED_RANGE )
         {
-			var min = prop.FindPropertyRelative("_min").intValue;
-			var max = prop.FindPropertyRelative("_max").intValue;
+			var min = minProp.intValue;
+			var max = maxProp.intValue;
 			var delta = max + 1 - min;
 			if( delta < 1 ) delta = 1;
 			rulesSize += delta * ( slh + MARGIN );
@@ -231,7 +248,7 @@ public class SubsetDrawer : PropertyDrawer
 		reorderableList.DoList( area );
 	}
 
-	public override float GetPropertyHeight(SerializedProperty prop, GUIContent label)
+	public override float GetPropertyHeight(SerializedProperty prop, GUIContent label )
 	{
 		var slh = EditorGUIUtility.singleLineHeight;
 		// if (!prop.isExpanded) return EditorGUIUtility.singleLineHeight;

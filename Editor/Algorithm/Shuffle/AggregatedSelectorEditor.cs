@@ -1,44 +1,33 @@
 using UnityEditor;
 using UnityEngine;
 using K10.EditorGUIExtention;
-using System.Collections.Generic;
 using System.Linq;
-using UnityEditorInternal;
 using System;
 
 public class AggregatedSelectorEditor
 {
-	const float COLOR_LERP_FACTOR = .075f;
-	static readonly Color BLUE = Color.Lerp(Color.white, Color.blue, COLOR_LERP_FACTOR);
-	static readonly Color GREEN = Color.Lerp(Color.white, Color.green, COLOR_LERP_FACTOR / 2);
-	static readonly Color RED_ERROR = Color.Lerp(Color.white, Color.red, .5f);
-
 	SerializedProperty _entriesProp;
 
 	KReorderableList _list;
 
 	string _displayName = string.Empty;
 
-	private PersistentValue<bool> _hidePredictions;
-	private PersistentValue<bool> _showDetails;
-	private PersistentValue<bool> _showPermutations;
-	private PersistentValue<bool> _show;
-
-	bool _isDirty;
+	bool _isDirty = true;
 
 	SubsetDrawer _drawer;
 
 	protected System.Type _elementType;
-	protected virtual System.Type ElementType => _elementType;
 
-	public Func<SerializedProperty,Color> ElementColoring;
+	PredictionsAggregator _predictions = new();
 
-	public AggregatedSelectorEditor( Type type = null )
+	ButtonWithIcon _rollButton = new( "Debug Roll", "icons/PlayDices.png" );
+	
+	public Func<SerializedProperty,Color> _elementColoringFunc = null;
+
+	public AggregatedSelectorEditor( Type type = null, Func<SerializedProperty,Color> ElementColoringFunc = null )
     {
-		_hidePredictions = PersistentValue<bool>.At("Temp/SubsetSelector/tablePrediction.tgg");
-		_showDetails = PersistentValue<bool>.At("Temp/SubsetSelector/tablePredictionDetails.tgg");
-		_showPermutations = PersistentValue<bool>.At("Temp/SubsetSelector/tablePredictionPermutations.tgg");
 		SetType( type );
+		_elementColoringFunc = ElementColoringFunc;
     }
 
 	public AggregatedSelectorEditor( SerializedObject obj, Type type ) : this( type )
@@ -54,7 +43,7 @@ public class AggregatedSelectorEditor
 	public void SetType( Type type )
     {
         _elementType = type;
-		_drawer = new SubsetDrawer( type );
+		_drawer = new SubsetDrawer( type, _elementColoringFunc );
     }
 	
 	public void Setup( SerializedObject serializedObject, Type type = null, Texture2D icon = null )
@@ -63,7 +52,6 @@ public class AggregatedSelectorEditor
 		_entriesProp = serializedObject.FindProperty("_entries");
 		SetupList( serializedObject, _entriesProp, icon );
 		if( type != null ) SetType( type );
-		_show = PersistentValue<bool>.At($"Temp/SubsetSelector/{_displayName}.tgg");
     }
 	
 	public void Setup( SerializedProperty prop, Type type = null, Texture2D icon = null )
@@ -72,7 +60,6 @@ public class AggregatedSelectorEditor
 		_entriesProp = prop.FindPropertyRelative("_entries");
 		SetupList( prop.serializedObject, _entriesProp, icon );
 		if( type != null ) SetType( type );
-		_show = PersistentValue<bool>.At($"Temp/SubsetSelector/{_displayName}.tgg");
     }
 	
 	void SetupList( SerializedObject serializedObject, SerializedProperty prop, Texture2D icon = null )
@@ -99,6 +86,58 @@ public class AggregatedSelectorEditor
     {
 		EditorGUI.BeginChangeCheck();
 		_list.DoLayoutList();
-		_isDirty |= EditorGUI.EndChangeCheck();
+		
+		var isDirty = EditorGUI.EndChangeCheck();
+		if( isDirty ) _predictions.SetDirty();
+		_isDirty |= isDirty;
+		
+		if ( elementToRoll != null && _rollButton.Layout() )
+		{
+			// var debugRollElement = target as ISubsetSelector;
+			var result = elementToRoll.Roll<object>();
+			Debug.Log($"<color=#BA55D3>Debug Roll</color> of <color=#7CFC00>{elementToRoll.DebugNameOrNull()}</color> result in roll with <color=#87CEFA>{result.Count()}</color>\n\t-{string.Join( "\n\t-",result.ToList().ConvertAll( DebugName ) )}\n");
+		}
+
+		if( _isDirty && PreditionsDrawer.IsShowingPreditions )
+		{
+			_predictions.SetData( _entriesProp );
+			_isDirty = false;
+		}
+
+		_predictions.DrawLayout();
     }
+
+	public void Draw( Rect rect, IAggregatedSubsetSelector elementToRoll = null )
+    {
+		EditorGUI.BeginChangeCheck();
+		_list.DrawOnTop( ref rect );
+		var isDirty = EditorGUI.EndChangeCheck();
+		if( isDirty ) _predictions.SetDirty();
+		_isDirty |= isDirty;
+		
+		if ( elementToRoll != null && _rollButton.DrawOnTop( ref rect ) )
+		{
+			// var debugRollElement = target as ISubsetSelector;
+			var result = elementToRoll.Roll<object>();
+			Debug.Log($"<color=#BA55D3>Debug Roll</color> of <color=#7CFC00>{elementToRoll.DebugNameOrNull()}</color> result in roll with <color=#87CEFA>{result.Count()}</color>\n\t-{string.Join( "\n\t-",result.ToList().ConvertAll( DebugName ) )}\n");
+		}
+
+		if( _isDirty && PreditionsDrawer.IsShowingPreditions )
+		{
+			_predictions.SetData( _entriesProp );
+			_isDirty = false;
+		}
+
+		_predictions.Draw( rect );
+    }
+
+	public float GetHeight( IAggregatedSubsetSelector elementToRoll = null )
+    {
+		var height = _list.Height;
+		if( elementToRoll != null ) height += _rollButton.GetHeight();
+		height += _predictions.GetHeight();
+		return height;
+    }
+
+	private object DebugName(object enemy) => enemy.DebugNameOrNull();
 }
