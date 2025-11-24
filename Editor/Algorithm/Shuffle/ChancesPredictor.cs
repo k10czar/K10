@@ -251,7 +251,64 @@ public class ChancesPredictor
 
 	public void DrawTable( Rect rect )
     {
-        
+		var lh = EditorGUIUtility.singleLineHeight;
+
+		int minE = int.MaxValue;
+		int maxE = int.MinValue;
+
+		for( int k = rMin; k <= rMax; k++ )
+		{
+			for( int i = 0; i < count; i++ )
+			{
+				for( int j = 0; j <= maxElementsCount; j++ )
+				{
+					if( Mathf.Approximately( (float)M[i, j, k], 0 ) ) continue;
+					minE = Mathf.Min( j, minE );
+					maxE = Mathf.Max( j, maxE );
+				}
+			}
+		}
+
+		var slices = ( maxE - minE ) + 2;
+		if( rMin <= rMax )
+		{
+			var toplineRect = rect.GetLineTop( lh + 3 );
+			GUI.Label( toplineRect.VerticalSlice( 0, slices ), "Average", GUI.skin.box );
+			for( int j = minE; j <= maxE; j++ ) GUI.Label( toplineRect.VerticalSlice( ( j - minE ) + 1, slices ), $"{j}", GUI.skin.box );
+			
+			var range = Mathf.Max( rMax - rMin, 0 ) + 1;
+			float sumWeight = range;
+			
+			if (_rollChancesCache != null && _rollChancesCache.Length >= range)
+			{
+				sumWeight = 0;
+				for (int i = 0; i < range; i++)
+				{
+					sumWeight += _rollChancesCache[i];
+				}
+			}
+
+			for( int i = 0; i < count; i++ )
+			{
+				var lineRect = rect.GetLineTop( lh );
+				GUI.Label( lineRect.VerticalSlice( 0, slices ), _namesCache[i] );
+				for( int j = minE; j <= maxE; j++ )
+				{
+					double val = 0;
+					for (int k = rMin; k <= rMax; k++)
+					{
+						var chance = M[i, j, k];
+						if (_rollChancesCache != null) chance *= _rollChancesCache[k - rMin];
+						val += chance;
+					}
+					val /= sumWeight;
+					val = System.Math.Max( val, 0 );
+
+					var r = lineRect.VerticalSlice( ( j - minE ) + 1, slices );
+					GUIProgressBar.Draw( r, (float)val );
+				}
+			}
+		}
     }
 
     public void DrawTable()

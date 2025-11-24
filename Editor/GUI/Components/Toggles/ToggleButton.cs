@@ -1,11 +1,8 @@
 using UnityEngine;
 using UnityEditor;
-using System;
 
-public struct PersistentToggleButton
+public struct ToggleButton
 {
-	private PersistentValue<bool> _value;
-
 	private string _label;
 	private string _iconNameOn;
 	private string _iconNameOff;
@@ -15,56 +12,53 @@ public struct PersistentToggleButton
 
 	GUIContent TrueContent => _onContent ??= new GUIContent( _label, IconCache.Get( _iconNameOn ).Texture );
 	GUIContent FalseContent => _offContent ??= ( _iconNameOff == null ) ? TrueContent : new GUIContent( _label, IconCache.Get( _iconNameOn ).Texture );
-
-    public bool Enabled => _value.Get;
-
-    public PersistentToggleButton( string toogleCode,  string label,  string iconNameOn, string iconNameOff = null, bool defaultValue = true )
+	
+    public ToggleButton( string label,  string iconNameOn, string iconNameOff = null )
     {
-		_value = PersistentValue<bool>.At( $"Temp/PersistentToogles/{toogleCode}.tgg", defaultValue );
         _label = label;
         _iconNameOn = iconNameOn;
         _iconNameOff = iconNameOff;
 		_onContent = null;
 		_offContent = null;
     }
-	
-    public bool Layout( float margin = 3, GUIStyle style = null )
+
+	public float GetHeight() => EditorGUIUtility.singleLineHeight + 3;
+
+    public bool Layout( ref bool value, float margin = 3, GUIStyle style = null )
     {
 		var lh = EditorGUIUtility.singleLineHeight;
 		var rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh + margin ) );
 		rect.RequestTop( lh + margin );
 		GUILayout.Space( lh + margin );
-		var ret = Draw( rect, style );
+		var ret = Draw( rect, ref value, style );
 
 		EditorGUILayout.EndHorizontal();
 
 		return ret;
     }
-
-	public float GetHeight() => EditorGUIUtility.singleLineHeight + 3;
 	
-    public bool Draw( Rect rect, GUIStyle style = null )
+    public bool Draw( Rect rect, ref bool value, GUIStyle style = null )
     {
 		if( style == null ) style = K10GuiStyles.smallBoldCenterStyle;
-		var toggle = _value.Get;
+		var toggle = value;
 
 		GUIContent content = toggle ? TrueContent : FalseContent;
+		GUI.Box( rect, GUIContent.none );
 		var change = GUI.Button( rect, content, style );
 
 		if( change )
         {
 			toggle = !toggle;
-			_value.Set = toggle;
+			value = toggle;
         }
 
 		return toggle;
     }
 
-    public bool DrawOnTop(ref Rect rect)
+    public bool DrawOnTop( ref Rect rect, ref bool value )
     {
 		var h = GetHeight();
-		var area = rect.RequestTop( h );
-		rect = rect.CutTop( h );
-		return Draw( area );
+		var area = rect.GetLineTop( h );
+		return Draw( area, ref value );
     }
 }

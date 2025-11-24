@@ -46,11 +46,10 @@ public class SubsetDrawer : PropertyDrawer
 			void DrawElementBackground(Rect rect, int index, bool isActive, bool isFocused)
 			{
 				if (prop.arraySize<=index) return;
-				SerializedProperty element = prop.GetArrayElementAtIndex(index);
 				if (index<0) return;
 				var entry = prop.GetArrayElementAtIndex(index);
 				var color = _elementColoringFunc(entry);
-				EditorGUI.DrawRect(rect, color.WithValue(.75f));
+				EditorGUI.DrawRect(rect, color.WithValue(.5f));
 			}
 
             reorderableList.drawElementBackgroundCallback = DrawElementBackground;

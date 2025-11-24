@@ -26,8 +26,8 @@ public class AggregatedSelectorEditor
 
 	public AggregatedSelectorEditor( Type type = null, Func<SerializedProperty,Color> ElementColoringFunc = null )
     {
-		SetType( type );
 		_elementColoringFunc = ElementColoringFunc;
+		SetType( type );
     }
 
 	public AggregatedSelectorEditor( SerializedObject obj, Type type ) : this( type )
@@ -46,11 +46,12 @@ public class AggregatedSelectorEditor
 		_drawer = new SubsetDrawer( type, _elementColoringFunc );
     }
 	
-	public void Setup( SerializedObject serializedObject, Type type = null, Texture2D icon = null )
+	public void Setup( SerializedObject serializedObject, string name = null, Type type = null, Texture2D icon = null )
     {
 		_displayName = serializedObject.DebugNameOrNull();
 		_entriesProp = serializedObject.FindProperty("_entries");
-		SetupList( serializedObject, _entriesProp, icon );
+		_predictions.SetProp( _entriesProp );
+		SetupList( serializedObject, _entriesProp, name, icon );
 		if( type != null ) SetType( type );
     }
 	
@@ -58,13 +59,14 @@ public class AggregatedSelectorEditor
 	{
 		_displayName = prop.displayName;
 		_entriesProp = prop.FindPropertyRelative("_entries");
-		SetupList( prop.serializedObject, _entriesProp, icon );
+		_predictions.SetProp( _entriesProp );
+		SetupList( prop.serializedObject, _entriesProp, prop.displayName, icon );
 		if( type != null ) SetType( type );
     }
 	
-	void SetupList( SerializedObject serializedObject, SerializedProperty prop, Texture2D icon = null )
+	void SetupList( SerializedObject serializedObject, SerializedProperty prop, string name = null, Texture2D icon = null )
     {
-		_list = new KReorderableList( serializedObject, prop, "Subsets", icon );
+		_list = new KReorderableList( serializedObject, prop, name ?? "Subsets", icon );
 		_list.List.drawElementCallback = DrawSquadElement;
 		_list.List.elementHeightCallback = SquadElementHeight;
 		// _list.List.onAddCallback = AddSquadElement;
@@ -98,9 +100,9 @@ public class AggregatedSelectorEditor
 			Debug.Log($"<color=#BA55D3>Debug Roll</color> of <color=#7CFC00>{elementToRoll.DebugNameOrNull()}</color> result in roll with <color=#87CEFA>{result.Count()}</color>\n\t-{string.Join( "\n\t-",result.ToList().ConvertAll( DebugName ) )}\n");
 		}
 
-		if( _isDirty && PreditionsDrawer.IsShowingPreditions )
+		if( _isDirty && _predictions.Prop.isExpanded )
 		{
-			_predictions.SetData( _entriesProp );
+			_predictions.Calculate();
 			_isDirty = false;
 		}
 
@@ -122,9 +124,9 @@ public class AggregatedSelectorEditor
 			Debug.Log($"<color=#BA55D3>Debug Roll</color> of <color=#7CFC00>{elementToRoll.DebugNameOrNull()}</color> result in roll with <color=#87CEFA>{result.Count()}</color>\n\t-{string.Join( "\n\t-",result.ToList().ConvertAll( DebugName ) )}\n");
 		}
 
-		if( _isDirty && PreditionsDrawer.IsShowingPreditions )
+		if( _isDirty && _predictions.Prop.isExpanded )
 		{
-			_predictions.SetData( _entriesProp );
+			_predictions.Calculate();
 			_isDirty = false;
 		}
 
