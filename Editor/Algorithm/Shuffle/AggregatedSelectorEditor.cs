@@ -24,7 +24,27 @@ public class AggregatedSelectorEditor
 	
 	public Func<SerializedProperty,Color> _elementColoringFunc = null;
 
-	public AggregatedSelectorEditor( Type type = null, Func<SerializedProperty,Color> ElementColoringFunc = null )
+    public bool HasDataFilled
+    {
+        get
+        {
+			if( _entriesProp == null ) return false;
+			var count = _entriesProp.arraySize;
+			if( count == 0 ) return false;
+			for( int i = 0; i < count; i++ )
+            {
+                var entry = _entriesProp.GetArrayElementAtIndex(i);
+				var setEntriesProp = entry.FindPropertyRelative("_entries");
+				if( setEntriesProp == null ) continue;
+				var setCount = setEntriesProp.arraySize;
+				if( setCount == 0 ) continue;
+				return true;
+            }
+			return false;
+        }
+    }
+
+    public AggregatedSelectorEditor( Type type = null, Func<SerializedProperty,Color> ElementColoringFunc = null )
     {
 		_elementColoringFunc = ElementColoringFunc;
 		SetType( type );

@@ -19,9 +19,9 @@ public static class PreditionsDrawer
 			{
 				GUILayout.Space( SPACING );
 				var count = aggregated.Count;
-				EditorGUILayout.BeginVertical( GUI.skin.box );
 					if( _showCountingTable.Layout() )
 					{
+				EditorGUILayout.BeginHorizontal( GUI.skin.box );
 						for( int i = 0; i < count; i++ )
 						{
 							GUILayout.Space( SPACING );
@@ -30,12 +30,12 @@ public static class PreditionsDrawer
 								predictor.DrawTable();
 							EditorGUILayout.EndVertical();
 						}
+				EditorGUILayout.EndHorizontal();
 					}
-				EditorGUILayout.EndVertical();
 				GUILayout.Space( SPACING );
-				EditorGUILayout.BeginVertical( GUI.skin.box );
 					if( _showPermutations.Layout() )
 					{
+				EditorGUILayout.BeginHorizontal( GUI.skin.box );
 						for( int i = 0; i < count; i++ )
 						{
 							GUILayout.Space( SPACING );
@@ -44,8 +44,8 @@ public static class PreditionsDrawer
 								predictor.DrawPermutations();
 							EditorGUILayout.EndVertical();
 						}
+				EditorGUILayout.EndHorizontal();
 					}
-				EditorGUILayout.EndVertical();
 			}
 		EditorGUILayout.EndVertical();
     }
@@ -58,35 +58,69 @@ public static class PreditionsDrawer
 			var count = aggregated.Count;
 
             rect.GetLineTop( SPACING );
+
 			if( _showCountingTable.DrawOnTop( ref rect ) )
             {
+				var height = MaxCountTableHeight( aggregated );
+				var area = rect.GetLineTop( height );
 				for( int i = 0; i < count; i++ )
 				{
 					var predictor = aggregated.GetEntry( i );
 					var h = predictor.GetTableHeight();
-					var area = rect.GetLineTop( h );
-					GUI.Box( area, GUIContent.none );
-					predictor.DrawTable( area );
-            		rect.GetLineTop( SPACING );
+					var slicedArea = area.VerticalSlice( i, count ).RequestTop( h );
+					GUI.Box( slicedArea, GUIContent.none );
+					predictor.DrawTable( slicedArea );
 				}
             }
 
             rect.GetLineTop( SPACING );
+
 			if( _showPermutations.DrawOnTop( ref rect ) )
             {
+				var height = MaxPermutationHeight( aggregated );
+				var area = rect.GetLineTop( height );
 				for( int i = 0; i < count; i++ )
 				{
 					var predictor = aggregated.GetEntry( i );
 					var h = predictor.GetPermutationsHeight();
-					var area = rect.GetLineTop( h );
-					GUI.Box( area, GUIContent.none );
-					predictor.DrawPermutations( area );
-            		rect.GetLineTop( SPACING );
+					var slicedArea = area.VerticalSlice( i, count ).RequestTop( h );
+					GUI.Box( slicedArea, GUIContent.none );
+					predictor.DrawPermutations( slicedArea );
 				}
             }
         }
     }
-	
+
+	static float MaxCountTableHeight( PredictionsAggregator aggregated )
+    {
+		var count = aggregated.Count;
+		var maxCountTableHeight = 0f;
+		if( _showCountingTable.Enabled )
+		{
+			for( int i = 0; i < count; i++ )
+			{
+				var h = aggregated.GetEntry( i ).GetTableHeight();
+				if( maxCountTableHeight < h ) maxCountTableHeight = h;
+			}
+		} 
+		return maxCountTableHeight + SPACING;
+    }
+
+	static float MaxPermutationHeight( PredictionsAggregator aggregated )
+    {
+		var count = aggregated.Count;
+		var maxPermutationHeight = 0f;
+		if( _showPermutations.Enabled ) 
+		{
+			for( int i = 0; i < count; i++ )
+			{
+				var h = aggregated.GetEntry( i ).GetPermutationsHeight();
+				if( maxPermutationHeight < h ) maxPermutationHeight = h;
+				// height += h + SPACING;
+			}
+		}
+		return maxPermutationHeight + SPACING;
+    }
 
     public static float GetHeight( this PredictionsAggregator aggregated )
     {
@@ -98,13 +132,21 @@ public static class PreditionsDrawer
 			var count = aggregated.Count;
 			if( _showCountingTable.Enabled )
             {
-				for( int i = 0; i < count; i++ ) 
-					height += aggregated.GetEntry( i ).GetTableHeight() + SPACING;   
+				// for( int i = 0; i < count; i++ )
+                // {
+				// 	var h = aggregated.GetEntry( i ).GetTableHeight();
+				// 	height += h + SPACING;   
+                // }
+				height += MaxCountTableHeight( aggregated ) + SPACING;
             } 
 			if( _showPermutations.Enabled ) 
             {
-				for( int i = 0; i < count; i++ ) 
-					height += aggregated.GetEntry( i ).GetPermutationsHeight() + SPACING;
+				// for( int i = 0; i < count; i++ )
+                // {
+				// 	var h = aggregated.GetEntry( i ).GetPermutationsHeight();
+				// 	height += h + SPACING;
+                // }
+				height += MaxPermutationHeight( aggregated ) + SPACING;
 			}
 		}
 		return height;
