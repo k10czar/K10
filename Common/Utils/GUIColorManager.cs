@@ -14,30 +14,24 @@ public class GuiColorManager
 		GUI.contentColor = color;
 	}
 
-    public static void New(object color)
-    {
-        throw new NotImplementedException();
-    }
-
     public static void Revert( int count = 1 )
 	{
 		if( count <= 0 ) return;
 		var len = _colors.Count;
 		
-		if( _colors.Count > 0 )
+		if( len > count )
 		{
-			count = Mathf.Max( count, len );
-			var candidate = len - count;
-			var candidateColor = _colors[candidate];
+			var firstToRemoveID = len - count;
+			var candidateColor = _colors[firstToRemoveID-1];
 			GUI.color = candidateColor;
 			GUI.contentColor = candidateColor;
-			_colors.RemoveRange( candidate, count );
+			_colors.RemoveRange( firstToRemoveID, count );
 		}
 		else
 		{
+			_colors.Clear();
 			GUI.color = Color.white;
 			GUI.contentColor = Color.white;
-			GUI.backgroundColor = Color.white;
 		}
 	}
 }
@@ -58,15 +52,15 @@ public class GizmosColorManager
 		if( count <= 0 ) return;
 		var len = _colors.Count;
 		
-		if( _colors.Count > 0 )
+		if( len > count )
 		{
-			count = Mathf.Max( count, len );
-			var candidate = len - count;
-			Gizmos.color = _colors[candidate];
-			_colors.RemoveRange( candidate, count );
+			var firstToRemoveID = len - count;
+			Gizmos.color = _colors[firstToRemoveID-1];
+			_colors.RemoveRange( firstToRemoveID, count );
 		}
 		else
 		{
+			_colors.Clear();
 			Gizmos.color = Color.white;
 		}
 	}
@@ -87,15 +81,15 @@ public class GuiBackgroundColorManager
 		if( count <= 0 ) return;
 		var len = _colors.Count;
 		
-		if( _colors.Count > 0 )
+		if( len > count )
 		{
-			count = Mathf.Max( count, len );
-			var candidate = len - count;
-			GUI.backgroundColor = _colors[candidate];
-			_colors.RemoveRange( candidate, count );
+			var firstToRemoveID = len - count;
+			GUI.backgroundColor = _colors[firstToRemoveID-1];
+			_colors.RemoveRange( firstToRemoveID, count );
 		}
 		else
 		{
+			_colors.Clear();
 			GUI.backgroundColor = Color.white;
 		}
 	}
