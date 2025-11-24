@@ -12,6 +12,19 @@ public interface IAggregatedSubsetSelector
 
 public static class AggregatedSubsetSelectorExtensions
 {
+    public static bool IsEmpty(this IAggregatedSubsetSelector data)
+    {
+        if( data == null ) return true;
+        var count = data.Count;
+        if( count == 0 ) return true;
+        for( int i = 0; i < count; i++)
+        {
+            var set = data.GetEntryObject(i);
+            if( !set.IsEmpty() ) return true;
+        }
+        return true; 
+    }
+
     public static IEnumerable<T> Roll<T>( this IAggregatedSubsetSelector data )
     {
         var roll = new List<T>();
