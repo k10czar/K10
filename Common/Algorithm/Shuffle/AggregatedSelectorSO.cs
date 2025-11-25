@@ -20,7 +20,7 @@ public static class AggregatedSubsetSelectorExtensions
         for( int i = 0; i < count; i++)
         {
             var set = data.GetEntryObject(i);
-            if( !set.IsEmpty() ) return true;
+            if( !set.IsEmpty() ) return false;
         }
         return true; 
     }
@@ -67,6 +67,8 @@ public class AggregatedSelector<T> : IAggregatedSubsetSelector<T> where T : Scri
     public int Count => _entries.Length;
     public ISubsetSelector GetEntryObject(int id) => _entries[id];
     public ISubsetSelector<T> GetEntry(int id) => _entries[id];
+
+    public override string ToString() => $"Aggregated of {_entries.ToStringOrNull()}{(this.IsEmpty()?" EMPTY":"")}";
 }
 
 public abstract class AggregatedSelectorSO<T> : BaseAggregatedSelectorSO, IAggregatedSubsetSelector<T> where T : ScriptableObject

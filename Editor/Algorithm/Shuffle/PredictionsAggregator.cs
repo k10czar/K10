@@ -19,9 +19,9 @@ public static class PreditionsDrawer
 			{
 				GUILayout.Space( SPACING );
 				var count = aggregated.Count;
-					if( _showCountingTable.Layout() )
-					{
-				EditorGUILayout.BeginHorizontal( GUI.skin.box );
+				if( _showCountingTable.Layout() )
+				{
+					EditorGUILayout.BeginHorizontal( GUI.skin.box );
 						for( int i = 0; i < count; i++ )
 						{
 							GUILayout.Space( SPACING );
@@ -30,12 +30,12 @@ public static class PreditionsDrawer
 								predictor.DrawTable();
 							EditorGUILayout.EndVertical();
 						}
-				EditorGUILayout.EndHorizontal();
-					}
+					EditorGUILayout.EndHorizontal();
+				}
 				GUILayout.Space( SPACING );
-					if( _showPermutations.Layout() )
-					{
-				EditorGUILayout.BeginHorizontal( GUI.skin.box );
+				if( _showPermutations.Layout() )
+				{
+					EditorGUILayout.BeginHorizontal( GUI.skin.box );
 						for( int i = 0; i < count; i++ )
 						{
 							GUILayout.Space( SPACING );
@@ -44,8 +44,8 @@ public static class PreditionsDrawer
 								predictor.DrawPermutations();
 							EditorGUILayout.EndVertical();
 						}
-				EditorGUILayout.EndHorizontal();
-					}
+					EditorGUILayout.EndHorizontal();
+				}
 			}
 		EditorGUILayout.EndVertical();
     }

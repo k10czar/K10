@@ -42,7 +42,7 @@ public interface IWeightedSubsetEntry<T> : IWeightedSubsetEntry
 
 public static class SubsetSelectorExtension
 {
-    public static bool IsEmpty(this ISubsetSelector selector) => selector.EntriesCount == 0 || (selector.Rule != ESubsetGeneratorRule.FIXED_ROLLS && selector.Max == 0);
+    public static bool IsEmpty(this ISubsetSelector selector) => selector.EntriesCount == 0;
     
     public static string Stringfy(this ISubsetSelector selector)
     {

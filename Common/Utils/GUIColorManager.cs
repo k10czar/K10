@@ -19,10 +19,10 @@ public class GuiColorManager
 		if( count <= 0 ) return;
 		var len = _colors.Count;
 		
-		if( len > count )
+		if( len >= count )
 		{
 			var firstToRemoveID = len - count;
-			var candidateColor = _colors[firstToRemoveID-1];
+			var candidateColor = _colors[firstToRemoveID];
 			GUI.color = candidateColor;
 			GUI.contentColor = candidateColor;
 			_colors.RemoveRange( firstToRemoveID, count );
@@ -52,10 +52,10 @@ public class GizmosColorManager
 		if( count <= 0 ) return;
 		var len = _colors.Count;
 		
-		if( len > count )
+		if( len >= count )
 		{
 			var firstToRemoveID = len - count;
-			Gizmos.color = _colors[firstToRemoveID-1];
+			Gizmos.color = _colors[firstToRemoveID];
 			_colors.RemoveRange( firstToRemoveID, count );
 		}
 		else
@@ -81,10 +81,10 @@ public class GuiBackgroundColorManager
 		if( count <= 0 ) return;
 		var len = _colors.Count;
 		
-		if( len > count )
+		if( len >= count )
 		{
 			var firstToRemoveID = len - count;
-			GUI.backgroundColor = _colors[firstToRemoveID-1];
+			GUI.backgroundColor = _colors[firstToRemoveID];
 			_colors.RemoveRange( firstToRemoveID, count );
 		}
 		else
