@@ -140,6 +140,7 @@ namespace Skyx.SkyxEditor
             try
             {
                 selectedProperty.SetValueFromJson(EditorGUIUtility.systemCopyBuffer, copiedType, $"Pasted data from clipboard to {selectedDisplayInfo}");
+                CustomDrawersCache.TryResetDuplicatedElement(selectedProperty);
 
                 Debug.Log($"Pasted {copiedDisplayInfo} to {selectedProperty.propertyPath}");
             }
@@ -174,6 +175,18 @@ namespace Skyx.SkyxEditor
             selectedProperty.ExtractArrayElementInfo(out var parent, out var index);
             parent.InsertArrayElementAtIndex(index);
             parent.Apply();
+
+            if (selectedProperty.IsManagedRef())
+            {
+                var newElement = parent.GetArrayElementAtIndex(index + 1);
+
+                TrackProperty(selectedProperty, null);
+                OnCopy();
+
+                newElement.managedReferenceValue = Activator.CreateInstance(selectedType);
+                TrackProperty(newElement, null);
+                OnPaste();
+            }
         }
 
         private static void OnDeleteElement()

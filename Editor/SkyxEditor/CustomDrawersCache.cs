@@ -31,6 +31,14 @@ namespace Skyx.SkyxEditor
             return wasReset;
         }
 
+        public static bool TryResetDuplicatedElement(SerializedProperty newElement)
+        {
+            var drawer = Get(newElement);
+            var wasReset = drawer != null && drawer.ResetDuplicatedObject(newElement);
+
+            return wasReset;
+        }
+
         private static PropertyEditor FindPropertyDrawerForType(Type target)
         {
             if (IsIgnoredAssemblyForDrawers(target.Assembly)) return null;

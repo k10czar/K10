@@ -29,5 +29,6 @@ namespace Skyx.SkyxEditor
         }
 
         public virtual bool ResetNewObject(SerializedProperty newElement) => false;
+        public virtual bool ResetDuplicatedObject(SerializedProperty newElement) => false;
     }
 }
