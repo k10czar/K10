@@ -532,6 +532,7 @@ public static class K10UnityExtensions
 		if( obj == null ) return nullString;
 		if (obj is IEnumerable enumerable)
 		{
+			if( enumerable is string str ) return str;
 			var count = "...";
 			if (obj is ICollection collection) count = collection.Count.ToString();
 			var sb = StringBuilderPool.RequestWith($"<{obj.TypeNameOrNull()}>[{count}]{{ ");
