@@ -80,4 +80,6 @@ public abstract class AggregatedSelectorSO<T> : BaseAggregatedSelectorSO, IAggre
     public override int Count => _entries.Length;
     public override ISubsetSelector GetEntryObject(int id) => _entries[id];
     public ISubsetSelector<T> GetEntry(int id) => _entries[id];
+
+    public override string ToString() => $"AggregatedSO<{typeof(T)}> of {_entries.ToStringOrNull()}{(this.IsEmpty()?" EMPTY":"")}";
 }
