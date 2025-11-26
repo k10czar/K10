@@ -11,4 +11,12 @@ public static class TransformExtensions
 		}
 		return false;
 	}
+
+	public static bool ResizesWithParent(this RectTransform rectTransform, RectTransform.Axis axis)
+	{
+		if (axis is RectTransform.Axis.Horizontal)
+			return !Mathf.Approximately(rectTransform.anchorMin.x, rectTransform.anchorMax.x);
+
+		return !Mathf.Approximately(rectTransform.anchorMin.y, rectTransform.anchorMax.y);
+	}
 }
