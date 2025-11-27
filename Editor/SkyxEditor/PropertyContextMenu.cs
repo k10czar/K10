@@ -31,7 +31,7 @@ namespace Skyx.SkyxEditor
                 return;
             }
 
-            if (!current.control || current.type != EventType.KeyDown) return;
+            if (EditorGUIUtility.editingTextField || !current.control || current.type != EventType.KeyDown) return;
 
             if (current.keyCode == KeyCode.C)
             {
