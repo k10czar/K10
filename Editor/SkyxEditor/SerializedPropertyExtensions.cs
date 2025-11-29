@@ -485,6 +485,48 @@ namespace Skyx.SkyxEditor
 
         #endregion
 
+        #region Drawers
+
+        public static void DrawAllInnerProperties(this SerializedProperty property, ref Rect rect, bool isManaged)
+        {
+            var iterator = property.Copy();
+            var endProperty = iterator.GetEndProperty();
+
+            if (isManaged) iterator.NextVisible(true); // Skip the managed reference wrapper
+
+            while (true)
+            {
+                if (SerializedProperty.EqualContents(iterator, endProperty)) break;
+
+                rect.height = EditorGUI.GetPropertyHeight(iterator, true);
+                SkyxGUI.Draw(rect, iterator, true);
+                rect.y += rect.height + SkyxStyles.ElementsMargin;
+
+                if (!iterator.NextVisible(false)) break;
+            }
+        }
+
+        public static float GetPropertyHeight(this SerializedProperty property, bool isManaged)
+        {
+            var height = 0f;
+
+            var iterator = property.Copy();
+            var endProperty = iterator.GetEndProperty();
+
+            if (isManaged) iterator.NextVisible(true); // Skip the managed reference wrapper
+
+            while (true)
+            {
+                if (SerializedProperty.EqualContents(iterator, endProperty)) break;
+                height += EditorGUI.GetPropertyHeight(iterator, true) + SkyxStyles.ElementsMargin;
+                if (!iterator.NextVisible(false)) break;
+            }
+
+            return height;
+        }
+
+        #endregion
+
         #region JSON Manipulation
 
         public static void CopyValue<T>(this SerializedProperty property, T value, string reason) where T : class

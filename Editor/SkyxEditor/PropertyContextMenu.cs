@@ -87,6 +87,12 @@ namespace Skyx.SkyxEditor
                 menu.AddItem(new GUIContent("Delete Array Element"), false, OnDeleteElement);
             }
 
+            if (property.IsManagedRef())
+            {
+                menu.AddSeparator("");
+                menu.AddItem(new GUIContent("Clear Serialized Reference"), false, OnClearSerializedReference);
+            }
+
             menu.ShowAsContext();
         }
 
@@ -194,6 +200,12 @@ namespace Skyx.SkyxEditor
             selectedProperty.ExtractArrayElementInfo(out var parent, out var index);
             parent.DeleteArrayElementAtIndex(index);
             parent.Apply();
+        }
+
+        private static void OnClearSerializedReference()
+        {
+            selectedProperty.managedReferenceValue = null;
+            selectedProperty.Apply();
         }
     }
 }

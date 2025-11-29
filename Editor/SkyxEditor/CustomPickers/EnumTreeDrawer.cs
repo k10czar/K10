@@ -24,7 +24,10 @@ namespace Skyx.SkyxEditor
                     : throw new Exception($"Property is not an Enum! {property} | {fieldInfo.FieldType}")
                 : fieldInfo.FieldType;
 
-            DrawEnumDropdown(position, property, fieldType, null, false);
+            var isFlag = fieldType!.IsDefined(typeof(FlagsAttribute), false);
+
+            if (isFlag) EnumTreeGUI.DrawEnumMask(position, property, fieldType, EColor.Support);
+            else DrawEnumDropdown(position, property, fieldType, null, false);
 
             EditorGUI.EndProperty();
         }

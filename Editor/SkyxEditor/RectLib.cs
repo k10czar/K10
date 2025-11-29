@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 
 namespace Skyx.SkyxEditor
@@ -165,6 +166,29 @@ namespace Skyx.SkyxEditor
             }
 
             return false;
+        }
+
+        public static (Rect, bool) ExtractOverHeaderButton(EElementSize headerSize)
+            => ExtractOverHeaderButton(EditorGUILayout.GetControlRect(false, 1), headerSize);
+
+        public static (Rect, bool) ExtractOverHeaderButton(Rect rect, EElementSize headerSize)
+        {
+            rect = rect.ExtractMiniButton(true);
+            rect.height = EditorGUIUtility.singleLineHeight;
+
+            var (deltaX, deltaY) = headerSize switch
+            {
+                EElementSize.Mini => (1, 2),
+                EElementSize.Primary => (-6, 10),
+                EElementSize.Secondary => (-5, 6),
+                EElementSize.SingleLine => (-5, 3),
+                _ => throw new ArgumentOutOfRangeException(nameof(headerSize), headerSize, null)
+            };
+
+            rect.y += deltaY;
+            rect.x += deltaX;
+
+            return (rect, rect.TryUseClick(false));
         }
 
         #endregion
