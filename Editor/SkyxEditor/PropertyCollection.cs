@@ -155,14 +155,14 @@ namespace Skyx.SkyxEditor
             Undo.undoRedoPerformed += OnUndoRedoPerformed;
         }
 
-        [MenuItem("Disyphus/Editor/Clear PropertyCollections")]
+        [MenuItem("Meow/Editor/Clear PropertyCollections")]
         public static void ClearCollections()
         {
             collections.Clear();
             scheduledResets.Clear();
         }
 
-        [MenuItem("Disyphus/Editor/Log PropertyCollections")]
+        [MenuItem("Meow/Editor/Log PropertyCollections")]
         private static void LogPropertyCollections()
         {
             var total = collections.Sum(entry => entry.Value.Count);

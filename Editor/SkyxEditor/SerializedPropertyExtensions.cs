@@ -299,7 +299,7 @@ namespace Skyx.SkyxEditor
             propertyTypeCache.Remove(cacheID);
         }
 
-        [MenuItem("Disyphus/Editor/Clear Property Type Cache")]
+        [MenuItem("Meow/Editor/Clear Property Type Cache")]
         public static void ClearCache() => propertyTypeCache.Clear();
 
         public static Type GetObjectReferenceType(this SerializedProperty property)

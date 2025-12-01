@@ -105,7 +105,7 @@ namespace Skyx.SkyxEditor
             return typeField?.GetValue(drawerAttribute) as Type;
         }
 
-        [MenuItem("Disyphus/Editor/Clear CustomDrawersCache")]
+        [MenuItem("Meow/Editor/Clear CustomDrawersCache")]
         public static void ClearCache() => cache.Clear();
     }
 }
