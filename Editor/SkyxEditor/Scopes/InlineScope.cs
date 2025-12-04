@@ -78,7 +78,8 @@ namespace Skyx.SkyxEditor
         {
             var initialExpanded = property.isExpanded;
             var isExpanded = property.isExpanded;
-            property.isExpanded = Begin(title, ref isExpanded, color, size, property);
+            Begin(title, ref isExpanded, color, size, property);
+            property.isExpanded = isExpanded;
 
             return initialExpanded;
         }
@@ -103,7 +104,8 @@ namespace Skyx.SkyxEditor
         private static bool Begin(ref Rect initialRect, string title, SerializedProperty property, EColor color, EElementSize size)
         {
             var isExpanded = property.isExpanded;
-            property.isExpanded = Begin(ref initialRect, title, ref isExpanded, color, size, property);
+            Begin(ref initialRect, title, ref isExpanded, color, size, property);
+            property.isExpanded = isExpanded;
 
             return property.isExpanded;
         }

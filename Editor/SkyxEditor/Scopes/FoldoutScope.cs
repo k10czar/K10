@@ -147,7 +147,8 @@ namespace Skyx.SkyxEditor
         private bool BeginWrapper(string title, SerializedProperty property, EColor color, EElementSize size)
         {
             var isExpandedRef = property.isExpanded;
-            property.isExpanded = GetDrawingRects(title, ref isExpandedRef, color, size, property);
+            GetDrawingRects(title, ref isExpandedRef, color, size, property);
+            property.isExpanded = isExpandedRef;
 
             return isExpandedRef;
         }
