@@ -94,7 +94,7 @@ namespace Skyx.SkyxEditor
         #region Reflection Getters / Setters
 
         private static readonly Regex arrayIndexRegex = new(@"\.Array\.data\[(\d+)\]$", RegexOptions.Compiled);
-        private static readonly Regex extractArrayPieceRegex = new(@"\[\d+\]", RegexOptions.Compiled);
+        private static readonly Regex arrayPieceRegex = new(@"^(?<name>[^\[]+)\[(?<index>\d+)\]$", RegexOptions.Compiled);
 
         private const BindingFlags Bindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
         private const BindingFlags InstanceOnlyBindings = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
@@ -183,8 +183,7 @@ namespace Skyx.SkyxEditor
 
         private static object GetFieldValueWithIndex(string pathPiece, object obj)
         {
-            var fieldName = extractArrayPieceRegex.Replace(pathPiece, "");
-            var index = GetPathDigit(pathPiece);
+            var (fieldName, index) = ParseArrayPiece(pathPiece);
 
             var field = GetField(fieldName, obj);
             if (field == null) return null;
@@ -207,8 +206,7 @@ namespace Skyx.SkyxEditor
 
         private static bool SetFieldValueWithIndex(string pathPiece, object obj, object value)
         {
-            var fieldName = extractArrayPieceRegex.Replace(pathPiece, "");
-            var index = GetPathDigit(pathPiece);
+            var (fieldName, index) = ParseArrayPiece(pathPiece);
 
             var field = GetField(fieldName, obj);
             if (field == null) return false;
@@ -230,7 +228,17 @@ namespace Skyx.SkyxEditor
             return false;
         }
 
-        private static int GetPathDigit(string pathPiece) => Convert.ToInt32(new string(pathPiece.Where(char.IsDigit).ToArray()));
+        private static (string fieldName, int index) ParseArrayPiece(string pathPiece)
+        {
+            var match = arrayPieceRegex.Match(pathPiece);
+            if (!match.Success)
+                throw new ArgumentException($"Invalid piece: {pathPiece}");
+
+            var name = match.Groups["name"].Value;
+            var index = int.Parse(match.Groups["index"].Value);
+
+            return (name, index);
+        }
 
         private static string[] GetPathStructure(SerializedProperty property) => property.propertyPath.Replace(".Array.data", "").Split('.');
 
