@@ -5,7 +5,7 @@ namespace K10.DebugSystem
 {
     public interface ILoggable<T> where T : IDebugCategory, new()
     {
-        private static readonly Object[] nullOwners = { null };
+        public static readonly Object[] nullOwners = { null };
 
         Object[] LogOwners => nullOwners;
         Object MainLogOwner => LogOwners[0];
