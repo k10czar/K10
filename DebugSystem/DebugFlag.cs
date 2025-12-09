@@ -16,7 +16,7 @@ namespace K10.DebugSystem
             else Debug.Log($"DebugFlag <b>{flag}</b> set to {IsEnabled}");
         }
 
-        private bool IsEnabled => K10DebugSystem.CanDebugFlag(flag);
+        public bool IsEnabled => K10DebugSystem.CanDebugFlag(flag);
         public static implicit operator bool(DebugFlag flag) => flag.IsEnabled;
 
         public override string ToString() => flag;
