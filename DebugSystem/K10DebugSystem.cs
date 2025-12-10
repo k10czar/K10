@@ -10,23 +10,29 @@ namespace K10.DebugSystem
 {
     public static class K10DebugSystem
     {
-        private static readonly Type tempCategory = typeof(TempDebug);
         private static readonly K10DebugConfig config;
 
-        private static List<IDebugCategory> categories;
-        public static IEnumerable<IDebugCategory> Categories
+        #region Categories
+
+        private static readonly Type tempCategory = typeof(TempDebug);
+
+        private static List<DebugCategory> categories;
+        public static IEnumerable<DebugCategory> Categories
         {
             get
             {
                 if (categories != null) return categories;
 
-                categories = new List<IDebugCategory>();
+                categories = new List<DebugCategory>();
 
-                foreach (var catType in TypeListDataCache.GetFrom(typeof(IDebugCategory)).GetTypes())
+                foreach (var catType in TypeListDataCache.GetFrom(typeof(DebugCategory)).GetTypes())
                 {
                     try
                     {
-                        categories.Add((IDebugCategory) catType.CreateInstance());
+                        var newCategory = (DebugCategory)catType.CreateInstance();
+                        newCategory.Setup();
+
+                        categories.Add(newCategory);
                     }
                     catch (Exception ex)
                     {
@@ -40,7 +46,7 @@ namespace K10.DebugSystem
             }
         }
 
-        public static T GetCategory<T>() where T : IDebugCategory
+        public static T GetCategory<T>() where T : DebugCategory
         {
             foreach (var candidate in Categories)
             {
@@ -50,16 +56,18 @@ namespace K10.DebugSystem
             throw new Exception($"Category {typeof(T).Name} not found!");
         }
 
+        #endregion
+
         #region Debug Type
 
-        public static bool CanDebug<T>(EDebugType debugType = EDebugType.Default) where T : IDebugCategory, new()
+        public static bool CanDebug<T>(EDebugType debugType = EDebugType.Default) where T : DebugCategory, new()
             => CanDebug(typeof(T), debugType);
 
-        public static bool CanDebug<T>(bool verbose) where T : IDebugCategory, new() => CanDebug(typeof(T), verbose ? EDebugType.Verbose : EDebugType.Default);
-        public static bool SkipDebug<T>(EDebugType debugType = EDebugType.Default) where T : IDebugCategory, new() => !CanDebug<T>(debugType);
+        public static bool CanDebug<T>(bool verbose) where T : DebugCategory, new() => CanDebug(typeof(T), verbose ? EDebugType.Verbose : EDebugType.Default);
+        public static bool SkipDebug<T>(EDebugType debugType = EDebugType.Default) where T : DebugCategory, new() => !CanDebug<T>(debugType);
 
-        public static bool ShowVisuals<T>() where T : IDebugCategory, new() => CanDebug<T>(EDebugType.Visual);
-        public static bool SkipVisuals<T>() where T : IDebugCategory, new() => !ShowVisuals<T>();
+        public static bool ShowVisuals<T>() where T : DebugCategory, new() => CanDebug<T>(EDebugType.Visual);
+        public static bool SkipVisuals<T>() where T : DebugCategory, new() => !ShowVisuals<T>();
 
         public static bool CanDebug(Type categoryType, bool verbose) => CanDebug(categoryType, verbose ? EDebugType.Verbose : EDebugType.Default);
 

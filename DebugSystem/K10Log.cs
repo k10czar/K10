@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 
 namespace K10.DebugSystem
 {
-    public static class K10Log<T> where T : IDebugCategory, new()
+    public static class K10Log<T> where T : DebugCategory, new()
     {
         private static readonly T category = K10DebugSystem.GetCategory<T>();
 

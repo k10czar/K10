@@ -9,7 +9,7 @@ public static class InputActionExtension
     public static Action RegisterTrigger( this InputAction action, Action actionHandler, InputDevice device = null ) => RegisterTrigger( action, new ActionCapsule( actionHandler ), device );
     public static Action RegisterTrigger( this InputAction action, ITriggerable actionHandler, InputDevice device = null )
     {
-        K10Log<InputLogCategory>.LogVerbose( $"{action.name}.RegisterTrigger()" );
+        K10Log<InputDebug>.LogVerbose( $"{action.name}.RegisterTrigger()" );
         Action<InputAction.CallbackContext> capsule = ( InputAction.CallbackContext context ) =>
         {
             // Debug.Log( $"{action.name} {context.control.device.name??"NULL"} {device?.name??"NULL"} {context.control.device != device}" );
@@ -24,7 +24,7 @@ public static class InputActionExtension
     public static Action RegisterBool(this InputAction action, Action<bool> actionHandler, InputDevice device = null) => RegisterBool(action, new ActionCapsule<bool>(actionHandler), device);
     public static Action RegisterBool( this InputAction action, ITriggerable<bool> actionHandler, InputDevice device = null )
     {
-        K10Log<InputLogCategory>.LogVerbose( $"{action.name}.RegisterBool()" );
+        K10Log<InputDebug>.LogVerbose( $"{action.name}.RegisterBool()" );
         Action<InputAction.CallbackContext> trueCapsule = ( InputAction.CallbackContext context ) =>
         {
             if( device != null && context.control.device != device ) return;
@@ -49,7 +49,7 @@ public static class InputActionExtension
     public static Action RegisterValue<T>(this InputAction action, Action<T> actionHandler, Func<InputAction.CallbackContext,bool> filterFunc = null, InputDevice device = null ) where T : struct => RegisterValue<T>( action, new ActionCapsule<T>(actionHandler), filterFunc, device );
     public static Action RegisterValue<T>( this InputAction action, ITriggerable<T> actionHandler, Func<InputAction.CallbackContext,bool> filterFunc = null, InputDevice device = null ) where T: struct
     {
-        K10Log<InputLogCategory>.LogVerbose( $"{action.name}.RegisterValue()" );
+        K10Log<InputDebug>.LogVerbose( $"{action.name}.RegisterValue()" );
         Action<InputAction.CallbackContext> capsule = ( InputAction.CallbackContext context ) =>
         {
             var value = default( T );

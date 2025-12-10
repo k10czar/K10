@@ -6,10 +6,10 @@ using K10.DebugSystem;
 using UnityEngine;
 using static Colors.Console;
 
-public class ServicesLogCategory : IDebugCategory
+public class ServicesLogCategory : DebugCategory
 {
-    public string Name => "💂Services";
-    public Color Color => Colors.Orange;
+    public override string Name => "💂Services";
+    public override Color Color => Colors.Orange;
 }
 
 public static class ServiceLocator
@@ -51,7 +51,7 @@ public static class ServiceLocator
 				if( ser is IDisposable disposable ) disposable.Dispose();
 				if( ser is ICustomDisposableKill killable ) killable.Kill();
 			}
-		}		
+		}
 		// Log( $"{"ServiceLocator".Colorfy(TypeName)}.{"Clear".Colorfy(Verbs)}()" );
 		services.Clear();
 		genericServices.Clear();
@@ -121,7 +121,7 @@ public static class ServiceLocator
 	{
 		return (T)Get(typeof(T));
 	}
-	
+
 
     public static T Request<T>() where T : IService, new()
     {

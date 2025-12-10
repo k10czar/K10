@@ -3,10 +3,10 @@ using K10;
 using K10.DebugSystem;
 using UnityEngine;
 
-public class AutomationLogCategory : IDebugCategory
+public class AutomationLogCategory : DebugCategory
 {
-    public string Name => "🤖Automation";
-    public Color Color => Colors.DodgerBlue;
+    public override string Name => "🤖Automation";
+    public override Color Color => Colors.DodgerBlue;
 }
 
 namespace Automation

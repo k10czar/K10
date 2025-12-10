@@ -37,7 +37,7 @@ public class K10DebugSystemWindow : EditorWindow
 		}
 	}
 
-    private void DrawGameSystemDebugEnablers(IDebugCategory category)
+    private void DrawGameSystemDebugEnablers(DebugCategory category)
     {
         var inspectorWidth = EditorGUIUtility.currentViewWidth;
         var elementWidth = (inspectorWidth - 60) / 3f;
