@@ -84,9 +84,11 @@ namespace Skyx.SkyxEditor
             var isSummarizable = summarizable != null;
 
             var info = isSummarizable ? summarizable.Summary : property.managedReferenceValue?.GetType().Name;
+            var color = isSummarizable ? summarizable.SummaryColor : EColor.Secondary;
+
             label = label.AppendInfo(info, EColor.Support, EElementSize.SingleLine);
 
-            using var scope = FoldoutScope.Open(ref rect, property, label, indent: true);
+            using var scope = FoldoutScope.Open(ref rect, property, label, color, indent: true);
             if (alwaysShowChangeRef) SkyxGUI.Button(buttonRect.Value, "⚙️", EColor.Special, EElementSize.Mini);
             if (!scope.IsExpanded) return;
 

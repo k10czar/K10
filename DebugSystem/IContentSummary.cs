@@ -4,6 +4,7 @@
     {
         public string Summary { get; }
         public string Description => null;
+        public EColor SummaryColor => EColor.Secondary;
     }
 
     public static class IContentFilterExtensions
