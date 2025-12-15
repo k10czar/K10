@@ -104,7 +104,11 @@ namespace Skyx.SkyxEditor
             object obj = property.serializedObject.targetObject;
             var fieldStructure = GetPathStructure(property);
 
-            if (obj.GetType() == targetType) return obj;
+            if (canInherit)
+            {
+                if (targetType.IsAssignableFrom(obj.GetType())) return obj;
+            }
+            else if (obj.GetType() == targetType) return obj;
 
             foreach (var pathPiece in fieldStructure)
             {
