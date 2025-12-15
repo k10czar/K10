@@ -41,6 +41,24 @@ namespace K10
 			return instance.StartCoroutine(coroutine);
 		}
 
+		public static IEnumerator AwaitAll(params IEnumerator[] routines)
+		{
+			TryCreateInstance();
+
+			var coroutines = new Coroutine[routines.Length];
+
+			for (var index = 0; index < routines.Length; index++)
+			{
+				var routine = routines[index];
+				if (routine == null) continue;
+
+				coroutines[index] = instance.StartCoroutine(routine);
+			}
+
+			foreach (var routine in coroutines)
+				yield return routine;
+		}
+
 		public static void Stop(ref Coroutine cacheVariable)
 		{
 			if (cacheVariable == null) return;
