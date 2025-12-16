@@ -198,11 +198,11 @@ namespace Skyx.SkyxEditor
             SkyxLayout.Space();
         }
 
-        protected void DrawPrefabModifications()
+        protected bool DrawPrefabModifications()
         {
             var targetComponent = Target;
             var targetObject = (targetComponent as Component)!.gameObject;
-            if (!PrefabUtility.IsPartOfPrefabInstance(targetObject)) return;
+            if (!PrefabUtility.IsPartOfPrefabInstance(targetObject)) return false;
 
             var sourceComponent = PrefabUtility.GetCorrespondingObjectFromSource(targetComponent);
             var outerRoot = PrefabUtility.GetOutermostPrefabInstanceRoot(targetObject);
@@ -213,7 +213,7 @@ namespace Skyx.SkyxEditor
                 .Where(entry => entry.target is T && entry.target == sourceComponent)
                 .ToArray();
 
-            if (thisComponentMods.Length <= 0) return;
+            if (thisComponentMods.Length <= 0) return false;
 
             TryShowModifications(thisComponentMods);
             SkyxLayout.CompactSpace();
@@ -236,6 +236,8 @@ namespace Skyx.SkyxEditor
                 UndoOverrides(targetComponent);
 
             SkyxLayout.Separator();
+
+            return true;
         }
 
         private static void UndoOverrides(T targetComponent)

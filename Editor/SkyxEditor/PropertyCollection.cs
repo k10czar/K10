@@ -180,12 +180,13 @@ namespace Skyx.SkyxEditor
         #endregion
 
         private SerializedObject root;
-        private SerializedProperty rootProperty;
+        public SerializedProperty MainProperty { get; private set; }
         private Object owner;
         private readonly string propertyPath;
 
         private readonly Dictionary<string, SerializedProperty> properties = new();
         public int PropertiesCount => properties.Count;
+
 
         #region Layout Draw
 
@@ -369,6 +370,8 @@ namespace Skyx.SkyxEditor
         private readonly Dictionary<SerializedProperty, ReorderableList> lists = new();
 
         public delegate bool IsElementHighlighted(SerializedProperty elementProperty);
+        public delegate void DrawElement(PropertyCollection properties, Rect rect, int index, bool isActive, bool isFocused);
+        public delegate void DrawListHeader(PropertyCollection properties, Rect rect);
 
         public bool HasList(string propertyName, bool isBacking = false) => lists.ContainsKey(Get(propertyName, isBacking));
         public bool HasList(SerializedProperty property) => lists.ContainsKey(property);
@@ -387,9 +390,9 @@ namespace Skyx.SkyxEditor
             bool draggable = true,
             bool displayAddButton = true,
             bool displayRemoveButton = true,
-            ReorderableList.ElementCallbackDelegate customDrawElement = null,
+            DrawElement customDrawElement = null,
             Action<SerializedProperty> newElementSetup = null,
-            ReorderableList.HeaderCallbackDelegate customHeader = null,
+            DrawListHeader customHeader = null,
             IsElementHighlighted isElementHighlighted = null,
             bool isBacking = false)
         {
@@ -403,9 +406,9 @@ namespace Skyx.SkyxEditor
             bool draggable = true,
             bool displayAddButton = true,
             bool displayRemoveButton = true,
-            ReorderableList.ElementCallbackDelegate customDrawElement = null,
+            DrawElement customDrawElement = null,
             Action<SerializedProperty> newElementSetup = null,
-            ReorderableList.HeaderCallbackDelegate customHeader = null,
+            DrawListHeader customHeader = null,
             IsElementHighlighted isElementHighlighted = null)
         {
             if (lists.TryGetValue(property, out var list)) return list;
@@ -449,7 +452,7 @@ namespace Skyx.SkyxEditor
                 PropertyContextMenu.ContextGUI(ref rect, innerProp, newElementSetup);
 
                 if (customDrawElement == null) SkyxGUI.Draw(rect, innerProp);
-                else customDrawElement(rect, index, isActive, isFocused);
+                else customDrawElement(this, rect, index, isActive, isFocused);
             }
 
             float ElementHeightCallback(int index)
@@ -463,7 +466,7 @@ namespace Skyx.SkyxEditor
                 PropertyContextMenu.ContextGUI(ref rect, property, newElementSetup);
 
                 if (customHeader == null) EditorGUI.LabelField(rect, property.PrettyName());
-                else customHeader(rect);
+                else customHeader(this, rect);
             }
 
             void OnAddCallback(ReorderableList thisList)
@@ -582,12 +585,12 @@ namespace Skyx.SkyxEditor
         private void Setup()
         {
             bool fromObject;
-            (rootProperty, fromObject) = GetRootProperty();
+            (MainProperty, fromObject) = GetRootProperty();
 
-            var iterator = rootProperty.Copy();
+            var iterator = MainProperty.Copy();
             if (!iterator.NextVisible(true)) return;
 
-            var endProperty = rootProperty.Copy();
+            var endProperty = MainProperty.Copy();
             if (!fromObject) endProperty.NextVisible(false);
             do
             {

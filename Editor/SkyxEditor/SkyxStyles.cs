@@ -272,7 +272,7 @@ namespace Skyx.SkyxEditor
             Color.white,
             Colors.Console.Dark,
             Color.white,
-            Color.white,
+            Colors.Pistachio,
             Colors.Yellow, // Warning
             Colors.LightSalmon, // Danger
             Color.white, // Support
@@ -287,7 +287,7 @@ namespace Skyx.SkyxEditor
             new("ScriptText"), // Primary
             new("HelpBox"), // Secondary
             new("SelectionRect"), // Info
-            new("U2D.createRect"), // Success
+            new("HelpBox"), // Success
             new("HelpBox"), // Warning
             new("HelpBox"), // Danger
             new("TE BoxBackground"), // Support
