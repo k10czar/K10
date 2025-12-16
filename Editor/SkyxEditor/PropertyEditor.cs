@@ -8,6 +8,8 @@ namespace Skyx.SkyxEditor
     {
         private static readonly ProfilerMarker drawMarker = new("PropertyEditor.Draw");
 
+        public virtual bool FlagPropertyBounds => true;
+
         protected static T GetTarget<T>(SerializedProperty property) where T: class => property.GetValue<T>();
         protected static PropertyCollection GetProperties(SerializedProperty property) => PropertyCollection.Get(property);
 
@@ -17,9 +19,9 @@ namespace Skyx.SkyxEditor
         {
             using var profilerMarker = drawMarker.Auto();
 
-            EditorGUI.BeginProperty(rect, label, property);
+            if (FlagPropertyBounds) EditorGUI.BeginProperty(rect, label, property);
             Draw(rect, property, label);
-            EditorGUI.EndProperty();
+            if (FlagPropertyBounds) EditorGUI.EndProperty();
         }
 
         protected static void ApplyDirectTargetChanges(SerializedProperty property)
