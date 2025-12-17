@@ -59,6 +59,13 @@ namespace Skyx.SkyxEditor
             return scope;
         }
 
+        public static void HeaderOnly(ref Rect rect, string title)
+        {
+            BoxGUI.DrawBox(ref rect, EColor.Secondary);
+            rect.ApplyStartMargin(35);
+            EditorGUI.LabelField(rect, title, SkyxStyles.DefaultLabel);
+        }
+
         #endregion
 
         #region Instance Info
