@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using Skyx.RuntimeEditor;
 using UnityEditor;
 using UnityEngine;
 
@@ -430,26 +431,26 @@ namespace Skyx.SkyxEditor
             rect.width = DivideRect(totalWidth, elementsCount);
         }
 
-        public static Rect ExtractRect(ref Rect rect, float width, bool fromEnd = false)
+        public static Rect ExtractRect(ref Rect rect, float width, bool fromEnd = false, float margin = SkyxStyles.ElementsMargin)
         {
-            if (fromEnd) return ExtractEndRect(ref rect, width);
+            if (fromEnd) return ExtractEndRect(ref rect, width, margin);
 
-            var remaining = rect.width - width - SkyxStyles.ElementsMargin;
+            var remaining = rect.width - width - margin;
 
             rect.width = width;
             var newRect = new Rect(rect);
 
-            SlideRect(ref rect, remaining);
+            SlideRect(ref rect, remaining, margin);
 
             return newRect;
         }
 
-        public static Rect ExtractEndRect(ref Rect rect, float width)
+        public static Rect ExtractEndRect(ref Rect rect, float width, float margin = SkyxStyles.ElementsMargin)
         {
-            rect.width = rect.width - width - SkyxStyles.ElementsMargin;
+            rect.width = rect.width - width - margin;
 
             var newRect = new Rect(rect);
-            SlideRect(ref newRect, width);
+            SlideRect(ref newRect, width, margin);
 
             return newRect;
         }

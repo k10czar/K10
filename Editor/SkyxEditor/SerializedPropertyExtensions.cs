@@ -355,6 +355,16 @@ namespace Skyx.SkyxEditor
         public static bool IsArrayEntry(this SerializedProperty property) => arrayIndexRegex.IsMatch(property.propertyPath);
         public static string PrettyName(this SerializedProperty property) => ObjectNames.NicifyVariableName(property.name);
 
+        public static bool CanExpand(this SerializedProperty property)
+        {
+            if (property == null) return true;
+
+            if (property.propertyType is SerializedPropertyType.Generic or SerializedPropertyType.ManagedReference)
+                return property.hasVisibleChildren;
+
+            return true;
+        }
+
         public static SerializedProperty FindBackingProperty(this SerializedProperty property, string propertyName)
             => property.FindPropertyRelative($"<{propertyName}>k__BackingField");
 

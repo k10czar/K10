@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using Skyx.RuntimeEditor;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -9,49 +10,61 @@ namespace Skyx.SkyxEditor
         #region Interface
 
         public static HeaderScope Open(SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
-            => Open(property, property.PrettyName(), color, size);
+            => Open(new SkopeInfo(EScopeType.Header, property, color, size));
 
         public static HeaderScope Open(SerializedProperty property, string title, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+            => Open(new SkopeInfo(EScopeType.Header, property, title, color, size));
+
+        public static HeaderScope Open(SkopeInfo info)
         {
             var scope = pool.Get();
 
             scope.usesLayout = true;
-            scope.IsExpanded = Begin(title, property, color, size);
+            scope.IsExpanded = Begin(info);
 
             return scope;
         }
 
         public static HeaderScope Open(string title, ref bool isExpandedRef, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+            => Open(ref isExpandedRef, new SkopeInfo(EScopeType.Header, null, title, color, size));
+
+        public static HeaderScope Open(ref bool isExpandedRef, SkopeInfo info)
         {
             var scope = pool.Get();
 
             scope.IsExpanded = isExpandedRef;
             scope.usesLayout = true;
 
-            Begin(title, ref isExpandedRef, color, size, null);
+            Begin(ref isExpandedRef, info);
 
             return scope;
         }
 
         public static HeaderScope Open(ref Rect rect, SerializedProperty property, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
-            => Open(ref rect, property, property.PrettyName(), color, size);
+            => Open(ref rect, new SkopeInfo(EScopeType.Header, property, color, size));
 
         public static HeaderScope Open(ref Rect rect, SerializedProperty property, string title, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+            => Open(ref rect, new SkopeInfo(EScopeType.Header, property, title, color, size));
+
+        public static HeaderScope Open(ref Rect rect, SkopeInfo info)
         {
             var scope = pool.Get();
 
             scope.usesLayout = false;
-            scope.IsExpanded = Begin(ref rect, title, property, color, size);
+            scope.IsExpanded = Begin(ref rect, info);
 
             return scope;
         }
 
         public static HeaderScope Open(ref Rect rect, string title, ref bool isExpandedRef, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+            => Open(ref rect, ref isExpandedRef, new SkopeInfo(EScopeType.Header, null, title, color, size));
+
+        public static HeaderScope Open(ref Rect rect, ref bool isExpandedRef, SkopeInfo info)
         {
             var scope = pool.Get();
 
             scope.usesLayout = false;
-            scope.IsExpanded = Begin(ref rect, title, ref isExpandedRef, color, size, null);
+            scope.IsExpanded = Begin(ref rect, ref isExpandedRef, info);
 
             return scope;
         }
@@ -73,19 +86,21 @@ namespace Skyx.SkyxEditor
 
         #region Drawers
 
-        private static bool Begin(string title, SerializedProperty property, EColor color, EElementSize size)
+        private static bool Begin(SkopeInfo info)
         {
-            var initialExpanded = property.isExpanded;
-            var isExpanded = property.isExpanded;
-            Begin(title, ref isExpanded, color, size, property);
-            property.isExpanded = isExpanded;
+            var initialExpanded = info.property.isExpanded;
+            var isExpanded = info.property.isExpanded;
+
+            Begin(ref isExpanded, info);
+
+            info.property.isExpanded = isExpanded;
 
             return initialExpanded;
         }
 
-        private static bool Begin(string title, ref bool isExpandedRef, EColor color, EElementSize size, SerializedProperty property)
+        private static bool Begin(ref bool isExpandedRef, SkopeInfo info)
         {
-            var headerHeight = SkyxStyles.HeaderHeight(size);
+            var headerHeight = SkyxStyles.HeaderHeight(info.size);
             var headerRect = EditorGUILayout.GetControlRect(false, headerHeight);
             var boxRect = headerRect;
 
@@ -97,23 +112,23 @@ namespace Skyx.SkyxEditor
                 boxRect.yMax = drawingRect.yMax;
             }
 
-            return ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size, property);
+            return ReallyDraw(headerRect, boxRect, ref isExpandedRef, info);
         }
 
-        private static bool Begin(ref Rect initialRect, string title, SerializedProperty property, EColor color, EElementSize size)
+        private static bool Begin(ref Rect initialRect, SkopeInfo info)
         {
-            var isExpanded = property.isExpanded;
-            Begin(ref initialRect, title, ref isExpanded, color, size, property);
-            property.isExpanded = isExpanded;
+            var isExpanded = info.property.isExpanded;
+            Begin(ref initialRect, ref isExpanded, info);
+            info.property.isExpanded = isExpanded;
 
-            return property.isExpanded;
+            return info.property.isExpanded;
         }
 
-        private static bool Begin(ref Rect initialRect, string title, ref bool isExpandedRef, EColor color, EElementSize size, SerializedProperty property)
+        private static bool Begin(ref Rect initialRect, ref bool isExpandedRef, SkopeInfo info)
         {
             initialRect.height -= SkyxStyles.ElementsMargin;
 
-            var headerHeight = SkyxStyles.HeaderHeight(size);
+            var headerHeight = SkyxStyles.HeaderHeight(info.size);
             var headerRect = initialRect;
             BoxGUI.ShrinkHeaderRect(ref headerRect, headerHeight);
 
@@ -121,21 +136,40 @@ namespace Skyx.SkyxEditor
 
             initialRect.ApplyBoxMargin(headerHeight);
 
-            return ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size, property);
+            return ReallyDraw(headerRect, boxRect, ref isExpandedRef, info);
         }
 
-        private static bool ReallyDraw(Rect headerRect, Rect boxRect, string title, ref bool isExpandedRef, EColor color, EElementSize size, SerializedProperty property)
+        private static bool ReallyDraw(Rect headerRect, Rect boxRect, ref bool isExpandedRef, SkopeInfo info)
         {
-            BoxGUI.DrawBox(ref boxRect, color);
+            Skope.DrawBox(ref boxRect, info);
 
-            if (headerRect.TryUseClick(false))
+            var prop = info.property;
+
+            var canExpand = prop.CanExpand();
+            if (!canExpand) isExpandedRef = false;
+
+            if (info.buttons != null)
+            {
+                var buttonsRect = headerRect;
+                buttonsRect.y += 2;
+                buttonsRect.x -= 4;
+                buttonsRect.height = SkyxStyles.LineHeight;
+
+                foreach (var (label, color, action) in info.buttons)
+                {
+                    if (SkyxGUI.MiniButton(ref buttonsRect, label, color, null, true))
+                        action();
+                }
+            }
+
+            if (canExpand && headerRect.TryUseClick(false))
                 isExpandedRef = !isExpandedRef;
 
-            if (property != null)
-                PropertyContextMenu.ContextGUI(ref headerRect, property);
+            if (prop != null)
+                PropertyContextMenu.ContextGUI(ref headerRect, prop);
 
             GUI.Button(headerRect, GUIContent.none); // This forces repaint on hover
-            SkyxGUI.Button(headerRect, title, color, size, EButtonType.Plain, null);
+            SkyxGUI.Button(headerRect, info.title, info.color, info.size, EButtonType.Plain);
 
             return isExpandedRef;
         }

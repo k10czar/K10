@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public enum EColor { Primary, Secondary, Info, Success, Warning, Danger, Support, Special, Disabled, Clear, Backdrop }
+public enum EColor { Primary, Secondary, Info, Success, Warning, Danger, Support, Special, Disabled, Clear, Backdrop, Infer }
 
 public static class Colors
 {

@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Skyx.RuntimeEditor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -10,60 +10,65 @@ namespace Skyx.SkyxEditor
         #region Interface
 
         public static FoldoutScope Open(SerializedProperty property, EColor color = EColor.Secondary, EElementSize size = EElementSize.SingleLine, bool indent = false)
-            => Open(property, ObjectNames.NicifyVariableName(property.name), color, size, indent);
+            => Open(new SkopeInfo(EScopeType.Foldout, property, color, size, indent));
 
         public static FoldoutScope Open(SerializedProperty property, string title, EColor color = EColor.Secondary, EElementSize size = EElementSize.SingleLine, bool indent = false)
+            => Open(new SkopeInfo(EScopeType.Foldout, property, title, color, size, indent));
+
+        public static FoldoutScope Open(SkopeInfo info)
         {
             var scope = pool.Get();
 
-            scope.indent = indent;
+            scope.indent = info.indent;
             scope.usesLayout = true;
-            scope.IsExpanded = scope.BeginWrapper(title, property, color, size);
+            scope.IsExpanded = scope.BeginWrapper(info);
 
             return scope;
         }
 
         public static FoldoutScope Open(string title, ref bool isExpandedRef, EColor color = EColor.Secondary, EElementSize size = EElementSize.SingleLine, bool indent = false)
+            => Open(ref isExpandedRef, new SkopeInfo(EScopeType.Foldout, null, title, color, size, indent));
+
+        public static FoldoutScope Open(ref bool isExpandedRef, SkopeInfo info)
         {
             var scope = pool.Get();
 
-            scope.indent = indent;
+            scope.indent = info.indent;
             scope.usesLayout = true;
-            scope.IsExpanded = scope.GetDrawingRects(title, ref isExpandedRef, color, size, null);
-
-            return scope;
-        }
-
-        public static FoldoutScope Open(ref Rect rect, string title, ref bool isExpandedRef, EColor color = EColor.Secondary, EElementSize size = EElementSize.SingleLine, bool indent = false)
-        {
-            var scope = pool.Get();
-
-            scope.indent = indent;
-            scope.usesLayout = false;
-            scope.IsExpanded = scope.AdjustAvailableRect(ref rect, title, ref isExpandedRef, color, size, null);
+            scope.IsExpanded = scope.GetDrawingRects(ref isExpandedRef, info);
 
             return scope;
         }
 
         public static FoldoutScope Open(ref Rect rect, SerializedProperty property, EColor color = EColor.Secondary, EElementSize size = EElementSize.SingleLine, bool indent = false)
-            => Open(ref rect, property, property.PrettyName(), color, size, indent);
+            => Open(ref rect, new SkopeInfo(EScopeType.Foldout, property, color, size, indent));
 
         public static FoldoutScope Open(ref Rect rect, SerializedProperty property, string title, EColor color = EColor.Secondary, EElementSize size = EElementSize.SingleLine, bool indent = false)
+            => Open(ref rect, new SkopeInfo(EScopeType.Foldout, property, title, color, size, indent));
+
+        public static FoldoutScope Open(ref Rect rect, SkopeInfo info)
         {
             var scope = pool.Get();
 
-            scope.indent = indent;
+            scope.indent = info.indent;
             scope.usesLayout = false;
-            scope.IsExpanded = scope.BeginWrapper(ref rect, title, property, color, size);
+            scope.IsExpanded = scope.BeginWrapper(ref rect, info);
 
             return scope;
         }
 
-        public static void HeaderOnly(ref Rect rect, string title)
+        public static FoldoutScope Open(ref Rect rect, string title, ref bool isExpandedRef, EColor color = EColor.Secondary, EElementSize size = EElementSize.SingleLine, bool indent = false)
+            => Open(ref rect, ref isExpandedRef, new SkopeInfo(EScopeType.Foldout, null, title, color, size, indent));
+
+        public static FoldoutScope Open(ref Rect rect, ref bool isExpandedRef, SkopeInfo info)
         {
-            BoxGUI.DrawBox(ref rect, EColor.Secondary);
-            rect.ApplyStartMargin(35);
-            EditorGUI.LabelField(rect, title, SkyxStyles.DefaultLabel);
+            var scope = pool.Get();
+
+            scope.indent = info.indent;
+            scope.usesLayout = false;
+            scope.IsExpanded = scope.AdjustAvailableRect(ref rect, ref isExpandedRef, info);
+
+            return scope;
         }
 
         #endregion
@@ -88,21 +93,40 @@ namespace Skyx.SkyxEditor
 
         #region Drawers
 
-        private bool ReallyDraw(Rect headerRect, Rect boxRect, string title, ref bool isExpandedRef, EColor color, EElementSize size, SerializedProperty property)
+        private bool ReallyDraw(Rect headerRect, Rect boxRect, ref bool isExpandedRef, SkopeInfo info)
         {
-            BoxGUI.DrawBox(ref boxRect, color);
+            Skope.DrawBox(ref boxRect, info);
+
+            var canExpand = info.property.CanExpand();
+            if (!canExpand) isExpandedRef = false;
 
             var drawingRect = headerRect;
             drawingRect.ApplyStartMargin(10);
 
-            if (headerRect.TryUseClick(false))
+            if (info.buttons != null)
+            {
+                var buttonsRect = headerRect;
+                buttonsRect.y += 2;
+                buttonsRect.x -= 4;
+                buttonsRect.height = SkyxStyles.LineHeight;
+
+                foreach (var (label, color, action) in info.buttons)
+                {
+                    if (SkyxGUI.MiniButton(ref buttonsRect, label, color, null, true))
+                        action();
+                }
+            }
+
+            if (canExpand && headerRect.TryUseClick(false))
                 isExpandedRef = !isExpandedRef;
 
-            if (property != null)
-                PropertyContextMenu.ContextGUI(ref headerRect, property);
+            if (info.property != null)
+                PropertyContextMenu.ContextGUI(ref headerRect, info.property);
 
-            GUI.Toggle(drawingRect.ExtractMiniButton(), isExpandedRef, GUIContent.none, EditorStyles.foldout);
-            EditorGUI.LabelField(drawingRect, title, SkyxStyles.DefaultLabel);
+            var toggleRect = drawingRect.ExtractMiniButton();
+            if (canExpand) GUI.Toggle(toggleRect, isExpandedRef, GUIContent.none, EditorStyles.foldout);
+
+            EditorGUI.LabelField(drawingRect, info.title, SkyxStyles.DefaultLabel);
 
             if (isExpandedRef)
             {
@@ -115,9 +139,9 @@ namespace Skyx.SkyxEditor
             return isExpandedRef;
         }
 
-        private bool GetDrawingRects(string title, ref bool isExpandedRef, EColor color, EElementSize size, SerializedProperty property)
+        private bool GetDrawingRects(ref bool isExpandedRef, SkopeInfo info)
         {
-            var headerHeight = SkyxStyles.HeaderHeight(size);
+            var headerHeight = SkyxStyles.HeaderHeight(info.size);
             var headerRect = EditorGUILayout.GetControlRect(false, headerHeight);
             var boxRect = headerRect;
 
@@ -131,16 +155,16 @@ namespace Skyx.SkyxEditor
                 boxRect.yMax = drawingRect.yMax;
             }
 
-            ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size, property);
+            ReallyDraw(headerRect, boxRect, ref isExpandedRef, info);
 
             return initialExpanded;
         }
 
-        private bool AdjustAvailableRect(ref Rect initialRect, string title, ref bool isExpandedRef, EColor color, EElementSize size, SerializedProperty property)
+        private bool AdjustAvailableRect(ref Rect initialRect, ref bool isExpandedRef, SkopeInfo info)
         {
             initialRect.height -= SkyxStyles.ElementsMargin;
 
-            var headerHeight = SkyxStyles.HeaderHeight(size);
+            var headerHeight = SkyxStyles.HeaderHeight(info.size);
             var headerRect = initialRect;
             BoxGUI.ShrinkHeaderRect(ref headerRect, headerHeight);
 
@@ -148,24 +172,24 @@ namespace Skyx.SkyxEditor
 
             initialRect.ApplyBoxMargin(headerHeight);
 
-            return ReallyDraw(headerRect, boxRect, title, ref isExpandedRef, color, size, property);
+            return ReallyDraw(headerRect, boxRect, ref isExpandedRef, info);
         }
 
-        private bool BeginWrapper(string title, SerializedProperty property, EColor color, EElementSize size)
+        private bool BeginWrapper(SkopeInfo info)
         {
-            var isExpandedRef = property.isExpanded;
-            GetDrawingRects(title, ref isExpandedRef, color, size, property);
-            property.isExpanded = isExpandedRef;
+            var isExpandedRef = info.property.isExpanded;
+            GetDrawingRects(ref isExpandedRef, info);
+            info.property.isExpanded = isExpandedRef;
 
             return isExpandedRef;
         }
 
-        private bool BeginWrapper(ref Rect initialRect, string title, SerializedProperty property, EColor color, EElementSize size)
+        private bool BeginWrapper(ref Rect initialRect, SkopeInfo info)
         {
-            var isExpandedRef = property.isExpanded;
-            property.isExpanded = AdjustAvailableRect(ref initialRect, title, ref isExpandedRef, color, size, property);
+            var isExpandedRef = info.property.isExpanded;
+            info.property.isExpanded = AdjustAvailableRect(ref initialRect, ref isExpandedRef, info);
 
-            return property.isExpanded;
+            return info.property.isExpanded;
         }
 
         #endregion

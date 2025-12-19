@@ -22,7 +22,7 @@ namespace Skyx.SkyxEditor
             return true;
         }
 
-        public static void DrawTypePickerMenu(SerializedProperty property, Action<SerializedProperty> newElementSetup)
+        public static void DrawTypePickerMenu(SerializedProperty property, Action<SerializedProperty> newElementSetup = null)
         {
             var mousePos = Event.current.mousePosition;
             var rect = new Rect(mousePos.x, mousePos.y, 1, 1);

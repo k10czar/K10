@@ -1,4 +1,5 @@
 ﻿using System;
+using Skyx.RuntimeEditor;
 using UnityEditor;
 using UnityEngine;
 
@@ -26,7 +27,7 @@ namespace Skyx.SkyxEditor
             var drawingRect = rect;
             rect.SlideSameVertically(0);
 
-            using var scope = SkyxStyles.Open(scopeType, ref drawingRect, property, title, color, size);
+            using var scope = Skope.Open(scopeType, ref drawingRect, property, title, color, size);
             if (!scope.IsExpanded) return;
 
             DrawElements(ref drawingRect, property, canMoveElements);

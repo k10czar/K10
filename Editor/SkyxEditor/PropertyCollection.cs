@@ -190,13 +190,15 @@ namespace Skyx.SkyxEditor
 
         #region Layout Draw
 
-        public void Draw(string propertyName, bool isBacking = false)
+        public void Draw(string propertyName, bool isBacking = false, bool indent = false)
         {
             if (!TryGet(propertyName, isBacking, out var property)) return;
 
+            if (indent) EditorGUI.indentLevel++;
             EditorGUI.BeginChangeCheck();
             SkyxLayout.Draw(property);
             if (EditorGUI.EndChangeCheck()) property.Apply();
+            if (indent) EditorGUI.indentLevel--;
         }
 
         public void DrawList(string propertyName, bool displayHeader = true, bool isBacking = false)
