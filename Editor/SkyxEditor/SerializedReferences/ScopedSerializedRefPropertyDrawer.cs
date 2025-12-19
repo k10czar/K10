@@ -62,7 +62,7 @@ namespace Skyx.SkyxEditor
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            if (property.managedReferenceValue == null) return SkyxStyles.FullLineHeight;
+            if (property.managedReferenceValue == null || !property.hasVisibleChildren) return SkyxStyles.FullLineHeight;
             if (!property.isExpanded) return SkyxStyles.ClosedScopeHeight(EElementSize.SingleLine);
 
             var height = SkyxStyles.ScopeTotalExtraHeight(EElementSize.SingleLine);

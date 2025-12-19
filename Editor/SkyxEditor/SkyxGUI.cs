@@ -193,14 +193,14 @@ namespace Skyx.SkyxEditor
         public static bool MiniSuccessToggle(ref Rect rect, SerializedProperty toggleProp, string label, string hint, bool fromEnd = false)
             => DrawSuccessToggle(ExtractMiniButton(ref rect, fromEnd), label, toggleProp, hint);
 
-        public static bool MiniEnableToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint)
-            => DrawEnableToggle(ExtractMiniButton(ref rect), onLabel, offLabel, toggleProp, hint);
+        public static bool MiniEnableToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint, bool fromEnd = false)
+            => DrawEnableToggle(ExtractMiniButton(ref rect, fromEnd), onLabel, offLabel, toggleProp, hint);
 
         public static bool MiniWarningToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint, bool fromEnd = false)
             => DrawWarningToggle(ExtractMiniButton(ref rect, fromEnd), onLabel, offLabel, toggleProp, hint);
 
-        public static bool MiniChoiceToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint)
-            => DrawChoiceToggle(ExtractMiniButton(ref rect), onLabel, offLabel, toggleProp, hint);
+        public static bool MiniChoiceToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint, bool fromEnd = false)
+            => DrawChoiceToggle(ExtractMiniButton(ref rect, fromEnd), onLabel, offLabel, toggleProp, hint);
 
         public static bool MiniToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint, Color onColor, Color offColor, bool useExpandField = false, bool fromEnd = false)
             => DrawToggle(ExtractMiniButton(ref rect, fromEnd), onLabel, offLabel, onColor, offColor, toggleProp, hint, useExpandField);
@@ -229,7 +229,7 @@ namespace Skyx.SkyxEditor
             return clicked;
         }
 
-        public static void ExpandButton(ref Rect rect, SerializedProperty isExpandedProp)
+        public static bool ExpandButton(ref Rect rect, SerializedProperty isExpandedProp)
         {
             var extracted = ExtractMiniButton(ref rect);
 
@@ -241,6 +241,7 @@ namespace Skyx.SkyxEditor
 
             var clicked = extracted.TryUseClick(false);
             if (clicked) isExpandedProp.isExpanded = !isExpandedProp.isExpanded;
+            return clicked;
         }
 
         #endregion
