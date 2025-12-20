@@ -148,19 +148,7 @@ namespace Skyx.SkyxEditor
             var canExpand = prop.CanExpand();
             if (!canExpand) isExpandedRef = false;
 
-            if (info.buttons != null)
-            {
-                var buttonsRect = headerRect;
-                buttonsRect.y += 2;
-                buttonsRect.x -= 4;
-                buttonsRect.height = SkyxStyles.LineHeight;
-
-                foreach (var (label, color, action) in info.buttons)
-                {
-                    if (SkyxGUI.MiniButton(ref buttonsRect, label, color, null, true))
-                        action();
-                }
-            }
+            DrawButtons(headerRect, info, false);
 
             if (canExpand && headerRect.TryUseClick(false))
                 isExpandedRef = !isExpandedRef;
@@ -171,7 +159,28 @@ namespace Skyx.SkyxEditor
             GUI.Button(headerRect, GUIContent.none); // This forces repaint on hover
             SkyxGUI.Button(headerRect, info.title, info.color, info.size, EButtonType.Plain);
 
+            DrawButtons(headerRect, info, true);
+
             return isExpandedRef;
+        }
+
+        private static void DrawButtons(Rect rect, SkopeInfo info, bool reallyDraw)
+        {
+            if (info.buttons == null) return;
+
+            rect.y += 5;
+            rect.x -= 4;
+            rect.height = SkyxStyles.LineHeight;
+
+            foreach (var (label, color, action) in info.buttons)
+            {
+                if (reallyDraw) SkyxGUI.MiniButton(ref rect, label, color, null, true);
+                else
+                {
+                    var buttonRect = rect.ExtractMiniButton(true);
+                    if (buttonRect.TryUseClick(false)) action();
+                }
+            }
         }
 
         #endregion

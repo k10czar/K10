@@ -521,7 +521,7 @@ namespace Skyx.SkyxEditor
                 if (SerializedProperty.EqualContents(iterator, endProperty)) break;
 
                 rect.height = EditorGUI.GetPropertyHeight(iterator, true);
-                SkyxGUI.Draw(rect, iterator, true);
+                EditorGUI.PropertyField(rect, iterator);
                 rect.y += rect.height + SkyxStyles.ElementsMargin;
 
                 if (!iterator.NextVisible(false)) break;
