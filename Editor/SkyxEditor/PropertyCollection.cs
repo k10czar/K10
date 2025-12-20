@@ -211,12 +211,13 @@ namespace Skyx.SkyxEditor
             list.DoLayoutList();
         }
 
-        public void Draw(string propertyName, string label, bool isBacking = false)
+        public void Draw(string propertyName, string label, bool isBacking = false, bool useDefaultDrawer = false)
         {
             if (!TryGet(propertyName, isBacking, out var property)) return;
 
             EditorGUI.BeginChangeCheck();
-            SkyxLayout.Draw(property, label);
+            if (useDefaultDrawer) EditorGUILayout.PropertyField(property, new GUIContent(label));
+            else SkyxLayout.Draw(property, label);
             if (EditorGUI.EndChangeCheck()) property.Apply();
         }
 
@@ -232,6 +233,17 @@ namespace Skyx.SkyxEditor
                 if (except.Contains(key)) continue;
                 Draw(key);
             }
+        }
+
+        public void DrawEnum<T>(string propertyName, EColor color = EColor.Primary, string hint = null, bool isMask = false, bool isBacking = false) where T: Enum
+        {
+            var property = Get(propertyName, isBacking);
+
+            var inner = EditorGUILayout.GetControlRect(false);
+            EditorGUI.LabelField(inner.ExtractLabelRect(), property.displayName);
+
+            if (isMask) EnumTreeGUI.DrawEnumMask<T>(inner, property, color, hint);
+            else EnumTreeGUI.DrawEnum<T>(inner, property, color, hint);
         }
 
         #endregion

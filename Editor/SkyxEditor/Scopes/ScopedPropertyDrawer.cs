@@ -111,15 +111,17 @@ namespace Skyx.SkyxEditor
 
             var scopedAtt = (ScopedAttribute)attribute;
             var (name, title, description, color) = GetInfo(property, scopedAtt);
+            var info = scopedAtt.GetSkope(property, title, color);
 
-            if (!property.hasVisibleChildren || !property.isExpanded)
-                return SkyxStyles.ClosedScopeHeight(scopedAtt.elementSize);
+            var height = Skope.ScopeHeight(info, property.isExpanded);
 
-            var height = SkyxStyles.ScopeTotalExtraHeight(scopedAtt.elementSize);
-            height += property.GetPropertyHeight(true);
+            if (property.isExpanded)
+            {
+                height += property.GetPropertyHeight(true);
 
-            if (!string.IsNullOrEmpty(description))
-                height += SkyxStyles.FullLineHeight + 6;
+                if (!string.IsNullOrEmpty(description))
+                    height += SkyxStyles.FullLineHeight + 6;
+            }
 
             return height;
         }

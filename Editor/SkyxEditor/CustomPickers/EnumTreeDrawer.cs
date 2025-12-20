@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Skyx.RuntimeEditor;
 using Skyx.Trees;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
@@ -25,9 +26,23 @@ namespace Skyx.SkyxEditor
                 : fieldInfo.FieldType;
 
             var isFlag = fieldType!.IsDefined(typeof(FlagsAttribute), false);
+            var filters = fieldInfo.GetCustomAttributes(typeof(EnumFilterAttribute), false);
 
             if (isFlag) EnumTreeGUI.DrawEnumMask(position, property, fieldType, EColor.Support);
-            else DrawEnumDropdown(position, property, fieldType, null, false);
+            else
+            {
+                IEnumerable<object> validList = null;
+                var isValidList = false;
+
+                if (filters.Length > 0)
+                {
+                    var filter = (EnumFilterAttribute)filters[0];
+                    validList = filter.list;
+                    isValidList = filter.listIsValid;
+                }
+
+                DrawEnumDropdown(position, property, fieldType, validList, isValidList);
+            }
 
             EditorGUI.EndProperty();
         }

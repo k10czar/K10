@@ -149,7 +149,7 @@ namespace Skyx.SkyxEditor
 
         private bool GetDrawingRects(ref bool isExpandedRef, SkopeInfo info)
         {
-            var headerHeight = Skope.HeaderHeight(info);
+            var headerHeight = Skope.HeaderHeight(info.size);
             var headerRect = EditorGUILayout.GetControlRect(false, headerHeight);
             var boxRect = headerRect;
 
@@ -172,7 +172,7 @@ namespace Skyx.SkyxEditor
         {
             initialRect.height -= SkyxStyles.ElementsMargin;
 
-            var headerHeight = Skope.HeaderHeight(info);
+            var headerHeight = Skope.HeaderHeight(info.size);
             var headerRect = initialRect;
             BoxGUI.ShrinkHeaderRect(ref headerRect, headerHeight);
 

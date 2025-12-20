@@ -18,6 +18,8 @@ public static class ListExtensions
         list.Add( t );
     }
 
+    public static T GetClamped<T,U>(this IList<T> list, U enumValue) where U : Enum
+	    => list[Mathf.Min((int)(object)enumValue, list.Count - 1)];
 	public static T GetClamped<T>(this IList<T> list, int index) => list[Mathf.Min(index, list.Count - 1)];
 
 	public static T GetClampedOrDefault<T>(this IList<T> list, int index)

@@ -60,8 +60,6 @@ namespace Skyx.SkyxEditor
             return HeaderScope.Open(info);
         }
 
-
-
         public static ILayoutScope Open(EScopeType scopeType, string title, ref bool isExpandedRef, EColor color, EElementSize size) => scopeType switch
         {
             EScopeType.Header => HeaderScope.Open(title, ref isExpandedRef, color, size),
@@ -93,22 +91,23 @@ namespace Skyx.SkyxEditor
 
         #region Styles
 
-        private static readonly float[] headerHeights =
+        #region Header Styles
+
+        private static readonly GUIStyle[] headerBoxStyles =
         {
-            32, // Primary
-            28, // Secondary
-            24, // SingleLine
+            new("ScriptText"), // Primary
+            new("HelpBox"), // Secondary
+            new("SelectionRect"), // Info
+            new("HelpBox"), // Success
+            new("HelpBox"), // Warning
+            new("HelpBox"), // Danger
+            new("TE BoxBackground"), // Support
+            new("HelpBox"), // Special
+            new("HelpBox"), // Disabled
+            new(GUIStyle.none), // Clear
+            new("Wizard Box"), // Backdrop
         };
 
-        private static readonly GUIStyle[] boxStyles =
-        {
-            new("ScriptText"), // Header
-            new("HelpBox"), // Foldout
-            new("ScriptText"), // InlineHeader
-            SkyxStyles.WhiteBackgroundStyle, // Inline
-        };
-
-        // Header
         private static readonly Color[] headerColors =
         {
             Color.white,
@@ -124,13 +123,18 @@ namespace Skyx.SkyxEditor
             Color.white, // Backdrop
         };
 
-        // Foldout
+        #endregion
+
+        #region Foldout Styles
+
+        private static readonly GUIStyle[] foldoutBoxStyles = { new("HelpBox"), };
+
         private static readonly Color[] foldoutColors =
         {
-            Color.white,
-            Colors.Console.Dark,
-            Color.white,
-            Colors.Pistachio,
+            Color.white, // Primary
+            Colors.Console.Dark, // Secondary
+            Colors.Console.Secondary, // Info
+            Colors.Pistachio, // Success
             Colors.Yellow, // Warning
             Colors.LightSalmon, // Danger
             Color.white, // Support
@@ -140,7 +144,12 @@ namespace Skyx.SkyxEditor
             Color.white, // Backdrop
         };
 
-        // Inline
+        #endregion
+
+        #region Inline Styles
+
+        private static readonly GUIStyle[] inlineBoxStyles = { SkyxStyles.WhiteBackgroundStyle };
+
         private static readonly Color[] inlineColors =
         {
             Color.white,
@@ -156,6 +165,23 @@ namespace Skyx.SkyxEditor
             Color.white, // Backdrop
         };
 
+        #endregion
+
+        private static readonly float[] headerHeights =
+        {
+            32, // Primary
+            28, // Secondary
+            24, // SingleLine
+        };
+
+        private static readonly GUIStyle[][] boxStyles =
+        {
+            headerBoxStyles,
+            foldoutBoxStyles,
+            headerBoxStyles,
+            inlineBoxStyles,
+        };
+
         private static readonly Color[][] boxColors =
         {
             headerColors,
@@ -165,22 +191,30 @@ namespace Skyx.SkyxEditor
         };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float HeaderHeight(SkopeInfo info) => headerHeights[(int)info.size];
+        public static float HeaderHeight(EElementSize size) => headerHeights.GetClamped(size);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float ScopeHeight(SkopeInfo info, bool isExpanded)
-        {
-            var baseHeight = HeaderHeight(info);
+            => ScopeHeight(info.scopeType, info.size, isExpanded);
 
-            if (isExpanded && info.scopeType is not EScopeType.Inline)
-                baseHeight += (3 * SkyxStyles.ElementsMargin);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float ScopeHeight(EScopeType scopeType, bool isExpanded)
+            => ScopeHeight(scopeType, scopeType.PreferredSize(), isExpanded);
+
+        private static float ScopeHeight(EScopeType scopeType, EElementSize size, bool isExpanded)
+        {
+            var baseHeight = HeaderHeight(size);
+
+            var margin = isExpanded && scopeType is not EScopeType.Inline ? 3 : 1;
+            baseHeight += margin * SkyxStyles.ElementsMargin;
 
             return baseHeight;
         }
 
         public static void DrawBox(ref Rect rect, SkopeInfo info)
         {
-            var boxStyle = boxStyles[(int)info.scopeType];
-            var boxColor = boxColors[(int)info.scopeType][(int)info.color];
+            var boxStyle = boxStyles[(int)info.scopeType].GetClamped(info.color);
+            var boxColor = boxColors[(int)info.scopeType].GetClamped(info.color);
 
             using var scope = BackgroundColorScope.Set(boxColor);
             GUI.Box(rect, GUIContent.none, boxStyle);
