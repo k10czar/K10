@@ -75,9 +75,10 @@ namespace Skyx.SkyxEditor
         }
 
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
-        {
-            var scopedAtt = (ScopedAttribute)attribute;
+            => OnGUI(rect, property, label, (ScopedAttribute) attribute);
 
+        public void OnGUI(Rect rect, SerializedProperty property, GUIContent label, ScopedAttribute scopedAtt)
+        {
             var isSerialized = property.IsManagedRef();
 
             var (name, title, description, color) = GetInfo(property, scopedAtt);
@@ -105,11 +106,13 @@ namespace Skyx.SkyxEditor
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+            => GetPropertyHeight(property, label, (ScopedAttribute) attribute);
+
+        public float GetPropertyHeight(SerializedProperty property, GUIContent label, ScopedAttribute scopedAtt)
         {
             var isSerialized = property.IsManagedRef();
             if (isSerialized && property.managedReferenceValue == null) return SkyxStyles.FullLineHeight;
 
-            var scopedAtt = (ScopedAttribute)attribute;
             var (name, title, description, color) = GetInfo(property, scopedAtt);
             var info = scopedAtt.GetSkope(property, title, color);
 
