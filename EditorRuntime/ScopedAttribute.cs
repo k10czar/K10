@@ -8,6 +8,7 @@ namespace Skyx.RuntimeEditor
     {
         FoldoutNameOnly,
         FoldoutPropertySummary,
+        FoldoutSummaryOnly,
         Inline,
         InlinePropertySummary,
         InlineFullContent,
@@ -81,6 +82,7 @@ namespace Skyx.RuntimeEditor
         {
             { EScopePreset.FoldoutNameOnly, new ScopedAttribute(EScopeType.Foldout, EEditorInfoSource.EditorContent, EEditorInfoSource.Nothing, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent) },
             { EScopePreset.FoldoutPropertySummary, new ScopedAttribute(EScopeType.Foldout, EEditorInfoSource.Property, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent) },
+            { EScopePreset.FoldoutSummaryOnly, new ScopedAttribute(EScopeType.Foldout, EEditorInfoSource.EditorAltContent, EEditorInfoSource.Nothing, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent) },
 
             { EScopePreset.HeaderNameOnly, new ScopedAttribute(EScopeType.Header, EEditorInfoSource.EditorContent, EEditorInfoSource.Nothing, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent) },
             { EScopePreset.HeaderPropertySummary, new ScopedAttribute(EScopeType.Header, EEditorInfoSource.Property, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent) },

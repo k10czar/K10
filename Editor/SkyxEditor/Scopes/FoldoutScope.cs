@@ -97,7 +97,7 @@ namespace Skyx.SkyxEditor
         {
             Skope.DrawBox(ref boxRect, info);
 
-            var canExpand = info.property.CanExpand();
+            var canExpand = info.CanExpand();
             if (!canExpand) isExpandedRef = false;
 
             var drawingRect = headerRect;
@@ -113,7 +113,10 @@ namespace Skyx.SkyxEditor
                 foreach (var (label, color, action) in info.buttons)
                 {
                     if (SkyxGUI.MiniButton(ref buttonsRect, label, color, null, true))
+                    {
                         action();
+                        isExpandedRef = true;
+                    }
                 }
             }
 

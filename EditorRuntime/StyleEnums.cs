@@ -35,13 +35,15 @@ namespace Skyx.RuntimeEditor
         FieldValue,
         FieldType,
         EditorContent,
-        EditorSecondaryContent,
+        EditorAltContent,
         Provided,
     }
 
     public static class StyleEnumsLib
     {
         public static bool HasHeader(this EScopeType scope) => scope <= EScopeType.InlineHeader;
+
+        public static bool ShowNoChildProperties(this EScopeType scope) => scope is EScopeType.Header or EScopeType.InlineHeader;
 
         public static EElementSize PreferredSize(this EScopeType scopeType) => scopeType switch
         {
