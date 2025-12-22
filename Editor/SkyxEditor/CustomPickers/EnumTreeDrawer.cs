@@ -78,7 +78,7 @@ namespace Skyx.SkyxEditor
             DrawEnumDropdown(position, enumType, enumObj, property, null, validList, isIncludeList);
         }
 
-        private static void DrawEnumDropdown(Rect position, Type enumType, object enumObj, SerializedProperty property, Action<object> callback, IEnumerable<object> validList, bool isIncludeList)
+        public static void DrawEnumDropdown(Rect position, Type enumType, object enumObj, SerializedProperty property, Action<object> callback, IEnumerable<object> validList, bool isIncludeList)
         {
             var name = new GUIContent(ObjectNames.NicifyVariableName(enumObj.ToString()));
 
@@ -201,7 +201,7 @@ namespace Skyx.SkyxEditor
         private void NewNodeSelected(NewEnumNodeAdvancedDropdownItem<T> newNodeItem)
         {
             var parent = newNodeItem.parent;
-            NewEnumNodeWindow.OpenWindow(parent.Value, parent.Path, enumDeclarationFilePath);
+            NewEnumNodeWindow.OpenWindow(parent.Value, parent.Path, enumDeclarationFilePath, property);
         }
 
         protected override void ItemSelected(AdvancedDropdownItem item)

@@ -10,16 +10,18 @@ namespace Skyx.SkyxEditor
 {
     public class NewEnumNodeWindow : EditorWindow
     {
-        public static void OpenWindow(Enum value, string path, string filePath)
+        public static void OpenWindow<T>(T value, string path, string filePath, SerializedProperty property) where T : Enum
         {
             var window = GetWindow<NewEnumNodeWindow>("New Enum", true);
-            window.Setup(value, path, filePath);
+            window.Setup(value, path, filePath, property);
         }
 
         private string previousEnumName;
         private string newNodeName;
         private string newNodePath;
         private int targetIntValue;
+        private Type enumType;
+        private SerializedProperty currentProperty;
 
         private string filePath;
 
@@ -38,7 +40,12 @@ namespace Skyx.SkyxEditor
         private void OnGUI()
         {
             newNodeName = EditorGUILayout.TextField($"{newNodePath}/", newNodeName);
-            EditorGUILayout.LabelField($"Target Enum Value: {targetIntValue}");
+            EditorGUILayout.LabelField($"Target Enum Value:", SkyxStyles.BoldStyle);
+
+            EditorGUI.BeginDisabledGroup(true);
+            var enumValue = Enum.ToObject(enumType, targetIntValue);
+            EnumTreeDrawer.DrawEnumDropdown(EditorGUILayout.GetControlRect(), enumType, enumValue, null, null, null, true);
+            EditorGUI.EndDisabledGroup();
 
             EnsurePascalCase();
 
@@ -72,6 +79,12 @@ namespace Skyx.SkyxEditor
 
             EnsurePascalCase();
             if (string.IsNullOrEmpty(newNodeName)) return;
+
+            if (currentProperty != null)
+            {
+                currentProperty.enumValueFlag = targetIntValue;
+                currentProperty.Apply();
+            }
 
             var allLines = File.ReadLines(filePath).ToList();
 
@@ -108,15 +121,17 @@ namespace Skyx.SkyxEditor
             }
         }
 
-        private void Setup(Enum value, string path, string targetPath)
+        private void Setup<T>(T value, string path, string targetPath, SerializedProperty property) where T : Enum
         {
             SetupPosition();
 
+            currentProperty = property;
             newNodePath = path;
             newNodeName = "";
             filePath = targetPath;
 
             GetTargetEnumValue(value);
+            enumType = typeof(T);
         }
 
         private void SetupPosition()
