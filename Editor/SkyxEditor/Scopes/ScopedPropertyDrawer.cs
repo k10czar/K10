@@ -23,7 +23,7 @@ namespace Skyx.SkyxEditor
                 if (SerializedRefLib.TryDrawMissingRef(ref rect, property, info.name)) return;
 
                 if (info.scopeType is not EScopeType.Inline)
-                    info.AddButton("⚙️", EColor.Special, () => SerializedRefLib.DrawTypePickerMenu(property));
+                    info.AddButton("⚙️", EColor.Support, () => SerializedRefLib.DrawTypePickerMenu(property));
             }
 
             var hasDescription = info.HasDescription;

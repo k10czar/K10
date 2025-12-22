@@ -61,14 +61,15 @@ namespace Skyx.SkyxEditor
                 throw new ArgumentException($"Property is not an array element! {path}");
         }
 
-        public static void ResetDefaultValues(this SerializedProperty newElement, Action<SerializedProperty> customReset, bool keepManagedRef)
+        public static void ResetDefaultValues(this SerializedProperty newElement, Action<SerializedProperty> customReset, bool keepManagedRef, bool isDuringGui)
         {
             if (!keepManagedRef && newElement.IsManagedRef())
             {
                 newElement.managedReferenceValue = null;
                 newElement.Apply();
 
-                EditorUtils.RunOnSceneOnce(() => SerializedRefLib.DrawTypePickerMenu(newElement, customReset));
+                if (isDuringGui) SerializedRefLib.DrawTypePickerMenu(newElement, customReset);
+                else EditorUtils.RunOnSceneOnce(() => SerializedRefLib.DrawTypePickerMenu(newElement, customReset));
                 return;
             }
 
@@ -521,7 +522,9 @@ namespace Skyx.SkyxEditor
                 if (SerializedProperty.EqualContents(iterator, endProperty)) break;
 
                 rect.height = EditorGUI.GetPropertyHeight(iterator, true);
+                EditorGUI.BeginChangeCheck();
                 EditorGUI.PropertyField(rect, iterator);
+                if (EditorGUI.EndChangeCheck()) iterator.Apply();
                 rect.y += rect.height + SkyxStyles.ElementsMargin;
 
                 if (!iterator.NextVisible(false)) break;

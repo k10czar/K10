@@ -70,7 +70,7 @@ namespace Skyx.SkyxEditor
                 property.Apply($"New array element: {property.propertyPath}");
 
                 var newElement = property.GetArrayElementAtIndex(index);
-                newElement.ResetDefaultValues(onNewElement, false);
+                newElement.ResetDefaultValues(onNewElement, false, true);
             }
         }
 
@@ -127,7 +127,7 @@ namespace Skyx.SkyxEditor
                     return true;
                 }
 
-                if (isHorizontal) rect.SlideSameRect();
+                if (isHorizontal) rect.SlideSame();
                 else rect.SlideSameVertically();
             }
 
@@ -140,7 +140,7 @@ namespace Skyx.SkyxEditor
 
             if (canMoveElements && (index < property.arraySize - 1))
             {
-                if (isHorizontal) rect.SlideSameRect();
+                if (isHorizontal) rect.SlideSame();
                 else rect.SlideSameVertically();
 
                 if (GUI.Button(rect, "▼", SkyxStyles.CenterLabel))

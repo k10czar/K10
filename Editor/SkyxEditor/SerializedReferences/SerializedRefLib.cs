@@ -37,7 +37,7 @@ namespace Skyx.SkyxEditor
             void OnTypeSelected(Type newSelection)
             {
                 property.SetNewReferenceType(newSelection, true);
-                property.ResetDefaultValues(newElementSetup, true);
+                property.ResetDefaultValues(newElementSetup, true, true);
             }
         }
 

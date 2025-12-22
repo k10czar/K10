@@ -163,7 +163,7 @@ namespace Skyx.SkyxEditor
             parent.Apply();
 
             var newElement = parent.GetArrayElementAtIndex(index);
-            newElement.ResetDefaultValues(selectedElementSetup, false);
+            newElement.ResetDefaultValues(selectedElementSetup, false, false);
         }
 
         private static void OnInsertElementBelow()
@@ -173,7 +173,7 @@ namespace Skyx.SkyxEditor
             parent.Apply();
 
             var newElement = parent.GetArrayElementAtIndex(index + 1);
-            newElement.ResetDefaultValues(selectedElementSetup, false);
+            newElement.ResetDefaultValues(selectedElementSetup, false, false);
         }
 
         private static void OnDuplicateElement()

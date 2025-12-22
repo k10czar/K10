@@ -19,7 +19,7 @@ namespace Skyx.SkyxEditor
             {
                 var info = objType.GetField(drawInfo.fieldName);
                 SkyxGUI.Draw(rect, property.FindPropertyRelative(drawInfo.fieldName), info.FieldType, drawInfo);
-                rect.SlideSameRect();
+                rect.SlideSame();
             }
         }
 
@@ -80,7 +80,9 @@ namespace Skyx.SkyxEditor
     {
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
         {
-            if (SkyxGUI.MiniButton(ref rect, "⚙️", EColor.Special, "Auto Pick", true))
+            var color = property.objectReferenceValue != null ? EColor.Support : EColor.Special;
+
+            if (SkyxGUI.MiniButton(ref rect, "⚙️", color, "Auto Pick", true))
             {
                 var pickerAtt = (AutoPickerAttribute) attribute;
 

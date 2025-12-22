@@ -20,7 +20,7 @@ namespace Skyx.SkyxEditor
         public static void SlideRect(this ref Rect rect, float newWidth, float margin = SkyxStyles.ElementsMargin)
             => SkyxGUI.SlideRect(ref rect, newWidth, margin);
 
-        public static void SlideSameRect(this ref Rect rect, float margin = SkyxStyles.ElementsMargin)
+        public static void SlideSame(this ref Rect rect, float margin = SkyxStyles.ElementsMargin)
             => SkyxGUI.SlideSameRect(ref rect, margin);
 
         public static void RemainingRect(this ref Rect rect, float endX)
@@ -190,6 +190,28 @@ namespace Skyx.SkyxEditor
             rect.x += deltaX;
 
             return (rect, rect.TryUseClick(false));
+        }
+
+        public static void Trim(this ref Rect rect, float max, bool horizontal = true)
+        {
+            if (horizontal)
+            {
+                var excess = rect.width - max;
+                if (excess > 0)
+                {
+                    rect.width = max;
+                    rect.x += excess / 2;
+                }
+            }
+            else
+            {
+                var excess = rect.height - max;
+                if (excess > 0)
+                {
+                    rect.height = max;
+                    rect.x += excess / 2;
+                }
+            }
         }
 
         #endregion

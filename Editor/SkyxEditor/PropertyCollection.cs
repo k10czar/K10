@@ -254,7 +254,7 @@ namespace Skyx.SkyxEditor
         {
             var property = Get(propertyName, isBacking);
             SkyxGUI.Draw(rect, property, drawLabel);
-            if (slideRect) rect.SlideSameRect();
+            if (slideRect) rect.SlideSame();
         }
 
         public void DrawFloat(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false, bool alwaysDrawInlaid = false)
@@ -273,7 +273,7 @@ namespace Skyx.SkyxEditor
             SkyxGUI.DrawHintOverlay(ref rect, overlayHint ?? inlaidHint);
             if (alwaysDrawInlaid || !hasValue) SkyxGUI.DrawHindInlaid(rect, inlaidHint);
 
-            if (slideRect) rect.SlideSameRect();
+            if (slideRect) rect.SlideSame();
         }
 
         public void DrawEnumAndLabel<T>(ref Rect rect, string propertyName, EColor color = EColor.Primary, string label = null, string hint = null, bool isBacking = false) where T: Enum
@@ -290,25 +290,25 @@ namespace Skyx.SkyxEditor
         public void DrawEnum<T>(ref Rect rect, string propertyName, EColor color = EColor.Primary, string hint = null, bool slideRect = true, bool isBacking = false) where T: Enum
         {
             EnumTreeGUI.DrawEnum<T>(rect, Get(propertyName, isBacking), color, hint);
-            if (slideRect) rect.SlideSameRect();
+            if (slideRect) rect.SlideSame();
         }
 
         public void DrawSwitch<T>(ref Rect rect, string propertyName, string hint = null, bool slideRect = true, bool isBacking = false) where T: Enum
         {
             EnumTreeGUI.DrawSwitch<T>(rect, Get(propertyName, isBacking), hint);
-            if (slideRect) rect.SlideSameRect();
+            if (slideRect) rect.SlideSame();
         }
 
         public void DrawEnumMask<T>(ref Rect rect, string propertyName, EColor color = EColor.Primary, string hint = null, bool slideRect = true, bool isBacking = false) where T: Enum
         {
             EnumTreeGUI.DrawEnumMask<T>(rect, Get(propertyName, isBacking), color, hint);
-            if (slideRect) rect.SlideSameRect();
+            if (slideRect) rect.SlideSame();
         }
 
         public void DrawObjectField<T>(ref Rect rect, string propertyName, string hint = null, bool allowSceneObjects = false, bool slideRect = true, bool isBacking = false) where T: Object
         {
             SkyxGUI.DrawObjectField<T>(rect, Get(propertyName, isBacking), hint, allowSceneObjects);
-            if (slideRect) rect.SlideSameRect();
+            if (slideRect) rect.SlideSame();
         }
 
         public bool DrawChoiceToggle(ref Rect rect, string propertyName, string onLabel, string offLabel, string hint = null, bool slideRect = true, bool isBacking = false)
@@ -316,7 +316,7 @@ namespace Skyx.SkyxEditor
             var property = Get(propertyName, isBacking);
             SkyxGUI.DrawChoiceToggle(rect, onLabel, offLabel, property, hint);
 
-            if (slideRect) rect.SlideSameRect();
+            if (slideRect) rect.SlideSame();
 
             return property.boolValue;
         }
@@ -326,7 +326,7 @@ namespace Skyx.SkyxEditor
             var property = Get(propertyName, isBacking);
             SkyxGUI.DrawSuccessToggle(rect, string.IsNullOrEmpty(label) ? property.PrettyName() : label, property, hint);
 
-            if (slideRect) rect.SlideSameRect();
+            if (slideRect) rect.SlideSame();
 
             return property.boolValue;
         }
@@ -490,7 +490,7 @@ namespace Skyx.SkyxEditor
                 property.Apply($"New array element: {property.propertyPath}");
 
                 var newElement = property.GetArrayElementAtIndex(index);
-                newElement.ResetDefaultValues(newElementSetup, false);
+                newElement.ResetDefaultValues(newElementSetup, false, true);
             }
 
             void OnRemoveCallback(ReorderableList thisList)
@@ -514,7 +514,7 @@ namespace Skyx.SkyxEditor
             prop.Apply();
 
             var newElement = prop.GetArrayElementAtIndex(index);
-            newElement.ResetDefaultValues(newElementSetup, false);
+            newElement.ResetDefaultValues(newElementSetup, false, true);
         }
 
         #endregion
