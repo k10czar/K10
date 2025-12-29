@@ -60,6 +60,8 @@ public static class Colors
 
     public static Color Get(this EColor color) => FromSequence(color);
 
+    public static string ToHexRGB(this EColor color) => $"#{ColorUtility.ToHtmlStringRGB(color.Get())}";
+
     #endregion
 
     private const System.Reflection.BindingFlags FLAGS = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
