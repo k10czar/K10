@@ -13,9 +13,9 @@ public static class TimeModification
 		if( !Mathf.Approximately( Time.timeScale, _timeScaleValue.CurrentReference ) )
 		{
 #if UNITY_EDITOR
-			Debug.Log( $"<color=cyan>Change TimeScale</color> from <color=blue>{Time.timeScale}</color> to <color=blue>{_timeScaleValue.CurrentReference}</color> [ {_timeScaleValue} ]" );
+			Debug.Log( $"Change <color=cyan>TimeScale</color> from {Time.timeScale} to <color=red>{_timeScaleValue.CurrentReference}</color>\n{_timeScaleValue}" );
 #else
-			Debug.Log( $"Change TimeScale from {Time.timeScale} to {_timeScaleValue.CurrentReference} [ {_timeScaleValue} ]" );
+			Debug.Log( $"Change TimeScale from {Time.timeScale} to {_timeScaleValue.CurrentReference}\n{_timeScaleValue}" );
 #endif
 		}
 		Time.timeScale = _timeScaleValue.CurrentReference;
