@@ -7,6 +7,9 @@ namespace Skyx.SkyxEditor
 {
     public static class EditorUtils
     {
+        public static bool IsEditingData
+            => EditorGUIUtility.editingTextField && EditorWindow.focusedWindow.GetType().Name == "InspectorWindow";
+
         public static void RunDelayedOnce(Action action)
         {
             EditorApplication.CallbackFunction wrapper = null;
