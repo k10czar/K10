@@ -80,7 +80,8 @@ namespace Skyx.SkyxEditor
     {
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
         {
-            var color = property.objectReferenceValue != null ? EColor.Support : EColor.Special;
+            var color = property.propertyType is SerializedPropertyType.ObjectReference && property.objectReferenceValue != null
+                ? EColor.Support : EColor.Special;
 
             if (SkyxGUI.MiniButton(ref rect, "⚙️", color, "Auto Pick", true))
             {
