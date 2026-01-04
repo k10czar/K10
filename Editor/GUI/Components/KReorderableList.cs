@@ -24,9 +24,27 @@ namespace K10.EditorGUIExtention
 		
 		public ReorderableList List { get { return _list; } }
 
-		public float Height { get { return _list.headerHeight + Mathf.Max( 1, _list.serializedProperty.arraySize ) * _list.elementHeight + _list.footerHeight + 10; } }
+		public float Height => GetHeight( _list.serializedProperty );
+		public float GetHeight( SerializedProperty prop ) 
+		{ 
+			var baseHeight = _list.headerHeight + _list.footerHeight + 10;
+			var count = prop.arraySize;
+			if( count == 0 ) return baseHeight + _list.elementHeight;
+			
+			var heightCalcFunc =  _list.elementHeightCallback;
+			if( heightCalcFunc == null ) return baseHeight + count * _list.elementHeight;
+			for( int i = 0; i < count; i++ ) baseHeight += heightCalcFunc( i );
+			return baseHeight;
+		}
 
 		public void DoLayoutList() { _list.DoLayoutList(); }
 		public void Draw( Rect rect ) { _list.DoList( rect ); }
+		public void DrawOnTop( ref Rect rect ) 
+		{
+			var h = Height;
+			var listArea = rect.RequestTop( h );
+			_list.DoList( listArea );
+			rect = rect.CutTop( h );
+		}
 	}
 }

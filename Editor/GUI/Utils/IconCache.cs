@@ -33,6 +33,11 @@ public class IconCache : IIconCache
 		}
 		return cache;
 	}
+	
+	public static Texture2D TextureOf( string path )
+	{
+		return Get( path ).Texture;
+	}
 
 	string _iconName;
 	Texture2D _icon;

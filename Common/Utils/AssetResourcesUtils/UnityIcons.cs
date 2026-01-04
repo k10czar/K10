@@ -3,6 +3,7 @@ public static class UnityIcons
 	public const string ScriptableObjectIcon = "ScriptableObject Icon";
 	public const string _Popup = "_Popup";
 	public const string _Help = "_Help";
+	public const string _Menu = "_Menu";
 	public const string Clipboard = "Clipboard";
 	public const string SocialNetworks_UDNOpen = "SocialNetworks.UDNOpen";
 	public const string SocialNetworks_Tweet = "SocialNetworks.Tweet";
@@ -269,4 +270,7 @@ public static class UnityIcons
 
 	public const string Search_Icon = "Search Icon";
 	public const string Search_On_Icon = "Search On Icon";
+
+	public const string SortingGroup_Icon = "SortingGroup Icon";
+	public const string d_SortingGroup_Icon = "d_SortingGroup Icon";
 }

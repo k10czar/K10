@@ -63,4 +63,16 @@ public static class K10Random
 
 		return rnd;
 	}
+
+	public static T RandomPop<T>(this IList<T> list)
+	{
+		var count = list.Count;
+		if (count == 0)
+			throw new System.IndexOutOfRangeException("Cannot take random element from an empty list");
+
+		var id = Less(count);
+		var element = list[id];
+		list.RemoveAt(id);
+		return element;
+	}
 }
