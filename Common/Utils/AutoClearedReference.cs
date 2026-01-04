@@ -24,7 +24,7 @@ public class AutoClearedReference<T> where T : UnityEngine.Component
 
 		if( _reference == null ) return;
 
-		var voidEvent = new CallOnce( OnReferenceDestroy );
+		var voidEvent = new VoidableCallOnce( OnReferenceDestroy );
 		_reference.gameObject.EventRelay().OnDestroy.Register( voidEvent );
 		_currentRefClear = voidEvent;
 	}

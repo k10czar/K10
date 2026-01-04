@@ -20,7 +20,11 @@ public interface ISemaphoreInterection
 	bool Block( object obj, bool increaseBlock = true , string nameGameObjectToDebug = null);
 	bool BlockButDoNotIncrease( object obj );
 	void Release( object obj );
-	IEventValidator Validator { get; }
+	void Clear();
+}
+
+public interface IValidatedSemaphoreInterection : ISemaphoreInterection
+{	IEventValidator Validator { get; }
 }
 
 public static class ISemaphoreInterectionExtentions
@@ -35,33 +39,33 @@ public static class ISemaphoreInterectionExtentions
 		return semaphore != null && !semaphore.Free;
 	}
 
-	public static void BlockOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> source )
+	public static void BlockOn( this IValidatedSemaphoreInterection semaphore, IValueStateObserver<bool> source )
 	{
 		source.Synchronize( semaphore.Validator.Validated<bool>( ( value ) => { if( value ) semaphore.Block( source ); else semaphore.Release( source ); } ) );
 	}
 
-	public static void ReleaseOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> source )
+	public static void ReleaseOn( this IValidatedSemaphoreInterection semaphore, IValueStateObserver<bool> source )
 	{
 		source.Synchronize( semaphore.Validator.Validated<bool>( ( value ) => { if( value ) semaphore.Release( source ); else semaphore.Block( source ); } ) );
 	}
 
-	// public static void BlockOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> source, Func<bool> eventValidation )
+	// public static void BlockOn( this IValidatedSemaphoreInterection semaphore, IValueStateObserver<bool> source, Func<bool> eventValidation )
 	// {
 	// 	source.Synchronize( semaphore.Validator.LeakedValidated<bool>( ( value ) => { if( value ) semaphore.Block( source ); else semaphore.Release( source ); }, eventValidation ) );
 	// }
 
-	// public static void ReleaseOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> source, Func<bool> eventValidation )
+	// public static void ReleaseOn( this IValidatedSemaphoreInterection semaphore, IValueStateObserver<bool> source, Func<bool> eventValidation )
 	// {
 	// 	source.Synchronize( semaphore.Validator.LeakedValidated<bool>( ( value ) => { if( value ) semaphore.Release( source ); else semaphore.Block( source ); }, eventValidation ) );
 	// }
 
-	public static void BlockOn( this ISemaphoreInterection semaphore, IBoolStateObserver source )
+	public static void BlockOn( this IValidatedSemaphoreInterection semaphore, IBoolStateObserver source )
 	{
 		source.RegisterOnTrue( semaphore.Validator.Validated( () => semaphore.Block( source ) ) );
 		source.RegisterOnFalse( semaphore.Validator.Validated( () => semaphore.Release( source ) ) );
 	}
 
-	public static void BlockOn( this ISemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation )
+	public static void BlockOn( this IValidatedSemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation )
 	{
 		Action releaseAction = () => semaphore.Release( source );
 		source.RegisterOnTrue( semaphore.Validator.Validated( () => semaphore.Block( source ), eventValidation ) );
@@ -70,7 +74,7 @@ public static class ISemaphoreInterectionExtentions
 		eventValidation.OnVoid.Register( new CallOnce( releaseAction ) );
 	}
 
-	public static void BlockOn(this ISemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation, string nameGameObjectToDebug)
+	public static void BlockOn(this IValidatedSemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation, string nameGameObjectToDebug)
 	{
 		Action releaseAction = () => semaphore.Release(source);
 		source.RegisterOnTrue(semaphore.Validator.Validated(() => semaphore.Block(source, true, nameGameObjectToDebug), eventValidation));
@@ -79,25 +83,25 @@ public static class ISemaphoreInterectionExtentions
 		eventValidation.OnVoid.Register(new CallOnce(releaseAction));
 	}
 
-	// public static void BlockOn( this ISemaphoreInterection semaphore, IBoolStateObserver source, Func<bool> eventValidation )
+	// public static void BlockOn( this IValidatedSemaphoreInterection semaphore, IBoolStateObserver source, Func<bool> eventValidation )
 	// {
 	// 	source.RegisterOnTrue( semaphore.Validator.LeakedValidated( () => semaphore.Block( source ), eventValidation ) );
 	// 	source.RegisterOnFalse( semaphore.Validator.LeakedValidated( () => semaphore.Release( source ), eventValidation ) );
 	// }
 
-	public static void ReleaseOn( this ISemaphoreInterection semaphore, IBoolStateObserver source )
+	public static void ReleaseOn( this IValidatedSemaphoreInterection semaphore, IBoolStateObserver source )
 	{
 		source.RegisterOnTrue( semaphore.Validator.Validated( () => semaphore.Release( source ) ) );
 		source.RegisterOnFalse( semaphore.Validator.Validated( () => semaphore.Block( source ) ) );
 	}
 
-	// public static void ReleaseOn( this ISemaphoreInterection semaphore, IBoolStateObserver source, Func<bool> eventValidation )
+	// public static void ReleaseOn( this IValidatedSemaphoreInterection semaphore, IBoolStateObserver source, Func<bool> eventValidation )
 	// {
 	// 	source.RegisterOnTrue( semaphore.Validator.LeakedValidated( () => semaphore.Release( source ), eventValidation ) );
 	// 	source.RegisterOnFalse( semaphore.Validator.LeakedValidated( () => semaphore.Block( source ), eventValidation ) );
 	// }
 
-	public static void ReleaseOn( this ISemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation )
+	public static void ReleaseOn( this IValidatedSemaphoreInterection semaphore, IBoolStateObserver source, IEventValidator eventValidation )
 	{
 		Action releaseAction = () => semaphore.Release( source );
 		source.RegisterOnTrue( semaphore.Validator.Validated( releaseAction, eventValidation ) );
@@ -105,7 +109,7 @@ public static class ISemaphoreInterectionExtentions
 		eventValidation.OnVoid.Register( semaphore.Validator.Validated( new CallOnce( releaseAction ) ) );
 	}
 
-	public static void BlockOn( this ISemaphoreInterection semaphore, UnityEngine.GameObject go, IBoolStateObserver additionalCondition = null )
+	public static void BlockOn( this IValidatedSemaphoreInterection semaphore, UnityEngine.GameObject go, IBoolStateObserver additionalCondition = null )
 	{
 		var goEvents = go.EventRelay();
 		var name = go.HierarchyNameOrNull();
@@ -119,7 +123,7 @@ public static class ISemaphoreInterectionExtentions
 		goEvents.OnDestroy.Register( validator.Validated( releaseLambda ) );
 	}
 
-	public static void ReleaseOn( this ISemaphoreInterection semaphore, UnityEngine.GameObject go, IBoolStateObserver additionalCondition = null )
+	public static void ReleaseOn( this IValidatedSemaphoreInterection semaphore, UnityEngine.GameObject go, IBoolStateObserver additionalCondition = null )
 	{
 		var goEvents = go.EventRelay();
 		var name = go.HierarchyNameOrNull();
@@ -133,6 +137,28 @@ public static class ISemaphoreInterectionExtentions
 		goEvents.OnDestroy.Register( validator.Validated( new CallOnce( releaseLambda ) ) );
 	}
 
+	public static void UnvalidatedBlockOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> condition )
+	{
+		condition.OnChange.Register(
+			(condState) =>
+			{
+				if (condState) semaphore.BlockButDoNotIncrease(condition);
+				else semaphore.Release(condition);
+			}
+		);
+	}
+
+	public static void UnvalidatedReleaseOn( this ISemaphoreInterection semaphore, IValueStateObserver<bool> condition )
+	{
+		condition.OnChange.Register(
+			(condState) =>
+			{
+				if (condState) semaphore.Release(condition);
+				else semaphore.BlockButDoNotIncrease(condition);
+			}
+		);
+	}
+
 	public static BoolState GetBoolObserver(this Semaphore semaphore)
 	{
 		var boolState = new BoolState();
@@ -141,7 +167,11 @@ public static class ISemaphoreInterectionExtentions
 	}
 }
 
-public interface ISemaphore : ISemaphoreInfo, ISemaphoreInterection
+public interface ISimpleSemaphore : ISemaphoreInfo, ISemaphoreInterection
+{
+}
+
+public interface ISemaphore : ISimpleSemaphore, IValidatedSemaphoreInterection
 {
 }
 
@@ -153,10 +183,10 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 		public string NameDebug { get; set; }
 	}
 
-	private readonly Dictionary<object, SemaphoreObject> _semaphores = new();
-	public bool Free => _semaphores.Count == 0;
-	public bool IsLocked => _semaphores.Count > 0;
-	public int BlockCount => _semaphores.Count;
+	private Dictionary<object, SemaphoreObject> _semaphores;
+	public bool Free => _semaphores == null || _semaphores.Count == 0;
+	public bool IsLocked => _semaphores != null && _semaphores.Count > 0;
+	public int BlockCount => _semaphores != null ? _semaphores.Count : 0;
 
 	// TODO: LazyOptimization
 	private EventSlot _blockEvent;
@@ -170,23 +200,23 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 	private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
 
 	public IBoolStateObserver Not => _not.Request( this );
-	public IEventRegister OnBlock => Lazy.Request( ref _blockEvent );
-	public IEventRegister OnRelease => Lazy.Request( ref _releaseEvent );
-	public IEventRegister<bool> OnStateChange => Lazy.Request( ref _changeStateEvent );
+	public IEventRegister OnBlock => _blockEvent ??= new();
+	public IEventRegister OnRelease => _releaseEvent ??= new();
+	public IEventRegister<bool> OnStateChange => _changeStateEvent ??= new();
 
 	public bool Value { get { return Free; } }
 	public bool Get() { return Free; }
-	public IEventRegister<bool> OnChange => Lazy.Request( ref _changeStateEvent );
-	public IEventRegister OnTrueState => Lazy.Request( ref _releaseEvent );
-	public IEventRegister OnFalseState => Lazy.Request( ref _blockEvent );
+	public IEventRegister<bool> OnChange => _changeStateEvent ??= new();
+	public IEventRegister OnTrueState => _releaseEvent ??= new();
+	public IEventRegister OnFalseState => _blockEvent ??= new();
 
-	public IEventRegister OnInteraction => Lazy.Request( ref _onInteraction );
+	public IEventRegister OnInteraction => _onInteraction ??= new();
 
-	private OneTimeValidator _validator = new OneTimeValidator();
-	public IEventValidator Validator => _validator;
+	private OneTimeValidator _validator;
+	public IEventValidator Validator => _validator ??= new OneTimeValidator();
 
-	public void RegisterAndStart( IEventTrigger<bool> evnt ) { Lazy.Request( ref _changeStateEvent ).Register( _validator.Validated( evnt ) ); evnt.Trigger( Free ); }
-	public void RegisterAndStart( System.Action<bool> evnt ) { Lazy.Request( ref _changeStateEvent ).Register( _validator.Validated( evnt ) ); evnt( Free ); }
+	public void RegisterAndStart( IEventTrigger<bool> evnt ) { Lazy.Request( ref _changeStateEvent ).Register( Validator.Validated( evnt ) ); evnt.Trigger( Free ); }
+	public void RegisterAndStart( System.Action<bool> evnt ) { Lazy.Request( ref _changeStateEvent ).Register( Validator.Validated( evnt ) ); evnt( Free ); }
 
 	public void Kill()
 	{
@@ -195,41 +225,39 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 		_releaseEvent?.Kill();
 		_changeStateEvent?.Kill();
 		_validator?.Kill();
-		_semaphores.Clear();
+		_semaphores?.Clear();
 	}
-
-	public IDictionary<object, SemaphoreObject> Semaphores { get { return _semaphores; } }
 
 	public void BlockOn( IBoolStateObserver source )
 	{
 		if( source == null ) return;
-		source.RegisterOnTrue( _validator.Validated( () => Block( source ) ) );
-		source.RegisterOnFalse( _validator.Validated( () => Release( source ) ) );
+		source.RegisterOnTrue( Validator.Validated( () => Block( source ) ) );
+		source.RegisterOnFalse( Validator.Validated( () => Release( source ) ) );
 	}
 
 	// public void BlockOn( IBoolStateObserver source, Func<bool> eventValidation )
 	// {
 	// 	if( source == null ) return;
-	// 	source.RegisterOnTrue( _validator.LeakedValidated( () => Block( source ), eventValidation ) );
-	// 	source.RegisterOnFalse( _validator.LeakedValidated( () => Release( source ), eventValidation ) );
+	// 	source.RegisterOnTrue( Validator.LeakedValidated( () => Block( source ), eventValidation ) );
+	// 	source.RegisterOnFalse( Validator.LeakedValidated( () => Release( source ), eventValidation ) );
 	// }
 
 	public void ReleaseOn( IBoolStateObserver source )
 	{
 		if( source == null ) return;
-		source.RegisterOnTrue( _validator.Validated( () => Release( source ) ) );
-		source.RegisterOnFalse( _validator.Validated( () => Block( source ) ) );
+		source.RegisterOnTrue( Validator.Validated( () => Release( source ) ) );
+		source.RegisterOnFalse( Validator.Validated( () => Block( source ) ) );
 	}
 
 	// public void ReleaseOn( IBoolStateObserver source, Func<bool> eventValidation )
 	// {
-	// 	source.RegisterOnTrue( _validator.LeakedValidated( () => Release( source ), eventValidation ) );
-	// 	source.RegisterOnFalse( _validator.LeakedValidated( () => Block( source ), eventValidation ) );
+	// 	source.RegisterOnTrue( Validator.LeakedValidated( () => Release( source ), eventValidation ) );
+	// 	source.RegisterOnFalse( Validator.LeakedValidated( () => Block( source ), eventValidation ) );
 	// }
 
 	public void Toggle( object obj )
 	{
-		if( _semaphores.ContainsKey( obj ) ) Release( obj );
+		if( _semaphores != null && _semaphores.ContainsKey( obj ) ) Release( obj );
 		else Block( obj );
 	}
 
@@ -247,14 +275,15 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 
 		bool trigger = Free;
 
-		SemaphoreObject s;
-		bool newKey = !_semaphores.TryGetValue( obj, out s );
+		SemaphoreObject s = null;
+		bool newKey = _semaphores == null || !_semaphores.TryGetValue( obj, out s );
 		if( newKey || increaseBlock )
 		{
 			if( newKey )
 			{
 				s = new SemaphoreObject();
 				s.NameDebug = nameDebug;
+				_semaphores ??= new();
 				_semaphores.Add( obj, s );
 			}
 			s.Value++;
@@ -274,7 +303,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 
 	public void Release( object obj )
 	{
-		if( Free || obj == null )
+		if( Free || obj == null || _semaphores == null )
 			return;
 
 		SemaphoreObject s;
@@ -297,7 +326,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 	public virtual void Clear()
 	{
 		var initialState = Free;
-		_semaphores.Clear();
+		_semaphores?.Clear();
 		if( !initialState && Free )
 		{
 			_releaseEvent?.Trigger();
@@ -307,7 +336,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 
 	public void Reset()
 	{
-		_semaphores.Clear();
+		_semaphores?.Clear();
 
 		_blockEvent.Clear();
 		_releaseEvent.Clear();
@@ -325,13 +354,13 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 
 	public int GetBlockCount(object key)
     {
-		if(_semaphores.TryGetValue(key, out SemaphoreObject s))
+		if( _semaphores != null && _semaphores.TryGetValue(key, out SemaphoreObject s))
 			return s.Value;
 
 		return 0;
     }
 
-	public bool HasBlocker(object key) => _semaphores.ContainsKey(key);
+	public bool HasBlocker(object key) => _semaphores != null && _semaphores.ContainsKey(key);
 
 	int _toStringCount;
 	public override string ToString()
@@ -339,8 +368,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 		var freeStr = ( Free ? "Free" : "Blocked" );
 		if( _toStringCount > 0 ) return $"**InfinityLoopCondition_{freeStr}Semaphore({this.GetHashCode()})**";
 		_toStringCount++;
-		var elementsStrings = _semaphores.ToList().ConvertAll( ( obj ) => $"{obj.Value.NameDebug}{KeyName( obj.Key.ToStringOrNull() )}({obj.Value.Value})" );
-		var elements = String.Join( ", \n", elementsStrings );
+		var elements = _semaphores != null ? String.Join( ", \n", _semaphores.ToList().ConvertAll( ( obj ) => $"{obj.Value.NameDebug}{KeyName( obj.Key.ToStringOrNull() )}({obj.Value.Value})" ) ) : "NULL";
 		_toStringCount--;
 		return $"( [{freeStr} Semaphore({this.GetHashCode()}) => {{ {elements} }}] )";
 	}

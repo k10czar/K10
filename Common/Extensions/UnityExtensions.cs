@@ -231,24 +231,24 @@ public static class K10UnityExtensions
 	[MethodImpl( AggrInline )] public static IEventTrigger UntilValidator( this Component c, System.Action act ) { return c.gameObject.EventRelay().LifetimeValidator.Validated( act ); }
 
 
-	[MethodImpl( AggrInline )] public static void LockSemaphore( this MonoBehaviour mb, ISemaphore semaphore, float seconds, object code )
+	[MethodImpl( AggrInline )] public static void LockSemaphore( this MonoBehaviour mb, ISemaphoreInterection semaphore, float seconds, object code )
 	{
 		mb.StartCoroutine( LockSemaphore( semaphore, seconds, code ) );
 	}
 
-	[MethodImpl( AggrInline )] static IEnumerator LockSemaphore( ISemaphore semaphore, float seconds, object code )
+	[MethodImpl( AggrInline )] static IEnumerator LockSemaphore( ISemaphoreInterection semaphore, float seconds, object code )
 	{
 		semaphore.Block( code );
 		yield return new WaitForSeconds( seconds );
 		semaphore.Release( code );
 	}
 
-	[MethodImpl( AggrInline )] public static void LockSemaphore( this MonoBehaviour mb, ISemaphore semaphore, float seconds, object code, string debug )
+	[MethodImpl( AggrInline )] public static void LockSemaphore( this MonoBehaviour mb, ISemaphoreInterection semaphore, float seconds, object code, string debug )
 	{
 		mb.StartCoroutine( LockSemaphoreDebuging( semaphore, seconds, code, debug ) );
 	}
 
-	static IEnumerator LockSemaphoreDebuging( ISemaphore semaphore, float seconds, object code, string debug )
+	static IEnumerator LockSemaphoreDebuging( ISemaphoreInterection semaphore, float seconds, object code, string debug )
 	{
 		// UnityEngine.Debug.LogFormat( "Blocking {0}{2} for {4}s with code {1} at {3}", debug, code.ToString(), semaphore, Time.time, seconds );
 		semaphore.Block( code );
@@ -518,8 +518,27 @@ public static class K10UnityExtensions
 	[MethodImpl( AggrInline )] public static string NameOrNull( this Object obj, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.name : nullString;
 	[MethodImpl( AggrInline )] public static string ToStringColored( this bool boolValue ) => boolValue.ToString().Colorfy( boolValue ? Colors.Console.Numbers : Colors.Console.Negation );
 	[MethodImpl( AggrInline )] public static string ToStringColored( this object obj, Color valueColor ) => obj.ToString().Colorfy(valueColor);
-	[MethodImpl( AggrInline )] public static string ToStringOrNull( this object obj, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.ToString() : nullString;
-	[MethodImpl( AggrInline )] public static string ToStringOrNullColored( this object obj, Color valueColor, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.ToString().Colorfy(valueColor) : nullString.Colorfy(Colors.Console.Negation);
+    [MethodImpl(AggrInline)]
+    public static string ToStringOrNull(this object obj, string nullString = ConstsK10.NULL_STRING)
+    {
+		if( obj == null ) return nullString;
+		if (obj is ICollection collection)
+		{
+			var sb = StringBuilderPool.RequestWith($"<{obj.TypeNameOrNull()}>[{collection.Count}]{{ ");
+			bool first = true;
+			foreach (var e in collection)
+			{
+				if( !first ) sb.Append(", ");
+				first = false;
+				sb.Append(e.ToStringOrNull());
+			}
+			sb.Append( " }}" );
+			return sb.ReturnToPoolAndCast();
+		}
+        return obj.ToString();
+    }
+
+    [MethodImpl( AggrInline )] public static string ToStringOrNullColored( this object obj, Color valueColor, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.ToString().Colorfy(valueColor) : nullString.Colorfy(Colors.Console.Negation);
 	[MethodImpl( AggrInline )] public static string ToStringOrNullColored( this object obj, Color valueColor, Color nullColor, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.ToString().Colorfy(valueColor) : nullString.Colorfy(nullColor);
 	[MethodImpl( AggrInline )] public static string HierarchyNameOrNull( this GameObject obj, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.HierarchyName() : nullString;
 	[MethodImpl( AggrInline )] public static string HierarchyNameOrNullColored( this GameObject obj, Color valueColor, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.HierarchyName().Colorfy(valueColor) : nullString.Colorfy(Colors.Console.Negation);

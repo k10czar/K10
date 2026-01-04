@@ -20,7 +20,7 @@ namespace K10.DebugSystem
         public static bool Skip(bool verbose = false) => !K10DebugSystem.CanDebug<T>();
         public static bool SkipVisuals() => K10DebugSystem.SkipVisuals<T>();
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
         public static void Log(LogSeverity severity, string log, Object owner = null, Object target = null, bool verbose = false)
         {
             if (severity is not LogSeverity.Error && !K10DebugSystem.CanDebug<T>(verbose)) return;
@@ -49,13 +49,13 @@ namespace K10.DebugSystem
             else Debug.Log(log, target);
         }
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
         public static void Log(string log, Object target = null) => Log(LogSeverity.Info, log, target);
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
         public static void LogVerbose(string log, Object target = null) => Log(LogSeverity.Warning, log, target, target, true);
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
         public static void LogException(System.Exception exception, Object target = null) => Debug.LogException(exception, target);
     }
 
