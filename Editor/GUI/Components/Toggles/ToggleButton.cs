@@ -1,5 +1,26 @@
 using UnityEngine;
 using UnityEditor;
+using System;
+
+public class ToggleButton<T> where T : Enum
+{
+    static ToggleStatesButton _staticButton;
+
+    public static ToggleStatesButton Instance
+    {
+        get
+        {
+			if( _staticButton == null )
+            {
+				var t = typeof( T );
+				var names = Enum.GetNames( t );
+				if( IconCache.ExistAny( names ) ) _staticButton = new ToggleStatesButton( names, names );
+				else _staticButton  = new ToggleStatesButton( names, new string[]{ t.ToString() } );
+            }
+            return _staticButton;
+        }
+    }
+}
 
 public struct ToggleButton
 {

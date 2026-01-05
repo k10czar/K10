@@ -20,6 +20,7 @@ public interface ISubsetSelector
     public float GetBiasWeight(int rolls);
     public int EntriesCount { get; }
     public IWeightedSubsetEntry GetEntryObject(int id);
+    // public IntRng Rng { get; }
 }
 
 public interface ISubsetSelector<T> : ISubsetSelector
@@ -203,6 +204,7 @@ public abstract class BaseWeightedSubsetSelectorSO : ScriptableObject
     [SerializeField] int _min;
     [SerializeField] int _max;
     [SerializeField] float[] _rangeWeights;
+    [SerializeField] IntRng _rolls;
 
     public ESubsetGeneratorRule Rule => _rule;
     public int Min => _min;
@@ -236,6 +238,7 @@ public class WeightedSubsetSelector<T> : ISubsetSelector<T>
     [SerializeField] int _max;
     [SerializeField] WeightedSubsetEntry<T>[] _entries;
     [SerializeField] float[] _rangeWeights;
+    [SerializeField] IntRng _rolls;
 
     public ESubsetGeneratorRule Rule => _rule;
     public int Min => _min;

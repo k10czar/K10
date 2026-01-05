@@ -273,4 +273,11 @@ public static class UnityIcons
 
 	public const string SortingGroup_Icon = "SortingGroup Icon";
 	public const string d_SortingGroup_Icon = "d_SortingGroup Icon";
+
+	public const string align_horizontally_center = "align_horizontally_center";
+	public const string align_horizontally_center_active = "align_horizontally_center_active";
+	public const string align_horizontally_left = "align_horizontally_left";
+	public const string align_horizontally_left_active = "align_horizontally_left_active";
+	public const string align_horizontally_right = "align_horizontally_right";
+	public const string align_horizontally_right_active = "align_horizontally_right_active";
 }
