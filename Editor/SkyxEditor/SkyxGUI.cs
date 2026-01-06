@@ -95,7 +95,9 @@ namespace Skyx.SkyxEditor
             var backgroundColor = property.objectReferenceValue != null ? Colors.Console.Success : Colors.Console.Danger;
             using var backgroundScope = BackgroundColorScope.Set(backgroundColor);
 
+            EditorGUI.BeginChangeCheck();
             property.objectReferenceValue = EditorGUI.ObjectField(rect, property.objectReferenceValue, objType, allowSceneObjects);
+            if (EditorGUI.EndChangeCheck()) property.Apply();
 
             DrawHintOverlay(ref rect, hint);
         }
