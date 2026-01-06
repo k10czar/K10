@@ -19,6 +19,12 @@ namespace K10.DebugSystem
             foreach (var flag in Flags)
                 flag.SetOwner(this);
         }
+
+        public void Clear()
+        {
+            HiddenObjects?.Clear();
+            flagsChanged = null;
+        }
     }
 
     public class TempDebug : DebugCategory

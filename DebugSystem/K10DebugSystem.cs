@@ -146,7 +146,7 @@ namespace K10.DebugSystem
         private static void OnSceneUnloaded(Scene _)
         {
             foreach (var category in Categories)
-                category.HiddenObjects?.Clear();
+                category.Clear();
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
