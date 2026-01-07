@@ -91,6 +91,7 @@ namespace K10.DebugSystem
         public static List<string> ValidOwners => config.validOwners;
         public static void ToggleValidOwner(string target) => config.ToggleValidOwner(target);
         public static void ToggleValidOwner(Object target) => config.ToggleValidOwner(getOwnerKey(target));
+        public static void ClearValidOwners() => config.ClearValidOwners();
 
         public static string DefaultGetOwnerKey(Object target) => target switch
         {

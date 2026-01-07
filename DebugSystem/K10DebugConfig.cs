@@ -76,6 +76,12 @@ namespace K10.DebugSystem
             Save();
         }
 
+        public void ClearValidOwners()
+        {
+            validOwners.Clear();
+            Save();
+        }
+
         public void ToggleOwnerBehaviour()
         {
             var next = ((int) ownerBehaviour + 1) % Enum.GetValues(typeof(EDebugOwnerBehaviour)).Length;
