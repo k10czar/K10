@@ -27,7 +27,7 @@ public class IntRngPropertyDrawer : PropertyDrawer
     public static void Draw(Rect area, SerializedProperty property ) => Draw( area, property, new GUIContent(property.displayName) );
     public static void Draw(Rect area, SerializedProperty property, GUIContent label, int minRange = int.MinValue, int maxRange = int.MaxValue, string minOverlayText = null, string maxOverlayText = null, Color? minColor = null, Color? maxColor = null, string minPropertyName = "min", string maxPropertyName = "max")
     {
-        var range = property.FindPropertyRelative("_range");
+        var range = property.FindPropertyRelative("range");
         var min = range.FindPropertyRelative(minPropertyName);
         var max = range.FindPropertyRelative(maxPropertyName);
 

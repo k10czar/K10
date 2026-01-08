@@ -87,6 +87,9 @@ public class IntRangePropertyDrawer : PropertyDrawer
             if( minIsMax && maxOverlayText != null ) GUI.Label( rangeRect, maxOverlayText, K10GuiStyles.unitStyle );
             else if( minIsMin && minOverlayText != null ) GUI.Label( rangeRect, minOverlayText, K10GuiStyles.unitStyle );
 
+            if( min.intValue < minRange ) min.intValue = minRange;
+            if( min.intValue > maxRange ) min.intValue = maxRange;
+
             if( rangeToggle.Draw( rangeButtonRect, ref isRange ) ) 
             {
                 if( min.intValue + 1 < maxRange ) max.intValue = min.intValue + 1;

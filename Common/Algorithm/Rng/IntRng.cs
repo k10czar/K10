@@ -3,15 +3,17 @@ using UnityEngine;
 [System.Serializable]
 public struct IntRng
 {
-    [SerializeField] IntRange _range;
+    [SerializeField] public IntRange range;
     [SerializeField] float[] _weights;
 
     public bool IsBiased => _weights != null && _weights.Length > 0;
 
+    public int WeightsCount => _weights?.Length ?? 0;
+
     public float GetBiasWeight(int rolls)
     {
-        if( rolls > _range.max ) return 0;
-        var id = rolls - _range.min;
+        if( rolls > range.max ) return 0;
+        var id = rolls - range.min;
         if (id < 0) return 0;
         if( !IsBiased ) return 1;
         var len = _weights.Length;
@@ -24,8 +26,8 @@ public struct IntRng
 
     public int Roll( float rngValue01 )
     {
-        var delta = _range.Delta;
-        if( delta == 0 ) return _range.max;
+        var delta = range.Delta;
+        if( delta == 0 ) return range.max;
 
         if( !IsBiased )
         { 
@@ -33,14 +35,14 @@ public struct IntRng
             var scaledRng = rngValue01 * extrapolatedDelta;
             var roundRng = MathAdapter.RoundToInt( scaledRng );
             if( roundRng > delta ) roundRng = delta;
-            return _range.min + roundRng;
+            return range.min + roundRng;
         }
 
         var sumWeights = 0f;
-        for (int i = _range.min; i <= _range.max; i++ ) sumWeights += GetBiasWeight(i);
+        for (int i = range.min; i <= range.max; i++ ) sumWeights += GetBiasWeight(i);
         var rng = rngValue01 * sumWeights;
-        var rolls = _range.min;
-        for (; rolls < _range.max; rolls++)
+        var rolls = range.min;
+        for (; rolls < range.max; rolls++)
         {
             rng -= GetBiasWeight(rolls);
             if (rng < 0 || MathAdapter.Approximately(rng, 0)) break;

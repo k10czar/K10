@@ -234,28 +234,16 @@ public class WeightedSubsetSelectorSO<T> : BaseWeightedSubsetSelectorSO, ISubset
 public class WeightedSubsetSelector<T> : ISubsetSelector<T>
 {
     [SerializeField] ESubsetGeneratorRule _rule;
-    [SerializeField] int _min;
-    [SerializeField] int _max;
     [SerializeField] WeightedSubsetEntry<T>[] _entries;
-    [SerializeField] float[] _rangeWeights;
     [SerializeField] IntRng _rolls;
 
     public ESubsetGeneratorRule Rule => _rule;
-    public int Min => _min;
-    public int Max => _max;
+    public int Min => _rolls.range.min;
+    public int Max => _rolls.range.max;
     public int EntriesCount => _entries.Length;
     public IWeightedSubsetEntry<T> GetEntry(int id) => _entries[id];
     public IWeightedSubsetEntry GetEntryObject(int id) => GetEntry(id);
 
-    public float GetBiasWeight(int rolls)
-    {
-        var id = rolls - _min;
-        if (id < 0) return 0;
-        var len = _rangeWeights.Length;
-        if (len == 0) return 1;
-        if (id >= len) return _rangeWeights[len - 1];
-        return _rangeWeights[id];
-    }
-
+    public float GetBiasWeight(int rolls) => _rolls.GetBiasWeight( rolls );
     public override string ToString() => this.Stringfy();
 }

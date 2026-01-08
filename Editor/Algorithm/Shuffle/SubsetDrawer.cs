@@ -155,7 +155,7 @@ public class SubsetDrawer : PropertyDrawer
 		IntRngPropertyDrawer.Draw( ruleBoxRect, rollsProp, ROLLS_LABEL, sumGuaranteeds, sumCaps, null, "MAX ROLL", Colors.SkyBlue, Colors.PaleGoldenrod );
 		GuiLabelWidthManager.Revert();
 
-        var range = rollsProp.FindPropertyRelative("_range");
+        var range = rollsProp.FindPropertyRelative("range");
 		_maxVal = range.FindPropertyRelative( "max" ).intValue;
 
 		area = area.CutTop( MARGIN );

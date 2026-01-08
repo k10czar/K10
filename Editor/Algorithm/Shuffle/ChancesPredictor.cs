@@ -28,32 +28,12 @@ public class ChancesPredictor
     public void Calculate(SerializedProperty prop)
     {
 		var entries = prop.FindPropertyRelative("_entries");
-		var rule = prop.FindPropertyRelative("_rule");
-		if( rule.enumValueIndex != (int)ESubsetGeneratorRule.BIASED_RANGE ) FillCaches( entries );
-		else FillCaches( entries, prop.FindPropertyRelative("_rangeWeights"));
-		var min = prop.FindPropertyRelative("_min").intValue;
-		var max = prop.FindPropertyRelative("_max").intValue;
+		var rolls = prop.FindPropertyRelative("_rolls");
+		FillCaches( entries, rolls.FindPropertyRelative("_weights"));
+		var range = rolls.FindPropertyRelative("range");
+		var min = range.FindPropertyRelative("min").intValue;
+		var max = range.FindPropertyRelative("max").intValue;
 		count = entries.arraySize;
-
-        switch ((ESubsetGeneratorRule)rule.enumValueIndex)
-        {
-            case ESubsetGeneratorRule.MAX_ROLL:
-				var rolls = 0;
-				for( int i = 0; i < count; i++ )
-                {
-					var element = entries.GetArrayElementAtIndex(i);
-                    rolls +=  element.FindPropertyRelative("_cap").intValue;
-                }
-				min = rolls;
-				max = rolls;
-                break;
-            case ESubsetGeneratorRule.FIXED_ROLLS:
-				min = max;
-                break;
-            // case ESubsetGeneratorRule.UNIFORM_RANGE:
-            // case ESubsetGeneratorRule.BIASED_RANGE:
-            //     break;
-        }
 
         CalculatePredictions( min, max, entries );
     }
@@ -365,7 +345,7 @@ public class ChancesPredictor
 					for (int k = rMin; k <= rMax; k++)
 					{
 						var chance = M[i, j, k];
-						if (_rollChancesCache != null) chance *= _rollChancesCache[k - rMin];
+						if (_rollChancesCache != null && k - rMin < _rollChancesCache.Length) chance *= _rollChancesCache[k - rMin];
 						val += chance;
 					}
 					val /= sumWeight;
