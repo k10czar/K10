@@ -45,6 +45,7 @@ public class IntRangePropertyDrawer : PropertyDrawer
             else if( minIsMax && maxOverlayText != null ) GUI.Label( minRect, maxOverlayText, K10GuiStyles.unitStyle );
 
             if( min.intValue < minRange ) min.intValue = minRange;
+            if( min.intValue > maxRange ) min.intValue = maxRange;
             if( min.intValue > max.intValue ) max.intValue = min.intValue;
 
             GuiLabelWidthManager.New( DASH_WIDTH );
@@ -63,7 +64,8 @@ public class IntRangePropertyDrawer : PropertyDrawer
             if( maxIsMax && maxOverlayText != null ) GUI.Label( rangeRect, maxOverlayText, K10GuiStyles.unitStyle );
             else if( maxIsMin && minOverlayText != null ) GUI.Label( rangeRect, minOverlayText, K10GuiStyles.unitStyle );
 
-            if( max.intValue > maxRange ) min.intValue = maxRange;
+            if( max.intValue > maxRange ) max.intValue = maxRange;
+            if( max.intValue < minRange ) max.intValue = minRange;
             if( max.intValue < min.intValue ) min.intValue = max.intValue;
 
             GuiLabelWidthManager.Revert();
@@ -85,7 +87,15 @@ public class IntRangePropertyDrawer : PropertyDrawer
             if( minIsMax && maxOverlayText != null ) GUI.Label( rangeRect, maxOverlayText, K10GuiStyles.unitStyle );
             else if( minIsMin && minOverlayText != null ) GUI.Label( rangeRect, minOverlayText, K10GuiStyles.unitStyle );
 
-            if( rangeToggle.Draw( rangeButtonRect, ref isRange ) ) max.intValue = min.intValue + 1;
+            if( rangeToggle.Draw( rangeButtonRect, ref isRange ) ) 
+            {
+                if( min.intValue + 1 < maxRange ) max.intValue = min.intValue + 1;
+                else
+                {
+                    max.intValue = min.intValue;
+                    min.intValue--;
+                }
+            }
             else max.intValue = min.intValue;
         }
     }

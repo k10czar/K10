@@ -17,7 +17,7 @@ public class SubsetDrawer : PropertyDrawer
     private Dictionary<string,ReorderableList> _listsCache = new();
 
 	float _sumWeight;
-	int _currMax;
+	int _maxVal = 1;
 	bool _isFixedAllElements;
 
 	System.Type _elementType = typeof(ScriptableObject);
@@ -114,7 +114,7 @@ public class SubsetDrawer : PropertyDrawer
 			prop.arraySize++;
 			var entry = prop.GetArrayElementAtIndex(pos);
 			entry.FindPropertyRelative("_weight").floatValue = 1;
-			entry.FindPropertyRelative("_cap").intValue = _isFixedAllElements ? 1 : _currMax;
+			entry.FindPropertyRelative("_cap").intValue = _maxVal;
 		};
 
 		 return reorderableList;
@@ -124,171 +124,55 @@ public class SubsetDrawer : PropertyDrawer
 	{
 		var slh = EditorGUIUtility.singleLineHeight;
 		
-		// var displayName = prop.displayName;
-		var ruleProp = prop.FindPropertyRelative("_rule");
-		var minProp = prop.FindPropertyRelative("_min");
-		var maxProp = prop.FindPropertyRelative("_max");
 		var entriesProp = prop.FindPropertyRelative("_entries");
-		var rangeWeightsProp = prop.FindPropertyRelative("_rangeWeights");
+		var rollsProp = prop.FindPropertyRelative("_rolls");
 
 		_sumWeight = 0;
 		var sumCaps = 0;
-		var hasInfiniteCap = false;
+		var sumGuaranteeds = 0;
+		// var hasInfiniteCap = false;
 		for(int i = 0; i < entriesProp.arraySize; i++) 
 		{
 			var element = entriesProp.GetArrayElementAtIndex(i);
 			var cap = element.FindPropertyRelative("_cap").intValue;
 			if( cap >= 0 ) sumCaps += cap;
-			else hasInfiniteCap = true;
+			// else hasInfiniteCap = true;
+			var min = element.FindPropertyRelative("_guaranteed").intValue;
+			if( min > 0 ) sumGuaranteeds += min;
 			_sumWeight += element.FindPropertyRelative("_weight").floatValue;
 		}
 
 		var reorderableList = GetList( entriesProp );
-		
-		var rulesSize = slh + MARGIN2;
-		if( ruleProp.enumValueIndex == (int)ESubsetGeneratorRule.BIASED_RANGE )
-        {
-			var min = minProp.intValue;
-			var max = maxProp.intValue;
-			var delta = max + 1 - min;
-			if( delta < 1 ) delta = 1;
-			rulesSize += delta * ( slh + MARGIN );
-        }
 
 		GUI.Box( area.CutBottom( MARGIN ), GUIContent.none );
 		area = area.CutBottom( MARGIN );
-		var ruleBoxRect = area.GetLineTop( rulesSize );
+		
+		var h = IntRngPropertyDrawer.GetHeight( rollsProp );
+		var ruleBoxRect = area.GetLineTop( h + MARGIN2 );
 		GUI.Box( ruleBoxRect, GUIContent.none );
 		ruleBoxRect = ruleBoxRect.Shrink( MARGIN2 );
-		var ruleRect = ruleBoxRect.GetLineTop( slh );
-		var newRule = (ESubsetGeneratorRule)EditorGUI.EnumPopup( ruleRect.GetColumnLeft(130, 4), GUIContent.none, (ESubsetGeneratorRule)ruleProp.enumValueIndex );
-		ruleProp.enumValueIndex = (int)newRule;
-		
-		_isFixedAllElements = newRule == ESubsetGeneratorRule.MAX_ROLL;
+		GuiLabelWidthManager.New(36);
+		IntRngPropertyDrawer.Draw( ruleBoxRect, rollsProp, ROLLS_LABEL, sumGuaranteeds, sumCaps, null, "MAX ROLL", Colors.SkyBlue, Colors.PaleGoldenrod );
+		GuiLabelWidthManager.Revert();
 
-        switch (newRule)
-        {
-            case ESubsetGeneratorRule.MAX_ROLL: 
-				var count = 0;
-				for (int i = 0; i < entriesProp.arraySize; i++)
-				{
-					var element = entriesProp.GetArrayElementAtIndex(i);
-					var cap = element.FindPropertyRelative("_cap").intValue;
-					if (cap > 0) count += cap;
-				}
-				EditorGUI.LabelField(ruleRect,$"with {count} element{(count > 1 ? "s" : "")}", K10GuiStyles.boldStyle);
-                break;
-
-            case ESubsetGeneratorRule.FIXED_ROLLS:
-				GuiLabelWidthManager.New(30);
-				EditorGUI.PropertyField(ruleRect, maxProp, ROLLS_LABEL);
-				GuiLabelWidthManager.Revert();
-                break;
-
-            case ESubsetGeneratorRule.UNIFORM_RANGE:
-            case ESubsetGeneratorRule.BIASED_RANGE:
-				EditorGUI.LabelField(ruleRect.GetColumnLeft(42), "Rolls", K10GuiStyles.boldStyle);
-				GuiLabelWidthManager.New(23);
-				var wrongMin = !hasInfiniteCap && (minProp.intValue > sumCaps);
-				if (wrongMin) GuiColorManager.New(RED_ERROR);
-				EditorGUI.PropertyField(ruleRect.VerticalSlice( 0, 2 ), minProp);
-				if (wrongMin) GuiColorManager.Revert();
-				GuiLabelWidthManager.New(28);
-				var wrongMax = !hasInfiniteCap && (maxProp.intValue > sumCaps);
-				if (wrongMax) GuiColorManager.New(RED_ERROR);
-				EditorGUI.PropertyField(ruleRect.VerticalSlice( 1, 2 ), maxProp);
-				if (wrongMax) GuiColorManager.Revert();
-				GuiLabelWidthManager.Revert(2);
-
-				if( newRule == ESubsetGeneratorRule.UNIFORM_RANGE ) break;
-
-				var min = minProp.intValue;
-				var max = maxProp.intValue;
-				var range = max + 1 - min;
-
-				var oldSize = rangeWeightsProp.arraySize;
-				if( oldSize < range ) rangeWeightsProp.arraySize = range;
-
-				if (range > 0)
-                {
-					for (int i = oldSize; i < range; i++)
-					{
-						var e = rangeWeightsProp.GetArrayElementAtIndex(i);
-						e.floatValue = 1;
-					}
-					
-					var sumWeight = 0f;
-					for (int i = 0; i < range; i++) sumWeight += rangeWeightsProp.GetArrayElementAtIndex(i).floatValue;
-
-					GUI.Box( ruleBoxRect, GUIContent.none );
-					var biasesRect = ruleBoxRect.CutTop( MARGIN );
-					
-					for (int i = 0; i < range; i++)
-					{
-						var rolls = min + i;
-						var element = rangeWeightsProp.GetArrayElementAtIndex(i);
-						var rect = biasesRect.HorizontalSlice( i, range, MARGIN );
-						GUI.Box( rect, GUIContent.none );
-
-						rect = rect.Shrink( MARGIN2, 0 );
-
-						GuiLabelWidthManager.New(72);
-						var newVal = EditorGUI.FloatField( rect.GetColumnLeft( 120 ), $"[{rolls}]Weight", element.floatValue);
-						GuiLabelWidthManager.Revert();
-						element.floatValue = newVal;
-						GUIProgressBar.Draw( rect, newVal / sumWeight );
-					}
-                }
-				break;
-        }
+        var range = rollsProp.FindPropertyRelative("_range");
+		_maxVal = range.FindPropertyRelative( "max" ).intValue;
 
 		area = area.CutTop( MARGIN );
-		_currMax = maxProp.intValue;
 		reorderableList.DoList( area );
 	}
 
 	public override float GetPropertyHeight(SerializedProperty prop, GUIContent label )
 	{
-		var slh = EditorGUIUtility.singleLineHeight;
-		// if (!prop.isExpanded) return EditorGUIUtility.singleLineHeight;
-		
-		var ruleProp = prop.FindPropertyRelative("_rule");
-		// var minProp = prop.FindPropertyRelative("_min");
-		// var maxProp = prop.FindPropertyRelative("_max");
 		var entriesProp = prop.FindPropertyRelative("_entries");
-		// var rangeWeightsProp = prop.FindPropertyRelative("_rangeWeights");
 		
 		var reorderableList = GetList( entriesProp );
 
-		var height = slh + MARGIN2;
-
-		var rule = (ESubsetGeneratorRule)ruleProp.enumValueIndex;
-        switch (rule)
-        {
-            // case ESubsetGeneratorRule.MAX_ROLL:
-            //     height = slh + MARGIN2;
-			// 	break;
-
-            // case ESubsetGeneratorRule.FIXED_ROLLS:
-            //     height = slh + MARGIN2;
-			// 	break;
-
-            // case ESubsetGeneratorRule.UNIFORM_RANGE:
-            //     height = slh + MARGIN2;
-			// 	break;
-
-            case ESubsetGeneratorRule.BIASED_RANGE:
-				var min = prop.FindPropertyRelative("_min").intValue;
-				var max = prop.FindPropertyRelative("_max").intValue;
-				var delta = ( max + 1 ) - min;
-				if( delta < 1 ) delta = 1;
-				height += delta * ( slh + MARGIN );
-				break;
-        }
-
-		// var entriesHeight = 20;
 		var entriesHeight = reorderableList.GetHeight();
 
-		return height + MARGIN2 + entriesHeight;
+		var rollsProp = prop.FindPropertyRelative("_rolls");
+		var rollsHeight = IntRngPropertyDrawer.GetHeight( rollsProp );
+
+		return MARGIN2 + entriesHeight + rollsHeight + MARGIN2;
     }
 }

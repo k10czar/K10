@@ -12,7 +12,11 @@ public class IntRngPropertyDrawer : PropertyDrawer
 
     static ToggleButton biasToggle = new ToggleButton( "BIAS", UnityIcons.align_horizontally_left_active, UnityIcons.align_horizontally_left );
 
-    public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+    public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => GetHeight( property );
+
+    public override void OnGUI(Rect area, SerializedProperty property, GUIContent label) => Draw( area, property, label );
+
+    public static float GetHeight(SerializedProperty property )
     {
         var weights = property.FindPropertyRelative("_weights");
         var count = weights.arraySize;
@@ -20,14 +24,12 @@ public class IntRngPropertyDrawer : PropertyDrawer
         return slh + count * ( SPACING + slh ) + MARGIN2;
     }
 
-    public override void OnGUI(Rect area, SerializedProperty property, GUIContent label) => Draw( area, property, label );
-
     public static void Draw(Rect area, SerializedProperty property ) => Draw( area, property, new GUIContent(property.displayName) );
     public static void Draw(Rect area, SerializedProperty property, GUIContent label, int minRange = int.MinValue, int maxRange = int.MaxValue, string minOverlayText = null, string maxOverlayText = null, Color? minColor = null, Color? maxColor = null, string minPropertyName = "min", string maxPropertyName = "max")
     {
         var range = property.FindPropertyRelative("_range");
-        var min = range.FindPropertyRelative("min");
-        var max = range.FindPropertyRelative("max");
+        var min = range.FindPropertyRelative(minPropertyName);
+        var max = range.FindPropertyRelative(maxPropertyName);
 
         GUI.Box( area, GUIContent.none );
 
@@ -40,12 +42,14 @@ public class IntRngPropertyDrawer : PropertyDrawer
         var maxV = max.intValue;
         var isRange = minV < maxV;
         var weights = property.FindPropertyRelative("_weights");
+        
+        var buttonRect = rangeRect;
+        if( isRange ) buttonRect = rangeRect.GetColumnRight( BIAS_BUTTON_WIDTH );
+        
+        IntRangePropertyDrawer.Draw( rangeRect, range, label, minRange, maxRange, minOverlayText, maxOverlayText, minColor, maxColor, minPropertyName, maxPropertyName );
 
         if( isRange )
         {
-            var buttonRect = rangeRect.GetColumnRight( BIAS_BUTTON_WIDTH );
-            IntRangePropertyDrawer.Draw( rangeRect, range, label );
-
             var delta = maxV + 1 - minV;
             
             var wCount = weights.arraySize;
@@ -91,7 +95,5 @@ public class IntRngPropertyDrawer : PropertyDrawer
         {
             weights.arraySize = 0;
         }
-        
-        IntRangePropertyDrawer.Draw( rangeRect, range, label, minRange, maxRange, minOverlayText, maxOverlayText, minColor, maxColor, minPropertyName, maxPropertyName );
     }
 }

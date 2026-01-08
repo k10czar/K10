@@ -18,6 +18,7 @@ public class WeightedSubsetSelectorEditor
 	SerializedProperty _maxProp;
 	SerializedProperty _entriesProp;
 	SerializedProperty _rangeWeightsProp;
+	SerializedProperty _rollsProp;
 
 	KReorderableList _list;
 
@@ -28,7 +29,8 @@ public class WeightedSubsetSelectorEditor
 	private PersistentValue<bool> _showPermutations;
 	private PersistentValue<bool> _show;
 
-	float _sumWeight, _sumCaps;
+	float _sumWeight;
+	int _sumCaps;
 	bool _hasInfiniteCap = false;
 
 	bool _isDirty = true;
@@ -36,6 +38,8 @@ public class WeightedSubsetSelectorEditor
 	bool IsFixedAllElements => _ruleProp.enumValueIndex == (int)ESubsetGeneratorRule.MAX_ROLL;
 	bool IsFixedRolls => _ruleProp.enumValueIndex == (int)ESubsetGeneratorRule.FIXED_ROLLS;
 	bool IsBiased => _ruleProp.enumValueIndex == (int)ESubsetGeneratorRule.BIASED_RANGE;
+
+    static GUIContent _rollsLabel = new GUIContent( "Rolls" );
 
 	public GUIStyle _rollButton;
 
@@ -74,6 +78,7 @@ public class WeightedSubsetSelectorEditor
 		_maxProp = serializedObject.FindProperty("_max");
 		_entriesProp = serializedObject.FindProperty("_entries");
 		_rangeWeightsProp = serializedObject.FindProperty("_rangeWeights");
+		_rollsProp = serializedObject.FindProperty("_rolls");
 		SetupList( serializedObject, _entriesProp, icon );
 		if( type != null ) SetType( type );
 		_show = PersistentValue<bool>.At($"Temp/SubsetSelector/{_displayName}.tgg");
@@ -130,7 +135,7 @@ public class WeightedSubsetSelectorEditor
 		
 		if (_entriesProp == null) return;
 		PreProcessData();
-		DrawRollsRangeBox(BLUE);
+		DrawRollsRangeBox(BLUE, _sumCaps);
 
 		EditorGUI.BeginChangeCheck();
 		_list.DoLayoutList();
@@ -255,7 +260,7 @@ public class WeightedSubsetSelectorEditor
 	
 	static GUILayoutOption ROLLS_HEIGHT = GUILayout.Height(25);
 
-	private void DrawRollsRangeBox( Color color )
+	private void DrawRollsRangeBox( Color color, int maxRolls = int.MaxValue )
 	{
 		GuiColorManager.New( color );
 		EditorGUILayout.BeginVertical( GUI.skin.box );
@@ -270,64 +275,70 @@ public class WeightedSubsetSelectorEditor
 		_ruleProp.enumValueIndex = (int)(ESubsetGeneratorRule)newRule;
 		
 		if( (int)(ESubsetGeneratorRule)newRule != _ruleProp.enumValueIndex )Debug.Log( $"{_ruleProp.enumValueIndex} => {newRule}" );
+		
+		var rect = GUILayoutUtility.GetRect(GUIContent.none,GUIStyle.none);
+		IntRngPropertyDrawer.Draw( rect, _rollsProp, _rollsLabel, 0, maxRolls, null, "MAX ROLL" );
 
-		if (IsFixedAllElements)
-		{
-			var count = 0;
-			for (int i = 0; i < _entriesProp.arraySize; i++)
-			{
-				var element = _entriesProp.GetArrayElementAtIndex(i);
-				var cap = element.FindPropertyRelative("_cap").intValue;
-				if (cap > 0) count += cap;
-			}
-			EditorGUILayout.LabelField($"with {count} element{(count > 1 ? "s" : "")}", K10GuiStyles.boldStyle, ROLLS_HEIGHT);
-		}
-		else if( IsFixedRolls )
-        {
-			GuiLabelWidthManager.New(30);
-			var wrong = !_hasInfiniteCap && (_maxProp.intValue > _sumCaps);
-			if (wrong) GuiColorManager.New(RED_ERROR);
-			EditorGUILayout.BeginHorizontal(GUI.skin.box);
-			EditorGUILayout.PropertyField(_maxProp, new GUIContent("Rolls"));
-			EditorGUILayout.EndHorizontal();
-			if (wrong) GuiColorManager.Revert();
-			GuiLabelWidthManager.Revert();
+		// if (IsFixedAllElements)
+		// {
+		// 	var count = 0;
+		// 	for (int i = 0; i < _entriesProp.arraySize; i++)
+		// 	{
+		// 		var element = _entriesProp.GetArrayElementAtIndex(i);
+		// 		var cap = element.FindPropertyRelative("_cap").intValue;
+		// 		if (cap > 0) count += cap;
+		// 	}
+		// 	EditorGUILayout.LabelField($"with {count} element{(count > 1 ? "s" : "")}", K10GuiStyles.boldStyle, ROLLS_HEIGHT);
+		// }
+		// else if( IsFixedRolls )
+        // {
+		// 	GuiLabelWidthManager.New(30);
+		// 	var wrong = !_hasInfiniteCap && (_maxProp.intValue > _sumCaps);
+		// 	if (wrong) GuiColorManager.New(RED_ERROR);
+		// 	EditorGUILayout.BeginHorizontal(GUI.skin.box);
+		// 	EditorGUILayout.PropertyField(_maxProp, new GUIContent("Rolls"));
+		// 	EditorGUILayout.EndHorizontal();
+		// 	if (wrong) GuiColorManager.Revert();
+		// 	GuiLabelWidthManager.Revert();
 
-			wrong = !_hasInfiniteCap && (_maxProp.intValue > _sumCaps);
-			if ( wrong ) errorMsg = $"The maximum number of rolls is {_sumCaps}, due the sum of entries cap limit";
-        }
-		else
-		{
-			EditorGUILayout.LabelField("Rolls", K10GuiStyles.boldStyle, GUILayout.Width(45), ROLLS_HEIGHT);
+		// 	wrong = !_hasInfiniteCap && (_maxProp.intValue > _sumCaps);
+		// 	if ( wrong ) errorMsg = $"The maximum number of rolls is {_sumCaps}, due the sum of entries cap limit";
+        // }
+		// else
+		// {
+		// 	EditorGUILayout.LabelField("Rolls", K10GuiStyles.boldStyle, GUILayout.Width(45), ROLLS_HEIGHT);
 
-			EditorGUILayout.BeginVertical();
-			GUILayout.Space(5);
-			EditorGUILayout.BeginHorizontal(GUI.skin.box);
+		// 	var rect = GUILayoutUtility.GetRect(GUIContent.none,GUIStyle.none);
+		// 	IntRngPropertyDrawer.Draw( rect, _rollsProp, _rollsLabel, 0, maxRolls, null, "MAX ROLL" );
 
-			GuiLabelWidthManager.New(23);
+		// 	EditorGUILayout.BeginVertical();
+		// 	GUILayout.Space(5);
+		// 	EditorGUILayout.BeginHorizontal(GUI.skin.box);
 
-			var wrongMin = !_hasInfiniteCap && (_minProp.intValue > _sumCaps);
+		// 	GuiLabelWidthManager.New(23);
 
-			if (wrongMin) GuiColorManager.New(RED_ERROR);
-			EditorGUILayout.PropertyField(_minProp, new GUIContent("Min"), GUILayout.MinWidth(40));
-			if (wrongMin) GuiColorManager.Revert();
+		// 	var wrongMin = !_hasInfiniteCap && (_minProp.intValue > _sumCaps);
 
-			var wrongMax = !_hasInfiniteCap && (_maxProp.intValue > _sumCaps);
+		// 	if (wrongMin) GuiColorManager.New(RED_ERROR);
+		// 	EditorGUILayout.PropertyField(_minProp, new GUIContent("Min"), GUILayout.MinWidth(40));
+		// 	if (wrongMin) GuiColorManager.Revert();
 
-			GuiLabelWidthManager.New(28);
+		// 	var wrongMax = !_hasInfiniteCap && (_maxProp.intValue > _sumCaps);
 
-			if (wrongMax) GuiColorManager.New(RED_ERROR);
-			EditorGUILayout.PropertyField(_maxProp, new GUIContent("Max"), GUILayout.MinWidth(45));
-			if (wrongMax) GuiColorManager.Revert();
+		// 	GuiLabelWidthManager.New(28);
 
-			GuiLabelWidthManager.Revert(2);
+		// 	if (wrongMax) GuiColorManager.New(RED_ERROR);
+		// 	EditorGUILayout.PropertyField(_maxProp, new GUIContent("Max"), GUILayout.MinWidth(45));
+		// 	if (wrongMax) GuiColorManager.Revert();
 
-			EditorGUILayout.EndHorizontal();
+		// 	GuiLabelWidthManager.Revert(2);
 
-			EditorGUILayout.EndVertical();
+		// 	EditorGUILayout.EndHorizontal();
 
-			if (wrongMin || wrongMax) errorMsg = $"The maximum number of rolls is {_sumCaps}, due the sum of entries cap limit or guaranteed rolls";
-		}
+		// 	EditorGUILayout.EndVertical();
+
+		// 	if (wrongMin || wrongMax) errorMsg = $"The maximum number of rolls is {_sumCaps}, due the sum of entries cap limit or guaranteed rolls";
+		// }
 
 		EditorGUILayout.EndHorizontal();
 
