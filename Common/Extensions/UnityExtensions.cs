@@ -137,14 +137,14 @@ public static class K10UnityExtensions
 		rect = rect.CutRight( width + spacing );
 		return column;
 	}
-	
+
 	[MethodImpl(AggrInline)] public static Vector2 Clamp( this Rect thisRect , Vector2 pos )
 	{
 		pos.x = MathAdapter.clamp(pos.x, thisRect.xMin, thisRect.xMax);
 		pos.y = MathAdapter.clamp(pos.y, thisRect.yMin, thisRect.yMax);
 		return pos;
 	}
-	
+
 	[MethodImpl(AggrInline)] public static Vector2 SoftClamp( this Rect rect, Vector2 pos, float softMargin = .2f, float virtualMargin = 2f )
 	{
 		pos.x = MathAdapter.SoftClamp( pos.x, rect.xMin, rect.xMax, softMargin, virtualMargin );
@@ -539,6 +539,17 @@ public static class K10UnityExtensions
 			Object obj => NameOrNullColored(obj),
 			string str => string.IsNullOrEmpty(str) ? ConstsK10.NULL_STRING_COLORED : str,
 			_ => ToStringOrNullColored(target),
+		};
+	}
+
+	public static string ToInspectorName(this IReadOnlyList<object> targets, string plural)
+	{
+		return targets.Count switch
+		{
+			0 => ConstsK10.NULL_STRING_COLORED,
+			1 => targets[0].ToInspectorName(),
+			2 => $"{targets[0].ToInspectorName()} & {targets[1].ToInspectorName()}",
+			_ => $"{targets.Count} {plural}"
 		};
 	}
 }
