@@ -278,7 +278,7 @@ public class ChancesPredictor
 					for (int k = rMin; k <= rMax; k++)
 					{
 						var chance = M[i, j, k];
-						if (_rollChancesCache != null) chance *= _rollChancesCache[k - rMin];
+						if (_rollChancesCache != null && k - rMin < _rollChancesCache.Length) chance *= _rollChancesCache[k - rMin];
 						val += chance;
 					}
 					val /= sumWeight;
