@@ -86,7 +86,7 @@ namespace Skyx.SkyxEditor
 
         private static bool Begin(string title, ref bool isExpandedRef, EColor color, EElementSize size, SerializedProperty property)
         {
-            var headerHeight = SkyxStyles.HeaderHeight(size);
+            var headerHeight = Skope.HeaderHeight(size);
             var boxRect = EditorGUILayout.GetControlRect(false, headerHeight);
 
             var headerRect = boxRect;
@@ -112,13 +112,13 @@ namespace Skyx.SkyxEditor
 
         private static bool Begin(ref Rect initialRect, string title, ref bool isExpandedRef, EColor color, EElementSize size, SerializedProperty property)
         {
-            initialRect.height -= 2f * SkyxStyles.ElementsMargin;
+            if (isExpandedRef) initialRect.height -= SkyxStyles.ElementsMargin;
 
             // Reversing outer box margin
             initialRect.x -= SkyxStyles.BoxMargin - 1;
             initialRect.width += (SkyxStyles.BoxMargin - 1) * 2;
 
-            var headerHeight = SkyxStyles.HeaderHeight(size);
+            var headerHeight = Skope.HeaderHeight(size);
             var headerRect = initialRect;
             headerRect.height = headerHeight;
 
@@ -151,7 +151,7 @@ namespace Skyx.SkyxEditor
 
             if (isExpandedRef)
             {
-                boxRect.SlideVertically(1, 0);
+                boxRect.SlideVertically(1, -2);
                 SkyxGUI.Separator(ref boxRect, 0, color);
             }
 

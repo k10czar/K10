@@ -8,24 +8,23 @@ namespace Skyx.SkyxEditor
     public static class HeaderList
     {
         private const float ExtraElementHeight = SkyxStyles.ElementsMargin + 3; // from separator
-        private const float NewElementHeight = SkyxStyles.LineHeight + SkyxStyles.ElementsMargin;
+        private const float NewElementHeight = SkyxStyles.FullLineHeight;
         private const float HorizontalThreshold = SkyxStyles.ListControlButtonSize * 3;
 
         public static void DrawLayout(SerializedProperty property, string title = null, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, EScopeType scopeType = EScopeType.Header, string newText = null, Action<SerializedProperty> onNewElement = null, bool canMoveElements = true)
         {
-            var rect = EditorGUILayout.GetControlRect(false, GetPropertyHeight(property, false, size));
+            var rect = EditorGUILayout.GetControlRect(false, GetPropertyHeight(property, scopeType, size));
             Draw(ref rect, property, title, color, size, scopeType, newText, onNewElement, canMoveElements, false);
         }
 
         public static void Draw(ref Rect rect, SerializedProperty property, string title = null, EColor color = EColor.Primary, EElementSize size = EElementSize.Primary, EScopeType scopeType = EScopeType.Header, string newText = null, Action<SerializedProperty> onNewElement = null, bool canMoveElements = true, bool resetHeight = true)
         {
-            if (resetHeight) rect.height = GetPropertyHeight(property, false);
+            var drawingRect = rect;
+            if (resetHeight) drawingRect.height = GetPropertyHeight(property, scopeType, size);
+            rect.y += drawingRect.height + SkyxStyles.ElementsMargin;
 
             title = string.IsNullOrEmpty(title) ? property.PrettyName() : title;
             newText = string.IsNullOrEmpty(newText) ? "New Entry" : newText;
-
-            var drawingRect = rect;
-            rect.SlideSameVertically(0);
 
             using var scope = Skope.Open(scopeType, ref drawingRect, property, title, color, size);
             if (!scope.IsExpanded) return;
@@ -36,13 +35,13 @@ namespace Skyx.SkyxEditor
 
         public static void DrawHeaderlessLayout(SerializedProperty property, string newText = null, Action<SerializedProperty> onNewElement = null, bool canMoveElements = true)
         {
-            var rect = EditorGUILayout.GetControlRect(false, GetPropertyHeight(property, true));
+            var rect = EditorGUILayout.GetControlRect(false, GetPropertyHeight(property, EScopeType.Inline, EElementSize.Primary));
             DrawHeaderless(ref rect, property, newText, onNewElement, canMoveElements, false);
         }
 
         public static void DrawHeaderless(ref Rect rect, SerializedProperty property, string newText = null, Action<SerializedProperty> onNewElement = null, bool canMoveElements = true, bool resetHeight = true)
         {
-            if (resetHeight) rect.height = GetPropertyHeight(property, true);
+            if (resetHeight) rect.height = GetPropertyHeight(property, EScopeType.Inline, EElementSize.Primary);
             newText = string.IsNullOrEmpty(newText) ? "New Entry" : newText;
 
             DrawElements(ref rect, property, canMoveElements);
@@ -53,7 +52,6 @@ namespace Skyx.SkyxEditor
 
         private static void DrawNewElement(Rect rect, SerializedProperty property, string newText, Action<SerializedProperty> onNewElement)
         {
-            rect.y += 2;
             rect.height = SkyxStyles.LineHeight;
 
             var excess = rect.width - 150;
@@ -163,13 +161,15 @@ namespace Skyx.SkyxEditor
             return total;
         }
 
-        public static float GetPropertyHeight(SerializedProperty property, bool isHeaderless, EElementSize size = EElementSize.Primary)
+        public static float GetPropertyHeight(SerializedProperty property, EScopeType scopeType, EElementSize size)
         {
-            if (!isHeaderless && !property.isExpanded) return SkyxStyles.ClosedScopeHeight(size);
+            if (scopeType is EScopeType.Inline)
+                return GetElementsHeight(property) + NewElementHeight;
 
-            return (isHeaderless ? 0 : SkyxStyles.ScopeTotalExtraHeight(size)) +
-                    GetElementsHeight(property) +
-                    NewElementHeight;
+            var height = Skope.ScopeHeight(scopeType, size, property.isExpanded);
+            if (property.isExpanded) height += GetElementsHeight(property) + NewElementHeight;
+
+            return height;
         }
     }
 }
