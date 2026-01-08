@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Unity.Plastic.Newtonsoft.Json;
@@ -25,10 +26,10 @@ namespace Skyx.SkyxEditor
             }
 
             // Check if the member is a property and its backing field has the [SerializeField] attribute
-            if (member is PropertyInfo propertyInfo && propertyInfo.CanRead && propertyInfo.CanWrite)
+            if (member is PropertyInfo propertyInfo)
             {
                 // Get the backing field for the property
-                FieldInfo backingField = propertyInfo.DeclaringType.GetField(
+                var backingField = propertyInfo.DeclaringType?.GetField(
                     $"<{propertyInfo.Name}>k__BackingField",
                     BindingFlags.NonPublic | BindingFlags.Instance
                 );
@@ -36,18 +37,23 @@ namespace Skyx.SkyxEditor
                 // If the backing field exists and has the [SerializeField] attribute, include the property
                 if (backingField != null && backingField.GetCustomAttribute<SerializeField>() != null)
                 {
-                    property.Ignored = false; // Ensure the property is not ignored
-                    property.Readable = true; // Make the property readable
-                    property.Writable = true; // Make the property writable
+                    property.Ignored = false;
+                    property.Readable = true;
+                    property.Writable = true;
+                }
+                else
+                {
+                    property.Ignored = true;
+                    property.Readable = false;
+                    property.Writable = false;
                 }
             }
 
             return property;
         }
 
-        protected override System.Collections.Generic.IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+        protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
         {
-            // Include private fields in the list of properties
             var properties = base.CreateProperties(type, memberSerialization);
 
             // Add private fields to the properties list

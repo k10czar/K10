@@ -179,20 +179,20 @@ namespace Skyx.SkyxEditor
         private static void OnDuplicateElement()
         {
             selectedProperty.ExtractArrayElementInfo(out var parent, out var index);
+
+            TrackProperty(selectedProperty, null);
+            OnCopy();
+
             parent.InsertArrayElementAtIndex(index);
             parent.Apply();
 
+            var newElement = parent.GetArrayElementAtIndex(index + 1);
+
             if (selectedProperty.IsManagedRef())
-            {
-                var newElement = parent.GetArrayElementAtIndex(index + 1);
-
-                TrackProperty(selectedProperty, null);
-                OnCopy();
-
                 newElement.managedReferenceValue = Activator.CreateInstance(selectedType);
-                TrackProperty(newElement, null);
-                OnPaste();
-            }
+
+            TrackProperty(newElement, null);
+            OnPaste();
         }
 
         private static void OnDeleteElement()

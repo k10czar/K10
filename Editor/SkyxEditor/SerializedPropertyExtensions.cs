@@ -579,7 +579,8 @@ namespace Skyx.SkyxEditor
         private static JsonSerializerSettings GetSerializationSettings() => new()
         {
             ContractResolver = new SerializeFieldContractResolver(),
-            Converters = { new UnityObjectConverter() }
+            Converters = { new UnityObjectConverter() },
+            TypeNameHandling = TypeNameHandling.Auto,
         };
 
         #endregion
