@@ -60,4 +60,10 @@ public class ListingPathAttribute : Attribute
 	}
 }
 
-public class LocalPosition : PropertyAttribute {}
+public class LocalPositionAttribute : PropertyAttribute
+{
+	public readonly int validMask;
+
+	public LocalPositionAttribute(int validMask) => this.validMask = validMask;
+	public LocalPositionAttribute() => validMask = int.MaxValue;
+}

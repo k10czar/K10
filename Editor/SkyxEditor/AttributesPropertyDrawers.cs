@@ -26,9 +26,53 @@ namespace Skyx.SkyxEditor
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => SkyxStyles.CompactListElement;
     }
 
-    [CustomPropertyDrawer(typeof(LocalPosition))]
+    [CustomPropertyDrawer(typeof(LocalPositionAttribute))]
     public class LocalPositionPropertyDrawer : PropertyDrawer
     {
+        private const string AnchorName = "[HelpingAnchor]";
+
+        private static void OpenMenuPicker(SerializedProperty property, Transform sourceTransform, int validMask)
+        {
+            var menu = new GenericMenu();
+
+            menu.AddItem(new GUIContent("Get Existing Anchor"), false, () => SelectExistingAnchor(sourceTransform));
+            menu.AddItem(new GUIContent("Create anchor at current position"), false, () => CreateSelectingAnchor(sourceTransform, property.vector3Value));
+            menu.AddItem(new GUIContent("Create anchor at Click"), false, () => EditorUtils.RunOnSceneClick(hit => CreateSelectingAnchor(sourceTransform, sourceTransform.InverseTransformPoint(hit.point)), validMask));
+
+            menu.ShowAsContext();
+        }
+
+        private static void SelectExistingAnchor(Transform sourceTransform)
+        {
+            var anchor = sourceTransform.Find(AnchorName);
+            if (anchor == null)
+            {
+                Debug.LogError($"Cannot find anchor {AnchorName}");
+                return;
+            }
+
+            EditorUtils.SetInspectorLock(true);
+            Selection.activeObject = anchor;
+        }
+
+        private static void CreateSelectingAnchor(Transform sourceTransform, Vector3 localPosition)
+        {
+            EditorUtils.SetInspectorLock(true);
+
+            var anchor = new GameObject("[HelpingAnchor]")
+            {
+                transform =
+                {
+                    parent = sourceTransform,
+                    localPosition = localPosition,
+                    localRotation = Quaternion.identity
+                },
+                hideFlags = HideFlags.DontSave
+            };
+
+            Selection.activeObject = anchor;
+        }
+
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
         {
             rect.AdjustToLine();
@@ -57,15 +101,7 @@ namespace Skyx.SkyxEditor
                 else
                 {
                     if (SkyxGUI.MiniButton(ref rect, "⊙", EColor.Support, "Create helping anchor", true))
-                    {
-                        var newObj = new GameObject("[HelpingAnchor]");
-                        newObj.transform.parent = sourceTransform;
-                        newObj.transform.localPosition = Vector3.zero;
-                        newObj.transform.localRotation = Quaternion.identity;
-                        newObj.hideFlags = HideFlags.DontSave;
-
-                        Selection.activeObject = newObj;
-                    }
+                        OpenMenuPicker(property, sourceTransform, ((LocalPositionAttribute)attribute).validMask);
                 }
             }
 
