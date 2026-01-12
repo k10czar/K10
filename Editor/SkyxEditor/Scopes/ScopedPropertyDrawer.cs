@@ -8,7 +8,7 @@ namespace Skyx.SkyxEditor
     [CustomPropertyDrawer(typeof(ScopedAttribute))]
     public class ScopedPropertyDrawer : PropertyDrawer
     {
-        private static bool isShowingDescriptions = true;
+        public static bool isShowingDescriptions = true;
 
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
             => OnGUI(rect, property, (ScopedAttribute) attribute);
