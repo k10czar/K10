@@ -676,7 +676,12 @@ public class WeightedSubsetSelectorEditor
 				EditorGUILayout.BeginVertical();
 				var maxSize = 24f;
         		GUIStyle labelStyle = GUI.skin.label;
-				foreach(var permutation in _permutations ) maxSize = MathAdapter.max( maxSize, labelStyle.CalcSize(new GUIContent(permutation.name)).x );
+				foreach(var permutation in _permutations ) 
+				{
+					var w = labelStyle.CalcSize(new GUIContent(permutation.name)).x;
+					if( maxSize > w ) continue;
+					maxSize = w;
+				}
 				var labelWidth = GUILayout.Width(maxSize);
 				var labelHeight = GUILayout.Height( EditorGUIUtility.singleLineHeight );
 

@@ -388,7 +388,12 @@ public class ChancesPredictor
     {
 		var maxLabelSize = 24f;
 		GUIStyle labelStyle = GUI.skin.label;
-		foreach(var permutation in _permutations ) maxLabelSize = MathAdapter.max( maxLabelSize, labelStyle.CalcSize(new GUIContent(permutation.name)).x );
+		foreach(var permutation in _permutations ) 
+		{
+			var size = labelStyle.CalcSize(new GUIContent(permutation.name)).x;
+			if( maxLabelSize < size ) continue;
+			maxLabelSize = size;
+		}
 		var labelHeight = EditorGUIUtility.singleLineHeight;
 
 		if( maxLabelSize > rect.width - 32 ) maxLabelSize = rect.width - 32;
@@ -406,7 +411,12 @@ public class ChancesPredictor
 		EditorGUILayout.BeginVertical();
 		var maxSize = 24f;
 		GUIStyle labelStyle = GUI.skin.label;
-		foreach(var permutation in _permutations ) maxSize = MathAdapter.max( maxSize, labelStyle.CalcSize(new GUIContent(permutation.name)).x );
+		foreach(var permutation in _permutations ) 
+		{
+			var size = labelStyle.CalcSize(new GUIContent(permutation.name)).x;
+			if( maxSize < size ) continue;
+			maxSize = size;
+		}
 		var labelWidth = GUILayout.Width(maxSize);
 		var labelHeight = GUILayout.Height( EditorGUIUtility.singleLineHeight );
 
