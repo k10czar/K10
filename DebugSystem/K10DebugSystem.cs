@@ -56,6 +56,17 @@ namespace K10.DebugSystem
             throw new Exception($"Category {typeof(T).Name} not found!");
         }
 
+        public static DebugCategory GetCategory(Type categoryType)
+        {
+            foreach (var candidate in Categories)
+            {
+                if (candidate.GetType() == categoryType)
+                    return candidate;
+            }
+
+            throw new Exception($"Category {categoryType.Name} not found!");
+        }
+
         #endregion
 
         #region Debug Type
@@ -76,8 +87,17 @@ namespace K10.DebugSystem
             return categoryType == tempCategory || config.CanDebug(categoryType, debugType);
         }
 
-        public static void ToggleCategory(Type categoryType, EDebugType debugType) => config.ToggleDebug(categoryType, debugType);
-        public static void SetCategory(Type categoryType, EDebugType debugType, bool value, bool save = true) => config.SetDebug(categoryType, debugType, value, save);
+        public static void ToggleCategory(Type categoryType, EDebugType debugType)
+        {
+            config.ToggleDebug(categoryType, debugType);
+            GetCategory(categoryType).changed?.Invoke(debugType);
+        }
+
+        public static void SetCategory(Type categoryType, EDebugType debugType, bool value, bool save = true)
+        {
+            config.SetDebug(categoryType, debugType, value, save);
+            GetCategory(categoryType).changed?.Invoke(debugType);
+        }
 
         #endregion
 

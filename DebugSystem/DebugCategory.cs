@@ -11,6 +11,8 @@ namespace K10.DebugSystem
         public virtual Color SecondaryColor => Color.AddLight(-.1f);
 
         public Action<DebugFlag> flagsChanged;
+        public Action<EDebugType> changed;
+
         public virtual DebugFlag[] Flags { get; } = Array.Empty<DebugFlag>();
         public List<GameObject> HiddenObjects { get; set; }
 
@@ -24,6 +26,7 @@ namespace K10.DebugSystem
         {
             HiddenObjects?.Clear();
             flagsChanged = null;
+            changed = null;
         }
     }
 
