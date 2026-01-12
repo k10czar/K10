@@ -122,6 +122,16 @@ namespace Skyx.SkyxEditor
             SceneView.duringSceneGui += wrapper;
         }
 
+        public static void FocusSceneView(Vector3 target)
+        {
+            var view = SceneView.lastActiveSceneView;
+
+            view.pivot = target;
+            view.size = .7f;
+        }
+
+        #region Reflections
+
         public static void SetInspectorLock(bool shouldLock)
         {
             var focused = EditorWindow.focusedWindow;
@@ -154,12 +164,22 @@ namespace Skyx.SkyxEditor
             clearMethod!.Invoke(new object(), null);
         }
 
-        public static void FocusSceneView(Vector3 target)
+        public static string GetSelectedConsoleMessage(bool onlyFirstLine = true)
         {
-            var view = SceneView.lastActiveSceneView;
+            var consoleWindowType = Type.GetType("UnityEditor.ConsoleWindow, UnityEditor");
+            if (consoleWindowType == null) return string.Empty;
 
-            view.pivot = target;
-            view.size = .7f;
+            var consoleWindow = EditorWindow.GetWindow(consoleWindowType, false, "Console", false);
+            if (consoleWindow == null) return string.Empty;
+
+            var activeTextField = consoleWindowType.GetField("m_ActiveText", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            var line = (string) activeTextField?.GetValue(consoleWindow) ?? string.Empty;
+            if (onlyFirstLine) line = line.Split(new[]{'\r','\n'}, 2, StringSplitOptions.None)[0];
+
+            return line;
         }
+
+        #endregion
     }
 }
