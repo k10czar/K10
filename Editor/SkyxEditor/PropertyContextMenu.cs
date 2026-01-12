@@ -57,7 +57,7 @@ namespace Skyx.SkyxEditor
                 TrackProperty(property, newElementSetup);
                 OnCopy();
 
-                EditorUtils.RunDelayedOnce(() => property.RemoveSelfFromArray());
+                property.RemoveSelfFromArrayDelayed();
             }
         }
 

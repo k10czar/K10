@@ -17,13 +17,14 @@ namespace Skyx.SkyxEditor
         public readonly string name;
         public readonly string title;
         public readonly string description;
+        public readonly bool hasCustomExpand;
 
         public readonly bool indent = false;
 
         public readonly List<(string, EColor, Action)> buttons = new();
 
         public bool HasDescription => !string.IsNullOrEmpty(description);
-        public bool CanExpand() => HasDescription || property.CanExpand();
+        public bool CanExpand() => hasCustomExpand || HasDescription || property.CanExpand();
 
         public void AddButton(string label, EColor buttonColor, Action callback) => buttons.Add((label, buttonColor, callback));
 
@@ -45,7 +46,7 @@ namespace Skyx.SkyxEditor
             this.size = size;
         }
 
-        public SkopeInfo(EScopeType scopeType, SerializedProperty property, string title, EColor color, EElementSize size, bool indent)
+        public SkopeInfo(EScopeType scopeType, SerializedProperty property, string title, EColor color, EElementSize size, bool indent, bool hasCustomExpand = false)
         {
             this.scopeType = scopeType;
             this.property = property;
@@ -54,6 +55,7 @@ namespace Skyx.SkyxEditor
             this.color = color;
             this.size = size;
             this.indent = indent;
+            this.hasCustomExpand = hasCustomExpand;
         }
 
         public SkopeInfo(EScopeType scopeType, SerializedProperty property, string name, string title, string description, EColor color, EElementSize size, bool indent)
@@ -146,7 +148,10 @@ namespace Skyx.SkyxEditor
                 ? hasAppend ? name.AppendInfo(append, size: scopedAtt.elementSize) : name
                 : hasAppend ? append : "Missing Name!";
 
-            return new SkopeInfo(scopedAtt.scopeType, property, name, title, description, color, scopedAtt.elementSize, scopedAtt.indent);
+            var info = new SkopeInfo(scopedAtt.scopeType, property, name, title, description, color, scopedAtt.elementSize, scopedAtt.indent);
+            if (scopedAtt.buttons != null) info.buttons.InsertRange(0, scopedAtt.buttons);
+
+            return info;
         }
     }
 }

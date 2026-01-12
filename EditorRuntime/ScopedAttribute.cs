@@ -14,6 +14,7 @@ namespace Skyx.RuntimeEditor
         InlineFullContent,
         HeaderNameOnly,
         HeaderPropertySummary,
+        HeaderNameSummary,
     }
 
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Class)]
@@ -33,6 +34,8 @@ namespace Skyx.RuntimeEditor
         public readonly EColor color;
 
         public readonly string[] targetChildren;
+
+        public List<(string, EColor, Action)> buttons;
 
         public ScopedAttribute() {}
 
@@ -86,6 +89,7 @@ namespace Skyx.RuntimeEditor
 
             { EScopePreset.HeaderNameOnly, new ScopedAttribute(EScopeType.Header, EEditorInfoSource.EditorContent, EEditorInfoSource.Nothing, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent) },
             { EScopePreset.HeaderPropertySummary, new ScopedAttribute(EScopeType.Header, EEditorInfoSource.Property, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent) },
+            { EScopePreset.HeaderNameSummary, new ScopedAttribute(EScopeType.Header, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent) },
 
             { EScopePreset.Inline, new ScopedAttribute(EScopeType.Inline, EEditorInfoSource.EditorContent, EEditorInfoSource.Nothing, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
             { EScopePreset.InlinePropertySummary, new ScopedAttribute(EScopeType.Inline, EEditorInfoSource.Property, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },

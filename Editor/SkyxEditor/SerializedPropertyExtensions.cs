@@ -90,6 +90,17 @@ namespace Skyx.SkyxEditor
             }
         }
 
+        public static void InsertArrayElement(this SerializedProperty property, Action<SerializedProperty> onNewElement = null, int index = -1)
+        {
+            if (index == -1) index = property.arraySize;
+
+            property.InsertArrayElementAtIndex(index);
+            property.Apply($"New array element: {property.propertyPath}");
+
+            var newElement = property.GetArrayElementAtIndex(index);
+            newElement.ResetDefaultValues(onNewElement, false, true);
+        }
+
         #endregion
 
         #region Reflection Getters / Setters
@@ -247,7 +258,10 @@ namespace Skyx.SkyxEditor
 
         private static string[] GetPathStructure(SerializedProperty property) => property.propertyPath.Replace(".Array.data", "").Split('.');
 
-        public static bool RemoveSelfFromArray(this SerializedProperty property)
+        public static void RemoveSelfFromArrayDelayed(this SerializedProperty property)
+            => EditorUtils.RunDelayedOnce(property.RemoveSelfFromArray);
+
+        public static void RemoveSelfFromArray(this SerializedProperty property)
         {
             var path = property.propertyPath;
             var match = arrayIndexRegex.Match(path);
@@ -255,24 +269,21 @@ namespace Skyx.SkyxEditor
             if (!match.Success)
             {
                 Debug.LogError($"Property '{property.displayName}' is not part of an array.");
-                return false;
+                return;
             }
 
             var index = int.Parse(match.Groups[1].Value);
             var parentPath = path[..match.Index];
 
             var parentArray = property.serializedObject.FindProperty(parentPath);
-
             if (parentArray == null || !parentArray.isArray)
             {
                 Debug.LogError($"Could not find parent array for '{property.displayName}' at path '{parentPath}'.");
-                return false;
+                return;
             }
 
             parentArray.DeleteArrayElementAtIndex(index);
             parentArray.Apply();
-
-            return true;
         }
 
 

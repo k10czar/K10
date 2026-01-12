@@ -61,15 +61,7 @@ namespace Skyx.SkyxEditor
                 rect.x += excess / 2;
             }
 
-            if (GUI.Button(rect, newText))
-            {
-                var index = property.arraySize;
-                property.InsertArrayElementAtIndex(index);
-                property.Apply($"New array element: {property.propertyPath}");
-
-                var newElement = property.GetArrayElementAtIndex(index);
-                newElement.ResetDefaultValues(onNewElement, false, true);
-            }
+            if (GUI.Button(rect, newText)) property.InsertArrayElement(onNewElement);
         }
 
         private static void DrawElements(ref Rect rect, SerializedProperty property, bool canMoveElements)
