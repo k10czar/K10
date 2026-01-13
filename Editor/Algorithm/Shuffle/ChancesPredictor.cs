@@ -371,7 +371,7 @@ public class ChancesPredictor
 		foreach(var permutation in _permutations ) 
 		{
 			var size = labelStyle.CalcSize(new GUIContent(permutation.name)).x;
-			if( maxLabelSize < size ) continue;
+			if( maxLabelSize > size ) continue;
 			maxLabelSize = size;
 		}
 		var labelHeight = EditorGUIUtility.singleLineHeight;
@@ -394,7 +394,7 @@ public class ChancesPredictor
 		foreach(var permutation in _permutations ) 
 		{
 			var size = labelStyle.CalcSize(new GUIContent(permutation.name)).x;
-			if( maxSize < size ) continue;
+			if( maxSize > size ) continue;
 			maxSize = size;
 		}
 		var labelWidth = GUILayout.Width(maxSize);
