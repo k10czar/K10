@@ -4,20 +4,13 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 
-public enum ESubsetGeneratorRule
-{
-    MAX_ROLL,
-    FIXED_ROLLS,
-    UNIFORM_RANGE,
-    BIASED_RANGE,
-}
 
 public interface ISubsetSelector
 {
-    public ESubsetGeneratorRule Rule { get; }
     public int Min { get; }
     public int Max { get; }
     public float GetBiasWeight(int rolls);
+    public bool IsBiased { get; }
     public int EntriesCount { get; }
     public IWeightedSubsetEntry GetEntryObject(int id);
     // public IntRng Rng { get; }
@@ -44,10 +37,21 @@ public interface IWeightedSubsetEntry<T> : IWeightedSubsetEntry
 public static class SubsetSelectorExtension
 {
     public static bool IsEmpty(this ISubsetSelector selector) => selector.EntriesCount == 0;
+
+    public static bool IsEverMaxRoll(this ISubsetSelector selector)
+    {
+        var maxRoll = 0;
+        for (int i = 0; i < selector.EntriesCount; i++)
+        {
+            var entry = selector.GetEntryObject(i);
+            maxRoll += entry.Cap;
+        }
+        return maxRoll <= selector.Min;
+    }
     
     public static string Stringfy(this ISubsetSelector selector)
     {
-        if (selector.Rule == ESubsetGeneratorRule.MAX_ROLL)
+        if (selector.IsEverMaxRoll())
         {
             var sbmr = StringBuilderPool.RequestEmpty();
             sbmr.Append("{");
@@ -59,6 +63,7 @@ public static class SubsetSelectorExtension
             sbmr.Append("}");
             return sbmr.ReturnToPoolAndCast();
         }
+
         var totalWeight = 0f;
         for (int i = 0; i < selector.EntriesCount; i++) totalWeight += selector.GetEntryObject(i).Weight;
         
@@ -69,12 +74,8 @@ public static class SubsetSelectorExtension
             sb.Append($"{(i > 0 ? ", " : "")}{entry.ElementAsObject.ToStringOrNull()}[{entry.Guaranteed},{entry.Cap}]({entry.Weight*100/totalWeight:N0}%)");
         }
         var elements = sb.ReturnToPoolAndCast();
-        switch (selector.Rule)
-        {
-            case ESubsetGeneratorRule.FIXED_ROLLS: return $"{selector.Max} of {{ {elements} }}";
-            case ESubsetGeneratorRule.UNIFORM_RANGE: return $"[{selector.Min},{selector.Max}] of {{ {elements} }}";
-        }
-        if (selector.Rule == ESubsetGeneratorRule.BIASED_RANGE)
+
+        if( selector.IsBiased )
         {
             var ranges = $"[{selector.Min},{selector.Max}]";
             var sumRangesWeights = 0f;
@@ -90,6 +91,11 @@ public static class SubsetSelectorExtension
             }
             return $"{ranges} of {{ {elements} }}";
         }
+        else
+        {
+            if( selector.Min == selector.Max ) return $"{selector.Max} of {{ {elements} }}";
+            else return $"[{selector.Min},{selector.Max}] of {{ {elements} }}";
+        }
         return $"UNDENTIFIED";
     }
 
@@ -97,38 +103,23 @@ public static class SubsetSelectorExtension
     public static IEnumerable<T> Roll<T>(this ISubsetSelector selector)
     {
         var entriesCount = selector.EntriesCount;
-        if (selector.Rule == ESubsetGeneratorRule.MAX_ROLL)
-        {
-            var fixedResult = new List<T>();
-            for (int i = 0; i < entriesCount; i++)
-            {
-                var entry = selector.GetEntryObject(i);
-                for (int j = 0; j < entry.Cap; j++) fixedResult.Add((T)entry.ElementAsObject);
-            }
-            return fixedResult;
-        }
 
         var rolls = 0;
-        switch (selector.Rule)
+
+        if( selector.IsBiased )
         {
-            case ESubsetGeneratorRule.FIXED_ROLLS:
-                rolls = selector.Max;
-                break;
-
-            case ESubsetGeneratorRule.UNIFORM_RANGE:
-                rolls = K10Random.Interval(selector.Min, selector.Max + 1);
-                break;
-
-            case ESubsetGeneratorRule.BIASED_RANGE:
-                var sumWeights = 0f;
-                for (int i = selector.Min; i <= selector.Max; i++ ) sumWeights += selector.GetBiasWeight(i);
-                var rng = K10Random.Value * sumWeights;
-                for (rolls = selector.Min; rolls < selector.Max; rolls++)
-                {
-                    rng -= selector.GetBiasWeight(rolls);
-                    if (rng < 0 || MathAdapter.Approximately(rng, 0)) break;
-                }
-                break;
+            var sumWeights = 0f;
+            for (int i = selector.Min; i <= selector.Max; i++ ) sumWeights += selector.GetBiasWeight(i);
+            var rng = K10Random.Value * sumWeights;
+            for (rolls = selector.Min; rolls < selector.Max; rolls++)
+            {
+                rng -= selector.GetBiasWeight(rolls);
+                if (rng < 0 || MathAdapter.Approximately(rng, 0)) break;
+            }
+        }
+        else
+        {
+            rolls = K10Random.Interval(selector.Min, selector.Max + 1);
         }
         
         var variableResult = new List<T>(rolls);
@@ -200,25 +191,13 @@ public class WeightedSubsetEntry<T> : IWeightedSubsetEntry<T>
 
 public abstract class BaseWeightedSubsetSelectorSO : ScriptableObject
 {
-    [SerializeField] ESubsetGeneratorRule _rule;
-    [SerializeField] int _min;
-    [SerializeField] int _max;
-    [SerializeField] float[] _rangeWeights;
     [SerializeField] IntRng _rolls;
 
-    public ESubsetGeneratorRule Rule => _rule;
-    public int Min => _min;
-    public int Max => _max;
+    public int Min => _rolls.range.min;
+    public int Max => _rolls.range.max;
+    public bool IsBiased => _rolls.IsBiased;
 
-    public float GetBiasWeight(int rolls)
-    {
-        var id = rolls - _min;
-        if (id < 0) return 0;
-        var len = _rangeWeights.Length;
-        if (len == 0) return 1;
-        if( id >= len ) return _rangeWeights[len-1];
-        return _rangeWeights[id];
-    }
+    public float GetBiasWeight(int rolls) => _rolls.GetBiasWeight(rolls);
 }
 
 public class WeightedSubsetSelectorSO<T> : BaseWeightedSubsetSelectorSO, ISubsetSelector<T> where T : ScriptableObject
@@ -233,14 +212,13 @@ public class WeightedSubsetSelectorSO<T> : BaseWeightedSubsetSelectorSO, ISubset
 [Serializable]
 public class WeightedSubsetSelector<T> : ISubsetSelector<T>
 {
-    [SerializeField] ESubsetGeneratorRule _rule;
     [SerializeField] WeightedSubsetEntry<T>[] _entries;
     [SerializeField] IntRng _rolls;
 
-    public ESubsetGeneratorRule Rule => _rule;
     public int Min => _rolls.range.min;
     public int Max => _rolls.range.max;
     public int EntriesCount => _entries.Length;
+    public bool IsBiased => _rolls.IsBiased;
     public IWeightedSubsetEntry<T> GetEntry(int id) => _entries[id];
     public IWeightedSubsetEntry GetEntryObject(int id) => GetEntry(id);
 

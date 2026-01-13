@@ -24,6 +24,14 @@ public class IntRngPropertyDrawer : PropertyDrawer
         return slh + count * ( SPACING + slh ) + MARGIN2;
     }
 
+    public static void Layout( SerializedProperty property, GUIContent label, int minRange = int.MinValue, int maxRange = int.MaxValue, string minOverlayText = null, string maxOverlayText = null, Color? minColor = null, Color? maxColor = null, string minPropertyName = "min", string maxPropertyName = "max" )
+    {
+        var height = GetHeight( property );
+        var heightParam = GUILayout.Height( height );
+        var rect = GUILayoutUtility.GetRect(GUIContent.none,GUIStyle.none,heightParam);
+        Draw( rect, property, label, minRange, maxRange, minOverlayText, maxOverlayText, minColor, maxColor, minPropertyName, maxPropertyName );
+    }
+
     public static void Draw(Rect area, SerializedProperty property ) => Draw( area, property, new GUIContent(property.displayName) );
     public static void Draw(Rect area, SerializedProperty property, GUIContent label, int minRange = int.MinValue, int maxRange = int.MaxValue, string minOverlayText = null, string maxOverlayText = null, Color? minColor = null, Color? maxColor = null, string minPropertyName = "min", string maxPropertyName = "max")
     {

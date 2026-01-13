@@ -4,7 +4,7 @@ using K10.EditorGUIExtention;
 using System.Linq;
 using System;
 
-public class AggregatedSelectorEditor
+public class AggregatedSelectorEditor : IGetHeight
 {
 	SerializedProperty _entriesProp;
 
@@ -153,7 +153,9 @@ public class AggregatedSelectorEditor
 		_predictions.Draw( rect );
     }
 
-	public float GetHeight( IAggregatedSubsetSelector elementToRoll = null )
+	public float GetHeight() => GetHeight(null);
+
+	public float GetHeight( IAggregatedSubsetSelector elementToRoll )
     {
 		var height = _list.Height;
 		if( elementToRoll != null ) height += _rollButton.GetHeight();

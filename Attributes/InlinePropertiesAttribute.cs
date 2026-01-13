@@ -17,7 +17,7 @@ public sealed class InlineEditorAttribute : PropertyAttribute
 {
 	public readonly bool boxed;
 
-    public InlineEditorAttribute( bool boxed = false ) 
+    public InlineEditorAttribute( bool boxed = true ) 
 	{
 		this.boxed = boxed;
 	}
