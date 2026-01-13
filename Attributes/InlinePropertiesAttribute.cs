@@ -11,3 +11,14 @@ public sealed class InlinePropertiesAttribute : PropertyAttribute
 		this.boxed = boxed;
 	}
 }
+
+[AttributeUsage( AttributeTargets.Field, AllowMultiple = true )]
+public sealed class InlineEditorAttribute : PropertyAttribute
+{
+	public readonly bool boxed;
+
+    public InlineEditorAttribute( bool boxed = false ) 
+	{
+		this.boxed = boxed;
+	}
+}
