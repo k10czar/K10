@@ -22,25 +22,29 @@ namespace K10.DebugSystem
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
         public static void Log(LogSeverity severity, string log, bool verbose, Object consoleTarget, IEnumerable<Object> owners)
         {
-            if (!ShouldAlwaysDebug(severity) && (!K10DebugSystem.CanDebug<T>(verbose) || !K10DebugSystem.CheckDebugOwners(owners)))
-                return;
-
-#if UNITY_EDITOR
-            if (!string.IsNullOrEmpty(category.Name))
+            try
             {
-                var color = category.Color;
-                if (verbose) color = color.AddSaturation(-0.22f);
-                log = $"<b><color={color.ToHexRGB()}>[{category.Name}]</color></b> {log}\nOwners: {string.Join(", ", owners)}";
+                if (!ShouldAlwaysDebug(severity) && (!K10DebugSystem.CanDebug<T>(verbose) || !K10DebugSystem.CheckDebugOwners(owners)))
+                    return;
+
+                #if UNITY_EDITOR
+                if (!string.IsNullOrEmpty(category.Name))
+                {
+                    var color = category.Color;
+                    if (verbose) color = color.AddSaturation(-0.22f);
+                    log = $"<b><color={color.ToHexRGB()}>[{category.Name}]</color></b> {log}\nOwners: {string.Join(", ", owners)}";
+                }
+
+                log = K10Log.ReplaceColorsNames(log);
+                #else
+                log = $"[{category.Name}] {Regex.Replace(log, "<.*?>", string.Empty)}";
+                #endif
+
+                if (severity == LogSeverity.Error) Debug.LogError(log, consoleTarget);
+                else if (severity == LogSeverity.Warning) Debug.LogWarning(log, consoleTarget);
+                else Debug.Log(log, consoleTarget);
             }
-
-            log = K10Log.ReplaceColorsNames(log);
-#else
-            log = $"[{category.Name}] {Regex.Replace(log, "<.*?>", string.Empty)}";
-#endif
-
-            if (severity == LogSeverity.Error) Debug.LogError(log, consoleTarget);
-            else if (severity == LogSeverity.Warning) Debug.LogWarning(log, consoleTarget);
-            else Debug.Log(log, consoleTarget);
+            catch(Exception exception) { Debug.LogException(exception); }
         }
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
