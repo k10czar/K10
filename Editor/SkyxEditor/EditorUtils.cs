@@ -126,12 +126,12 @@ namespace Skyx.SkyxEditor
             SceneView.duringSceneGui += wrapper;
         }
 
-        public static void FocusSceneView(Vector3 target)
+        public static void FocusSceneView(Vector3 target, bool hardFocus = true)
         {
             var view = SceneView.lastActiveSceneView;
 
             view.pivot = target;
-            view.size = .7f;
+            view.size = hardFocus ? .7f : 5;
         }
 
         #region Reflections
