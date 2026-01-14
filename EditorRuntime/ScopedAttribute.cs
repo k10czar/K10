@@ -35,6 +35,7 @@ namespace Skyx.RuntimeEditor
 
         public readonly string[] targetChildren;
 
+        public bool isDisabled;
         public List<(string, EColor, Action)> buttons;
 
         public ScopedAttribute() {}

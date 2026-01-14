@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection.Emit;
 using Skyx.RuntimeEditor;
 using UnityEditor;
 
@@ -20,21 +19,27 @@ namespace Skyx.SkyxEditor
         public readonly bool hasCustomExpand;
 
         public readonly bool indent = false;
+        public readonly bool isDisabled = false;
 
-        public readonly List<(string, EColor, Action)> buttons = new();
+        public List<(string, EColor, Action)> buttons = new();
 
         public bool HasDescription => !string.IsNullOrEmpty(description);
         public bool CanExpand() => hasCustomExpand || HasDescription || property.CanExpand();
 
-        public void AddButton(string label, EColor buttonColor, Action callback) => buttons.Add((label, buttonColor, callback));
+        public void AddUniqueButton((string label, EColor buttonColor, Action callback) entry)
+        {
+            if (buttons.Contains(entry)) return;
+            buttons.Add(entry);
+        }
 
-        public SkopeInfo(EScopeType scopeType, SerializedProperty property, string title, EColor color, EElementSize size)
+        public SkopeInfo(EScopeType scopeType, SerializedProperty property, string title, EColor color, EElementSize size, bool isDisabled = false)
         {
             this.scopeType = scopeType;
             this.property = property;
             this.title = title;
             this.color = color;
             this.size = size;
+            this.isDisabled = isDisabled;
         }
 
         public SkopeInfo(EScopeType scopeType, SerializedProperty property, EColor color, EElementSize size)
@@ -58,7 +63,7 @@ namespace Skyx.SkyxEditor
             this.hasCustomExpand = hasCustomExpand;
         }
 
-        public SkopeInfo(EScopeType scopeType, SerializedProperty property, string name, string title, string description, EColor color, EElementSize size, bool indent)
+        public SkopeInfo(EScopeType scopeType, SerializedProperty property, string name, string title, string description, EColor color, EElementSize size, bool indent, bool isDisabled)
         {
             this.scopeType = scopeType;
             this.property = property;
@@ -68,6 +73,7 @@ namespace Skyx.SkyxEditor
             this.color = color;
             this.size = size;
             this.indent = indent;
+            this.isDisabled = isDisabled;
         }
 
         public SkopeInfo(EScopeType scopeType, SerializedProperty property, EColor color, EElementSize size, bool indent)
@@ -122,15 +128,17 @@ namespace Skyx.SkyxEditor
                 _ => throw new ArgumentOutOfRangeException()
             };
 
-            var color = scopedAtt.colorSource switch
-            {
-                EEditorInfoSource.Nothing or
-                EEditorInfoSource.Property or
-                EEditorInfoSource.FieldValue => EColor.Infer,
-                EEditorInfoSource.EditorContent => editorInfo?.ContentColor ?? EColor.Infer,
-                EEditorInfoSource.Provided => scopedAtt.color,
-                _ => throw new ArgumentOutOfRangeException()
-            };
+            var color = scopedAtt.isDisabled
+                ? EColor.Disabled
+                : scopedAtt.colorSource switch
+                    {
+                        EEditorInfoSource.Nothing or
+                        EEditorInfoSource.Property or
+                        EEditorInfoSource.FieldValue => EColor.Infer,
+                        EEditorInfoSource.EditorContent => editorInfo?.ContentColor ?? EColor.Infer,
+                        EEditorInfoSource.Provided => scopedAtt.color,
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
 
             if (color is EColor.Infer) color = scopedAtt.scopeType switch
             {
@@ -148,7 +156,7 @@ namespace Skyx.SkyxEditor
                 ? hasAppend ? name.AppendInfo(append, size: scopedAtt.elementSize) : name
                 : hasAppend ? append : "Missing Name!";
 
-            var info = new SkopeInfo(scopedAtt.scopeType, property, name, title, description, color, scopedAtt.elementSize, scopedAtt.indent);
+            var info = new SkopeInfo(scopedAtt.scopeType, property, name, title, description, color, scopedAtt.elementSize, scopedAtt.indent, scopedAtt.isDisabled);
             if (scopedAtt.buttons != null) info.buttons.InsertRange(0, scopedAtt.buttons);
 
             return info;

@@ -8,6 +8,14 @@ namespace Skyx.SkyxEditor
     [CustomPropertyDrawer(typeof(ScopedAttribute))]
     public class ScopedPropertyDrawer : PropertyDrawer
     {
+        #region Default Header Buttons
+
+        public static readonly (string, EColor, Action) defaultDescriptionToggle = ("?", EColor.Info, () => isShowingDescriptions = !isShowingDescriptions);
+        public static (string, EColor, Action) GetManagedPicker(SerializedProperty property) => ("⚙️", EColor.Support, () => SerializedRefLib.DrawTypePickerMenu(property));
+        public static (string, EColor, Action) GetArrayRemoval(SerializedProperty property) => ("X", EColor.Warning, property.RemoveSelfFromArrayDelayed);
+
+        #endregion
+
         public static bool isShowingDescriptions;
 
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
@@ -22,12 +30,12 @@ namespace Skyx.SkyxEditor
             {
                 if (SerializedRefLib.TryDrawMissingRef(ref rect, property, info.name)) return;
 
-                if (info.scopeType is not EScopeType.Inline)
-                    info.AddButton("⚙️", EColor.Support, () => SerializedRefLib.DrawTypePickerMenu(property));
+                if (info.buttons.Count == 0 && info.scopeType is not EScopeType.Inline)
+                    info.buttons.Add(GetManagedPicker(property));
             }
 
             var hasDescription = info.HasDescription;
-            if (hasDescription) info.AddButton("?", EColor.Info, () => isShowingDescriptions = !isShowingDescriptions);
+            if (hasDescription) info.AddUniqueButton(defaultDescriptionToggle);
 
             using var scope = Skope.Open(ref rect, info);
             if (!scope.IsExpanded) return;
@@ -41,7 +49,11 @@ namespace Skyx.SkyxEditor
             }
 
             if (property.hasVisibleChildren)
+            {
+                EditorGUI.BeginDisabledGroup(info.isDisabled);
                 property.DrawAllInnerProperties(ref rect, true);
+                EditorGUI.EndDisabledGroup();
+            }
             else if (scopedAtt.scopeType.ShowNoChildProperties())
                 EditorGUI.LabelField(rect, "No properties.");
         }
