@@ -16,7 +16,9 @@ namespace Skyx.SkyxEditor
 
             wrapper = () =>
             {
-                try { action(); } catch (Exception) {}
+                try { action(); }
+                catch (Exception e) { Debug.LogException(e); }
+
                 EditorApplication.update -= wrapper;
             };
 
@@ -29,7 +31,8 @@ namespace Skyx.SkyxEditor
 
             wrapper = sceneView =>
             {
-                try { action(sceneView); } catch (Exception) {}
+                try { action(sceneView); }
+                catch (Exception e) { Debug.LogException(e); }
                 SceneView.duringSceneGui -= wrapper;
             };
 
@@ -42,7 +45,8 @@ namespace Skyx.SkyxEditor
 
             wrapper = _ =>
             {
-                try { action(); } catch (Exception) {}
+                try { action(); }
+                catch (Exception e) { Debug.LogException(e); }
                 SceneView.duringSceneGui -= wrapper;
             };
 
