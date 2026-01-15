@@ -191,25 +191,28 @@ namespace K10.EditorGUIExtention
 
 			if( ShowExpandedProp( property ) )
 			{
-				EditorGUI.LabelField( area, "INLINE EDITOR NOT IMPLEMENTED YET :(" );
 
-				// var obj = (ScriptableObject)property.objectReferenceValue;
-				// if( obj != null )
-				// {
-				// 	var editor = CustomEditorUtility.GetEditor( obj );
-				//     if( editor != null )
-				//     {
-				// 		GUILayout.BeginArea(area);
-				//         EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-				//         editor.OnInspectorGUI();
-				//         EditorGUILayout.EndVertical();
-        		// 		GUILayout.EndArea();
-				//     }
-				// 	else
-				// 	{
-				// 		EditorGUI.LabelField( area, "Editor not found!" );
-				// 	}
-				// }
+				var obj = (ScriptableObject)property.objectReferenceValue;
+				if( obj != null )
+				{
+					EditorGUI.LabelField( area, "🦗 Inline Editor are not implemented correctly for now" );
+					// EditorGUI.LabelField( area, "🦗 Buggy implementation Editor show bellow everything ⤵" );
+					// var editor = CustomEditorUtility.GetEditor( obj );
+				    // if( editor != null )
+				    // {
+					// 	// Debug.Log( $"{Event.current} area:{area}" );
+					// 	// GUILayout.BeginArea(area);
+				    //     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+				    //     EditorGUILayout.LabelField($"Inline editor of: {obj.name}");
+				    //     editor.OnInspectorGUI();
+				    //     EditorGUILayout.EndVertical();
+        			// 	// GUILayout.EndArea();
+				    // }
+					// else
+					// {
+					// 	EditorGUI.LabelField( area, "Editor not found!" );
+					// }
+				}
 			}
 
 			EndDrawRefPropField( property );
