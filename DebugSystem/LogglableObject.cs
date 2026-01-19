@@ -57,6 +57,12 @@ namespace K10.DebugSystem
             Debug.LogException(exception, obj.MainLogOwner);
         }
 
+        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        public static void AlwaysLog<T>(this ILoggable<T> obj, string message, LogSeverity severity = LogSeverity.Info) where T : DebugCategory, new()
+        {
+            K10Log<T>.ReallyLog(severity, message, obj.MainLogOwner, obj.LogOwners);
+        }
+
         #endregion
 
         #region Can Debug
