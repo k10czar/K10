@@ -32,14 +32,13 @@ namespace Skyx.SkyxEditor
             buttons.Add(entry);
         }
 
-        public SkopeInfo(EScopeType scopeType, SerializedProperty property, string title, EColor color, EElementSize size, bool isDisabled = false)
+        public SkopeInfo(EScopeType scopeType, SerializedProperty property, string title, EColor color, EElementSize size)
         {
             this.scopeType = scopeType;
             this.property = property;
             this.title = title;
             this.color = color;
             this.size = size;
-            this.isDisabled = isDisabled;
         }
 
         public SkopeInfo(EScopeType scopeType, SerializedProperty property, EColor color, EElementSize size)
@@ -51,7 +50,7 @@ namespace Skyx.SkyxEditor
             this.size = size;
         }
 
-        public SkopeInfo(EScopeType scopeType, SerializedProperty property, string title, EColor color, EElementSize size, bool indent, bool hasCustomExpand = false)
+        public SkopeInfo(EScopeType scopeType, SerializedProperty property, string title, EColor color, EElementSize size, bool indent, bool isDisabled = false, bool hasCustomExpand = false)
         {
             this.scopeType = scopeType;
             this.property = property;
@@ -59,6 +58,7 @@ namespace Skyx.SkyxEditor
             this.title = title;
             this.color = color;
             this.size = size;
+            this.isDisabled = isDisabled;
             this.indent = indent;
             this.hasCustomExpand = hasCustomExpand;
         }
