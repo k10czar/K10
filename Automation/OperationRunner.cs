@@ -3,7 +3,7 @@ using K10.DebugSystem;
 //using PlasticGui.Help.Conditions;
 using UnityEngine;
 
-namespace Automation
+namespace K10.Automation
 {
     public class OperationRunner : KomposedDebugableMonoBehavior
 	{

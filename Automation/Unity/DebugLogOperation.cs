@@ -1,15 +1,15 @@
 using System.Collections;
 using UnityEngine;
 
-namespace Automation.Unity
+namespace K10.Automation.Unity
 {
-    public class DebugLogOperation : Automation.IOperation
+    public class DebugLogOperation : Automation.BaseOperation
 	{
 		[SerializeField] string _message = "Log message";
 		[SerializeField] ELogType _logType = ELogType.Basic;
 		[ExtendedDrawer,SerializeReference] IStringProcessor _processor;
 
-		public IEnumerator ExecutionCoroutine( bool log = false )
+		public override IEnumerator ExecutionCoroutine( bool log = false )
 		{
 			GetMessage().Log( _logType );
 #pragma warning disable CS0162 // Unreachable code detected

@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 using K10.EditorGUIExtention;
-using Automation;
+using K10.Automation;
 
 [InitializeOnLoad]
 public sealed class AutomationWindow : EditorWindow
@@ -117,12 +117,11 @@ public sealed class AutomationWindow : EditorWindow
 
 		SeparationLine.Horizontal();
 
-		GuiColorManager.New( Color.grey );
-		UnityEditor.EditorGUILayout.LabelField( "//TODO: Show selected Loop inspector inline here?" );
-		GuiColorManager.Revert();
-		// UnityEditor.EditorGUILayout.LabelField( AutomationKey );
-		// UnityEditor.EditorGUILayout.TextArea( JsonUtility.ToJson( _data ) );
-		// UnityEditor.EditorGUILayout.TextArea( EditorPrefs.GetString( AutomationKey ) );
+		if( newOp != null )
+		{
+			var editor = CustomEditorUtility.GetEditor( newOp );
+			editor.OnInspectorGUI();
+		}
 		if( !active ) GuiColorManager.Revert();
 	}
 }

@@ -228,7 +228,7 @@ public static class SerializedPropertyExtensions
 		isActiveProp.TryDrawIsActiveLayout( EditorGUIUtility.singleLineHeight );
 
 		var isInactive = IsInactive( isActiveProp );
-		if( isInactive ) GuiColorManager.New( Colors.Console.GrayOut );
+		if( isInactive ) GuiColorManager.Greyout();
 
 		var listingData = TypeListDataCache.GetFrom( type );
 
@@ -342,7 +342,7 @@ public static class SerializedPropertyExtensions
 		}
 
 		var isInactive = IsInactive( isActiveProp );
-		if( isInactive ) GuiColorManager.New( Colors.Console.GrayOut );
+		if( isInactive ) GuiColorManager.Greyout();
 
         rect = rect.CutTop(EditorGUIUtility.singleLineHeight + spacing);
 		var listingData = TypeListDataCache.GetFrom( type );
@@ -397,7 +397,9 @@ public static class SerializedPropertyExtensions
 		var newTypeName = newType?.FullName ?? ConstsK10.NULL_STRING;
 		var oldTypeName = ( oldIndex < 0 || oldIndex >= types.Length ) ? "MISSING" : types[oldIndex]?.FullName ?? ConstsK10.NULL_STRING;
 		Debug.Log($"{"Changed".Colorfy( Colors.Console.Verbs )} {"SerializedReference".Colorfy( Colors.Console.TypeName )} {prop.propertyPath.Colorfy( Colors.Console.Interfaces )} type from {$"{oldTypeName}[{oldIndex}]".Colorfy(Colors.Console.TypeName)} to {$"{newTypeName}[{newIndex}]".Colorfy(Colors.Console.Numbers)}");
-		prop.managedReferenceValue = newType.CreateInstance();
+		var newData = newType.CreateInstance();
+		Debug.Log( $"NewData:{newData.ToStringOrNull()}\nOld:{prop.managedReferenceValue.ToStringOrNull()}" );
+		prop.managedReferenceValue = newData;
     }
 
 	public static string ToFileName( this SerializedProperty prop )

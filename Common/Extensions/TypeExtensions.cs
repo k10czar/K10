@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 public static class TypeExtensions
 {
+    const int MAX_DEPTH = 10;
 
     public static bool Implements( this System.Type type, System.Type interfaceType )
     {
@@ -15,7 +15,19 @@ public static class TypeExtensions
     public static string TypeNameOrNull( this object type, string nullString = ConstsK10.NULL_STRING )
     {
         if( type == null ) return nullString;
-        return type.GetType().Name;
+        return type.GetType().NameOrNull();
+    }
+
+    public static string NameOrNull( this Type type, string nullString = ConstsK10.NULL_STRING, int depth = 0 )
+    {
+        if( type == null ) return nullString;
+        if( type.IsGenericType )
+        {
+            depth++;
+            if( depth > MAX_DEPTH ) return "...";
+            return $"{type.Name.Split('`')[0]}<{string.Join(",",Array.ConvertAll( type.GenericTypeArguments, ( t ) => t.NameOrNull(nullString,depth) ))}>";
+        }
+        return type.Name;
     }
 
     public static object CreateInstance(this System.Type type)

@@ -1,13 +1,13 @@
 using System.Collections;
 using UnityEngine;
 
-namespace Automation.Unity
+namespace K10.Automation.Unity
 {
-	public class ChangeSceneOperation : Automation.IOperation
+	public class ChangeSceneOperation : Automation.BaseOperation
 	{
 		[SerializeField, K10Attributes.SceneSelector] string _scene;
 
-		public IEnumerator ExecutionCoroutine( bool log = false ) 
+		public override IEnumerator ExecutionCoroutine( bool log = false ) 
 		{
 			var op = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync( _scene );
 			while( !op.isDone ) yield return null;

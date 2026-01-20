@@ -1,11 +1,11 @@
 using System.Collections;
 using UnityEngine;
 
-namespace Automation.Unity
+namespace K10.Automation.Unity
 {
-	public class WaitForEndOfFrameOperation : Automation.IOperation
+	public class WaitForEndOfFrameOperation : Automation.BaseOperation
 	{
-		public IEnumerator ExecutionCoroutine( bool log = false ) 
+		public override IEnumerator ExecutionCoroutine( bool log = false ) 
 		{ 
 			yield return new UnityEngine.WaitForEndOfFrame(); 
 		}

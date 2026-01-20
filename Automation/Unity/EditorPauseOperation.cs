@@ -1,11 +1,11 @@
 using System.Collections;
 using UnityEngine;
 
-namespace Automation.Unity
+namespace K10.Automation.Unity
 {
-	public class EditorPauseOperation : Automation.IOperation
+	public class EditorPauseOperation : Automation.BaseOperation
 	{
-		public IEnumerator ExecutionCoroutine( bool log = false )
+		public override IEnumerator ExecutionCoroutine( bool log = false )
 		{
 	#if UNITY_EDITOR
 			UnityEditor.EditorApplication.isPaused = true;

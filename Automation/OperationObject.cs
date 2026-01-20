@@ -1,19 +1,22 @@
 using System.Collections;
 using UnityEngine;
 
-namespace Automation
+namespace K10.Automation
 {
 	[CreateAssetMenu( fileName = "OperationObject", menuName = "K10/Automation/OperationObject", order = 1 )]
     public class OperationObject : ScriptableObject, IOperation, ISummarizable
 	{
+		[SerializeField] bool _isActive = true;
 		[ExtendedDrawer,SerializeReference] IOperation _operation;
+		
+        public bool CanExecute => _isActive;
 
         public IEnumerator ExecutionCoroutine( bool log = false )
         {
 			if( _operation != null )
 			{
 				_operation.Log($"{"Started".Colorfy( Colors.Console.Verbs )} automation {name.Colorfy( Colors.Console.TypeName )}");
-            	yield return _operation.ExecutionCoroutine( log );
+            	if( _operation != null ) yield return _operation.ExecutionCoroutine( log );
 			}
         }
 

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Automation
+namespace K10.Automation
 {
 	public class OperationReferenceRunner : MonoBehaviour
 	{

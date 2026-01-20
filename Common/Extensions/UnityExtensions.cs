@@ -533,9 +533,12 @@ public static class K10UnityExtensions
 		if (obj is IEnumerable enumerable)
 		{
 			if( enumerable is string str ) return str;
-			var count = "...";
-			if (obj is ICollection collection) count = collection.Count.ToString();
-			var sb = StringBuilderPool.RequestWith($"<{obj.TypeNameOrNull()}>[{count}]{{ ");
+			var count = -1;
+			var countStr = "...";
+			if (obj is ICollection collection) count = collection.Count;
+			if( count >= 0 ) countStr = count.ToString();
+			if( count == 0 ) return $"{obj.TypeNameOrNull()}[0]{{}}";
+			var sb = StringBuilderPool.RequestWith($"{obj.TypeNameOrNull()}[{countStr}]{{ ");
 			bool first = true;
 			foreach (var e in enumerable)
 			{
@@ -543,7 +546,7 @@ public static class K10UnityExtensions
 				first = false;
 				sb.Append(e.ToStringOrNull());
 			}
-			sb.Append( " }}" );
+			sb.Append( " }" );
 			return sb.ReturnToPoolAndCast();
 		}
         return obj.ToString();

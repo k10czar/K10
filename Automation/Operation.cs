@@ -9,15 +9,33 @@ public class AutomationLogCategory : IK10LogCategory
     public Color Color => Colors.DodgerBlue;
 }
 
-namespace Automation
+namespace K10.Automation
 {
 	public interface IOperation : ILoggable<AutomationLogCategory>
 	{
+		bool CanExecute { get; }
 		IEnumerator ExecutionCoroutine( bool log = false );
 	}
 
-	public static class OperationExtensions
+    public abstract class BaseOperation : IOperation, IEmojiIcon
+    {
+		[SerializeField] bool _isActive = true;
+        public bool CanExecute => _isActive;
+        public virtual string EmojiIcon => "🤖";
+
+        public abstract IEnumerator ExecutionCoroutine(bool log = false);
+
+		public override string ToString() => $"{EmojiIcon} {(_isActive?"":"INACTIVE")}{GetType()}";
+    }
+
+    public static class OperationExtensions
 	{
+		public static IEnumerator TryExecute( this IOperation op, bool log = false )
+		{
+			if( op.CanExecute ) return op.ExecutionCoroutine( log );
+			return null;
+		}
+
 		public static Coroutine ExecuteOn( this IOperation op, MonoBehaviour behaviour = null, bool log = true )
 		{
 			if( op == null )
@@ -27,8 +45,14 @@ namespace Automation
 			}
 
 			op.Log($"{"Started".Colorfy(Colors.Console.Verbs)} {op}", log);
-			if( behaviour != null ) return behaviour.StartCoroutine( op.ExecutionCoroutine( log ) );
-			return ExternalCoroutine.StartCoroutine( op.ExecutionCoroutine( log ) );
+			
+			if( op.CanExecute )
+			{
+				if( behaviour != null ) return behaviour.StartCoroutine( op.ExecutionCoroutine( log ) );
+				return ExternalCoroutine.StartCoroutine( op.ExecutionCoroutine( log ) );
+			}
+
+			return null;
 		}
 
         public static IEnumerator ExecutionCoroutine(this IOperation op, bool log )

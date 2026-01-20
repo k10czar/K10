@@ -1,13 +1,13 @@
 using System.Collections;
 using UnityEngine;
 
-namespace Automation.Unity
+namespace K10.Automation.Unity
 {
-	public class WaitForSecondsOperation : Automation.IOperation
+	public class WaitForSecondsOperation : K10.Automation.BaseOperation
 	{
-		[SerializeField] float _seconds;
+		[SerializeField] float _seconds = 1;
 
-		public IEnumerator ExecutionCoroutine( bool log = false )  
+		public override IEnumerator ExecutionCoroutine( bool log = false )  
 		{ 
 			yield return new WaitForSecondsRealtime( _seconds );
 		}
