@@ -131,12 +131,12 @@ namespace K10.DebugSystem
         };
 
         #if UNITY_EDITOR
-        private static bool IsSelection(Object candidate) => UnityEditor.Selection.activeGameObject == GetGameObject(candidate);
+        private static bool IsSelection(Object candidate) => Selection.activeGameObject == GetGameObject(candidate);
         #endif
 
-        public static bool CheckDebugOwners(IEnumerable<Object> requesters)
+        public static bool CheckDebugOwners(IEnumerable<Object> requesters, bool alwaysCheck = false)
         {
-            if (DebugOwnerBehaviour is EDebugOwnerBehaviour.Ignore) return true;
+            if (DebugOwnerBehaviour is EDebugOwnerBehaviour.Ignore && !alwaysCheck) return true;
 
             var count = requesters.Count();
             var keys = requesters.Select(getOwnerKey);
