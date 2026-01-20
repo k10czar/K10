@@ -73,7 +73,6 @@ namespace Skyx.SkyxEditor
         }
 
         public static void PlainBGLabel(string label, bool isSuccess, string hint = null) => PlainBGLabel(label, BoolToColor(isSuccess), hint: hint);
-        public static void PlainBGLabel(string label) => PlainBGLabel(label, Colors.Console.GrayOut);
 
         public static void PlainBGLabel(string label, Color backgroundColor, bool isHeader = false, string hint = null)
         {
