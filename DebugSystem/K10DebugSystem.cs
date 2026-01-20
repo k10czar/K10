@@ -144,6 +144,7 @@ namespace K10.DebugSystem
 
             return DebugOwnerBehaviour switch
             {
+                EDebugOwnerBehaviour.Ignore or
                 EDebugOwnerBehaviour.AnyOwnerListed => intersectCount > 0,
                 EDebugOwnerBehaviour.AllOwnersListed => intersectCount == count,
 
