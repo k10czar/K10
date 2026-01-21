@@ -24,5 +24,5 @@ public class AggregatedSelectorSOEditor : Editor, IGetHeight
 		_editor.Setup(serializedObject);
 	}
 
-    public float GetHeight() => _editor?.GetHeight(target as IAggregatedSubsetSelector ) ?? EditorGUIUtility.singleLineHeight;
+    public virtual float GetHeight() => _editor?.GetHeight(target as IAggregatedSubsetSelector ) ?? EditorGUIUtility.singleLineHeight;
 }

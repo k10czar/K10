@@ -55,6 +55,27 @@ public abstract class BaseAggregatedSelectorSO : ScriptableObject, IAggregatedSu
     public abstract int Count { get; }
     public abstract Type ElementType { get; }
     public abstract ISubsetSelector GetEntryObject(int i);
+
+    public bool Contains( UnityEngine.Object obj )
+    {
+        if( obj == null ) return false;
+        for( int i = 0; i < Count; i++ )
+        {
+            var entry = GetEntryObject(i);
+            for( int j = 0; j < entry.EntriesCount; j++ )
+            {
+                var element = entry.GetEntryObject(j);
+                if( element.ElementAsObject is UnityEngine.Object uObj && obj == uObj ) return true;
+            }
+        }
+        return false;
+    }
+
+    public bool Contains( UnityEngine.Object[] objs )
+    {
+        for( int i = 0; i < objs.Length; i++ ) if( Contains( objs[i] ) ) return true;
+        return false;
+    }
 }
 
 [System.Serializable]
