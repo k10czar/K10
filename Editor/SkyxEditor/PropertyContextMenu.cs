@@ -8,8 +8,6 @@ namespace Skyx.SkyxEditor
 {
     public static class PropertyContextMenu
     {
-        private static readonly JsonSerializerSettings serializerSettings;
-
         private static Type copiedType;
         private static string copiedDisplayInfo;
         private static string copiedID;

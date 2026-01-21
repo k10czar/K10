@@ -13,6 +13,22 @@ namespace Skyx.SkyxEditor
 {
     public class SerializeFieldContractResolver : DefaultContractResolver
     {
+        private FieldInfo GetBackingField(PropertyInfo propertyInfo)
+        {
+            const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
+            var currentType = propertyInfo.DeclaringType;
+
+            while (currentType != null)
+            {
+                var backingField = currentType.GetField($"<{propertyInfo.Name}>k__BackingField", flags);
+                if (backingField != null) return backingField;
+
+                currentType = currentType.BaseType;
+            }
+
+            return null;
+        }
+
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
             JsonProperty property = base.CreateProperty(member, memberSerialization);
@@ -28,11 +44,7 @@ namespace Skyx.SkyxEditor
             // Check if the member is a property and its backing field has the [SerializeField] attribute
             if (member is PropertyInfo propertyInfo)
             {
-                // Get the backing field for the property
-                var backingField = propertyInfo.DeclaringType?.GetField(
-                    $"<{propertyInfo.Name}>k__BackingField",
-                    BindingFlags.NonPublic | BindingFlags.Instance
-                );
+                var backingField = GetBackingField(propertyInfo);
 
                 // If the backing field exists and has the [SerializeField] attribute, include the property
                 if (backingField != null && backingField.GetCustomAttribute<SerializeField>() != null)
@@ -54,19 +66,24 @@ namespace Skyx.SkyxEditor
 
         protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
         {
+            const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
+
             var properties = base.CreateProperties(type, memberSerialization);
 
-            // Add private fields to the properties list
-            var fields = type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
-            foreach (var field in fields)
+            for (var currentType = type; currentType != null; currentType = currentType.BaseType)
             {
-                // Skip fields that are already included (e.g., public fields)
-                if (properties.Any(p => p.UnderlyingName == field.Name))
-                    continue;
+                var fields = currentType.GetFields(flags);
 
-                // Create a JsonProperty for the private field
-                var property = CreateProperty(field, memberSerialization);
-                properties.Add(property);
+                foreach (var field in fields)
+                {
+                    // Skip fields that are already included (e.g., public fields)
+                    if (properties.Any(p => p.UnderlyingName == field.Name))
+                        continue;
+
+                    // Create a JsonProperty for the private field
+                    var property = CreateProperty(field, memberSerialization);
+                    properties.Add(property);
+                }
             }
 
             return properties;
