@@ -38,7 +38,7 @@ public class IntRangePropertyDrawer : PropertyDrawer
 
             if( colorMinMax ) GuiColorManager.New( maxColor.Value );
             if( colorMinMin ) GuiColorManager.New( minColor.Value );
-            EditorGUI.PropertyField( minRect, min, label );
+            EditorGUI.DelayedIntField( minRect, min, label );
             if( colorMinMin ) GuiColorManager.Revert();
             if( colorMinMax ) GuiColorManager.Revert();
             if( minIsMin && minOverlayText != null ) GUI.Label( minRect, minOverlayText, K10GuiStyles.unitStyle );
@@ -58,7 +58,7 @@ public class IntRangePropertyDrawer : PropertyDrawer
 
             if( colorMaxMax ) GuiColorManager.New( maxColor.Value );
             if( colorMaxMin ) GuiColorManager.New( minColor.Value );
-            EditorGUI.PropertyField( rangeRect, max, maxLabel );
+            EditorGUI.DelayedIntField( rangeRect, max, maxLabel );
             if( colorMaxMin ) GuiColorManager.Revert();
             if( colorMaxMax ) GuiColorManager.Revert();
             if( maxIsMax && maxOverlayText != null ) GUI.Label( rangeRect, maxOverlayText, K10GuiStyles.unitStyle );
