@@ -542,7 +542,7 @@ public static class K10UnityExtensions
 		};
 	}
 
-	public static string ToInspectorName(this IReadOnlyList<object> targets, string plural)
+	public static string ToInspectorName<T>(this IReadOnlyList<T> targets, string plural)
 	{
 		return targets.Count switch
 		{

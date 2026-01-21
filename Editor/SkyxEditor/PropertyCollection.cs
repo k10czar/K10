@@ -226,6 +226,12 @@ namespace Skyx.SkyxEditor
             foreach (var entry in including) Draw(entry);
         }
 
+        public void DrawIncluding(params (string, bool)[] including)
+        {
+            foreach (var (key, isBacking) in including)
+                Draw(key, isBacking);
+        }
+
         public void DrawExcept(params string[] except)
         {
             foreach (var key in properties.Keys)
@@ -356,6 +362,18 @@ namespace Skyx.SkyxEditor
             foreach (var key in including)
             {
                 var target = properties[key];
+
+                rect.height = EditorGUI.GetPropertyHeight(target, true);
+                SkyxGUI.Draw(rect, target, true);
+                rect.y += rect.height + SkyxStyles.ElementsMargin;
+            }
+        }
+
+        public void DrawIncluding(ref Rect rect, params (string, bool)[] including)
+        {
+            foreach (var (key, isBacking) in including)
+            {
+                var target = Get(key, isBacking);
 
                 rect.height = EditorGUI.GetPropertyHeight(target, true);
                 SkyxGUI.Draw(rect, target, true);
