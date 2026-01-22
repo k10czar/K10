@@ -9,15 +9,15 @@ public static class TypeListDataExtension
         var guis = list.EDITOR_newGUI;
         if( guis != null ) return guis;
 
-        var effectNames = list.GetNames();
-        guis = list.EDITOR_newGUI = new GUIContent[effectNames.Length];
+        var names = list.GetNames();
+        guis = list.EDITOR_newGUI = new GUIContent[names.Length];
         var effectTypes = list.GetTypes();
-        for( int i = 0; i < effectNames.Length; i++ )
+        for( int i = 0; i < names.Length; i++ )
         {
             var type = effectTypes[i];
             var texture = type.EditorGetIcon();
-            if( texture != null ) guis[i] = new GUIContent( effectNames[i], texture );
-            else guis[i] = new GUIContent( effectNames[i] );
+            if( texture != null ) guis[i] = new GUIContent( names[i], texture );
+            else guis[i] = new GUIContent( names[i] );
         } 
 
         return guis;

@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace K10.Automation.Unity
 {
+	[ListingPath("Unity/GameObject/Instantiate")]
 	public class InstantiateOperation : Automation.BaseOperation
 	{
 		[SerializeField] int _instances = 1;

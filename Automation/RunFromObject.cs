@@ -2,7 +2,7 @@ using System.Collections;
 using K10.Automation;
 using UnityEngine;
 
-public class RunFromObject : K10.Automation.BaseOperation, ISummarizable
+public class RunFromObject : BaseOperation, ISummarizable
 {
 	[SerializeField,InlineProperties] OperationObject _object;
 

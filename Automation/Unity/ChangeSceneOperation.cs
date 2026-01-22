@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace K10.Automation.Unity
 {
+	[ListingPath("Unity/Scenes/Change")]
 	public class ChangeSceneOperation : Automation.BaseOperation
 	{
 		[SerializeField, K10Attributes.SceneSelector] string _scene;

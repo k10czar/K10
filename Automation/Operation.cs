@@ -30,6 +30,23 @@ namespace K10.Automation
 
     public static class OperationExtensions
 	{
+		static AutomationRunner _runner;
+
+		static AutomationRunner Runner
+		{
+			get
+			{
+				if (_runner == null)
+				{
+					var go = new GameObject( "Automation Runner" );
+					go.hideFlags = HideFlags.DontSave;
+					Object.DontDestroyOnLoad( go );
+					_runner = go.AddComponent<AutomationRunner>();
+				}
+				return _runner;
+			}
+		}
+
 		public static IEnumerator TryExecute( this IOperation op, bool log = false )
 		{
 			if( op.CanExecute ) return op.ExecutionCoroutine( log );
@@ -49,7 +66,7 @@ namespace K10.Automation
 			if( op.CanExecute )
 			{
 				if( behaviour != null ) return behaviour.StartCoroutine( op.ExecutionCoroutine( log ) );
-				return ExternalCoroutine.StartCoroutine( op.ExecutionCoroutine( log ) );
+				return Runner.StartCoroutine( op.ExecutionCoroutine( log ) );
 			}
 
 			return null;

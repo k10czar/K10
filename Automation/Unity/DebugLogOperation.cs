@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace K10.Automation.Unity
 {
+	[ListingPath("Unity/Debug/Log")]
     public class DebugLogOperation : Automation.BaseOperation
 	{
 		[SerializeField] string _message = "Log message";

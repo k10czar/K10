@@ -3,11 +3,14 @@ using UnityEngine;
 
 namespace K10.Conditions
 {
+	[ListingPath(nameof(Or))]
 	public class Or : ICondition
 	{
 		[ExtendedDrawer, SerializeReference] ICondition[] _operands;
+
 		public bool Check()
 		{
+			if( _operands == null ) return true;
 			for( int i = 0; i < _operands.Length; i++ )
 			{
 				var cond = _operands[i];
@@ -19,7 +22,8 @@ namespace K10.Conditions
 		
 		override public string ToString() 
 		{
-			return $"({string.Join( " || ", _operands.Select( ( o ) => o.ToStringOrNull() ).ToArray() )})";
+			if( _operands == null ) return "NULL_OR";
+			return $"( {string.Join( " || ", _operands.Select( ( o ) => o.ToStringOrNull() ).ToArray() )} )";
 		}
 	}
 }

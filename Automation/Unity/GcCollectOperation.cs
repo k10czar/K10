@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace K10.Automation.Unity
 {
+	[ListingPath("GC/Collect")]
 	public class GcCollectOperation : Automation.BaseOperation
 	{
 		public override IEnumerator ExecutionCoroutine( bool log = false ) 

@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace K10.Automation.Unity
 {
+	[ListingPath("Unity/Debug/Break")]
     public class DebugBreakOperation : Automation.BaseOperation
 	{
 		public override IEnumerator ExecutionCoroutine( bool log = false )

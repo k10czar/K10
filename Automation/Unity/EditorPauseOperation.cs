@@ -1,9 +1,9 @@
 using System.Collections;
-using UnityEngine;
 
 namespace K10.Automation.Unity
 {
-	public class EditorPauseOperation : Automation.BaseOperation
+	[ListingPath("Unity/Editor/Pause")]
+	public class EditorPauseOperation : BaseOperation
 	{
 		public override IEnumerator ExecutionCoroutine( bool log = false )
 		{

@@ -77,12 +77,20 @@ public static class SerializedPropertyExtensions
 
     public static void DrawChildProps( this SerializedProperty prop, bool includeChildren = true, float spacing = 0, SerializedProperty ignoreProp = null )
 	{
-		IterateThroughChildProps( prop, ( sp ) => DrawElementLayout( sp, includeChildren, spacing ), ignoreProp );
+		try
+		{
+			IterateThroughChildProps( prop, ( sp ) => DrawElementLayout( sp, includeChildren, spacing ), ignoreProp );
+		}
+		catch ( System.Exception ex ) { Debug.LogException( ex ); }
 	}
 
     public static void DrawChildProps( this SerializedProperty prop, Rect rect, bool includeChildren = true, float spacing = 0, SerializedProperty ignoreProp = null )
 	{
-		IterateThroughChildProps( prop, ( sp ) => DrawElement( ref rect, sp, includeChildren, spacing ), ignoreProp );
+		try
+		{
+			IterateThroughChildProps( prop, ( sp ) => DrawElement( ref rect, sp, includeChildren, spacing ), ignoreProp );
+		}
+		catch ( System.Exception ex ) { Debug.LogException( ex ); }
 	}
 
     public static float CalcChildPropsHeight( this SerializedProperty prop, bool includeChildren = true, float spacing = 0 )
@@ -389,9 +397,9 @@ public static class SerializedPropertyExtensions
 		 return -1;
 	}
 
-    private static void CheckSelectionChange( SerializedProperty prop, TypeListData listingData, int oldIndex, int newIndex )
+    private static bool CheckSelectionChange( SerializedProperty prop, TypeListData listingData, int oldIndex, int newIndex )
     {
-        if( newIndex == oldIndex ) return;
+        if( newIndex == oldIndex ) return false;
 		var types = listingData.GetTypes();
 		var newType = (newIndex >= 0) ? types[newIndex] : null;
 		var newTypeName = newType?.FullName ?? ConstsK10.NULL_STRING;
@@ -400,6 +408,7 @@ public static class SerializedPropertyExtensions
 		var newData = newType.CreateInstance();
 		Debug.Log( $"NewData:{newData.ToStringOrNull()}\nOld:{prop.managedReferenceValue.ToStringOrNull()}" );
 		prop.managedReferenceValue = newData;
+		return true;
     }
 
 	public static string ToFileName( this SerializedProperty prop )

@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace K10.Automation.Unity
 {
+	[ListingPath("Unity/Time/ChangeScale")]
 	public class ChangeTimeScaleOperation : Automation.BaseOperation
 	{
 		[UnityEngine.SerializeField] float _timeScale = 1;

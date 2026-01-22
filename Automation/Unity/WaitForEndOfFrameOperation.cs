@@ -3,7 +3,8 @@ using UnityEngine;
 
 namespace K10.Automation.Unity
 {
-	public class WaitForEndOfFrameOperation : Automation.BaseOperation
+	[ListingPath("Wait/ForEndOfFrame")]
+	public class WaitForEndOfFrameOperation : BaseOperation
 	{
 		public override IEnumerator ExecutionCoroutine( bool log = false ) 
 		{ 

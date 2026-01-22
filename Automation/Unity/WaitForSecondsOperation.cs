@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace K10.Automation.Unity
 {
+	[ListingPath("Wait/ForSeconds")]
 	public class WaitForSecondsOperation : K10.Automation.BaseOperation
 	{
 		[SerializeField] float _seconds = 1;

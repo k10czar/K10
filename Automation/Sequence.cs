@@ -3,43 +3,45 @@ using UnityEngine;
 using System.Collections.Generic;
 using K10.Automation;
 
-public class Sequence : K10.Automation.BaseOperation
-					, IDrawGizmos, IDrawGizmosOnSelected, ISummarizable
+namespace K10.Automation
 {
-	[ExtendedDrawer,SerializeReference] List<IOperation> _actions;
-
-    public override string EmojiIcon => "🗒";
-
-	public override IEnumerator ExecutionCoroutine( bool log = false ) 
+	[ListingPath(nameof(Sequence))]
+	public class Sequence : BaseOperation
+						, IDrawGizmos, IDrawGizmosOnSelected, ISummarizable
 	{
-		if( log ) Debug.Log( $"Start Coroutine of {this.ToStringOrNull()}" );
-		for( int i = 0; i < _actions.Count; i++ )
+		[ExtendedDrawer,SerializeReference] List<IOperation> _actions;
+
+		public override string EmojiIcon => "🗒";
+
+		public override IEnumerator ExecutionCoroutine( bool log = false ) 
 		{
-			var act = _actions[i];
-			if( act == null ) 
+			if( log ) Debug.Log( $"Start Coroutine of {this.ToStringOrNull()}" );
+			for( int i = 0; i < _actions.Count; i++ )
 			{
-				if( log ) Debug.LogError( $"{"Cannot".Colorfy( Colors.Console.Warning )} {"play".Colorfy( Colors.Console.Verbs )} null {"Operation".Colorfy( Colors.Console.TypeName )}" );
-				continue;
+				var act = _actions[i];
+				if( act == null ) 
+				{
+					if( log ) Debug.LogError( $"{"Cannot".Colorfy( Colors.Console.Warning )} {"play".Colorfy( Colors.Console.Verbs )} null {"Operation".Colorfy( Colors.Console.TypeName )}" );
+					continue;
+				}
+				if( log ) Debug.Log( $"{"Start".Colorfy( Colors.Console.Verbs )} operation: {act.ToStringOrNull()}" );
+				yield return act.ExecutionCoroutine( log );
 			}
-			if( log ) Debug.Log( $"{"Start".Colorfy( Colors.Console.Verbs )} operation: {act.ToStringOrNull()}" );
-			yield return act.ExecutionCoroutine( log );
 		}
-	}
 
-    public override string ToString() => $"{base.ToString()} {_actions.ToStringOrNull()}";
-    public string Summarize() => $" Sequence {{ {_actions.TrySummarize( ", " )} }}";
-
-
+		public override string ToString() => $"{base.ToString()} {_actions.ToStringOrNull()}";
+		public string Summarize() => $" Sequence {{ {_actions.TrySummarize( ", " )} }}";
 
 #if UNITY_EDITOR
-	public void OnDrawGizmos()
-	{
-		foreach( var act in _actions ) if( act is IDrawGizmos dg ) dg.OnDrawGizmos();
-	}
+		public void OnDrawGizmos()
+		{
+			foreach( var act in _actions ) if( act is IDrawGizmos dg ) dg.OnDrawGizmos();
+		}
 
-	public void OnDrawGizmosSelected()
-	{
-		foreach( var act in _actions ) if( act is IDrawGizmosOnSelected dgs ) dgs.OnDrawGizmosSelected();
-	}
+		public void OnDrawGizmosSelected()
+		{
+			foreach( var act in _actions ) if( act is IDrawGizmosOnSelected dgs ) dgs.OnDrawGizmosSelected();
+		}
 #endif
+	}
 }
