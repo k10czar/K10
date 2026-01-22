@@ -5,21 +5,6 @@ using UnityEngine;
 
 namespace K10.Automation
 {
-	[ListingPath("Wait/Condition")]
-	public class Wait : BaseOperation
-	{
-		[ExtendedDrawer,SerializeReference] ICondition _condition;
-
-		public override string EmojiIcon => "🤚";
-
-		public override IEnumerator ExecutionCoroutine( bool log = false ) 
-		{ 
-			while( !_condition.Check() ) yield return null; 
-		}
-
-		public override string ToString() => $"{base.ToString()} {_condition.ToStringOrNull()}";
-	}
-
 	[ListingPath(nameof(If))]
 	public class If : BaseOperation
 						, IDrawGizmos, IDrawGizmosOnSelected, ISummarizable
