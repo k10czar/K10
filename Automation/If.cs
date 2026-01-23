@@ -25,7 +25,7 @@ namespace K10.Automation
 					var act = _actions[i];
 					if( log ) Debug.Log( $"[{i}]{act.ToStringOrNull()}" );
 					if( act == null ) continue;
-					yield return act.ExecutionCoroutine( log );
+					yield return act.TryExecute( log );
 				}
 			}
 		}

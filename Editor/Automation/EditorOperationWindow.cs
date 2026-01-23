@@ -7,6 +7,7 @@ using K10.Automation;
 public sealed class AutomationWindow : EditorWindow
 {
 	private static bool _alreadyTryed = false;
+	Vector2 _scroll;
 
 	[MenuItem( "K10/Automation/Config" )] static void Open() { var i = Instance; }
 
@@ -119,8 +120,10 @@ public sealed class AutomationWindow : EditorWindow
 
 		if( newOp != null )
 		{
+			_scroll = EditorGUILayout.BeginScrollView( _scroll );
 			var editor = CustomEditorUtility.GetEditor( newOp );
 			editor.OnInspectorGUI();
+			EditorGUILayout.EndScrollView();
 		}
 		if( !active ) GuiColorManager.Revert();
 	}

@@ -24,8 +24,8 @@ namespace K10.Automation
 					if( log ) Debug.LogError( $"{"Cannot".Colorfy( Colors.Console.Warning )} {"play".Colorfy( Colors.Console.Verbs )} null {"Operation".Colorfy( Colors.Console.TypeName )}" );
 					continue;
 				}
-				if( log ) Debug.Log( $"{"Start".Colorfy( Colors.Console.Verbs )} operation: {act.ToStringOrNull()}" );
-				yield return act.ExecutionCoroutine( log );
+				if( log ) Debug.Log( $"{( act.CanExecute ? "Start" : "Skipped" ).Colorfy( act.CanExecute ? Colors.Console.Verbs : Colors.Console.LightDanger )} operation: {act.ToStringOrNull()}" );
+				yield return act.TryExecute( log );
 			}
 		}
 

@@ -16,7 +16,7 @@ namespace K10.Automation
 			if( _operation != null )
 			{
 				_operation.Log($"{"Started".Colorfy( Colors.Console.Verbs )} automation {name.Colorfy( Colors.Console.TypeName )}");
-            	if( _operation != null ) yield return _operation.ExecutionCoroutine( log );
+            	if( _operation != null ) yield return _operation.TryExecute( log );
 			}
         }
 

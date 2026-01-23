@@ -40,7 +40,7 @@ namespace K10.Automation
 						continue;
 					}
 					if( log ) Debug.Log( $"{"Start".Colorfy( Colors.Console.Verbs )} operation[{i}]: {act.ToStringOrNull()}" );
-					yield return act.ExecutionCoroutine( log );
+					yield return act.TryExecute( log );
 				}
 			}
 		}

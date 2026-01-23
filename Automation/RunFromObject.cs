@@ -10,7 +10,7 @@ public class RunFromObject : BaseOperation, ISummarizable
 
 	public override IEnumerator ExecutionCoroutine( bool log = false ) 
 	{
-		if( _object != null ) yield return _object.ExecutionCoroutine( log );
+		if( _object != null ) yield return _object.TryExecute( log );
 	}
 
 	public override string ToString() => $"{base.ToString()} {_object.ToStringOrNull()}";

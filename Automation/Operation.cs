@@ -49,7 +49,7 @@ namespace K10.Automation
 
 		public static IEnumerator TryExecute( this IOperation op, bool log = false )
 		{
-			if( op.CanExecute ) return op.ExecutionCoroutine( log );
+			if( op != null && op.CanExecute ) return op.ExecutionCoroutine( log );
 			return null;
 		}
 
@@ -65,8 +65,8 @@ namespace K10.Automation
 			
 			if( op.CanExecute )
 			{
-				if( behaviour != null ) return behaviour.StartCoroutine( op.ExecutionCoroutine( log ) );
-				return Runner.StartCoroutine( op.ExecutionCoroutine( log ) );
+				if( behaviour != null ) return behaviour.StartCoroutine( op.TryExecute( log ) );
+				return Runner.StartCoroutine( op.TryExecute( log ) );
 			}
 
 			return null;
@@ -75,7 +75,7 @@ namespace K10.Automation
         public static IEnumerator ExecutionCoroutine(this IOperation op, bool log )
         {
 	        op.Log($"🤖 Automation {"Executing".Colorfy( Colors.Console.Verbs )} {op}", log);
-            return op.ExecutionCoroutine( log );
+            return op.TryExecute( log );
         }
 
         public static string GetSummary( this IOperation op ) => op.TypeNameOrNull();
