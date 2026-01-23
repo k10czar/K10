@@ -124,10 +124,9 @@ namespace K10.DebugSystem
 
         private static GameObject GetGameObject(Object target) => target switch
         {
-            null => null,
             Component component => component.gameObject,
             GameObject gameObject => gameObject,
-            _ => throw new NotImplementedException()
+            _ => null,
         };
 
         #if UNITY_EDITOR
