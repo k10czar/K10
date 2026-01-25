@@ -378,8 +378,12 @@ namespace Skyx.SkyxEditor
         }
 
         public static SerializedProperty FindBackingProperty(this SerializedProperty property, string propertyName)
-            => property.FindPropertyRelative($"<{propertyName}>k__BackingField");
+            => property.FindPropertyRelative(propertyName.ToBackingFieldName());
 
+        public static SerializedProperty FindBackingProperty(this SerializedObject serializedObject, string propertyName)
+            => serializedObject.FindProperty(propertyName.ToBackingFieldName());
+
+        public static string ToBackingFieldName(this string name) => $"<{name}>k__BackingField";
 
         public static string GetReadablePath(this SerializedObject serializedObject, string propertyPath)
         {

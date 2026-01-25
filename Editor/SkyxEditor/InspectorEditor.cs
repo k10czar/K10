@@ -198,7 +198,7 @@ namespace Skyx.SkyxEditor
             SkyxLayout.Space();
         }
 
-        protected bool DrawPrefabModifications()
+        protected bool DrawPrefabModifications(params string[] ignoredFields)
         {
             var targetComponent = Target;
             var targetObject = (targetComponent as Component)!.gameObject;
@@ -210,7 +210,7 @@ namespace Skyx.SkyxEditor
             var isNestedPrefab = outerRoot != nearestRoot;
 
             var thisComponentMods = PrefabUtility.GetPropertyModifications(targetObject)
-                .Where(entry => entry.target is T && entry.target == sourceComponent)
+                .Where(entry => entry.target is T && entry.target == sourceComponent && !ignoredFields.Contains(entry.propertyPath))
                 .ToArray();
 
             if (thisComponentMods.Length <= 0) return false;

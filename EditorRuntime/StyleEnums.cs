@@ -39,6 +39,13 @@ namespace Skyx.RuntimeEditor
         Provided,
     }
 
+    public enum ERectSlideDir
+    {
+        None,
+        Horizontal,
+        Vertical,
+    }
+
     public static class StyleEnumsLib
     {
         public static bool HasHeader(this EScopeType scope) => scope <= EScopeType.InlineHeader;

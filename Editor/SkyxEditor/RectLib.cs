@@ -67,6 +67,12 @@ namespace Skyx.SkyxEditor
             rect.height = height;
         }
 
+        public static void Slide(this ref Rect rect, ERectSlideDir dir)
+        {
+            if (dir is ERectSlideDir.Vertical) rect.SlideSameVertically();
+            else if (dir is ERectSlideDir.Horizontal) rect.SlideSame();
+        }
+
         public static Rect ExtractRect(this ref Rect rect, float width, bool fromEnd = false)
             => SkyxGUI.ExtractRect(ref rect, width, fromEnd);
 

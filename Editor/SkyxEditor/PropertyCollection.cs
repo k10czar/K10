@@ -4,6 +4,7 @@ using UnityEditor;
 using System.Linq;
 using System;
 using K10.DebugSystem;
+using Skyx.RuntimeEditor;
 using Unity.Profiling;
 using UnityEditorInternal;
 using Object = UnityEngine.Object;
@@ -187,7 +188,6 @@ namespace Skyx.SkyxEditor
         private readonly Dictionary<string, SerializedProperty> properties = new();
         public int PropertiesCount => properties.Count;
 
-
         #region Layout Draw
 
         public void Draw(string propertyName, bool isBacking = false, bool indent = false)
@@ -271,6 +271,21 @@ namespace Skyx.SkyxEditor
 
         public void DrawString(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false, bool alwaysDrawInlaid = false)
             => Draw(ref rect, Get(propertyName, isBacking), !string.IsNullOrEmpty(Get(propertyName, isBacking).stringValue), inlaidHint, overlayHint, slideRect, alwaysDrawInlaid);
+
+        public void DrawCleanString(ref Rect rect, string propertyName, bool isBacking = false, ERectSlideDir slideDir = ERectSlideDir.Vertical)
+        {
+            var property = Get(propertyName, isBacking);
+
+            EditorGUI.BeginChangeCheck();
+            EditorGUI.DelayedTextField(rect, property);
+            if (EditorGUI.EndChangeCheck())
+            {
+                property.stringValue = property.stringValue.Clean();
+                property.Apply();
+            }
+
+            rect.Slide(slideDir);
+        }
 
         private static void Draw(ref Rect rect, SerializedProperty property, bool hasValue, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool alwaysDrawInlaid = false)
         {
