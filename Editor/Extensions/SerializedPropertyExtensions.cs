@@ -67,12 +67,73 @@ public static class SerializedPropertyExtensions
         object targetObject = property.serializedObject.targetObject;
 		var objectType = targetObject.GetType();
         FieldInfo field = objectType.GetField(property.propertyPath,
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic );
         if (field != null)
         {
             return field.FieldType;
         }
+		return TryGetTypeRecursive( targetObject, property.propertyPath.Split( "." ) );
+
         return null; // Or handle the case where the type is not found
+    }
+
+    private static System.Type TryGetTypeRecursive(object targetObject, string[] pathSplitted)
+    {
+		for( int i = 0; i < pathSplitted.Length; i++ )
+		{
+			if( targetObject == null ) return null;
+			var type = targetObject.GetType();
+			if( type == null ) return null;
+			var memberPath = pathSplitted[i];
+			if( memberPath.EndsWith( "]" ) )
+			{
+				var arrays = memberPath.Split( "[" );
+				if( arrays.Length <= 1 ) return null;
+				var afInfo = type.GetField( arrays[0], BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic );
+				if( afInfo != null )
+				{
+					targetObject = afInfo.GetValue( targetObject );
+					if( !( targetObject is System.Collections.IList list ) ) return null;
+					for( int j = 1; j < arrays.Length; j++)
+					{
+						var id = arrays[j];
+						id = id.Substring( 0, id.Length - 1 );
+						var intId = int.Parse( id );
+						targetObject = list[ intId ];
+					}
+				}
+				else
+				{
+					var apInfo = type.GetProperty( arrays[0], BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic );
+					if( apInfo != null )
+					{
+						targetObject = apInfo.GetValue( targetObject );
+						if( !( targetObject is System.Collections.IList list ) ) return null;
+						for( int j = 1; j < arrays.Length; j++)
+						{
+							var id = arrays[j];
+							id = id.Substring( 0, id.Length - 1 );
+							var intId = int.Parse( id );
+							targetObject = list[ intId ];
+						}
+					}
+					else return null;
+				}
+				return null;
+			}
+			var fInfo = type.GetField( memberPath, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic );
+			if( fInfo != null )
+			{
+				targetObject = fInfo.GetValue( targetObject );
+			}
+			else
+			{
+				var pInfo = type.GetProperty( memberPath, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic );
+				if( pInfo != null ) targetObject = pInfo.GetValue( targetObject );
+				else return null;
+			}
+		}
+		return targetObject?.GetType();
     }
 
     public static void DrawChildProps( this SerializedProperty prop, bool includeChildren = true, float spacing = 0, SerializedProperty ignoreProp = null )

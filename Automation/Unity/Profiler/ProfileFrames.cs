@@ -7,7 +7,6 @@ using UnityEditorInternal;
 
 namespace K10.Automation
 {
-
 	[ListingPath("Unity/Profiler/Frames")]
 	public class ProfileFrames : BaseOperation
     {
@@ -28,22 +27,7 @@ namespace K10.Automation
 
 		public override IEnumerator ExecutionCoroutine( bool log = false ) 
 		{ 
-#if UNITY_EDITOR
-            ProfilerDriver.enabled = true;
-            ProfilerDriver.enabled = true;
-            ProfilerDriver.profileEditor = true;
-            ProfilerDriver.ClearAllFrames();
-            
-            var frames = Frames;
-            if( log ) Debug.Log($"Profiler will record {frames} frames");
-			for( int i = frames; i > 0; i-- ) yield return null;
-
-            ProfilerDriver.enabled = false;
-            if( log ) Debug.Log($"Profiler has recorded {frames} frames");
-#else
-            if( log ) Debug.Log("Profiler operations only work in Editor.");
-            yield return null;
-#endif
+			yield return ProfilerUtils.CaptureFramesCoroutine( Frames, log );
 		}
 
 		public override string ToString() => $"{base.ToString()} for {Frames}";

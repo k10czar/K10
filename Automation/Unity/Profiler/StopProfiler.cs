@@ -14,12 +14,7 @@ namespace K10.Automation
 
 		public override IEnumerator ExecutionCoroutine( bool log = false ) 
 		{ 
-#if UNITY_EDITOR
-            if( log ) Debug.Log($"Profiler stoped");
-            ProfilerDriver.enabled = false;
-#else
-            if( log ) Debug.Log("Profiler operations only work in Editor.");
-#endif
+            ProfilerUtils.StopCapture();
             yield return null;
 		}
     }
