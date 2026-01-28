@@ -99,8 +99,8 @@ public static class SubsetSelectorExtension
         return $"UNDENTIFIED";
     }
 
-    public static IEnumerable<T> Roll<T>(this ISubsetSelector<T> selector) => ((ISubsetSelector)selector).Roll<T>();
-    public static IEnumerable<T> Roll<T>(this ISubsetSelector selector)
+    public static IEnumerable<T> Roll<T>(this ISubsetSelector<T> selector, float rollMultiplier) => ((ISubsetSelector)selector).Roll<T>(rollMultiplier);
+    public static IEnumerable<T> Roll<T>(this ISubsetSelector selector, float rollMultiplier)
     {
         var entriesCount = selector.EntriesCount;
 
@@ -121,6 +121,8 @@ public static class SubsetSelectorExtension
         {
             rolls = K10Random.Interval(selector.Min, selector.Max + 1);
         }
+
+        rolls = Mathf.FloorToInt(rolls * rollMultiplier);
         
         var variableResult = new List<T>(rolls);
 
