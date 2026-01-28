@@ -42,10 +42,10 @@ namespace Skyx.SkyxEditor
 
             if (isShowingDescriptions && hasDescription)
             {
+                rect.height = SkyxStyles.GetHelpBoxHeight(info.description.LineCount(), false);
+                EditorGUI.HelpBox(rect, info.description, MessageType.Info);
+                rect.SlideSameVertically();
                 rect.AdjustToLine();
-                EditorGUI.LabelField(rect, info.description, SkyxStyles.DefaultLabel);
-                rect.NextSameLine();
-                SkyxGUI.Separator(ref rect);
             }
 
             if (property.hasVisibleChildren)
@@ -74,7 +74,7 @@ namespace Skyx.SkyxEditor
                 height += property.GetPropertyHeight(true);
 
                 if (isShowingDescriptions && info.HasDescription)
-                    height += SkyxStyles.FullLineHeight + 6;
+                    height += SkyxStyles.GetHelpBoxHeight(info.description.LineCount(), true);
 
                 if (info.scopeType.ShowNoChildProperties() && !property.hasVisibleChildren)
                     height += SkyxStyles.FullLineHeight;
