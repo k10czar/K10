@@ -42,7 +42,7 @@ namespace K10.DebugSystem
             target.hideFlags = HideFlags.None;
 
             var category = K10DebugSystem.GetCategory<T>();
-            category.HiddenObjects.Remove(target);
+            category.HiddenObjects?.Remove(target);
         }
     }
 }
