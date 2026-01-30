@@ -3,8 +3,6 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 
-
-
 public class ChancesPredictor
 {
     public int[] _countCache;
@@ -106,84 +104,6 @@ public class ChancesPredictor
 		}
 
 		CalculatePredictions( minRoll, maxRoll, sumWeight );
-	}
-
-	public void Calculate( ISubsetSelector set )
-	{
-		FillCaches( set );
-		CalculatePredictions( set );
-	}
-
-	public void FillCaches( ISubsetSelector set )
-	{
-		FillEntriesCaches(set);
-		FillRangeWeights(set);
-	}
-
-	private void FillRangeWeights(ISubsetSelector set)
-	{
-		var rCount = set.Max + 1 - set.Min;
-		if( !set.IsBiased ) _rollChancesCache = null;
-		else if (_rollChancesCache == null || _rollChancesCache.Length != rCount) _rollChancesCache = new float[rCount];
-
-		for (int i = 0; i < rCount; i++)
-		{
-			_rollChancesCache[i] = set.GetBiasWeight(set.Min + i);
-		}
-	}
-
-	public void FillEntriesCaches( ISubsetSelector set )
-	{
-		var count = set.EntriesCount;
-
-		if (_minCache == null || _minCache.Length != count) _minCache = new int[count];
-		if (_maxCache == null || _maxCache.Length != count) _maxCache = new int[count];
-		if (_namesCache == null || _namesCache.Length != count) _namesCache = new string[count];
-		if (_chancesCache == null || _chancesCache.Length != count) _chancesCache = new float[count];
-
-		_sumWeight = 0f;
-
-		for( int i = 0; i < count; i++ )
-		{
-			var element = set.GetEntryObject( i );
-			_sumWeight += element.Weight;
-		}
-
-		minSum = 0;
-		maxElementsCount = 0;
-
-		for (int i = 0; i < count; i++)
-		{
-			var element = set.GetEntryObject( i );
-			_chancesCache[i] = element.Weight / _sumWeight;
-			var min = element.Guaranteed;
-			_minCache[i] = min;
-			var max =  element.Cap;
-			_maxCache[i] = max;
-			var objRef = element.ElementAsObject;
-			_namesCache[i] = objRef.DebugNameOrNull();
-			minSum += min;
-			
-			var realCap = Mathf.Max( min, max );
-			maxElementsCount = Mathf.Max( maxElementsCount, realCap );
-		}
-
-		_rollChancesCache = null;
-	}
-
-	public void CalculatePredictions( ISubsetSelector set )
-	{
-		int count = set.EntriesCount;
-
-		float sumWeight = 0f;
-
-		for( int i = 0; i < count; i++ )
-		{
-			var element = set.GetEntryObject(i);
-			sumWeight += element.Weight;
-		}
-
-		CalculatePredictions( set.Min, set.Max, sumWeight );
 	}
 
 	public void CalculatePredictions( int minRoll, int maxRoll, float sumWeight )

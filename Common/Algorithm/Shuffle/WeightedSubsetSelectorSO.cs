@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 
-
 public interface ISubsetSelector
 {
     public int Min { get; }

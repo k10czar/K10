@@ -14,8 +14,7 @@ public class EditorReferencesFinder<T> where T : ScriptableObject
 {
     public const float DEFAULT_MAX_HEIGHT = 240;
 
-    static IValueCapsule<bool> openInspection = null;
-    public static IValueCapsule<bool> OpenInspection => openInspection ??= EditorPersistentValue<bool>.At( "RefInspect" );
+    static IValueCapsule<bool> openInspection = new LazyEditorPersistentValue<bool>( "RefInspect" );
     Func<IEnumerable<T>> FinderFunc;
     private double _inspectionTime = 0;
 
@@ -41,7 +40,7 @@ public class EditorReferencesFinder<T> where T : ScriptableObject
 
     public void TryQuery()
     {
-        if( !OpenInspection.Get ) return;
+        if( !openInspection.Get ) return;
         Query();
     }
 
@@ -56,7 +55,7 @@ public class EditorReferencesFinder<T> where T : ScriptableObject
 		GuiColorManager.New( _references.BaseColor.WithSaturation( .4f ).WithValue(.5f).WithAlpha( .5f ) );
         EditorGUILayout.BeginVertical( K10GuiStyles.whiteBackgroundStyle );
         GuiColorManager.Revert();
-        var inspect = OpenInspection;
+        var inspect = openInspection;
         var open = EditorGUILayout.BeginFoldoutHeaderGroup( inspect.Get, "🕵️ Reference Inspector", K10GuiStyles.bigFoldStyle );
         inspect.Set = open;
         if( open )
@@ -76,7 +75,7 @@ public class EditorReferencesFinder<T> where T : ScriptableObject
     public float GetHeight()
     {
         var slh = EditorGUIUtility.singleLineHeight;
-        if( !OpenInspection.Get ) return slh;
+        if( !openInspection.Get ) return slh;
         return 2 * slh + _references.GetHeight();
     }
 }

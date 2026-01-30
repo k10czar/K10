@@ -1,126 +1,10 @@
-using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
 using System;
 
-public class AggregatedPredictor<T>
-{
-    public readonly List<SubsetSelectorPredictor<T>> nestedCrawlers = new();
-
-    public readonly RangeSummary Score = new();
-    public readonly RangeSummary ElementsCount = new();
-
-    bool _isTooExpensive = false;
-    public bool IsTooExpensive => _isTooExpensive;
-
-    public void Calculate( IAggregatedSubsetSelector<T> agg, Func<T,int> Scorer = null )
-    {
-        nestedCrawlers.Clear();
-
-        Score.SetZero();
-        ElementsCount.SetZero();
-        _isTooExpensive = false;
-
-        // Debug.Log( $"ElementsCount:{ElementsCount}" );
-
-        if( agg == null ) return;
-
-        for ( int i = 0; i < agg.Count && !_isTooExpensive; i++ )
-        {
-            var crawler = new SubsetSelectorPredictor<T>();
-            crawler.SetScores( Scorer );
-            crawler.Calculate( agg.GetEntry(i) );
-            nestedCrawlers.Add( crawler );
-
-            Score.Combine( crawler.Score );
-            ElementsCount.Combine( crawler.ElementsCount );
-
-            _isTooExpensive |= crawler.Exausted;
-            
-            // Debug.Log( $"Jamming {i}: {crawler}" );
-            // Debug.Log( $"ElementsCount:{ElementsCount}" );
-        }
-    }
-}
-
-public class RangeSummary
-{
-    public double Min = double.MaxValue;
-    public double Average = 0;
-    public double Max = double.MinValue;
-    double chancesSum = 0;
-    bool notSet = true;
-
-    int combines = 0;
-    bool WrongSum => chancesSum > ( combines * 1.05 ) || chancesSum < ( combines * .95 );
-
-    public void Clear()
-    {
-        Min = double.MaxValue;
-        Average = 0;
-        Max = double.MinValue;
-        chancesSum = 0;
-        combines = 1;
-        notSet = true;
-    }
-
-    public void StartAccumulator()
-    {
-        Min = double.MaxValue;
-        Average = 0;
-        Max = double.MinValue;
-        chancesSum = 0;
-        combines = 1;
-        notSet = true;
-    }
-
-    public void SetZero()
-    {
-        Min = 0;
-        Average = 0;
-        Max = 0;
-        chancesSum = 0;
-        combines = 0;
-        notSet = false;
-    }
-
-    public void RegisterValue( double value, double chance )
-    {
-        var before = this.ToString();
-        Min = Math.Min( value, Min );
-        Average += value * chance;
-        Max = Math.Max( value, Max );
-        chancesSum += chance;
-        notSet = false;
-        Debug.Log( $"{before}.RegisterValue( {value}, {chance*100:N2}% ) = {this}" );
-    }
-
-    public void RegisterValue( RangeSummary value, double chance )
-    {
-        Min = Math.Min( value.Min, Min );
-        Average += value.Average * chance;
-        Max = Math.Max( value.Max, Max );
-        chancesSum += chance;
-        notSet = false;
-    }
-
-    public void Combine( RangeSummary range )
-    {
-        Min += range.Min;
-        Average += range.Average;
-        Max += range.Max;
-        chancesSum += range.chancesSum;
-        combines++;
-        notSet = false;
-    }
-
-    public override string ToString() => notSet ? "NOT_SET" : $"[ {Min:N0} ... {Average:N1} ... {Max:N0} ]{(WrongSum?"!WRONG!":"")}";
-}
-
 public class SubsetSelectorPredictor<T>
 {
-
-    const float CALC_TIME_LIMIT = 2; 
+    const float CALC_TIME_LIMIT = 5; 
     public T[] _elements;
     public int[] _countCache;
     public float[] _rollChancesCache;
@@ -132,7 +16,7 @@ public class SubsetSelectorPredictor<T>
     public string[] _namesCache;
     float _sumWeight;
     
-    double[,,] M;
+    public double[,,] M;
     double[] acc;
 
     public int rMin;
@@ -141,6 +25,10 @@ public class SubsetSelectorPredictor<T>
     int maxElementsCount;
     int minSum;
 
+    public int Count => count;
+    public int PermutationsCount => _permutations.Count;
+    public int MaxElementsCount => maxElementsCount;
+
     public readonly List<int[]> combinations = new();
     public readonly List<double> combinationsChances = new();
 
@@ -148,17 +36,17 @@ public class SubsetSelectorPredictor<T>
     public readonly RangeSummary ElementsCount = new();
 
     List<(string name, float percentage)> _permutations = new();
+    public IReadOnlyList<(string name, float percentage)> PermutationsList => _permutations;
     Dictionary<string, float> _permutationChances = new();
 
-    System.Diagnostics.Stopwatch calcTime = new();
-    bool _exausted = false;
-
-    public bool Exausted => _exausted;
+    TimeLimit _calculationTimeLimit = new( CALC_TIME_LIMIT * 1000 );
+    public ITimeLimit TimeLimit => _calculationTimeLimit;
 
     public override string ToString()
     {
         return $"Score:{Score} ElementsCount:{ElementsCount} _elements:{_elements.ToStringOrNull()}\ncombinations:{combinations.ToStringOrNull()}\ncombinationsChances:{combinationsChances.ToStringOrNull()}\n_permutations:{_permutations.ToStringOrNull()}";
     }
+    
 
     public void SetScores( Func<T,int> scorer )
     {
@@ -169,13 +57,15 @@ public class SubsetSelectorPredictor<T>
     {
         if( set == null ) return;
 
-        _exausted = false;
-        calcTime.Restart();
+        _calculationTimeLimit.Begin();
 
         count = set.EntriesCount;
         FillElements(set);
         FillCaches(set);
         CalculatePredictions(set);
+
+        _calculationTimeLimit.End();
+        // Debug.Log( $"Calculate took: {_calculationTimeLimit.ElapsedSeconds()}s" );
     }
 
     private void FillElements(ISubsetSelector<T> set)
@@ -274,14 +164,14 @@ public class SubsetSelectorPredictor<T>
         M = new double[count, maxElementsCountPossible + 1, rMax + 1];
         CalculateBacktracking( count, _minCache, _maxCache, _chancesCache, rMax, maxElementsCountPossible, M );
 
-        if( _exausted ) return;
+        if( _calculationTimeLimit.IsExausted ) return;
 
         acc = new double[rMax + 1];
         CalculateAcc( count, rMax, maxElementsCountPossible, M, acc );
         
         Permutations();
         
-        if( _exausted ) return;
+        if( _calculationTimeLimit.IsExausted ) return;
         _permutations.Sort(PermutationSorting);
     }
     
@@ -344,23 +234,12 @@ public class SubsetSelectorPredictor<T>
         }
     }
 
-    bool CheckExaustion()
-    {
-        if( _exausted ) return true;
-        if( calcTime.Elapsed.Seconds > CALC_TIME_LIMIT )
-        {
-            _exausted = true;
-            return true;
-        }
-        return false;
-    }
-
     void TryExpand( double chance, int total, int maxTotal, int[] elements, List<int> sequence, List<(int id, int max, float chance)> pool, double[,,] M )
     {
         var newTotal = total + 1;
         if( newTotal > maxTotal ) return;
 
-        if( CheckExaustion() ) return;
+        if( _calculationTimeLimit.CheckExaustion() ) return;
 
         for( int i = 0; i < pool.Count; i++ )
         {
@@ -399,192 +278,6 @@ public class SubsetSelectorPredictor<T>
         }
     }
 
-    public float GetTableHeight()
-    {
-        return ( count + 1 ) *( EditorGUIUtility.singleLineHeight + 3 );
-    }
-
-    public void DrawTable( Rect rect )
-    {
-        var lh = EditorGUIUtility.singleLineHeight;
-
-        int minE = int.MaxValue;
-        int maxE = int.MinValue;
-
-        for( int k = rMin; k <= rMax; k++ )
-        {
-            for( int i = 0; i < count; i++ )
-            {
-                for( int j = 0; j <= maxElementsCount; j++ )
-                {
-                    if( Mathf.Approximately( (float)M[i, j, k], 0 ) ) continue;
-                    minE = Mathf.Min( j, minE );
-                    maxE = Mathf.Max( j, maxE );
-                }
-            }
-        }
-
-        var slices = ( maxE - minE ) + 2;
-        if( rMin <= rMax )
-        {
-            var toplineRect = rect.GetLineTop( lh + 3 );
-            GUI.Label( toplineRect.VerticalSlice( 0, slices ), "Average", GUI.skin.box );
-            for( int j = minE; j <= maxE; j++ ) GUI.Label( toplineRect.VerticalSlice( ( j - minE ) + 1, slices ), $"{j}", GUI.skin.box );
-            
-            var range = Mathf.Max( rMax - rMin, 0 ) + 1;
-            float sumWeight = range;
-            
-            if (_rollChancesCache != null && _rollChancesCache.Length >= range)
-            {
-                sumWeight = 0;
-                for (int i = 0; i < range; i++)
-                {
-                    sumWeight += _rollChancesCache[i];
-                }
-            }
-
-            for( int i = 0; i < count; i++ )
-            {
-                var lineRect = rect.GetLineTop( lh );
-                GUI.Label( lineRect.VerticalSlice( 0, slices ), _namesCache[i] );
-                for( int j = minE; j <= maxE; j++ )
-                {
-                    double val = 0;
-                    for (int k = rMin; k <= rMax; k++)
-                    {
-                        var chance = M[i, j, k];
-                        if (_rollChancesCache != null && k - rMin < _rollChancesCache.Length) chance *= _rollChancesCache[k - rMin];
-                        val += chance;
-                    }
-                    val /= sumWeight;
-                    val = System.Math.Max( val, 0 );
-
-                    var r = lineRect.VerticalSlice( ( j - minE ) + 1, slices );
-                    GUIProgressBar.Draw( r, (float)val );
-                }
-            }
-        }
-    }
-
-    public void DrawTable()
-    {
-        var lh = EditorGUIUtility.singleLineHeight;
-
-        int minE = int.MaxValue;
-        int maxE = int.MinValue;
-
-        for( int k = rMin; k <= rMax; k++ )
-        {
-            for( int i = 0; i < count; i++ )
-            {
-                for( int j = 0; j <= maxElementsCount; j++ )
-                {
-                    if( Mathf.Approximately( (float)M[i, j, k], 0 ) ) continue;
-                    minE = Mathf.Min( j, minE );
-                    maxE = Mathf.Max( j, maxE );
-                }
-            }
-        }
-
-        var slices = ( maxE - minE ) + 2;
-        if( rMin <= rMax )
-        {
-            var rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh + 3 ) );
-            rect.RequestTop( lh + 3 );
-            GUILayout.Space( lh + 3 );
-            GUI.Label( rect.VerticalSlice( 0, slices ), "Average", GUI.skin.box );
-            for( int j = minE; j <= maxE; j++ ) GUI.Label( rect.VerticalSlice( ( j - minE ) + 1, slices ), $"{j}", GUI.skin.box );
-            EditorGUILayout.EndHorizontal();
-            
-            var range = Mathf.Max( rMax - rMin, 0 ) + 1;
-            float sumWeight = range;
-            
-            if (_rollChancesCache != null && _rollChancesCache.Length >= range)
-            {
-                sumWeight = 0;
-                for (int i = 0; i < range; i++)
-                {
-                    sumWeight += _rollChancesCache[i];
-                }
-            }
-
-            for( int i = 0; i < count; i++ )
-            {
-                rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh ) );
-                rect.RequestTop( lh );
-                GUILayout.Space( lh );
-                GUI.Label( rect.VerticalSlice( 0, slices ), _namesCache[i] );
-                for( int j = minE; j <= maxE; j++ )
-                {
-                    double val = 0;
-                    for (int k = rMin; k <= rMax; k++)
-                    {
-                        var chance = M[i, j, k];
-                        if (_rollChancesCache != null && k - rMin < _rollChancesCache.Length) chance *= _rollChancesCache[k - rMin];
-                        val += chance;
-                    }
-                    val /= sumWeight;
-                    val = System.Math.Max( val, 0 );
-
-                    var r = rect.VerticalSlice( ( j - minE ) + 1, slices );
-                    GUIProgressBar.Draw( r, (float)val );
-                }
-                EditorGUILayout.EndHorizontal();
-            }
-        }
-    }
-
-    public float GetPermutationsHeight()
-    {
-        return EditorGUIUtility.singleLineHeight * _permutations.Count;
-    }
-
-    public void DrawPermutations( Rect rect )
-    {
-        var maxLabelSize = 24f;
-        GUIStyle labelStyle = GUI.skin.label;
-        foreach(var permutation in _permutations ) 
-        {
-            var size = labelStyle.CalcSize(new GUIContent(permutation.name)).x;
-            if( maxLabelSize > size ) continue;
-            maxLabelSize = size;
-        }
-        var labelHeight = EditorGUIUtility.singleLineHeight;
-
-        if( maxLabelSize > rect.width - 32 ) maxLabelSize = rect.width - 32;
-
-        foreach(var permutation in _permutations )
-        {
-            var line = rect.GetLineTop( labelHeight );
-            GUI.Label( line.RequestLeft( maxLabelSize ), permutation.name, labelStyle );
-            GUIProgressBar.Draw( line.CutLeft( maxLabelSize ), permutation.percentage );
-        }
-    }
-
-    public void DrawPermutations()
-    {
-        EditorGUILayout.BeginVertical();
-        var maxSize = 24f;
-        GUIStyle labelStyle = GUI.skin.label;
-        foreach(var permutation in _permutations ) 
-        {
-            var size = labelStyle.CalcSize(new GUIContent(permutation.name)).x;
-            if( maxSize > size ) continue;
-            maxSize = size;
-        }
-        var labelWidth = GUILayout.Width(maxSize);
-        var labelHeight = GUILayout.Height( EditorGUIUtility.singleLineHeight );
-
-        foreach(var permutation in _permutations )
-        {
-            EditorGUILayout.BeginHorizontal( labelHeight );
-            GUILayout.Label( permutation.name, labelStyle, labelWidth, labelHeight );
-            GUIProgressBar.DrawLayout( permutation.percentage, GUILayout.MinWidth( 32 ) );
-            EditorGUILayout.EndHorizontal();
-        }
-        EditorGUILayout.EndVertical();
-    }
-
     private int PermutationSorting((string, float) x, (string, float) y) => y.Item2.CompareTo( x.Item2 );
 
     void Permutations()
@@ -615,7 +308,7 @@ public class SubsetSelectorPredictor<T>
         combinations.Clear();
         combinationsChances.Clear();
 
-        for( int i = 0; i < rollsCount && !_exausted; i++ )
+        for( int i = 0; i < rollsCount && !_calculationTimeLimit.IsExausted; i++ )
         {
             var rolls = i + rMin;
             var chance = defaultChance;
@@ -625,7 +318,7 @@ public class SubsetSelectorPredictor<T>
 
         _permutations.Clear();
 
-        if( _exausted ) return;
+        if( _calculationTimeLimit.IsExausted ) return;
 
         foreach( var e in _permutationChances ) _permutations.Add( ( e.Key, e.Value ) );
         _permutationChances.Clear();
@@ -644,7 +337,7 @@ public class SubsetSelectorPredictor<T>
     
     void Permute( int it, int maxPermute, float currChance )
     {
-        if( CheckExaustion() ) return;
+        if( _calculationTimeLimit.CheckExaustion() ) return;
         if( it >= maxPermute )
         {
             var name = NameCombination(_countCache, _namesCache, it);
