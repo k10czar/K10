@@ -25,23 +25,23 @@ public static class AggregatedSubsetSelectorExtensions
         return true; 
     }
 
-    public static IEnumerable<T> Roll<T>( this IAggregatedSubsetSelector data )
+    public static IEnumerable<T> Roll<T>( this IAggregatedSubsetSelector data, float rollMultiplier = 1f )
     {
         var roll = new List<T>();
         var count = data.Count;
         for( int i = 0; i < count; i++ )
         {
             var subSet = data.GetEntryObject(i);
-            var subRoll = subSet.Roll<T>();
+            var subRoll = subSet.Roll<T>(rollMultiplier);
             roll.AddRange( subRoll );
         }
         return roll;
     }
 
-    public static IEnumerable<T> Roll<T>( this IAggregatedSubsetSelector<T> data ) 
+    public static IEnumerable<T> Roll<T>( this IAggregatedSubsetSelector<T> data, float rollMultiplier = 1f ) 
     {
         var dataGeneric = data as IAggregatedSubsetSelector;
-        return dataGeneric.Roll<T>();
+        return dataGeneric.Roll<T>(rollMultiplier);
     }
 }
 

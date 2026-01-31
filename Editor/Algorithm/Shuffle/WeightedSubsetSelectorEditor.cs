@@ -148,7 +148,7 @@ public class WeightedSubsetSelectorEditor
 			if( GUILayout.Button( new GUIContent( "Debug Roll", IconCache.Get( "icons/PlayDices.png" ).Texture ), _rollButton ) )
             {
 				// var debugRollElement = target as ISubsetSelector;
-				var result = debugRollElement.Roll<object>();
+				var result = debugRollElement.Roll<object>(1f);
 				Debug.Log($"<color=#BA55D3>Debug Roll</color> of <color=#7CFC00>{debugRollElement.DebugNameOrNull()}</color> result in roll with <color=#87CEFA>{result.Count()}</color>\n\t-{string.Join( "\n\t-",result.ToList().ConvertAll( DebugName ) )}\n");
             }
 		}
