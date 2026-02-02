@@ -133,6 +133,8 @@ namespace K10.DebugSystem
         private static bool IsSelection(Object candidate) => Selection.activeGameObject == GetGameObject(candidate);
         #endif
 
+        public static bool ForceCheckDebugOwners(params Object[] requesters) => CheckDebugOwners(requesters, true);
+
         public static bool CheckDebugOwners(IEnumerable<Object> requesters, bool alwaysCheck = false)
         {
             if (DebugOwnerBehaviour is EDebugOwnerBehaviour.Ignore && !alwaysCheck) return true;
