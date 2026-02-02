@@ -52,10 +52,12 @@ public class EditorReferencesFinder<T> where T : ScriptableObject
 
     public void DrawLayout()
     {
-		GuiColorManager.New( _references.BaseColor.WithSaturation( .4f ).WithValue(.5f).WithAlpha( .5f ) );
-        EditorGUILayout.BeginVertical( K10GuiStyles.whiteBackgroundStyle );
-        GuiColorManager.Revert();
         var inspect = openInspection;
+		GuiColorManager.New( _references.BaseColor.WithSaturation( .4f ).WithValue(.5f).WithAlpha( .5f ) );
+        // if( !inspect.Get ) EditorGUILayout.BeginVertical( K10GuiStyles.whiteBackgroundStyle, GUILayout.MaxHeight( EditorGUIUtility.singleLineHeight ) );
+        // else EditorGUILayout.BeginVertical( K10GuiStyles.whiteBackgroundStyle, GUILayout.MaxHeight( _references.GetHeight() ) );
+        EditorGUILayout.BeginVertical( K10GuiStyles.whiteBackgroundStyle, GUILayout.MaxHeight( inspect.Get ? _references.GetHeight() : EditorGUIUtility.singleLineHeight ) );
+        GuiColorManager.Revert();
         var open = EditorGUILayout.BeginFoldoutHeaderGroup( inspect.Get, "🕵️ Reference Inspector", K10GuiStyles.bigFoldStyle );
         inspect.Set = open;
         if( open )

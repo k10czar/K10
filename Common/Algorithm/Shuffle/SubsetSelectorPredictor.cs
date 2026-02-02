@@ -84,7 +84,7 @@ public class SubsetSelectorPredictor<T>
         CalculatePredictions(set);
 
         _calculationTimeLimit.End();
-        Debug.Log( $"Calculate {_calculationTimeLimit} {ToString()} on {set}" );
+        // Debug.Log( $"Calculate {_calculationTimeLimit} {ToString()} on {set}" );
     }
 
     private void FillElements(ISubsetSelector<T> set)
@@ -221,7 +221,7 @@ public class SubsetSelectorPredictor<T>
         if( realMax > startRoll ) baseChance = realMax + 1 - startRoll;
         for( int i = startRoll; i <= realMax; i++ )
         {
-            Debug.Log( $"TryRool: {i+guaranteeds}" );
+            // Debug.Log( $"TryRool: {i+guaranteeds}" );
             var rollChance = _rollChancesCache != null ? _rollChancesCache[i + guaranteeds] : baseChance;
             Generate( guaranteedScore, guaranteeds, rollChance, jugs, _scores, _chancesCache, i, 0, count, Score );
             ElementsCount.RegisterValue( guaranteeds + i, rollChance );
@@ -286,7 +286,7 @@ public class SubsetSelectorPredictor<T>
                 if( realCount < _realMinCount[i] ) _realMinCount[i] = realCount;
                 _elementCountChance[i,realCount] += realChance;
             }
-            Debug.Log( $"{NameCombination(_countSimilarCache,_namesCache)} XP add {score} {permutations*chance*100:N4}% ( {permutations} * {chance*100:N4}% )" );
+            // Debug.Log( $"{NameCombination(_countSimilarCache,_namesCache)} XP add {score} {permutations*chance*100:N4}% ( {permutations} * {chance*100:N4}% )" );
             scoreSummary.RegisterValue( score, realChance );
             _variationsCount++;
             _variationsWithPermutationCount += permutations;
