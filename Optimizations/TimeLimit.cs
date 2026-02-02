@@ -35,7 +35,7 @@ public class TimeLimit : ITimeLimit
     bool _isExausted = false;
     public bool IsExausted => _isExausted;
 
-    public TimeLimit( float milisecondsLimit )
+    public TimeLimit( float milisecondsLimit = 100 )
     {
         _milisecondsLimit = milisecondsLimit;
     }
@@ -76,4 +76,6 @@ public class TimeLimit : ITimeLimit
         }
         return false;
     }
+
+    public override string ToString() => $"{(_isExausted?"Exausted":"Completed")} in {_elapsedMiliseconds/1000}s";
 }

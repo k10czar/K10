@@ -11,7 +11,7 @@ public class RangeSummary
     bool notSet = true;
     bool isSingleValue = true;
 
-    int combines = 0;
+    double combines = 0;
     bool WrongSum => chancesSum > ( combines * 1.05 ) || chancesSum < ( combines * .95 );
     bool CalcIsSingleValue() => MathAdapter.Approximately( (float)Min, (float)Average ) && MathAdapter.Approximately( (float)Average, (float)Max );
 
@@ -49,7 +49,7 @@ public class RangeSummary
         isSingleValue = true;
     }
 
-    public void SetOnlyOne(int value)
+    public void SetOnlyOne(double value)
     {
         Min = value;
         Average = value;
@@ -58,6 +58,15 @@ public class RangeSummary
         combines = 1;
         isSingleValue = true;
         notSet = false;
+    }
+
+    public void Normalize()
+    {
+        if( MathAdapter.Approximately( (float)chancesSum, 0 ) ) return;
+        // Debug.Log($"Normalize({Average}) => {Average / chancesSum} {chancesSum} {combines}");
+        Average /= chancesSum;
+        chancesSum = combines;
+        isSingleValue = CalcIsSingleValue();
     }
 
 	[MethodImpl(Optimizations.INLINE_IF_CAN)]
@@ -85,7 +94,7 @@ public class RangeSummary
     }
 
 	[MethodImpl(Optimizations.INLINE_IF_CAN)]
-    public void Combine( RangeSummary range, int times = 1 )
+    public void Combine( RangeSummary range, double times = 1 )
     {
         Min += range.Min * times;
         Average += range.Average * times;
@@ -96,6 +105,29 @@ public class RangeSummary
         isSingleValue = CalcIsSingleValue();
     }
 
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
+    public void CombinePercentage( RangeSummary range, double percentage )
+    {
+        Min += range.Min * percentage;
+        Average += range.Average * percentage;
+        Max += range.Max * percentage;
+        chancesSum += range.chancesSum * percentage;
+        combines += range.combines * percentage;
+        notSet = false;
+        isSingleValue = CalcIsSingleValue();
+    }
+
     public override string ToString() => notSet ? "NOT_SET" : ( isSingleValue ? $"{Min:N0}" : $"[ {Min:N0} ... {Average:N1} ... {Max:N0} ]{(WrongSum?"!WRONG!":"")}" );
     public string ToStringFull() => notSet ? "NOT_SET" : ( isSingleValue ? $"{Min:N0}" : $"[ {Min:N0} ... {Average:N1} ... {Max:N0} ] {chancesSum:N2} {combines:N2} {(WrongSum?"!WRONG!":"")}" );
+
+    public void Combine(double min, double avg, double max, double mod = 1)
+    {
+        Min += min * mod;
+        Average += avg * mod;
+        Max += max * mod;
+        chancesSum += avg;
+        combines += avg;
+        notSet = false;
+        isSingleValue = CalcIsSingleValue();
+    }
 }

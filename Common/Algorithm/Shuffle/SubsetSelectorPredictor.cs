@@ -4,17 +4,22 @@ using System;
 
 public class SubsetSelectorPredictor<T>
 {
-    const float CALC_TIME_LIMIT = 5; 
+    const float CALC_TIME_LIMIT = 1; 
     public T[] _elements;
-    public int[] _countCache;
+    public int[] _countSimilarCache;
     public float[] _rollChancesCache;
     public int[] _minCache;
     public int[] _maxCache;
+    public int[] _realMaxCount;
+    public int[] _realMinCount;
     public float[] _chancesCache;
-    // public int[] _scores;
-    Func<T,int> _scorer;
+    public double[] _scores;
+    Func<T,double> _scorer;
     public string[] _namesCache;
     float _sumWeight;
+
+    double[,] _elementCountChance;
+    double[] _elementAvg;
     
     public double[,,] M;
     double[] acc;
@@ -40,7 +45,21 @@ public class SubsetSelectorPredictor<T>
     Dictionary<string, float> _permutationChances = new();
 
     TimeLimit _calculationTimeLimit = new( CALC_TIME_LIMIT * 1000 );
+    
+    private ulong _variationsCount;
+    public ulong VariationsCount => _variationsCount;
+    private ulong _variationsWithPermutationCount;
+    public ulong VariationsWithPermutationCount => _variationsWithPermutationCount;
+
     public ITimeLimit TimeLimit => _calculationTimeLimit;
+
+    public IEnumerator<(T element,(double min, double avg, double max)range)> GetElementAveragesEnumerator()
+    {
+        for( int i = 0; i < count; i++ ) 
+        {
+            yield return ( _elements[i], ( _realMinCount[i], _elementAvg[i], _realMaxCount[i] ) );
+        }
+    }
 
     public override string ToString()
     {
@@ -48,7 +67,7 @@ public class SubsetSelectorPredictor<T>
     }
     
 
-    public void SetScores( Func<T,int> scorer )
+    public void SetScores( Func<T,double> scorer )
     {
         _scorer = scorer;
     }
@@ -65,7 +84,7 @@ public class SubsetSelectorPredictor<T>
         CalculatePredictions(set);
 
         _calculationTimeLimit.End();
-        // Debug.Log( $"Calculate took: {_calculationTimeLimit.ElapsedSeconds()}s" );
+        Debug.Log( $"Calculate {_calculationTimeLimit} {ToString()} on {set}" );
     }
 
     private void FillElements(ISubsetSelector<T> set)
@@ -108,13 +127,18 @@ public class SubsetSelectorPredictor<T>
         if (_maxCache == null || _maxCache.Length != count) _maxCache = new int[count];
         if (_namesCache == null || _namesCache.Length != count) _namesCache = new string[count];
         if (_chancesCache == null || _chancesCache.Length != count) _chancesCache = new float[count];
-
+        if (_scores == null || _scores.Length != count) _scores = new double[count];
+        if (_elementAvg == null || _elementAvg.Length != count) _elementAvg = new double[count];
+        if (_realMaxCount == null || _realMaxCount.Length != count) _realMaxCount = new int[count];
+        if (_realMinCount == null || _realMinCount.Length != count) _realMinCount = new int[count];
+        
         _sumWeight = 0f;
 
         for( int i = 0; i < count; i++ )
         {
             var element = set.GetEntryObject( i );
             _sumWeight += element.Weight;
+            _scores[i] = ( _scorer != null ) ? _scorer(_elements[i]) : 1;
         }
 
         minSum = 0;
@@ -128,6 +152,8 @@ public class SubsetSelectorPredictor<T>
             _minCache[i] = min;
             var max =  element.Cap;
             _maxCache[i] = max;
+            _realMaxCount[i] = min;
+            _realMinCount[i] = max;
             var objRef = element.ElementAsObject;
             _namesCache[i] = objRef.DebugNameOrNull();
             minSum += min;
@@ -135,266 +161,169 @@ public class SubsetSelectorPredictor<T>
             var realCap = Mathf.Max( min, max );
             maxElementsCount = Mathf.Max( maxElementsCount, realCap );
         }
+        
+        if( _elementCountChance == null || _elementCountChance.GetLength(0) != count || _elementCountChance.GetLength(1) != maxElementsCount + 1 ) _elementCountChance = new double[count,maxElementsCount+1];
 
         _rollChancesCache = null;
     }
 
     public void CalculatePredictions( ISubsetSelector set )
     {
-        int count = set.EntriesCount;
-
-        float sumWeight = 0f;
-
-        for( int i = 0; i < count; i++ )
-        {
-            var element = set.GetEntryObject(i);
-            sumWeight += element.Weight;
-        }
-
-        CalculatePredictions( set.Min, set.Max, sumWeight );
+        NewCalculatePredictions( set.Min, set.Max );
     }
 
-    public void CalculatePredictions( int minRoll, int maxRoll, float sumWeight )
+    public void NewCalculatePredictions( int minRoll, int maxRoll )
     {
         rMin = Mathf.Max( minRoll, 0 );
         rMax = Mathf.Max( maxRoll, 0 );
 
         var maxElementsCountPossible = Mathf.Max( maxElementsCount, rMax );
 
-        M = new double[count, maxElementsCountPossible + 1, rMax + 1];
-        CalculateBacktracking( count, _minCache, _maxCache, _chancesCache, rMax, maxElementsCountPossible, M );
+        var jugs = new int[count];
+        int guaranteeds = 0;
+        double guaranteedScore = 0;
 
-        if( _calculationTimeLimit.IsExausted ) return;
+        if( _countSimilarCache == null || _countSimilarCache.Length < count ) _countSimilarCache = new int[count];
 
-        acc = new double[rMax + 1];
-        CalculateAcc( count, rMax, maxElementsCountPossible, M, acc );
-        
-        Permutations();
-        
-        if( _calculationTimeLimit.IsExausted ) return;
-        _permutations.Sort(PermutationSorting);
-    }
-    
-
-    private static void CalculateAcc( int count, int rMax, int maxElements, double[,,] M, double[] acc )
-    {
         for( int i = 0; i < count; i++ )
         {
-            for( int k = 1; k <= rMax; k++ )
-            {
-                for( int j = 0; j <= maxElements; j++ )
-                {
-                    acc[k] += M[i, j, k];
-                }
-            }
+            var max = _maxCache[i];
+            if( max > maxElementsCountPossible ) max  = maxElementsCountPossible;
+            var min = _minCache[i];
+            guaranteeds += min;
+            var delta = max - min;
+            guaranteedScore += min * _scores[i];
+            jugs[i] = delta;
+            _countSimilarCache[i] = 0;
+            for( int j = 0; j < maxElementsCount; j++ ) _elementCountChance[i,j] = 0;
         }
-    }
+        
+        var realMin = rMin - guaranteeds;
+        var realMax = rMax - guaranteeds;
 
-    private void CalculateBacktracking( int count, int[] min, int[] max, float[] chances, int rMax, int maxElements, double[,,] Predictions )
-    {
-        var pool = new List<(int id, int max, float chance)>();
-        var sequence = new List<int>();
-        var elements = new int[count];
-        var total = 0;
-
-        var basePercentage = 1f;
-        for( int i = 0; i < count; i++ )
+        if( realMax <= 0 )
         {
-            var g = min[i];
-            elements[i] = g;
-            total += g;
-            for( int j = 0; j < g; j++ ) sequence.Add( i );
-            var chance = chances[i];
-            var addToPool = ( ( max[i] == 0 || g < max[i] ) && chance > 0 );
-            if( addToPool ) pool.Add( (i, max[i], chance) );
-            else basePercentage -= chance;
+            Score.SetOnlyOne( guaranteedScore );
+            ElementsCount.SetOnlyOne( guaranteeds );
+            _variationsCount = 1;
+            _variationsWithPermutationCount = 1;
+            return;
         }
 
-        RebasePoolElements( basePercentage, pool );
-
-        for( int i = 0; i <= total && i <= rMax; i++ )
-        {
-            for( int j = 0; j < count; j++ )
-            {
-                var c = elements[j];
-                Predictions[j, c, i] = 1;
-            }
-        }
-
-        TryExpand( 1, total, rMax, elements, sequence, pool, Predictions );
-    }
-
-    static void RebasePoolElements( float newBase, List<(int id, int max, float chance)> pool )
-    {
-        for( int i = 0; i < pool.Count; i++ )
-        {
-            var element = pool[i];
-            element.chance /= newBase;
-            pool[i] = element;
-        }
-    }
-
-    void TryExpand( double chance, int total, int maxTotal, int[] elements, List<int> sequence, List<(int id, int max, float chance)> pool, double[,,] M )
-    {
-        var newTotal = total + 1;
-        if( newTotal > maxTotal ) return;
-
-        if( _calculationTimeLimit.CheckExaustion() ) return;
-
-        for( int i = 0; i < pool.Count; i++ )
-        {
-            var e = pool[i];
-
-            var newCount = elements[e.id] + 1;
-            elements[e.id] = newCount;
-            var removeFromPool = e.max != 0 && newCount >= e.max;
-            if( removeFromPool )
-            {
-                pool.RemoveAt( i );
-                RebasePoolElements( 1 - e.chance, pool );
-            }
-
-            chance *= e.chance;
-            sequence.Add( e.id );
-            // var countStr = string.Join( ", ", System.Array.ConvertAll<int, string>( sequence.ToArray(), ( int v ) => v.ToString() ) );
-            // Debug.Log( $"{{ {countStr} }}[{sequence.Count}] => {( chance * 100 ):N1}%" );
-
-            for( int j = 0; j < elements.Length; j++ )
-            {
-                var c = elements[j];
-                M[j, c, newTotal] += chance;
-            }
-
-            TryExpand( chance, newTotal, maxTotal, elements, sequence, pool, M );
-
-            sequence.RemoveAt( sequence.Count - 1 );
-            chance /= e.chance;
-            elements[e.id] = newCount - 1;
-            if( removeFromPool )
-            {
-                RebasePoolElements( 1 / ( 1 - e.chance ), pool );
-                pool.Insert( i, e );
-            }
-        }
-    }
-
-    private int PermutationSorting((string, float) x, (string, float) y) => y.Item2.CompareTo( x.Item2 );
-
-    void Permutations()
-    {
-        var rollsCount = rMax + 1 - rMin;
-        var defaultChance = 1f / rollsCount;
-        var rChanLen = _rollChancesCache?.Length ?? 0;
-        if( rChanLen > rollsCount ) rChanLen = rollsCount;
-        var biased = rChanLen > 0;
-
-        if( _countCache == null || _countCache.Length < count ) _countCache = new int[count];
-
-        var baseMins = 0;
-        for (int i = 0; i < _minCache.Length; i++)
-        {
-            baseMins += _minCache[i];
-            _countCache[i] = _minCache[i];
-        }
-
-        _permutationChances.Clear();
-
-        var rwSum = 0f;
-        for (int i = 0; i < rChanLen; i++) rwSum += _rollChancesCache[i];
+        var startRoll = realMin;
+        if( realMin < 0 ) startRoll = 0;
 
         Score.StartAccumulator();
         ElementsCount.StartAccumulator();
-
-        combinations.Clear();
-        combinationsChances.Clear();
-
-        for( int i = 0; i < rollsCount && !_calculationTimeLimit.IsExausted; i++ )
+        _variationsCount = 0;
+        _variationsWithPermutationCount = 0;
+        var baseChance = 1;
+        if( realMax > startRoll ) baseChance = realMax + 1 - startRoll;
+        for( int i = startRoll; i <= realMax; i++ )
         {
-            var rolls = i + rMin;
-            var chance = defaultChance;
-            if( biased ) chance = _rollChancesCache[ Mathf.Min( i, rChanLen - 1 )] / rwSum;
-            Permute(baseMins, rolls, chance );
+            Debug.Log( $"TryRool: {i+guaranteeds}" );
+            var rollChance = _rollChancesCache != null ? _rollChancesCache[i + guaranteeds] : baseChance;
+            Generate( guaranteedScore, guaranteeds, rollChance, jugs, _scores, _chancesCache, i, 0, count, Score );
+            ElementsCount.RegisterValue( guaranteeds + i, rollChance );
         }
+        Score.Normalize();
+        ElementsCount.Normalize();
 
-        _permutations.Clear();
-
-        if( _calculationTimeLimit.IsExausted ) return;
-
-        foreach( var e in _permutationChances ) _permutations.Add( ( e.Key, e.Value ) );
-        _permutationChances.Clear();
+        CalculateAverages();
     }
 
-    int CalculateScore()
+    private void CalculateAverages()
     {
-        int score = 0;
-        for( int i = 0; i < _countCache.Length; i++ )
+        for( int i = 0; i < count; i++ )
         {
-            score += _countCache[i];
-            if( _scorer != null ) score *= _scorer(_elements[i]);
+            _elementAvg[i] = 0;
+            for( int j = 1; j <= maxElementsCount; j++ )
+            {
+                _elementAvg[i] += j * _elementCountChance[i,j];
+                // Debug.Log( $"{i} +{j * _elementCountChance[i,j]} = {j} * {_elementCountChance[i,j]}" );
+            }
         }
-        return score;
     }
-    
-    void Permute( int it, int maxPermute, float currChance )
+
+    ulong PermutationsOfCountCache()
     {
-        if( _calculationTimeLimit.CheckExaustion() ) return;
-        if( it >= maxPermute )
+        var biggestJug = 0;
+        var biggestJugValue = _countSimilarCache[0];
+        var sumOfElements = biggestJugValue;
+        for( int i = 1; i < _countSimilarCache.Length; i++ )
         {
-            var name = NameCombination(_countCache, _namesCache, it);
-            _permutationChances.TryGetValue(name, out var chance);
+            var elements = _countSimilarCache[i];
+            sumOfElements += elements;
+            if( biggestJugValue >= elements ) continue;
+            biggestJug = i;
+            biggestJugValue = elements;
+        }
+        // Debug.Log( $"PermutationsOfCountCache() ( {sumOfElements}! / !!!{_countCache.ToStringOrNull()}!!! )" );
+        ulong permutations = 1;
+        for( int i = biggestJugValue + 1; i <= sumOfElements; i++ )
+        {
+            permutations *= (ulong)i;
+        }
+        for( int i = 1; i < _countSimilarCache.Length; i++ )
+        {
+            if( i == biggestJug ) continue;
+            permutations /= K10.Math.Factorial( _countSimilarCache[i] );
+        }
+        return permutations;
+    }
 
-            var realChance = chance + currChance;
-            _permutationChances[name] = realChance;
-            
-            Score.RegisterValue( CalculateScore(), currChance );
-            ElementsCount.RegisterValue( maxPermute, currChance );
-
-            var combArray = new int[_countCache.Length];
-            for( int i = 0; i < _countCache.Length; i++ ) combArray[i] = _countCache[i];
-            combinations.Add( combArray );
-            combinationsChances.Add( currChance );
-
+    void Generate( double score, int count, double chance, int[] limits, double[] scores, float[] chances, int remaining, int startIndex, int length, RangeSummary scoreSummary )
+    {
+        if (remaining == 0)
+        {
+            var permutations = PermutationsOfCountCache();
+            var realChance = chance * permutations;
+            for( int i = 0; i < _countSimilarCache.Length; i++ ) 
+            {
+                var eCount = _countSimilarCache[i];
+                var realCount = eCount + _minCache[i];
+                if( realCount > _realMaxCount[i] ) _realMaxCount[i] = realCount; 
+                if( realCount < _realMinCount[i] ) _realMinCount[i] = realCount;
+                _elementCountChance[i,realCount] += realChance;
+            }
+            Debug.Log( $"{NameCombination(_countSimilarCache,_namesCache)} XP add {score} {permutations*chance*100:N4}% ( {permutations} * {chance*100:N4}% )" );
+            scoreSummary.RegisterValue( score, realChance );
+            _variationsCount++;
+            _variationsWithPermutationCount += permutations;
             return;
         }
-        var sumWeights = 0f;
 
-        var count = _maxCache.Length;
-        for( int k = 0; k < count; k++ )
+        for (int i = startIndex; i < length; i++)
         {
-            if (_maxCache[k] <= _countCache[k]) continue;
-            var eChan = _chancesCache[k];
-            sumWeights += eChan;
-        }
-        
-        for( int k = 0; k < count; k++ )
-        {
-            if (_maxCache[k] <= _countCache[k]) continue;
-            var eChan = _chancesCache[k];
-            _countCache[k]++;
-            Permute( it + 1, maxPermute, currChance * ( eChan / sumWeights ) );
-            _countCache[k]--;
+            if (limits[i] == 0)
+                continue;
+
+            limits[i]--;
+            _countSimilarCache[i]++;
+            Generate(score + scores[i], count + 1, chance * chances[i], limits, scores, chances, remaining - 1, i, length, scoreSummary);
+            _countSimilarCache[i]--;
+            limits[i]++;
         }
     }
 
-    private string NameCombination( int[] _countCache, string[] names, int maxRolls = int.MaxValue)
-    {
-        var sb = StringBuilderPool.RequestEmpty();
+    private static string NameCombination( int[] _countCache, string[] names)
+	{
+		var sb = StringBuilderPool.RequestEmpty();
 
-        var first = true;
-        for (int i = 0; i < _countCache.Length; i++)
-        {
-            var count = Mathf.Min( _countCache[i], maxRolls );
-            if (count > 0)
-            {
-                if( !first ) sb.Append( ", " );
-                sb.Append($"{count} {names[i]}");
-                first = false;
-            }
-            maxRolls -= count;
-        }
+		var first = true;
+		for (int i = 0; i < _countCache.Length; i++)
+		{
+			var count = _countCache[i];
+			if (count > 0)
+			{
+				if( !first ) sb.Append( ", " );
+				sb.Append($"{count} {names[i]}");
+				first = false;
+			}
+		}
 
-        if( first ) sb.Append( "NOTHING" );
+		if( first ) sb.Append( "NOTHING" );
 
-        return sb.ReturnToPoolAndCast();
+		return sb.ReturnToPoolAndCast();
     }
 }
