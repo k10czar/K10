@@ -150,7 +150,17 @@ namespace Skyx.SkyxEditor
             }
             catch (Exception exception)
             {
-                Debug.LogException(exception);
+                try
+                {
+                    selectedProperty.ResetDefaultValues(null, false, false);
+                    Debug.LogException(exception);
+                }
+                catch (Exception innerException)
+                {
+                    Debug.LogError($"<color={Colors.Console.Danger.ToHexRGB()}>!!! WARNING !!!</color> Duplication failed!");
+                    Debug.LogException(innerException);
+                    Debug.LogException(exception);
+                }
             }
         }
 

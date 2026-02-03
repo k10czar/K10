@@ -65,6 +65,7 @@ namespace Skyx.SkyxEditor
         public static GUIStyle BigBoldStyle => Style("bigBoldLabel", BoldStyle, BigFontSize);
         public static GUIStyle HugeBoldStyle => Style("hugeBoldLabel", BoldStyle, HugeFontSize);
         public static GUIStyle CenterBoldStyle => Style("centerBoldLabel", BoldStyle, TextAnchor.MiddleCenter);
+        public static GUIStyle HintIconStyle => Style("HintIconStyle", CenterBoldStyle, padding: noPadding);
         public static GUIStyle Header => Style("header", CenterBoldStyle, BigFontSize, padding: bigPadding);
         public static GUIStyle HugeHeader => Style("hugeHeader", Header, HugeFontSize, padding: hugePadding);
         public static GUIStyle PlainBGLabel => Style("plainBGLabel", CenterBoldStyle, padding: bigPadding, background: EditorGUIUtility.whiteTexture, hoverBackground: CreateTexture(Colors.AlmostWhite));

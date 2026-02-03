@@ -322,7 +322,7 @@ namespace Skyx.SkyxEditor
         {
             var hintRect = ExtractRect(ref rect, SkyxStyles.HintIconWidth, fromEnd);
 
-            EditorGUI.LabelField(hintRect, $"<b>{icon}</b>", SkyxStyles.CenterBoldStyle);
+            EditorGUI.LabelField(hintRect, $"<b>{icon}</b>", SkyxStyles.HintIconStyle);
             DrawHintOverlay(ref hintRect, hint);
         }
 

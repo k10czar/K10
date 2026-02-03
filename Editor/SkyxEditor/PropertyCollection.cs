@@ -554,6 +554,22 @@ namespace Skyx.SkyxEditor
 
         #region Getters
 
+        public float GetTotalHeightIncluding(params string[] fields)
+        {
+            var total = 0f;
+
+            foreach (var field in fields)
+            {
+                var property = Get(field, false);
+                total += SkyxStyles.ElementsMargin;
+
+                if (lists.TryGetValue(property, out var list)) total += list.GetHeight();
+                else total += EditorGUI.GetPropertyHeight(property, true);
+            }
+
+            return total;
+        }
+
         public float GetTotalHeightExcluding(params string[] excludeFields)
         {
             var total = 0f;

@@ -542,11 +542,11 @@ public static class K10UnityExtensions
 		};
 	}
 
-	public static string ToInspectorName<T>(this IReadOnlyList<T> targets, string plural)
+	public static string ToInspectorName<T>(this IReadOnlyList<T> targets, string plural, string empty = null)
 	{
 		return targets.Count switch
 		{
-			0 => ConstsK10.NULL_STRING_COLORED,
+			0 => empty ?? ConstsK10.NULL_STRING_COLORED,
 			1 => targets[0].ToInspectorName(),
 			2 => $"{targets[0].ToInspectorName()} & {targets[1].ToInspectorName()}",
 			_ => $"{targets.Count} {plural}"
