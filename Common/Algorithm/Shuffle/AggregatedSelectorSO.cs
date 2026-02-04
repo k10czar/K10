@@ -85,7 +85,7 @@ public class AggregatedSelector<T> : IAggregatedSubsetSelector<T> where T : Scri
 
     public Type ElementType => typeof(T);
 
-    public int Count => _entries.Length;
+    public int Count => _entries != null ? _entries.Length : 0;
     public ISubsetSelector GetEntryObject(int id) => _entries[id];
     public ISubsetSelector<T> GetEntry(int id) => _entries[id];
 
@@ -98,7 +98,7 @@ public abstract class AggregatedSelectorSO<T> : BaseAggregatedSelectorSO, IAggre
 
     public override Type ElementType => typeof(T);
 
-    public override int Count => _entries.Length;
+    public override int Count => _entries != null ? _entries.Length : 0;
     public override ISubsetSelector GetEntryObject(int id) => _entries[id];
     public ISubsetSelector<T> GetEntry(int id) => _entries[id];
 

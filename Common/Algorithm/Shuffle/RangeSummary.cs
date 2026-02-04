@@ -49,11 +49,12 @@ public class RangeSummary
         isSingleValue = true;
     }
 
-    public void SetOnlyOne(double value)
+    public void SetOnlyOne(double value) => SetOnlyOne(value, value, value);
+    public void SetOnlyOne( double min, double avg, double max )
     {
-        Min = value;
-        Average = value;
-        Max = value;
+        Min = min;
+        Average = avg;
+        Max = max;
         chancesSum = 1;
         combines = 1;
         isSingleValue = true;
@@ -76,6 +77,19 @@ public class RangeSummary
         Min = Math.Min( value, Min );
         Average += value * chance;
         Max = Math.Max( value, Max );
+        chancesSum += chance;
+        notSet = false;
+        isSingleValue = CalcIsSingleValue();
+        // Debug.Log( $"{before}.RegisterValue( {value}, {chance*100:N2}% ) = {this}" );
+    }
+
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
+    public void RegisterValue( double min, double avg, double max, double chance )
+    {
+        // var before = this.ToString();
+        Min = Math.Min( min, Min );
+        Average += avg * chance;
+        Max = Math.Max( max, Max );
         chancesSum += chance;
         notSet = false;
         isSingleValue = CalcIsSingleValue();
@@ -117,7 +131,7 @@ public class RangeSummary
         isSingleValue = CalcIsSingleValue();
     }
 
-    public override string ToString() => notSet ? "NOT_SET" : ( isSingleValue ? $"{Min:N0}" : $"[ {Min:N0} ... {Average:N1} ... {Max:N0} ]{(WrongSum?"!WRONG!":"")}" );
+    public override string ToString() => notSet ? "NOT_SET" : ( isSingleValue ? $"{Min:N0}" : $"[ {Min:N0} ... {Average:N1} ... {Max:N0} ]{(WrongSum?$"!WRONG!{chancesSum}!={combines}":"")}" );
     public string ToStringFull() => notSet ? "NOT_SET" : ( isSingleValue ? $"{Min:N0}" : $"[ {Min:N0} ... {Average:N1} ... {Max:N0} ] {chancesSum:N2} {combines:N2} {(WrongSum?"!WRONG!":"")}" );
 
     public void Combine(double min, double avg, double max, double mod = 1)
@@ -130,4 +144,8 @@ public class RangeSummary
         notSet = false;
         isSingleValue = CalcIsSingleValue();
     }
+
+    public void Combine((double min, double avg, double max) range, double mod = 1) => Combine( range.min, range.avg, range.max, mod );
+
+    internal (double, double, double) ToTupple() => ( Min, Average, Max );
 }

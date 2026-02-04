@@ -1,32 +1,28 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System;
 
-public class SubsetSelectorPredictor<T>
+public abstract class BaseSubsetSelectorPredictor<T>
 {
     const float CALC_TIME_LIMIT = 1; 
     public T[] _elements;
     public int[] _countSimilarCache;
-    public float[] _rollChancesCache;
+    public double[] _rollChancesCache;
     public int[] _minCache;
     public int[] _maxCache;
-    public int[] _realMaxCount;
-    public int[] _realMinCount;
     public float[] _chancesCache;
-    public double[] _scores;
-    Func<T,double> _scorer;
     public string[] _namesCache;
     float _sumWeight;
 
-    double[,] _elementCountChance;
-    double[] _elementAvg;
+    public int[] _realMaxCount;
+    public int[] _realMinCount;
+    public double[,] _elementCountChance;
+    public double[] _elementAvg;
     
-    public double[,,] M;
-    double[] acc;
+    public double[] _countOfAnyChance;
 
     public int rMin;
     public int rMax;
-    int count;
+    protected int count;
     int maxElementsCount;
     int minSum;
 
@@ -34,8 +30,8 @@ public class SubsetSelectorPredictor<T>
     public int PermutationsCount => _permutations.Count;
     public int MaxElementsCount => maxElementsCount;
 
-    public readonly List<int[]> combinations = new();
-    public readonly List<double> combinationsChances = new();
+    // public readonly List<int[]> combinations = new();
+    // public readonly List<double> combinationsChances = new();
 
     public readonly RangeSummary Score = new();
     public readonly RangeSummary ElementsCount = new();
@@ -44,16 +40,18 @@ public class SubsetSelectorPredictor<T>
     public IReadOnlyList<(string name, float percentage)> PermutationsList => _permutations;
     Dictionary<string, float> _permutationChances = new();
 
-    TimeLimit _calculationTimeLimit = new( CALC_TIME_LIMIT * 1000 );
+    protected TimeLimit _calculationTimeLimit = new( CALC_TIME_LIMIT * 1000 );
     
-    private ulong _variationsCount;
+    protected ulong _variationsCount;
     public ulong VariationsCount => _variationsCount;
-    private ulong _variationsWithPermutationCount;
+    protected ulong _variationsWithPermutationCount;
     public ulong VariationsWithPermutationCount => _variationsWithPermutationCount;
+
+    public bool HasChanceOfAnyElementCount( int count ) => _countOfAnyChance[count] > float.Epsilon;
 
     public ITimeLimit TimeLimit => _calculationTimeLimit;
 
-    public IEnumerator<(T element,(double min, double avg, double max)range)> GetElementAveragesEnumerator()
+    public IEnumerator<(T element,(double min, double avg, double max)range)> GetElementsRangeEnumerator()
     {
         for( int i = 0; i < count; i++ ) 
         {
@@ -61,16 +59,13 @@ public class SubsetSelectorPredictor<T>
         }
     }
 
-    public override string ToString()
-    {
-        return $"Score:{Score} ElementsCount:{ElementsCount} _elements:{_elements.ToStringOrNull()}\ncombinations:{combinations.ToStringOrNull()}\ncombinationsChances:{combinationsChances.ToStringOrNull()}\n_permutations:{_permutations.ToStringOrNull()}";
-    }
-    
+    // public override string ToString()
+    // {
+    //     return $"Score:{Score} ElementsCount:{ElementsCount} _elements:{_elements.ToStringOrNull()}\ncombinations:{combinations.ToStringOrNull()}\ncombinationsChances:{combinationsChances.ToStringOrNull()}\n_permutations:{_permutations.ToStringOrNull()}";
+    // }
 
-    public void SetScores( Func<T,double> scorer )
-    {
-        _scorer = scorer;
-    }
+    protected abstract void BuildScores( int count );
+    
 
     public void Calculate( ISubsetSelector<T> set )
     {
@@ -79,7 +74,6 @@ public class SubsetSelectorPredictor<T>
         _calculationTimeLimit.Begin();
 
         count = set.EntriesCount;
-        FillElements(set);
         FillCaches(set);
         CalculatePredictions(set);
 
@@ -87,39 +81,7 @@ public class SubsetSelectorPredictor<T>
         // Debug.Log( $"Calculate {_calculationTimeLimit} {ToString()} on {set}" );
     }
 
-    private void FillElements(ISubsetSelector<T> set)
-    {
-        var count = set.EntriesCount;
-        if (_elements == null || _elements.Length != count) _elements = new T[count];
-        for (int i = 0; i < set.EntriesCount; i++)
-        {
-            _elements[i] = set.GetEntry(i).Element;
-        }
-    }
-
     public void FillCaches( ISubsetSelector set )
-    {
-        FillEntriesCaches(set);
-        FillRangeWeights(set);
-    }
-
-    private void FillRangeWeights(ISubsetSelector set)
-    {
-        var rCount = set.Max + 1 - set.Min;
-        if( !set.IsBiased ) 
-        {
-            _rollChancesCache = null;
-            return;
-        }
-        else if (_rollChancesCache == null || _rollChancesCache.Length != rCount) _rollChancesCache = new float[rCount];
-
-        for (int i = 0; i < rCount; i++)
-        {
-            _rollChancesCache[i] = set.GetBiasWeight(set.Min + i);
-        }
-    }
-
-    public void FillEntriesCaches( ISubsetSelector set )
     {
         var count = set.EntriesCount;
 
@@ -127,19 +89,21 @@ public class SubsetSelectorPredictor<T>
         if (_maxCache == null || _maxCache.Length != count) _maxCache = new int[count];
         if (_namesCache == null || _namesCache.Length != count) _namesCache = new string[count];
         if (_chancesCache == null || _chancesCache.Length != count) _chancesCache = new float[count];
-        if (_scores == null || _scores.Length != count) _scores = new double[count];
         if (_elementAvg == null || _elementAvg.Length != count) _elementAvg = new double[count];
         if (_realMaxCount == null || _realMaxCount.Length != count) _realMaxCount = new int[count];
         if (_realMinCount == null || _realMinCount.Length != count) _realMinCount = new int[count];
+        if (_elements == null || _elements.Length != count) _elements = new T[count];
         
         _sumWeight = 0f;
 
         for( int i = 0; i < count; i++ )
         {
             var element = set.GetEntryObject( i );
+            _elements[i] = (T)element.ElementAsObject;
             _sumWeight += element.Weight;
-            _scores[i] = ( _scorer != null ) ? _scorer(_elements[i]) : 1;
         }
+        
+        BuildScores( count );
 
         minSum = 0;
         maxElementsCount = 0;
@@ -161,10 +125,39 @@ public class SubsetSelectorPredictor<T>
             var realCap = Mathf.Max( min, max );
             maxElementsCount = Mathf.Max( maxElementsCount, realCap );
         }
-        
+
+        if( _countOfAnyChance == null || _countOfAnyChance.Length != maxElementsCount + 1 ) _countOfAnyChance = new double[maxElementsCount+1];
         if( _elementCountChance == null || _elementCountChance.GetLength(0) != count || _elementCountChance.GetLength(1) != maxElementsCount + 1 ) _elementCountChance = new double[count,maxElementsCount+1];
 
         _rollChancesCache = null;
+        FillRangeWeights(set);
+    }
+
+    private void FillRangeWeights(ISubsetSelector set)
+    {
+        var rCount = set.Max + 1 - set.Min;
+        if( !set.IsBiased ) 
+        {
+            _rollChancesCache = null;
+            return;
+        }
+        
+        if (_rollChancesCache == null || _rollChancesCache.Length != rCount) _rollChancesCache = new double[rCount];
+
+        var biasSum = 0.0;
+        for (int i = 0; i < rCount; i++)
+        {
+            var bias = set.GetBiasWeight(set.Min + i);
+            biasSum += bias;
+            _rollChancesCache[i] = bias;
+        }
+
+        if( biasSum < 2 * double.Epsilon ) return;
+
+        for (int i = 0; i < rCount; i++)
+        {
+            _rollChancesCache[i] /= biasSum;
+        }
     }
 
     public void CalculatePredictions( ISubsetSelector set )
@@ -181,7 +174,7 @@ public class SubsetSelectorPredictor<T>
 
         var jugs = new int[count];
         int guaranteeds = 0;
-        double guaranteedScore = 0;
+        ResetGuaranteedScore();
 
         if( _countSimilarCache == null || _countSimilarCache.Length < count ) _countSimilarCache = new int[count];
 
@@ -192,7 +185,7 @@ public class SubsetSelectorPredictor<T>
             var min = _minCache[i];
             guaranteeds += min;
             var delta = max - min;
-            guaranteedScore += min * _scores[i];
+            AddGuaranteedScore( min, i );
             jugs[i] = delta;
             _countSimilarCache[i] = 0;
             for( int j = 0; j < maxElementsCount; j++ ) _elementCountChance[i,j] = 0;
@@ -203,7 +196,7 @@ public class SubsetSelectorPredictor<T>
 
         if( realMax <= 0 )
         {
-            Score.SetOnlyOne( guaranteedScore );
+            ScoreOnlyGuaranteeds();
             ElementsCount.SetOnlyOne( guaranteeds );
             _variationsCount = 1;
             _variationsWithPermutationCount = 1;
@@ -213,24 +206,34 @@ public class SubsetSelectorPredictor<T>
         var startRoll = realMin;
         if( realMin < 0 ) startRoll = 0;
 
-        Score.StartAccumulator();
+        PreGenerateCases();
+
         ElementsCount.StartAccumulator();
         _variationsCount = 0;
         _variationsWithPermutationCount = 0;
-        var baseChance = 1;
-        if( realMax > startRoll ) baseChance = realMax + 1 - startRoll;
+        var baseChance = 1.0;
+        if( realMax > startRoll ) baseChance = 1.0 / ( realMax + 1 - startRoll );
         for( int i = startRoll; i <= realMax; i++ )
         {
             // Debug.Log( $"TryRool: {i+guaranteeds}" );
-            var rollChance = _rollChancesCache != null ? _rollChancesCache[i + guaranteeds] : baseChance;
-            Generate( guaranteedScore, guaranteeds, rollChance, jugs, _scores, _chancesCache, i, 0, count, Score );
-            ElementsCount.RegisterValue( guaranteeds + i, rollChance );
+            var realRollsCount = i+guaranteeds;
+            var rollChance = _rollChancesCache != null ? _rollChancesCache[realRollsCount-rMin] : baseChance;
+            GenerateCase( i, rollChance, jugs );
+            ElementsCount.RegisterValue( realRollsCount, rollChance );
         }
-        Score.Normalize();
+
+        PostGenerateCases();
         ElementsCount.Normalize();
 
         CalculateAverages();
     }
+
+    protected abstract void GenerateCase(int rolls, double rollChance, int[] elementsPool);
+    protected abstract void ResetGuaranteedScore();
+    protected abstract void AddGuaranteedScore(int quantity, int elementId);
+    protected abstract void ScoreOnlyGuaranteeds();
+    protected abstract void PostGenerateCases();
+    protected abstract void PreGenerateCases();
 
     private void CalculateAverages()
     {
@@ -239,13 +242,15 @@ public class SubsetSelectorPredictor<T>
             _elementAvg[i] = 0;
             for( int j = 1; j <= maxElementsCount; j++ )
             {
+                var chance = _elementCountChance[i,j];
                 _elementAvg[i] += j * _elementCountChance[i,j];
+                _countOfAnyChance[j] += chance;
                 // Debug.Log( $"{i} +{j * _elementCountChance[i,j]} = {j} * {_elementCountChance[i,j]}" );
             }
         }
     }
 
-    ulong PermutationsOfCountCache()
+    protected ulong PermutationsOfCountCache()
     {
         var biggestJug = 0;
         var biggestJugValue = _countSimilarCache[0];
@@ -272,38 +277,25 @@ public class SubsetSelectorPredictor<T>
         return permutations;
     }
 
-    void Generate( double score, int count, double chance, int[] limits, double[] scores, float[] chances, int remaining, int startIndex, int length, RangeSummary scoreSummary )
+    protected string NameScratchCombination()
     {
-        if (remaining == 0)
-        {
-            var permutations = PermutationsOfCountCache();
-            var realChance = chance * permutations;
-            for( int i = 0; i < _countSimilarCache.Length; i++ ) 
-            {
-                var eCount = _countSimilarCache[i];
-                var realCount = eCount + _minCache[i];
-                if( realCount > _realMaxCount[i] ) _realMaxCount[i] = realCount; 
-                if( realCount < _realMinCount[i] ) _realMinCount[i] = realCount;
-                _elementCountChance[i,realCount] += realChance;
-            }
-            // Debug.Log( $"{NameCombination(_countSimilarCache,_namesCache)} XP add {score} {permutations*chance*100:N4}% ( {permutations} * {chance*100:N4}% )" );
-            scoreSummary.RegisterValue( score, realChance );
-            _variationsCount++;
-            _variationsWithPermutationCount += permutations;
-            return;
-        }
+		var sb = StringBuilderPool.RequestEmpty();
 
-        for (int i = startIndex; i < length; i++)
-        {
-            if (limits[i] == 0)
-                continue;
+		var first = true;
+		for (int i = 0; i < _countSimilarCache.Length; i++)
+		{
+			var count = _countSimilarCache[i] + _minCache[i];
+			if (count > 0)
+			{
+				if( !first ) sb.Append( ", " );
+				sb.Append($"{count} {_namesCache[i]}");
+				first = false;
+			}
+		}
 
-            limits[i]--;
-            _countSimilarCache[i]++;
-            Generate(score + scores[i], count + 1, chance * chances[i], limits, scores, chances, remaining - 1, i, length, scoreSummary);
-            _countSimilarCache[i]--;
-            limits[i]++;
-        }
+		if( first ) sb.Append( "NOTHING" );
+
+		return sb.ReturnToPoolAndCast();
     }
 
     private static string NameCombination( int[] _countCache, string[] names)

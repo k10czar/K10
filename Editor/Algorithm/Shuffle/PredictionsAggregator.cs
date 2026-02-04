@@ -27,7 +27,7 @@ public static class PreditionsDrawer
 							GUILayout.Space( SPACING );
 							EditorGUILayout.BeginVertical( GUI.skin.box );
 								var predictor = aggregated.GetEntry( i );
-								predictor.DrawTable();
+								if( predictor != null ) predictor.DrawTable();
 							EditorGUILayout.EndVertical();
 						}
 					EditorGUILayout.EndHorizontal();
@@ -41,7 +41,7 @@ public static class PreditionsDrawer
 							GUILayout.Space( SPACING );
 							EditorGUILayout.BeginVertical( GUI.skin.box );
 								var predictor = aggregated.GetEntry( i );
-								predictor.DrawPermutations();
+								if( predictor != null ) predictor.DrawPermutations();
 							EditorGUILayout.EndVertical();
 						}
 					EditorGUILayout.EndHorizontal();
@@ -49,6 +49,56 @@ public static class PreditionsDrawer
 			}
 		EditorGUILayout.EndVertical();
     }
+
+	public static void DrawTableLayout<T>( this AggregatedPredictor<T> aggregated )
+	{
+        var lh = EditorGUIUtility.singleLineHeight;
+		
+
+        int minE = int.MaxValue;
+        int maxE = int.MinValue;
+        var count = aggregated._elementsCount;
+        var maxElementsCount = aggregated._maxElementCount;
+
+        var realSlices = 1;
+        for( int j = 0; j <= maxElementsCount; j++ )
+        {
+            if( !aggregated.HasChanceOfAnyElementCount(j) ) continue;
+            realSlices++;
+            minE = Mathf.Min( j, minE );
+            maxE = Mathf.Max( j, maxE );
+        }
+
+        GUILayout.Label( $"Averageas da sd [ {minE}, {maxE} ] {maxElementsCount}", GUI.skin.box );
+
+        if( minE <= maxE )
+        {
+            var rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh + 3 ) );
+            rect.RequestTop( lh + 3 );
+            GUILayout.Space( lh + 3 );
+            GUI.Label( rect.VerticalSlice( 0, realSlices ), "Average", GUI.skin.box );
+            var sliceId = 1;
+            for( int j = minE; j <= maxE; j++ ) if( aggregated.HasChanceOfAnyElementCount(j) ) GUI.Label( rect.VerticalSlice( sliceId++, realSlices ), $"{j}", GUI.skin.box );
+            EditorGUILayout.EndHorizontal();
+
+            for( int i = 0; i < count; i++ )
+            {
+                rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh ) );
+                rect.RequestTop( lh );
+                GUILayout.Space( lh );
+                GUI.Label( rect.VerticalSlice( 0, realSlices ), $"{aggregated._elementAvg[i]:N2} {aggregated._namesCache[i]}" );
+                sliceId = 1;
+                for( int j = minE; j <= maxE; j++ )
+                {
+                    if( !aggregated.HasChanceOfAnyElementCount(j) ) continue;
+                    double val = aggregated._elementCountChance[ i, j ];
+                    var r = rect.VerticalSlice( sliceId++, realSlices );
+                    GUIProgressBar.Draw( r, (float)val );
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+        }
+	}
 	
 
     public static void Draw( this PredictionsAggregator aggregated, Rect rect)
@@ -153,38 +203,139 @@ public static class PreditionsDrawer
     }
 }
 
-public class PredictionsAggregator
+public class SubsetSelectorPropAdapter : ISubsetSelector<ScriptableObject>
 {
-	List<ChancesPredictor> _predictors = new();
-	
-	// int[] _countCache;
-	// string[] _namesCache;
-	// int[] _countStarts;
-
-	int _count;
-
 	SerializedProperty _prop;
+	SerializedProperty _rollsProp;
+	SerializedProperty _minProp;
+	SerializedProperty _maxProp;
+	SerializedProperty _weightsProp;
+	SerializedProperty _rangeProp;
+	SerializedProperty _entriesProp;
+	List<EntryAdapter> _adapters = new();
 
-	public int Count => _count;
+    public int Min => _minProp.intValue;
+    public int Max => _maxProp.intValue;
+    public bool IsBiased => _weightsProp.arraySize > 0;
+    public int EntriesCount => _entriesProp.arraySize;
 
     public SerializedProperty Prop => _prop;
+	
+    public void SetProp(SerializedProperty serializedProperty)
+    {
+        _prop = serializedProperty;
+		_entriesProp = _prop.FindPropertyRelative("_entries");
+		_rollsProp = _prop.FindPropertyRelative("_rolls");
+		_weightsProp = _rollsProp.FindPropertyRelative("_weights");
+		_rangeProp = _rollsProp.FindPropertyRelative("range");
+		_minProp = _rangeProp.FindPropertyRelative("min");
+		_maxProp = _rangeProp.FindPropertyRelative("max");
+    }
 
-    // List<(string name, float percentage)> _permutations = new();
-	// Dictionary<string, float> _permutationChances = new();
+    public float GetBiasWeight(int rolls) => _weightsProp.GetArrayElementAtIndex(rolls - Min).floatValue;
 
-	public ChancesPredictor GetEntry( int index ) => _predictors[index];
+    public IWeightedSubsetEntry<ScriptableObject> GetEntry(int id)
+    {
+		EnsureSize();
+		var adapter = _adapters[id];
+		var prop = _entriesProp.GetArrayElementAtIndex( id );
+		if( adapter.Prop != prop ) adapter.SetProp( prop );
+		return adapter;
+    }
 
-	public void EnsureSize( int size )
-	{
-		while( _predictors.Count < size )
+    private void EnsureSize()
+    {
+		var count = EntriesCount;
+		while( _adapters.Count < count )
 		{
-			_predictors.Add( new() );
+			var adapter = new EntryAdapter();
+			adapter.SetProp( _entriesProp.GetArrayElementAtIndex( _adapters.Count ) );
+			_adapters.Add( adapter );
 		}
-	}
+    }
+
+    public IWeightedSubsetEntry GetEntryObject(int id) => GetEntry(id);
+
+    class EntryAdapter : IWeightedSubsetEntry<ScriptableObject>
+    {
+		SerializedProperty _entryProp;
+		SerializedProperty _weightProp;
+		SerializedProperty _guaranteedProp;
+		SerializedProperty _capProp;
+		SerializedProperty _elementProp;
+
+        public ScriptableObject Element => _elementProp.objectReferenceValue as ScriptableObject;
+        public object ElementAsObject => _elementProp.objectReferenceValue;
+        public int Guaranteed => _guaranteedProp.intValue;
+        public int Cap => _capProp.intValue;
+        public bool IsValid => _elementProp.objectReferenceValue != null;
+        public float Weight => _weightProp.floatValue;
+
+        public SerializedProperty Prop => _entryProp;
+
+        public void SetProp(SerializedProperty serializedProperty)
+        {
+        	_entryProp = serializedProperty;
+			_weightProp = _entryProp.FindPropertyRelative( "_weight" );
+			_guaranteedProp = _entryProp.FindPropertyRelative("_guaranteed");
+			_capProp = _entryProp.FindPropertyRelative("_cap");
+			_elementProp = _entryProp.FindPropertyRelative("_element");
+        }
+    }
+}
+
+public class AggregatedSubsetSelectorPropAdapter : IAggregatedSubsetSelector<ScriptableObject>
+{
+	SerializedProperty _prop;
+	List<SubsetSelectorPropAdapter> _adapters = new();
+
+    public SerializedProperty Prop => _prop;
+    public int Count => _prop.arraySize;
+
+    public Type ElementType => typeof(ScriptableObject);
+
+    public ISubsetSelector<ScriptableObject> GetEntry(int id)
+    {
+		EnsureSize();
+		var adapter = _adapters[id];
+		var prop = _prop.GetArrayElementAtIndex( id );
+		if( adapter.Prop != prop ) adapter.SetProp( prop );
+		return adapter;
+    }
+
+    private void EnsureSize()
+    {
+		var count = Count;
+		while( _adapters.Count < count )
+		{
+			var adapter = new SubsetSelectorPropAdapter();
+			adapter.SetProp( _prop.GetArrayElementAtIndex( _adapters.Count ) );
+			_adapters.Add( adapter );
+		}
+    }
+
+    public ISubsetSelector GetEntryObject(int i) => GetEntry(i);
 
 	public void SetProp( SerializedProperty prop )
 	{
 		_prop = prop;
+	}
+}
+
+public class PredictionsAggregator
+{
+	public AggregatedPredictor<ScriptableObject> aggregatedPredictor = new();
+	AggregatedSubsetSelectorPropAdapter _adaptor = new();
+
+	public int Count => _adaptor.Count;
+    public SerializedProperty Prop => _adaptor.Prop;
+
+	public SubsetSelectorPredictor<ScriptableObject> GetEntry( int index ) => aggregatedPredictor.GetSubPredictor( index );
+
+	public void SetProp( SerializedProperty prop )
+	{
+		_adaptor.SetProp( prop );
+		Debug.Log( $"SetProp( {prop} )" );
 	}
 
 	public void SetDirty()
@@ -194,18 +345,7 @@ public class PredictionsAggregator
 
     public void Calculate()
     {
-		_count = _prop.arraySize;
-		EnsureSize(_count);
-
-		for( int i = 0; i < _count; i++ )
-        {
-            var entry = _prop.GetArrayElementAtIndex(i);
-			SetSpecificData( i, entry );
-        }
+		Debug.Log( $"Calculate( {aggregatedPredictor} )" );
+		aggregatedPredictor.Calculate( _adaptor );
     }
-
-	public void SetSpecificData(int i, SerializedProperty entry)
-	{
-		_predictors[i].Calculate( entry );
-	}
 }

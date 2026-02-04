@@ -120,13 +120,13 @@ public class AggregatedSelectorEditor : IGetHeight
 			Debug.Log($"<color=#BA55D3>Debug Roll</color> of <color=#7CFC00>{elementToRoll.DebugNameOrNull()}</color> result in roll with <color=#87CEFA>{result.Count()}</color>\n\t-{string.Join( "\n\t-",result.ToList().ConvertAll( DebugName ) )}\n");
 		}
 
-		if( _isDirty && _predictions.Prop.isExpanded )
+		if( /*_isDirty && */_predictions.Prop.isExpanded )
 		{
 			_predictions.Calculate();
 			_isDirty = false;
 		}
 
-		_predictions.DrawLayout();
+		_predictions.aggregatedPredictor.DrawTableLayout();
     }
 
 	public void Draw( Rect rect, IAggregatedSubsetSelector elementToRoll = null )
