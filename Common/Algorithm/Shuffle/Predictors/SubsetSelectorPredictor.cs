@@ -1,6 +1,7 @@
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.ObjectModel;
+using UnityEngine;
 
 public class SubsetSelectorPredictor<T> : BaseSubsetSelectorPredictor<T>
 {
@@ -58,6 +59,27 @@ public class SubsetSelectorPredictor<T> : BaseSubsetSelectorPredictor<T>
         Generate( guaranteedScore, guaranteeds, rollChance, elementsPool, rolls, 0, count );
     }
 
+    string NameCacheCombination()
+	{
+		var sb = StringBuilderPool.RequestEmpty();
+
+		var first = true;
+		for (int i = 0; i < _countSimilarCache.Length; i++)
+		{
+			var count = _countSimilarCache[i] + _minCache[i];
+			if (count > 0)
+			{
+				if( !first ) sb.Append( ", " );
+				sb.Append($"{count} {_namesCache[i]}");
+				first = false;
+			}
+		}
+
+		if( first ) sb.Append( "NOTHING" );
+
+		return sb.ReturnToPoolAndCast();
+    }
+
     void Generate( double score, int count, double chance, int[] limits, int remaining, int startIndex, int length )
     {
         if (remaining == 0)
@@ -73,7 +95,7 @@ public class SubsetSelectorPredictor<T> : BaseSubsetSelectorPredictor<T>
                 if( realCount < _realMinCount[i] ) _realMinCount[i] = realCount;
                 _elementCountChance[i,realCount] += realChance;
             }
-            // Debug.Log( $"{NameCombination(_countSimilarCache,_namesCache)} XP add {score} {permutations*chance*100:N4}% ( {permutations} * {chance*100:N4}% )" );
+            totalChances += realChance;
             Score.RegisterValue( score, realChance );
             _variationsCount++;
             _variationsWithPermutationCount += permutations;

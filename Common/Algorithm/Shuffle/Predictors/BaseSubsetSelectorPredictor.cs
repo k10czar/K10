@@ -30,6 +30,8 @@ public abstract class BaseSubsetSelectorPredictor<T>
     public int PermutationsCount => _permutations.Count;
     public int MaxElementsCount => maxElementsCount;
 
+    protected double totalChances = 0;
+
     // public readonly List<int[]> combinations = new();
     // public readonly List<double> combinationsChances = new();
 
@@ -200,11 +202,14 @@ public abstract class BaseSubsetSelectorPredictor<T>
             ElementsCount.SetOnlyOne( guaranteeds );
             _variationsCount = 1;
             _variationsWithPermutationCount = 1;
+            for( int i = 0; i < count; i++ ) _elementCountChance[i,_minCache[i]] = 1;
             return;
         }
 
         var startRoll = realMin;
         if( realMin < 0 ) startRoll = 0;
+
+        totalChances = 0;
 
         PreGenerateCases();
 
@@ -237,16 +242,19 @@ public abstract class BaseSubsetSelectorPredictor<T>
 
     private void CalculateAverages()
     {
+        var mult = 1.0;
+        if( totalChances > float.Epsilon ) mult = 1.0 / totalChances;
         for( int i = 0; i < count; i++ )
         {
             _elementAvg[i] = 0;
             for( int j = 1; j <= maxElementsCount; j++ )
             {
-                var chance = _elementCountChance[i,j];
-                _elementAvg[i] += j * _elementCountChance[i,j];
+                var chance = _elementCountChance[i,j] * mult;
+                _elementCountChance[i,j] = chance;
+                _elementAvg[i] += j * chance;
                 _countOfAnyChance[j] += chance;
-                // Debug.Log( $"{i} +{j * _elementCountChance[i,j]} = {j} * {_elementCountChance[i,j]}" );
             }
+            Debug.Log( $"{i}){_elements[i].ToStringOrNull()} avg:{_elementAvg[i]}" );
         }
     }
 
@@ -298,7 +306,7 @@ public abstract class BaseSubsetSelectorPredictor<T>
 		return sb.ReturnToPoolAndCast();
     }
 
-    private static string NameCombination( int[] _countCache, string[] names)
+    protected static string NameCombination( int[] _countCache, string[] names)
 	{
 		var sb = StringBuilderPool.RequestEmpty();
 

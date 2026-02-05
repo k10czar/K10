@@ -17,24 +17,24 @@ public struct ToggleButtonFromValueCapsule
     public bool Layout(float margin = 3, GUIStyle style = null)
     {
 		bool toggle = _value.Get;
-        var ret = _button.Layout(ref toggle, margin, style);
+        _button.Layout(ref toggle, margin, style);
 		_value.Set = toggle;
-		return ret;
+		return toggle;
     }
 
     public bool Draw(Rect rect, GUIStyle style = null)
     {
 		bool toggle = _value.Get;
-		var ret = _button.Draw( rect, ref toggle, style );
+		_button.Draw( rect, ref toggle, style );
 		_value.Set = toggle;
-		return ret;
+		return toggle;
     }
 
     public bool DrawOnTop(ref Rect rect)
     {
 		bool toggle = _value.Get;
-        var ret = _button.DrawOnTop(ref rect, ref toggle);
+        _button.DrawOnTop(ref rect, ref toggle);
 		_value.Set = toggle;
-		return ret;
+		return toggle;
     }
 }

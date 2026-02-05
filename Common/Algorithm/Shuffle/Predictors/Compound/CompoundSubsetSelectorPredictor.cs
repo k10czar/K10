@@ -50,7 +50,7 @@ public class CompoundSubsetSelectorPredictor<T,K> : BaseSubsetSelectorPredictor<
         {
             var crawler = RequestCrawler(_elements[i]);
             _crawlers[i] = crawler;
-            _scores[i] = crawler.Score.ToTupple();
+            _scores[i] = crawler?.Score.ToTupple() ?? ( 0,0,0 );
         }
 
         _subElementsCount = _subElementsId.Count;
@@ -72,6 +72,7 @@ public class CompoundSubsetSelectorPredictor<T,K> : BaseSubsetSelectorPredictor<
 
     private AggregatedPredictor<K> RequestCrawler(T t)
     {
+        if( t == null ) return null;
         if (!_crawlersDict.TryGetValue(t, out var crawler))
         {
             crawler = new AggregatedPredictor<K>();
@@ -120,6 +121,8 @@ public class CompoundSubsetSelectorPredictor<T,K> : BaseSubsetSelectorPredictor<
     protected override void PostGenerateCases()
     {
         Score.Normalize();
+        for( int i = 0; i < _subElementsRanges.Length; i++ ) _subElementsRanges[i].Normalize(); 
+        SubElementsCountRange.Normalize();
     }
 
     protected override void ScoreOnlyGuaranteeds()
@@ -134,6 +137,7 @@ public class CompoundSubsetSelectorPredictor<T,K> : BaseSubsetSelectorPredictor<
             var quantity = _minCache[i];
             if (quantity <= 0) continue;
             var crawler = _crawlers[i];
+            if (crawler == null) continue;
             var enumerator = crawler.GetElementAveragesEnumerator();
             while (enumerator.MoveNext())
             {
@@ -186,6 +190,7 @@ public class CompoundSubsetSelectorPredictor<T,K> : BaseSubsetSelectorPredictor<
                 if( realCount < _realMinCount[i] ) _realMinCount[i] = realCount;
                 _elementCountChance[i,realCount] += realChance;
                 var crawler = _crawlers[i];
+                if( crawler == null ) continue;
                 if( realCount > 0)
                 {
                     var enumerator = crawler.GetElementAveragesEnumerator();
@@ -195,14 +200,16 @@ public class CompoundSubsetSelectorPredictor<T,K> : BaseSubsetSelectorPredictor<
                         if( entry.Key == null ) continue;
                         var eId = _subElementsId[ entry.Key ];
                         _subElementsRangeScratch[eId].Combine(entry.Value, realCount);
+                        Debug.Log( $"{entry.Key} => {entry.Value}" );
                     }
                 }
                 subElementVariation *= crawler.VariationsCount;
                 subElementVariationWithPermutation *= crawler.VariationsWithPermutationCount;
                 _subElementsCountRangeScratch.Combine(crawler.ElementsCount, realCount);
             }
+            totalChances += realChance;
             RegisterSubElementsRangeScratch( realChance );
-            // Debug.Log( $"Combine {_subElementsCountRangeScratch} {realChance}% from {base.NameScratchCombination()} " );
+            Debug.Log( $"{NameCombination(_countSimilarCache,_namesCache)} Combine {_subElementsCountRangeScratch}{realChance*100:N2}% from {base.NameScratchCombination()} {totalChances}\n ( {_subElementsRangeScratch.ElementsToString()} ) " );
             SubElementsCountRange.RegisterValue( _subElementsCountRangeScratch, realChance );
             // Debug.Log( $"{NameCombination(_countSimilarCache,_namesCache)} XP add {score} {permutations*chance*100:N4}% ( {permutations} * {chance*100:N4}% )" );
             Score.RegisterValue( score.min, score.avg, score.max, realChance );

@@ -45,41 +45,30 @@ public struct ToggleButton
 
 	public float GetHeight() => EditorGUIUtility.singleLineHeight + 3;
 
-    public bool Layout( ref bool value, float margin = 3, GUIStyle style = null )
+    public void Layout( ref bool value, float margin = 3, GUIStyle style = null )
     {
 		var lh = EditorGUIUtility.singleLineHeight;
 		var rect = EditorGUILayout.BeginHorizontal( GUILayout.Height( lh + margin ) );
 		rect.RequestTop( lh + margin );
 		GUILayout.Space( lh + margin );
-		var ret = Draw( rect, ref value, style );
+		Draw( rect, ref value, style );
 
 		EditorGUILayout.EndHorizontal();
-
-		return ret;
     }
 	
     public bool Draw( Rect rect, ref bool value, GUIStyle style = null )
     {
 		if( style == null ) style = K10GuiStyles.smallBoldCenterStyle;
-		var toggle = value;
-
-		GUIContent content = toggle ? TrueContent : FalseContent;
+		GUIContent content = value ? TrueContent : FalseContent;
 		GUI.Box( rect, GUIContent.none );
-		var change = GUI.Button( rect, content, style );
-
-		if( change )
-        {
-			toggle = !toggle;
-			value = toggle;
-        }
-
-		return toggle;
+		if( GUI.Button( rect, content, style ) ) value = !value;
+		return value;
     }
 
-    public bool DrawOnTop( ref Rect rect, ref bool value )
+    public void DrawOnTop( ref Rect rect, ref bool value )
     {
 		var h = GetHeight();
 		var area = rect.GetLineTop( h );
-		return Draw( area, ref value );
+		Draw( area, ref value );
     }
 }

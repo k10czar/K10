@@ -2,22 +2,50 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 
-public class AggregatedPredictor<T>
+public interface IAggregatedPredictor<T>
+{
+    void Calculate(IAggregatedSubsetSelector<T> agg, Func<T,double> Scorer = null);
+}
+
+public class AggregatedPredictor<T> : BaseAggregatedPredictor<T>
 {
     public List<SubsetSelectorPredictor<T>> nestedCrawlers = new();
+    Func<T, double> _scorer;
 
+    public override int SubPredictorCount => nestedCrawlers?.Count ?? 0;
+    public override BaseSubsetSelectorPredictor<T> GetSubPredictor(int index) => nestedCrawlers != null && nestedCrawlers.Count > index ? nestedCrawlers[index] : null;
+    protected override void ClearCrawlers()
+    {
+        nestedCrawlers.Clear();
+    }
+    public void SetScorer(Func<T, double> scorer)
+    {
+        _scorer = scorer;
+    }
+    protected override BaseSubsetSelectorPredictor<T> BuildCrawler(ISubsetSelector<T> subsetSelector)
+    {
+        var crawler = new SubsetSelectorPredictor<T>();
+        crawler.SetScorer( _scorer );
+        crawler.Calculate( subsetSelector );
+        nestedCrawlers.Add( crawler );
+        return crawler;
+    }
+}
+
+
+public abstract class BaseAggregatedPredictor<T> : IAggregatedPredictor<T>
+{
     public RangeSummary Score = new();
     public RangeSummary ElementsCount = new();
 
-    bool _isTooExpensive = false;
-    public bool IsTooExpensive => _isTooExpensive;
-
+    protected bool _isTooExpensive = false;
     double _elapsedSeconds = 0;
-    public double ElapsedSeconds => _elapsedSeconds;
-
     ulong _variationsCount = 0;
-    public ulong VariationsCount => _variationsCount;
     ulong _variationsWithPermutationCount = 0;
+
+    public bool IsTooExpensive => _isTooExpensive;
+    public double ElapsedSeconds => _elapsedSeconds;
+    public ulong VariationsCount => _variationsCount;
     public ulong VariationsWithPermutationCount => _variationsWithPermutationCount;
 
     public double[,] _elementCountChance;
@@ -32,11 +60,14 @@ public class AggregatedPredictor<T>
 
     Dictionary<T,int> _elementId = new();
 
-    Dictionary<T,(double min, double avg, double max)> _elementRange = new();
+    Dictionary<T,RangeSummary> _elementRange = new();
 
-    public IEnumerator<KeyValuePair<T,(double min, double avg, double max)>> GetElementAveragesEnumerator() => _elementRange.GetEnumerator();
+    public IEnumerator<KeyValuePair<T,RangeSummary>> GetElementAveragesEnumerator() => _elementRange.GetEnumerator();
 
-    public SubsetSelectorPredictor<T> GetSubPredictor(int index) => nestedCrawlers != null && nestedCrawlers.Count > index ? nestedCrawlers[index] : null;
+    public abstract int SubPredictorCount { get; }
+    public abstract BaseSubsetSelectorPredictor<T> GetSubPredictor(int index);
+    protected abstract void ClearCrawlers();
+    protected abstract BaseSubsetSelectorPredictor<T> BuildCrawler(ISubsetSelector<T> subsetSelector);
 
     public bool HasChanceOfAnyElementCount(int count)
     {
@@ -45,13 +76,12 @@ public class AggregatedPredictor<T>
 
     public void Calculate( IAggregatedSubsetSelector<T> agg, Func<T,double> Scorer = null )
     {
-        nestedCrawlers.Clear();
-
         Score.SetZero();
         ElementsCount.SetZero();
         _isTooExpensive = false;
 
         _elapsedSeconds = 0;
+        ClearCrawlers();
 
         if( agg == null ) return;
 
@@ -60,11 +90,8 @@ public class AggregatedPredictor<T>
 
         for ( int i = 0; i < agg.Count && !_isTooExpensive; i++ )
         {
-            var crawler = new SubsetSelectorPredictor<T>();
-            crawler.SetScorer( Scorer );
-            crawler.Calculate( agg.GetEntry(i) );
+            var crawler = BuildCrawler( agg.GetEntry(i) );
             _elapsedSeconds += crawler.TimeLimit.ElapsedSeconds();
-            nestedCrawlers.Add( crawler );
 
             Score.Combine( crawler.Score );
             ElementsCount.Combine( crawler.ElementsCount );
@@ -80,17 +107,22 @@ public class AggregatedPredictor<T>
                 var entry = enumerator.Current;
                 var entryRange = entry.range;
                 var element = entry.element;
-                _elementRange.TryGetValue( element, out var range );
-                range.min += entryRange.min;
-                range.avg += entryRange.avg;
-                range.max += entryRange.max;
-                _elementRange[element] = range;
+                if( element == null ) continue;
+                if( !_elementRange.TryGetValue( element, out var range ) ) 
+                {
+                    range = new();
+                    range.SetZero();
+                    _elementRange[element] = range;
+                }
+                range.Combine( entryRange );
+                Debug.Log( $"Combine {element} => {entryRange}" );
             }
         }
 
-        for ( int i = 0; i < nestedCrawlers.Count; i++ )
+        var subCount = SubPredictorCount;
+        for ( int i = 0; i < subCount; i++ )
         {
-            var crawler = nestedCrawlers[i];
+            var crawler = GetSubPredictor(i);
             var count = crawler._elements.Length;
             for ( int j = 0; j < count; j++ )
             {
@@ -112,23 +144,22 @@ public class AggregatedPredictor<T>
             _elementAvg[i] = 0;
         }
 
-        _elementIds = new int[_elementsCount,nestedCrawlers.Count];
+        _elementIds = new int[_elementsCount,subCount];
 
-        for ( int i = 0; i < nestedCrawlers.Count; i++ )
+        for ( int i = 0; i < subCount; i++ )
         {
             for ( int j = 0; j < _elementsCount; j++ )
             {
                 _elementIds[j,i] = -1;
             }
 
-            var crawler = nestedCrawlers[i];
+            var crawler = GetSubPredictor(i);
             var count = crawler._elements.Length;
             for ( int j = 0; j < count; j++ )
             {
                 var element = crawler._elements[j];
                 if( element == null ) continue;
                 if( !_elementId.TryGetValue( element, out var id ) ) continue;
-                Debug.Log( $"{element} {_maxElementsCountOf[id]+crawler._realMaxCount[j]} = {_maxElementsCountOf[id]} + {crawler._realMaxCount[j]}" );
                 _maxElementsCountOf[id] += crawler._realMaxCount[j];
                 _elementAvg[id] += crawler._elementAvg[j];
                 _elementIds[id,i] = j;
@@ -138,10 +169,12 @@ public class AggregatedPredictor<T>
 
         _maxElementCount = 0;
         for( int i = 0; i < _elementsCount; i++ ) if( _maxElementsCountOf[i] > _maxElementCount ) _maxElementCount = _maxElementsCountOf[i];
-        Debug.Log( $"_maxElementCount:{_maxElementCount}" );
 
         _elementCountChance = new double[_elementsCount,_maxElementCount+1];
         _countOfAnyChance = new double[_maxElementCount+1];
+
+        _debugRecursion = new int[subCount];
+        _debugRecursionChances = new float[subCount];
 
         for ( int i = 0; i < _elementsCount; i++ )
         {
@@ -153,29 +186,37 @@ public class AggregatedPredictor<T>
         }
     }
 
+    int[] _debugRecursion;
+    float[] _debugRecursionChances;
+
     private void ChancesRecursion( int elementId, int depth, double chance, int count )
     {
-        if( depth >= nestedCrawlers.Count )
+        if( depth >= SubPredictorCount )
         {
             _elementCountChance[ elementId, count ] += chance;
+            // Debug.Log( $"{elementId} {_debugRecursion.ElementsToString()}({_debugRecursionChances.ElementsToString()}) {count} {chance*100:N2}%" );
             return;
         }
         var id = _elementIds[elementId,depth];
+        _debugRecursion[depth] = id;
         if( id < 0 )
         {
             ChancesRecursion( elementId, depth + 1, chance, count );
+            _debugRecursionChances[depth] = 1;
             return;
         }
-        var crawler = nestedCrawlers[depth];
+        var crawler = GetSubPredictor(depth);
         var min = crawler._realMinCount[id];
         var max = crawler._realMaxCount[id];
         for( int i = min; i <= max; i++ )
         {
-            ChancesRecursion( elementId, depth + 1, chance * crawler._elementCountChance[id,i], count + i );
+            var eChance = crawler._elementCountChance[id,i];
+            _debugRecursionChances[depth] = (float)eChance;
+            ChancesRecursion( elementId, depth + 1, chance * eChance, count + i );
         }
     }
 
     public string DebugTimes => $"⏳{ElapsedSeconds:N2}s";
-    public string Stringfy( string score = "Score", string count = "Elements Count", string separator = " " ) => _isTooExpensive ? "Time limit exeeded" : $"{score}: {Score}{separator}{count}: {ElementsCount}{separator}Variations(With Permutations): {_variationsCount}({_variationsWithPermutationCount})";
+    public virtual string Stringfy( string score = "Score", string count = "Elements Count", string separator = " " ) => _isTooExpensive ? "Time limit exeeded" : $"{score}: {Score}{separator}{count}: {ElementsCount}{separator}Variations(With Permutations): {_variationsCount}({_variationsWithPermutationCount})";
     public override string ToString() => Stringfy();
 }

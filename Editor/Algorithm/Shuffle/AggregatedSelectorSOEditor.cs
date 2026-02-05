@@ -1,14 +1,14 @@
+using System;
 using UnityEditor;
-
-public interface IGetHeight
-{
-	float GetHeight();
-}
+using UnityEngine;
 
 [CustomEditor(typeof(BaseAggregatedSelectorSO),true)]
-public class AggregatedSelectorSOEditor : Editor, IGetHeight
+public class CompoundAggregatedSelectorSOEditor<T,K> : Editor where T : ScriptableObject, IAggregatedSubsetSelector<K>
 {
-	AggregatedSelectorEditor _editor;
+	CompoundAggregatedSelectorEditor<T,K> _editor;
+
+	protected virtual Func<SerializedProperty,Color> ElementColoringFunc => null;
+	protected virtual IAggregatedPredictor<T> Predictor => null;
 
 	public override void OnInspectorGUI()
 	{
@@ -20,9 +20,30 @@ public class AggregatedSelectorSOEditor : Editor, IGetHeight
 	public virtual void OnEnable()
 	{
 		var obj = target as IAggregatedSubsetSelector;
-		if (_editor == null) _editor = new( obj.ElementType );
+		if (_editor == null) _editor = new( obj.ElementType, ElementColoringFunc, Predictor );
 		_editor.Setup(serializedObject);
 	}
+}
 
-    public virtual float GetHeight() => _editor?.GetHeight(target as IAggregatedSubsetSelector ) ?? EditorGUIUtility.singleLineHeight;
+[CustomEditor(typeof(BaseAggregatedSelectorSO),true)]
+public class AggregatedSelectorSOEditor<T> : Editor where T : ScriptableObject
+{
+	AggregatedSelectorEditor<T> _editor;
+
+	protected virtual Func<SerializedProperty,Color> ElementColoringFunc => null;
+	protected virtual IAggregatedPredictor<T> Predictor => new AggregatedPredictor<T>();
+
+	public override void OnInspectorGUI()
+	{
+		serializedObject.Update();
+		_editor?.OnInspectorGUI( target as IAggregatedSubsetSelector );
+		serializedObject.ApplyModifiedProperties();
+	}
+
+	public virtual void OnEnable()
+	{
+		var obj = target as IAggregatedSubsetSelector;
+		if (_editor == null) _editor = new( obj.ElementType, ElementColoringFunc, Predictor );
+		_editor.Setup(serializedObject);
+	}
 }

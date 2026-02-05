@@ -12,7 +12,7 @@ public class RangeSummary
     bool isSingleValue = true;
 
     double combines = 0;
-    bool WrongSum => chancesSum > ( combines * 1.05 ) || chancesSum < ( combines * .95 );
+    public bool WrongSum => chancesSum > ( combines * 1.05 ) || chancesSum < ( combines * .95 );
     bool CalcIsSingleValue() => MathAdapter.Approximately( (float)Min, (float)Average ) && MathAdapter.Approximately( (float)Average, (float)Max );
 
 	[MethodImpl(Optimizations.INLINE_IF_CAN)]

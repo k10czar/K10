@@ -4,23 +4,38 @@ using K10.EditorGUIExtention;
 using System.Linq;
 using System;
 
-public class AggregatedSelectorEditor : IGetHeight
+public class CompoundAggregatedSelectorEditor<T,K> : AggregatedSelectorEditor<T> where T : ScriptableObject, IAggregatedSubsetSelector<K>
+{
+    public CompoundAggregatedSelectorEditor( Type type = null, Func<SerializedProperty,Color> ElementColoringFunc = null, IAggregatedPredictor<T> predictor = null )
+			:base( type, ElementColoringFunc, predictor )
+    {
+    }
+
+	protected override void DrawPreditions()
+	{
+		base.DrawPreditions();
+		if( _predictions.aggregatedPredictor is CompoundAggregatedPredictor<T,K> compound ) compound.DrawElementsRanges();
+	}
+}
+
+public class AggregatedSelectorEditor<T> where T : ScriptableObject
 {
 	SerializedProperty _entriesProp;
 
 	KReorderableList _list;
 
-	string _displayName = string.Empty;
-
 	bool _isDirty = true;
 
 	SubsetDrawer _drawer;
 
-	protected System.Type _elementType;
+	protected Type _elementType;
 
-	PredictionsAggregator _predictions = new();
+	protected PredictionsAggregator<T> _predictions;
 
 	ButtonWithIcon _rollButton = new( "Debug Roll", "icons/PlayDices.png" );
+
+    public readonly static IValueCapsule<bool> showPreditionsBool = new LazyEditorPersistentValue<bool>( "ShowPreditions" );
+	static ToggleButtonFromPropExpansionLazy _showPreditionsToggleButton = new( "Chances Prediction", "icons/dices.png", null );
 	
 	public Func<SerializedProperty,Color> _elementColoringFunc = null;
 
@@ -44,20 +59,11 @@ public class AggregatedSelectorEditor : IGetHeight
         }
     }
 
-    public AggregatedSelectorEditor( Type type = null, Func<SerializedProperty,Color> ElementColoringFunc = null )
+    public AggregatedSelectorEditor( Type type = null, Func<SerializedProperty,Color> ElementColoringFunc = null, IAggregatedPredictor<T> predictor = null )
     {
 		_elementColoringFunc = ElementColoringFunc;
 		SetType( type );
-    }
-
-	public AggregatedSelectorEditor( SerializedObject obj, Type type ) : this( type )
-    {
-		Setup(obj);
-    }
-
-	public AggregatedSelectorEditor( SerializedProperty prop, Type type ) : this( type )
-    {
-		Setup(prop);
+		_predictions = new( predictor );
     }
 	
 	public void SetType( Type type )
@@ -68,20 +74,11 @@ public class AggregatedSelectorEditor : IGetHeight
 	
 	public void Setup( SerializedObject serializedObject, string name = null, Type type = null, Texture2D icon = null )
     {
-		_displayName = serializedObject.DebugNameOrNull();
 		_entriesProp = serializedObject.FindProperty("_entries");
 		_predictions.SetProp( _entriesProp );
 		SetupList( serializedObject, _entriesProp, name, icon );
 		if( type != null ) SetType( type );
-    }
-	
-	public void Setup( SerializedProperty prop, Type type = null, Texture2D icon = null )
-	{
-		_displayName = prop.displayName;
-		_entriesProp = prop.FindPropertyRelative("_entries");
-		_predictions.SetProp( _entriesProp );
-		SetupList( prop.serializedObject, _entriesProp, prop.displayName, icon );
-		if( type != null ) SetType( type );
+		_isDirty = true;
     }
 	
 	void SetupList( SerializedObject serializedObject, SerializedProperty prop, string name = null, Texture2D icon = null )
@@ -104,6 +101,16 @@ public class AggregatedSelectorEditor : IGetHeight
 		return _drawer.GetPropertyHeight( element, null );
     }
 
+	public void SetDirty()
+	{
+		_isDirty = true;
+	}
+
+	protected virtual void DrawPreditions()
+	{
+		if( _predictions.aggregatedPredictor is BaseAggregatedPredictor<T> ap ) ap.DrawTableLayout();
+	}
+
 	public void OnInspectorGUI( IAggregatedSubsetSelector elementToRoll )
     {
 		EditorGUI.BeginChangeCheck();
@@ -120,47 +127,15 @@ public class AggregatedSelectorEditor : IGetHeight
 			Debug.Log($"<color=#BA55D3>Debug Roll</color> of <color=#7CFC00>{elementToRoll.DebugNameOrNull()}</color> result in roll with <color=#87CEFA>{result.Count()}</color>\n\t-{string.Join( "\n\t-",result.ToList().ConvertAll( DebugName ) )}\n");
 		}
 
-		if( /*_isDirty && */_predictions.Prop.isExpanded )
+		if( _isDirty && showPreditionsBool.Get )
 		{
 			_predictions.Calculate();
 			_isDirty = false;
 		}
 
-		_predictions.aggregatedPredictor.DrawTableLayout();
-    }
-
-	public void Draw( Rect rect, IAggregatedSubsetSelector elementToRoll = null )
-    {
-		EditorGUI.BeginChangeCheck();
-		_list.DrawOnTop( ref rect );
-		var isDirty = EditorGUI.EndChangeCheck();
-		if( isDirty ) _predictions.SetDirty();
-		_isDirty |= isDirty;
-		
-		if ( elementToRoll != null && _rollButton.DrawOnTop( ref rect ) )
-		{
-			// var debugRollElement = target as ISubsetSelector;
-			var result = elementToRoll.Roll<object>();
-			Debug.Log($"<color=#BA55D3>Debug Roll</color> of <color=#7CFC00>{elementToRoll.DebugNameOrNull()}</color> result in roll with <color=#87CEFA>{result.Count()}</color>\n\t-{string.Join( "\n\t-",result.ToList().ConvertAll( DebugName ) )}\n");
-		}
-
-		if( _isDirty && _predictions.Prop.isExpanded )
-		{
-			_predictions.Calculate();
-			_isDirty = false;
-		}
-
-		_predictions.Draw( rect );
-    }
-
-	public float GetHeight() => GetHeight(null);
-
-	public float GetHeight( IAggregatedSubsetSelector elementToRoll )
-    {
-		var height = _list.Height;
-		if( elementToRoll != null ) height += _rollButton.GetHeight();
-		height += _predictions.GetHeight();
-		return height;
+		EditorGUILayout.BeginVertical( GUI.skin.box );
+		if( _showPreditionsToggleButton.Layout( showPreditionsBool ) ) DrawPreditions();
+		EditorGUILayout.EndVertical();
     }
 
 	private object DebugName(object enemy) => enemy.DebugNameOrNull();
