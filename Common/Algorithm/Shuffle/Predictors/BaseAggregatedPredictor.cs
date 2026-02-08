@@ -85,7 +85,6 @@ public abstract class BaseAggregatedPredictor<T> : IAggregatedPredictor<T>
                     _elementRange[element] = range;
                 }
                 range.Combine( entryRange );
-                Debug.Log( $"Combine {element} => {entryRange}" );
             }
         }
 

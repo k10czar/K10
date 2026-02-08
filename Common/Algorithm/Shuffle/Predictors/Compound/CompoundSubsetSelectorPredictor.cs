@@ -209,7 +209,7 @@ public class CompoundSubsetSelectorPredictor<T,K> : BaseSubsetSelectorPredictor<
             }
             totalChances += realChance;
             RegisterSubElementsRangeScratch( realChance );
-            Debug.Log( $"{NameCombination(_countSimilarCache,_namesCache)} Combine {_subElementsCountRangeScratch}{realChance*100:N2}% from {base.NameScratchCombination()} {totalChances}\n ( {_subElementsRangeScratch.ElementsToString()} ) " );
+            // Debug.Log( $"{NameCombination(_countSimilarCache,_namesCache)} Combine {_subElementsCountRangeScratch}{realChance*100:N2}% from {base.NameScratchCombination()} {totalChances}\n ( {_subElementsRangeScratch.ElementsToString()} ) " );
             SubElementsCountRange.RegisterValue( _subElementsCountRangeScratch, realChance );
             // Debug.Log( $"{NameCombination(_countSimilarCache,_namesCache)} XP add {score} {permutations*chance*100:N4}% ( {permutations} * {chance*100:N4}% )" );
             Score.RegisterValue( score.min, score.avg, score.max, realChance );

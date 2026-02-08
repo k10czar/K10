@@ -262,7 +262,6 @@ public abstract class BaseSubsetSelectorPredictor<T>
                 _elementAvg[i] += j * chance;
                 _countOfAnyChance[j] += chance;
             }
-            Debug.Log( $"{i}){_elements[i].ToStringOrNull()} avg:{_elementAvg[i]}" );
         }
     }
 

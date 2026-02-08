@@ -140,7 +140,6 @@ public class PredictionsAggregator<T> where T : ScriptableObject
 	public void SetProp( SerializedProperty prop )
 	{
 		_adaptor.SetProp( prop );
-		Debug.Log( $"SetProp( {prop} )" );
 	}
 
 	public void SetDirty()
@@ -150,7 +149,6 @@ public class PredictionsAggregator<T> where T : ScriptableObject
 
     public void Calculate()
     {
-		Debug.Log( $"Calculate( {aggregatedPredictor} )" );
 		aggregatedPredictor.Calculate( _adaptor );
     }
 }
