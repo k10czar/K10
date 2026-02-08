@@ -76,7 +76,8 @@ public class CompoundSubsetSelectorPredictor<T,K> : BaseSubsetSelectorPredictor<
         if (!_crawlersDict.TryGetValue(t, out var crawler))
         {
             crawler = new AggregatedPredictor<K>();
-            crawler.Calculate(t, _scorerK);
+            crawler.SetScorer(_scorerK);
+            crawler.Calculate(t);
             _crawlersDict.Add(t, crawler);
             for( int i = 0; i < t.Count; i++ )
             {

@@ -3,7 +3,7 @@ using System;
 
 public interface IAggregatedPredictor<T>
 {
-    void Calculate(IAggregatedSubsetSelector<T> agg, Func<T,double> Scorer = null);
+    void Calculate(IAggregatedSubsetSelector<T> agg);
 }
 
 public class AggregatedPredictor<T> : BaseAggregatedPredictor<T>

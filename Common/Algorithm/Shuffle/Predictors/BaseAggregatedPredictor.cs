@@ -43,7 +43,7 @@ public abstract class BaseAggregatedPredictor<T> : IAggregatedPredictor<T>
         return _countOfAnyChance != null && _countOfAnyChance[count] > float.Epsilon;
     }
 
-    public void Calculate( IAggregatedSubsetSelector<T> agg, Func<T,double> Scorer = null )
+    public void Calculate( IAggregatedSubsetSelector<T> agg )
     {
         Score.SetZero();
         ElementsCount.SetZero();
