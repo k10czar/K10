@@ -41,7 +41,7 @@ public static class PreditionsDrawer
 				rect.RequestTop( lh );
 				GUILayout.Space( lh );
 				GUI.Label( rect.VerticalSlice( 0, realSlices ), aggregated._namesCache[i], K10GuiStyles.boldStyle );
-				GUI.Label( rect.VerticalSlice( 1, realSlices ), aggregated._elementAvg[i].ToString( "N2" ), K10GuiStyles.boldCenterStyle );
+				GUI.Label( rect.VerticalSlice( 1, realSlices ), aggregated._elementAvg[i].ToString( "N1" ), K10GuiStyles.boldCenterStyle );
 				sliceId = 2;
 				for( int j = minE; j <= maxE; j++ )
 				{
@@ -111,7 +111,7 @@ public static class PreditionsDrawer
 				rect.RequestTop( lh );
 				GUILayout.Space( lh );
 				GUI.Label( rect.VerticalSlice( 0, realSlices ), subset._namesCache[i], K10GuiStyles.boldRightStyle );
-				GUI.Label( rect.VerticalSlice( 1, realSlices ), subset._elementAvg[i].ToString( "N2" ), K10GuiStyles.boldCenterStyle );
+				GUI.Label( rect.VerticalSlice( 1, realSlices ), subset._elementAvg[i].ToString( "N1" ), K10GuiStyles.boldCenterStyle );
 				sliceId = 2;
 				for( int j = minE; j <= maxE; j++ )
 				{

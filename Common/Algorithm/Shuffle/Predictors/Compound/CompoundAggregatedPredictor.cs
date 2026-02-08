@@ -36,6 +36,7 @@ public class CompoundAggregatedPredictor<T,K> : BaseAggregatedPredictor<T> where
         SubElementsCount.SetZero();
         _subElementsVariationsCount = 1;
         _subElementsVariationsWithPermutationCount = 1;
+        foreach( var range in _subElementRange ) range.Value.SetZero();
     }
     protected override BaseSubsetSelectorPredictor<T> BuildCrawler(ISubsetSelector<T> subsetSelector)
     {

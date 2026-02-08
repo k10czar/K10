@@ -202,7 +202,15 @@ public abstract class BaseSubsetSelectorPredictor<T>
             ElementsCount.SetOnlyOne( guaranteeds );
             _variationsCount = 1;
             _variationsWithPermutationCount = 1;
-            for( int i = 0; i < count; i++ ) _elementCountChance[i,_minCache[i]] = 1;
+            for( int i = 0; i < count; i++ )
+            {
+                var countOfElement = _minCache[i];
+                _realMinCount[i] = countOfElement;
+                _elementAvg[i] = countOfElement;
+                _realMaxCount[i] = countOfElement;
+                _elementCountChance[i,_minCache[i]] = 1;
+                _countOfAnyChance[countOfElement] = 1;
+            }
             return;
         }
 
