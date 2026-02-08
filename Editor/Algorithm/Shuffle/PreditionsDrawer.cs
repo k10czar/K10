@@ -1,8 +1,22 @@
+using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
 public static class PreditionsDrawer
 {
+	public enum ERangeSort
+	{
+		MinAscending,
+		MinDescending,
+		AverageAscending,
+		AverageDescending,
+		MaxAscending,
+		MaxDescending,
+	}
+
+    static IValueCapsule<ERangeSort> rangeSort = new LazyEditorPersistentValue<ERangeSort>( "PredictionsRangeSort", ERangeSort.AverageDescending );
+
 	public static void DrawTableLayout<T>( this BaseAggregatedPredictor<T> aggregated )
 	{
 		var lh = EditorGUIUtility.singleLineHeight;
@@ -66,14 +80,72 @@ public static class PreditionsDrawer
 	{
 		var elements = compound.GetSubElementAveragesEnumerator();
 
-		while( elements.MoveNext() )
+		var style = K10GuiStyles.boldRightStyle;
+		// var maxWidth = 132f;
+		var maxWidth = 30f;
+
+		var sortedElements = new List<KeyValuePair<K,RangeSummary>>();
+		while( elements.MoveNext() ) 
 		{
 			var element = elements.Current;
+			sortedElements.Add( element );
+			var size = style.CalcSize( new GUIContent( element.Value.ToStringValues() ) );
+			if( size.x > maxWidth ) maxWidth = size.x;
+		}
+		
+		var widthLayoutProp = GUILayout.Width( maxWidth );
+		var sortWidthProp = GUILayout.Width( maxWidth / 3 - 2 );
+		var sortHeightProp = GUILayout.Height( 18 );
+		
+		EditorGUILayout.BeginVertical( GUI.skin.box );
+
+		EditorGUILayout.BeginHorizontal( sortHeightProp );
+		SortButton( "min", ERangeSort.MinAscending, sortWidthProp, sortHeightProp );
+		SortButton( "avg", ERangeSort.AverageAscending, sortWidthProp, sortHeightProp );
+		SortButton( "max", ERangeSort.MaxAscending, sortWidthProp, sortHeightProp );
+		GUILayout.Label( $"Count Range of {typeof(T).Name}" );
+		EditorGUILayout.EndHorizontal();
+
+        switch (rangeSort.Get)
+        {
+            case ERangeSort.MinAscending: sortedElements.Sort( MinAscending ); break;
+            case ERangeSort.MinDescending: sortedElements.Sort( MinDescending ); break;
+            case ERangeSort.AverageAscending: sortedElements.Sort( AverageAscending ); break;
+            case ERangeSort.AverageDescending: sortedElements.Sort( AverageDescending ); break;
+            case ERangeSort.MaxAscending: sortedElements.Sort( MaxAscending ); break;
+            case ERangeSort.MaxDescending: sortedElements.Sort( MaxDescending ); break;
+        }
+
+        foreach ( var element in sortedElements )
+		{
 			EditorGUILayout.BeginHorizontal();
-			GUILayout.Label( element.Value.ToString(), K10GuiStyles.boldRightStyle, GUILayout.Width( 500 ) );
+			GUILayout.Label( element.Value.ToStringValues(), style, widthLayoutProp );
 			EditorGUILayout.ObjectField( element.Key as ScriptableObject, typeof(K), false );
 			EditorGUILayout.EndHorizontal();
 		}
+		
+		EditorGUILayout.EndVertical();
+    }
+
+    private static int MinAscending<T>(KeyValuePair<T, RangeSummary> x, KeyValuePair<T, RangeSummary> y) => RangeSummary.ByMin( x.Value, y.Value );
+    private static int MinDescending<T>(KeyValuePair<T, RangeSummary> x, KeyValuePair<T, RangeSummary> y) => RangeSummary.ByDescendingMin( x.Value, y.Value );
+    private static int AverageAscending<T>(KeyValuePair<T, RangeSummary> x, KeyValuePair<T, RangeSummary> y) => RangeSummary.ByAverage( x.Value, y.Value );
+    private static int AverageDescending<T>(KeyValuePair<T, RangeSummary> x, KeyValuePair<T, RangeSummary> y) => RangeSummary.ByDescendingAverage( x.Value, y.Value );
+    private static int MaxAscending<T>(KeyValuePair<T, RangeSummary> x, KeyValuePair<T, RangeSummary> y) => RangeSummary.ByMax( x.Value, y.Value );
+    private static int MaxDescending<T>(KeyValuePair<T, RangeSummary> x, KeyValuePair<T, RangeSummary> y) => RangeSummary.ByDescendingMax( x.Value, y.Value );
+
+    static void SortButton( string label, ERangeSort state0, params GUILayoutOption[] options ) { SortButton( label, state0, state0 + 1, options ); }
+	static void SortButton( string label, ERangeSort state0, ERangeSort state1, params GUILayoutOption[] options )
+	{
+		var sortType = rangeSort.Get;
+		var isSort0 = sortType == state0;
+		var isSort1 = sortType == state1;
+		var tinted = isSort0 || isSort1;
+		if( isSort0 ) GuiColorManager.New( Colors.DarkOrange.WithValue( .95f ) );
+		if( isSort1 ) GuiColorManager.New( Colors.Volt.WithValue( .95f ) );
+		// if( GUILayout.Button( ( isSort0 ? "⬆" : isSort1 ? "⬇" : "" ) + label, options ) ) rangeSort.Set = isSort0 ? state1 : state0;
+		if( GUILayout.Button( label, options ) ) rangeSort.Set = isSort0 ? state1 : state0;
+		if( tinted ) GuiColorManager.Revert();
 	}
 
 	public static void DrawTableLayout<T>( this BaseSubsetSelectorPredictor<T> subset )

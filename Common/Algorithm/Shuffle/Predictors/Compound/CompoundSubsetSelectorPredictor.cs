@@ -201,7 +201,6 @@ public class CompoundSubsetSelectorPredictor<T,K> : BaseSubsetSelectorPredictor<
                         if( entry.Key == null ) continue;
                         var eId = _subElementsId[ entry.Key ];
                         _subElementsRangeScratch[eId].Combine(entry.Value, realCount);
-                        Debug.Log( $"{entry.Key} => {entry.Value}" );
                     }
                 }
                 subElementVariation *= crawler.VariationsCount;
