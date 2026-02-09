@@ -32,9 +32,6 @@ public abstract class BaseSubsetSelectorPredictor<T>
 
     protected double totalChances = 0;
 
-    // public readonly List<int[]> combinations = new();
-    // public readonly List<double> combinationsChances = new();
-
     public readonly RangeSummary Score = new();
     public readonly RangeSummary ElementsCount = new();
 
