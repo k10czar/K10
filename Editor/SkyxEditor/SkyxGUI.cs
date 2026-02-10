@@ -151,6 +151,9 @@ namespace Skyx.SkyxEditor
             else if (targetType.IsClass)
                 DrawObjectField(rect, property, targetType, drawInfo.hint, true);
 
+            else if (targetType == typeof(bool))
+                DrawEnableToggle(rect, "Enabled", "Disabled", property, drawInfo.hint);
+
             else throw new Exception("Unknown type");
 
             if (EditorGUI.EndChangeCheck()) property.Apply();
