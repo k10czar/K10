@@ -1,10 +1,21 @@
 using System;
 using System.Collections.Generic;
 
+public static class EnumCache
+{
+    public static IReadOnlyList<T> GetValues<T>() where T : Enum, IConvertible => EnumCache<T>.GetValues();
+    public static IReadOnlyList<string> GetNames<T>() where T : Enum, IConvertible => EnumCache<T>.GetNames();
+    public static int GetCount<T>() where T : Enum, IConvertible => EnumCache<T>.GetCount();
+    public static string GetCachedNameFrom<T>(T t) where T : Enum, IConvertible => EnumCache<T>.GetCachedNameFrom( t );
+    public static string GetCachedNameFrom<T>(string format, T t) where T : Enum, IConvertible => EnumCache<T>.GetCachedNameFrom( format, t );
+}
+
 public static class EnumCache<T> where T : Enum, IConvertible
 {
     static IReadOnlyList<T> _cachedValues = null;
     static IReadOnlyList<string> _cachedNames = null;
+    static Dictionary<T,string> _cachedNamesDict = null;
+    static Dictionary<string,Dictionary<T,string>> _cachedFormatedNamesDict = null;
     static int _count = -1;
 
     public static IReadOnlyList<T> GetValues()
@@ -17,6 +28,39 @@ public static class EnumCache<T> where T : Enum, IConvertible
             _cachedValues = list;
         }
         return _cachedValues;
+    }
+
+    public static string GetCachedNameFrom( T t )
+    {
+        if( _cachedNamesDict == null )
+        {
+            _cachedNamesDict = new Dictionary<T,string>();
+        }
+        if( !_cachedNamesDict.TryGetValue(t, out var name ) )
+        {
+            name = t.ToString();
+            _cachedNamesDict.Add(t, name);
+        }
+        return name;
+    }
+
+    public static string GetCachedNameFrom( string format, T t )
+    {
+        if( _cachedFormatedNamesDict == null )
+        {
+            _cachedFormatedNamesDict = new();
+        }
+        if( !_cachedFormatedNamesDict.TryGetValue(format, out var dict ) )
+        {
+            dict = new();
+            _cachedFormatedNamesDict.Add(format, dict);
+        }
+        if( !dict.TryGetValue(t, out var name ) )
+        {
+            name = string.Format( format, t.ToString() );
+            dict.Add(t, name);
+        }
+        return name;
     }
 
     public static IReadOnlyList<string> GetNames()
