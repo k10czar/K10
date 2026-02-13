@@ -32,7 +32,7 @@ namespace Skyx.SkyxEditor
         {
             EScopeType.Header => HeaderScope.Open(ref rect, info),
             EScopeType.Foldout => FoldoutScope.Open(ref rect, info),
-            // EScopeType.InlineHeader => expr,
+            EScopeType.InlineHeader => InlineHeaderScope.Open(ref rect, info),
             EScopeType.Inline => InlineScope.Open(ref rect, info),
             _ => throw new ArgumentOutOfRangeException()
         };

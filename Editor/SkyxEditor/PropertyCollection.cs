@@ -447,7 +447,7 @@ namespace Skyx.SkyxEditor
             return RegisterList(property, displayHeader, draggable, displayAddButton, displayRemoveButton, customDrawElement, newElementSetup, customHeader, isElementHighlighted);
         }
 
-        private ReorderableList RegisterList(
+        public ReorderableList RegisterList(
             SerializedProperty property,
             bool displayHeader = true,
             bool draggable = true,
