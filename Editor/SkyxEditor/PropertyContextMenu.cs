@@ -94,6 +94,31 @@ namespace Skyx.SkyxEditor
             menu.ShowAsContext();
         }
 
+        public static void ApplyPreset<T>(SerializedProperty property, T preset) where T : class
+        {
+            try
+            {
+                property.CopyValue(preset, "Preset");
+                CustomDrawersCache.TryResetDuplicatedElement(property);
+
+                Debug.Log($"Applied preset {preset} to {property.propertyPath}");
+            }
+            catch (Exception exception)
+            {
+                try
+                {
+                    property.ResetDefaultValues(null, false, false);
+                    Debug.LogException(exception);
+                }
+                catch (Exception innerException)
+                {
+                    Debug.LogError($"<color={Colors.Console.Danger.ToHexRGB()}>!!! WARNING !!!</color> Duplication failed!");
+                    Debug.LogException(innerException);
+                    Debug.LogException(exception);
+                }
+            }
+        }
+
         private static void TrackProperty(SerializedProperty property, Action<SerializedProperty> newElementSetup)
         {
             selectedProperty = property;
