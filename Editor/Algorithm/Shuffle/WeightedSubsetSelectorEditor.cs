@@ -13,11 +13,12 @@ public class WeightedSubsetSelectorEditor
 	static readonly Color GREEN = Color.Lerp(Color.white, Color.green, COLOR_LERP_FACTOR / 2);
 	static readonly Color RED_ERROR = Color.Lerp(Color.white, Color.red, .5f);
 
-	SerializedProperty _ruleProp;
+	SerializedProperty _entriesProp;
+	SerializedProperty _rollsProp;
+	SerializedProperty _weightsProp;
+	SerializedProperty _rangeProp;
 	SerializedProperty _minProp;
 	SerializedProperty _maxProp;
-	SerializedProperty _entriesProp;
-	SerializedProperty _rangeWeightsProp;
 
 	KReorderableList _list;
 
@@ -28,14 +29,13 @@ public class WeightedSubsetSelectorEditor
 	private PersistentValue<bool> _showPermutations;
 	private PersistentValue<bool> _show;
 
-	float _sumWeight, _sumCaps;
+	float _sumWeight;
+	int _sumCaps;
 	bool _hasInfiniteCap = false;
 
 	bool _isDirty = true;
 
-	bool IsFixedAllElements => _ruleProp.enumValueIndex == (int)ESubsetGeneratorRule.MAX_ROLL;
-	bool IsFixedRolls => _ruleProp.enumValueIndex == (int)ESubsetGeneratorRule.FIXED_ROLLS;
-	bool IsBiased => _ruleProp.enumValueIndex == (int)ESubsetGeneratorRule.BIASED_RANGE;
+    static GUIContent _rollsLabel = new GUIContent( "Rolls" );
 
 	public GUIStyle _rollButton;
 
@@ -65,15 +65,21 @@ public class WeightedSubsetSelectorEditor
     {
         _elementType = type;
     }
+
+	void GetRollsProps()
+	{
+		_weightsProp = _rollsProp.FindPropertyRelative("_weights");
+		_rangeProp = _rollsProp.FindPropertyRelative("range");
+		_minProp = _rangeProp.FindPropertyRelative("min");
+		_maxProp = _rangeProp.FindPropertyRelative("max");
+	}
 	
 	public void Setup( SerializedObject serializedObject, Type type = null, Texture2D icon = null )
     {
 		_displayName = serializedObject.DebugNameOrNull();
-		_ruleProp = serializedObject.FindProperty("_rule");
-		_minProp = serializedObject.FindProperty("_min");
-		_maxProp = serializedObject.FindProperty("_max");
 		_entriesProp = serializedObject.FindProperty("_entries");
-		_rangeWeightsProp = serializedObject.FindProperty("_rangeWeights");
+		_rollsProp = serializedObject.FindProperty("_rolls");
+		GetRollsProps();
 		SetupList( serializedObject, _entriesProp, icon );
 		if( type != null ) SetType( type );
 		_show = PersistentValue<bool>.At($"Temp/SubsetSelector/{_displayName}.tgg");
@@ -82,11 +88,9 @@ public class WeightedSubsetSelectorEditor
 	public void Setup( SerializedProperty prop, Type type = null, Texture2D icon = null )
 	{
 		_displayName = prop.displayName;
-		_ruleProp = prop.FindPropertyRelative("_rule");
-		_minProp = prop.FindPropertyRelative("_min");
-		_maxProp = prop.FindPropertyRelative("_max");
 		_entriesProp = prop.FindPropertyRelative("_entries");
-		_rangeWeightsProp = prop.FindPropertyRelative("_rangeWeights");
+		_rollsProp = prop.FindPropertyRelative("_rolls");
+		GetRollsProps();
 		SetupList( prop.serializedObject, _entriesProp, icon );
 		if( type != null ) SetType( type );
 		_show = PersistentValue<bool>.At($"Temp/SubsetSelector/{_displayName}.tgg");
@@ -130,13 +134,11 @@ public class WeightedSubsetSelectorEditor
 		
 		if (_entriesProp == null) return;
 		PreProcessData();
-		DrawRollsRangeBox(BLUE);
+		DrawRollsRangeBox(_sumCaps);
 
 		EditorGUI.BeginChangeCheck();
 		_list.DoLayoutList();
 		_isDirty |= EditorGUI.EndChangeCheck();
-
-		if (IsFixedAllElements) return;
 
 		FillCaches();
 
@@ -146,7 +148,7 @@ public class WeightedSubsetSelectorEditor
 			if( GUILayout.Button( new GUIContent( "Debug Roll", IconCache.Get( "icons/PlayDices.png" ).Texture ), _rollButton ) )
             {
 				// var debugRollElement = target as ISubsetSelector;
-				var result = debugRollElement.Roll<object>();
+				var result = debugRollElement.Roll<object>(1f);
 				Debug.Log($"<color=#BA55D3>Debug Roll</color> of <color=#7CFC00>{debugRollElement.DebugNameOrNull()}</color> result in roll with <color=#87CEFA>{result.Count()}</color>\n\t-{string.Join( "\n\t-",result.ToList().ConvertAll( DebugName ) )}\n");
             }
 		}
@@ -158,11 +160,11 @@ public class WeightedSubsetSelectorEditor
     {
 		if (_minProp == null) return;
 		if (_maxProp == null) return;
-		if (_rangeWeightsProp == null) return;
+		if (_weightsProp == null) return;
 		var min = _minProp.intValue;
 		var max = _maxProp.intValue;
 		var range = max + 1 - min;
-		_rangeWeightsProp.arraySize = range;
+		_weightsProp.arraySize = range;
     }
 	
 	private object DebugName(object enemy) => enemy.DebugNameOrNull();
@@ -173,7 +175,7 @@ public class WeightedSubsetSelectorEditor
 		_entriesProp.arraySize++;
 		var entry = _entriesProp.GetArrayElementAtIndex(pos);
 		entry.FindPropertyRelative("_weight").floatValue = 1;
-		entry.FindPropertyRelative("_cap").intValue = IsFixedAllElements ? 1 : _maxProp.intValue;
+		entry.FindPropertyRelative("_cap").intValue = _rollsProp.FindPropertyRelative("range").FindPropertyRelative("max").intValue;
     }
 
     void DrawSquadElement(Rect rect, int index, bool isActive, bool isFocused)
@@ -185,12 +187,12 @@ public class WeightedSubsetSelectorEditor
 		var group = element.FindPropertyRelative("_element");
 
 		var cap = element.FindPropertyRelative("_cap");
-		if (IsFixedAllElements)
-		{
-			ScriptableObjectField.Draw(rect.CutLeft(32), group, _elementType);
-			EditorGUI.PropertyField(rect.RequestLeft(32), cap, GUIContent.none);
-			return;
-		}
+		// if (IsFixedAllElements)
+		// {
+		// 	ScriptableObjectField.Draw(rect.CutLeft(32), group, _elementType);
+		// 	EditorGUI.PropertyField(rect.RequestLeft(32), cap, GUIContent.none);
+		// 	return;
+		// }
 
 		var guiElements = 7;
 		ScriptableObjectField.Draw(rect.VerticalSlice(0, guiElements, 2), group, _elementType);
@@ -255,127 +257,9 @@ public class WeightedSubsetSelectorEditor
 	
 	static GUILayoutOption ROLLS_HEIGHT = GUILayout.Height(25);
 
-	private void DrawRollsRangeBox( Color color )
+	private void DrawRollsRangeBox( int maxRolls = int.MaxValue )
 	{
-		GuiColorManager.New( color );
-		EditorGUILayout.BeginVertical( GUI.skin.box );
-		GuiColorManager.Revert();
-		EditorGUILayout.BeginHorizontal();
-
-		string errorMsg = string.Empty;
-		EditorGUILayout.BeginVertical( GUI.skin.box, GUILayout.Width(84), ROLLS_HEIGHT );
-		// GUILayout.Space( 3 );
-		var newRule = EditorGUILayout.EnumPopup( GUIContent.none, (ESubsetGeneratorRule)_ruleProp.enumValueIndex, GUILayout.Width(130), ROLLS_HEIGHT );
-		EditorGUILayout.EndVertical();
-		_ruleProp.enumValueIndex = (int)(ESubsetGeneratorRule)newRule;
-		
-		if( (int)(ESubsetGeneratorRule)newRule != _ruleProp.enumValueIndex )Debug.Log( $"{_ruleProp.enumValueIndex} => {newRule}" );
-
-		if (IsFixedAllElements)
-		{
-			var count = 0;
-			for (int i = 0; i < _entriesProp.arraySize; i++)
-			{
-				var element = _entriesProp.GetArrayElementAtIndex(i);
-				var cap = element.FindPropertyRelative("_cap").intValue;
-				if (cap > 0) count += cap;
-			}
-			EditorGUILayout.LabelField($"with {count} element{(count > 1 ? "s" : "")}", K10GuiStyles.boldStyle, ROLLS_HEIGHT);
-		}
-		else if( IsFixedRolls )
-        {
-			GuiLabelWidthManager.New(30);
-			var wrong = !_hasInfiniteCap && (_maxProp.intValue > _sumCaps);
-			if (wrong) GuiColorManager.New(RED_ERROR);
-			EditorGUILayout.BeginHorizontal(GUI.skin.box);
-			EditorGUILayout.PropertyField(_maxProp, new GUIContent("Rolls"));
-			EditorGUILayout.EndHorizontal();
-			if (wrong) GuiColorManager.Revert();
-			GuiLabelWidthManager.Revert();
-
-			wrong = !_hasInfiniteCap && (_maxProp.intValue > _sumCaps);
-			if ( wrong ) errorMsg = $"The maximum number of rolls is {_sumCaps}, due the sum of entries cap limit";
-        }
-		else
-		{
-			EditorGUILayout.LabelField("Rolls", K10GuiStyles.boldStyle, GUILayout.Width(45), ROLLS_HEIGHT);
-
-			EditorGUILayout.BeginVertical();
-			GUILayout.Space(5);
-			EditorGUILayout.BeginHorizontal(GUI.skin.box);
-
-			GuiLabelWidthManager.New(23);
-
-			var wrongMin = !_hasInfiniteCap && (_minProp.intValue > _sumCaps);
-
-			if (wrongMin) GuiColorManager.New(RED_ERROR);
-			EditorGUILayout.PropertyField(_minProp, new GUIContent("Min"), GUILayout.MinWidth(40));
-			if (wrongMin) GuiColorManager.Revert();
-
-			var wrongMax = !_hasInfiniteCap && (_maxProp.intValue > _sumCaps);
-
-			GuiLabelWidthManager.New(28);
-
-			if (wrongMax) GuiColorManager.New(RED_ERROR);
-			EditorGUILayout.PropertyField(_maxProp, new GUIContent("Max"), GUILayout.MinWidth(45));
-			if (wrongMax) GuiColorManager.Revert();
-
-			GuiLabelWidthManager.Revert(2);
-
-			EditorGUILayout.EndHorizontal();
-
-			EditorGUILayout.EndVertical();
-
-			if (wrongMin || wrongMax) errorMsg = $"The maximum number of rolls is {_sumCaps}, due the sum of entries cap limit or guaranteed rolls";
-		}
-
-		EditorGUILayout.EndHorizontal();
-
-		if( !string.IsNullOrEmpty( errorMsg ) )
-		{
-			GuiColorManager.New( RED_ERROR );
-			GUILayout.Label( errorMsg, GUI.skin.box, GUILayout.ExpandWidth( true ) );
-			GuiColorManager.Revert();
-		}
-
-		if (IsBiased)
-		{
-			var min = _minProp.intValue;
-			var max = _maxProp.intValue;
-			var range = max + 1 - min;
-
-			var oldSize = _rangeWeightsProp.arraySize;
-			if( oldSize < range ) _rangeWeightsProp.arraySize = range;
-			if (range > 0)
-			{
-				for (int i = oldSize; i < range; i++)
-				{
-					var e = _rangeWeightsProp.GetArrayElementAtIndex(i);
-					e.floatValue = 1;
-				}
-				var sumWeight = 0f;
-				for (int i = 0; i < range; i++) sumWeight += _rangeWeightsProp.GetArrayElementAtIndex(i).floatValue;
-
-				EditorGUILayout.BeginVertical(GUI.skin.box);
-				
-				for (int i = 0; i < range; i++)
-				{
-					var rolls = min + i;
-					var element = _rangeWeightsProp.GetArrayElementAtIndex(i);
-
-					EditorGUILayout.BeginHorizontal(GUI.skin.box);
-					GuiLabelWidthManager.New(72);
-					var newVal = EditorGUILayout.FloatField($"[{rolls}]Weight", element.floatValue, GUILayout.Width(120));
-					GuiLabelWidthManager.Revert();
-					element.floatValue = newVal;
-					GUIProgressBar.DrawLayout( newVal / sumWeight );
-					EditorGUILayout.EndHorizontal();
-				}
-				EditorGUILayout.EndVertical();
-			}
-		}
-
-		EditorGUILayout.EndVertical();
+		IntRngPropertyDrawer.Layout( _rollsProp, _rollsLabel, 0, maxRolls, null, "MAX ROLL" );
 	}
 	
 	void FillCaches()
@@ -398,18 +282,18 @@ public class WeightedSubsetSelectorEditor
 			_namesCache[i] = objRef.DebugNameOrNull();
 		}
 
-		if (!IsBiased)
-		{
-			_rollChancesCache = null;
-			return;
-		}
+		// if (!IsBiased)
+		// {
+		// 	_rollChancesCache = null;
+		// 	return;
+		// }
 
-		var rCount = _rangeWeightsProp.arraySize;
+		var rCount = _weightsProp.arraySize;
 		if( _rollChancesCache == null || _rollChancesCache.Length != rCount ) _rollChancesCache = new float[rCount];
 
 		for (int i = 0; i < rCount; i++)
 		{
-			var element = _rangeWeightsProp.GetArrayElementAtIndex(i);
+			var element = _weightsProp.GetArrayElementAtIndex(i);
 			_rollChancesCache[i] = element.floatValue;
 		}
 
@@ -426,7 +310,7 @@ public class WeightedSubsetSelectorEditor
 
 		var rMin = Mathf.Max( _minProp.intValue, 0 );
 		var rMax = Mathf.Max( _maxProp.intValue, 0 );
-		if (IsFixedRolls) rMin = rMax;
+		// if (IsFixedRolls) rMin = rMax;
 		var maxElements = rMax;
 
 		int minSum = 0;
@@ -601,13 +485,15 @@ public class WeightedSubsetSelectorEditor
 				
 				var range = Mathf.Max( rMax - rMin, 0 ) + 1;
 				float sumWeight = range;
+
+				bool isBiased = _weightsProp.arraySize >= range;
 				
-				if (IsBiased && _rangeWeightsProp.arraySize >= range)
+				if (isBiased)
 				{
 					sumWeight = 0;
 					for (int i = 0; i < range; i++)
 					{
-						sumWeight += _rangeWeightsProp.GetArrayElementAtIndex(i).floatValue;
+						sumWeight += _weightsProp.GetArrayElementAtIndex(i).floatValue;
 					}
 				}
 
@@ -623,7 +509,7 @@ public class WeightedSubsetSelectorEditor
 						for (int k = rMin; k <= rMax; k++)
 						{
 							var chance = Predictions[i, j, k];
-							if (IsBiased) chance *= _rangeWeightsProp.GetArrayElementAtIndex(k - rMin).floatValue;
+							if (isBiased) chance *= _weightsProp.GetArrayElementAtIndex(k - rMin).floatValue;
 							val += chance;
 						}
 						val /= sumWeight;
@@ -679,7 +565,7 @@ public class WeightedSubsetSelectorEditor
 				foreach(var permutation in _permutations ) 
 				{
 					var w = labelStyle.CalcSize(new GUIContent(permutation.name)).x;
-					if( maxSize > w ) continue;
+					if( maxSize < w ) continue;
 					maxSize = w;
 				}
 				var labelWidth = GUILayout.Width(maxSize);

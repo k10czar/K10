@@ -1,12 +1,13 @@
 using UnityEditor;
 using UnityEngine;
 using K10.EditorGUIExtention;
-using Automation;
+using K10.Automation;
 
 [InitializeOnLoad]
 public sealed class AutomationWindow : EditorWindow
 {
 	private static bool _alreadyTryed = false;
+	Vector2 _scroll;
 
 	[MenuItem( "K10/Automation/Config" )] static void Open() { var i = Instance; }
 
@@ -117,12 +118,13 @@ public sealed class AutomationWindow : EditorWindow
 
 		SeparationLine.Horizontal();
 
-		GuiColorManager.New( Color.grey );
-		UnityEditor.EditorGUILayout.LabelField( "//TODO: Show selected Loop inspector inline here?" );
-		GuiColorManager.Revert();
-		// UnityEditor.EditorGUILayout.LabelField( AutomationKey );
-		// UnityEditor.EditorGUILayout.TextArea( JsonUtility.ToJson( _data ) );
-		// UnityEditor.EditorGUILayout.TextArea( EditorPrefs.GetString( AutomationKey ) );
+		if( newOp != null )
+		{
+			_scroll = EditorGUILayout.BeginScrollView( _scroll );
+			var editor = CustomEditorUtility.GetEditor( newOp );
+			editor.OnInspectorGUI();
+			EditorGUILayout.EndScrollView();
+		}
 		if( !active ) GuiColorManager.Revert();
 	}
 }

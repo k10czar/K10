@@ -1,15 +1,19 @@
 using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
+using K10.Automation;
 
-namespace Automation
+namespace K10.Automation
 {
-    public class Sequence : IOperation
+	[ListingPath(nameof(Sequence))]
+	public class Sequence : BaseOperation
 						, IDrawGizmos, IDrawGizmosOnSelected, ISummarizable
 	{
 		[ExtendedDrawer,SerializeReference] List<IOperation> _actions;
 
-		public IEnumerator ExecutionCoroutine( bool log = false ) 
+		public override string EmojiIcon => "🗒";
+
+		public override IEnumerator ExecutionCoroutine( bool log = false ) 
 		{
 			if( log ) Debug.Log( $"Start Coroutine of {this.ToStringOrNull()}" );
 			for( int i = 0; i < _actions.Count; i++ )
@@ -20,15 +24,13 @@ namespace Automation
 					if( log ) Debug.LogError( $"{"Cannot".Colorfy( Colors.Console.Warning )} {"play".Colorfy( Colors.Console.Verbs )} null {"Operation".Colorfy( Colors.Console.TypeName )}" );
 					continue;
 				}
-				if( log ) Debug.Log( $"{"Start".Colorfy( Colors.Console.Verbs )} operation: {act.ToStringOrNull()}" );
-				yield return act.ExecutionCoroutine( log );
+				if( log ) Debug.Log( $"{( act.CanExecute ? "Start" : "Skipped" ).Colorfy( act.CanExecute ? Colors.Console.Verbs : Colors.Console.LightDanger )} operation: {act.ToStringOrNull()}" );
+				yield return act.TryExecute( log );
 			}
 		}
 
-		public override string ToString() => $"🗒 {"Sequence".Colorfy( Colors.Console.Fields )} {{\n  -{string.Join( ",\n  -", _actions )} }}";
+		public override string ToString() => $"{base.ToString()} {_actions.ToStringOrNull()}";
 		public string Summarize() => $" Sequence {{ {_actions.TrySummarize( ", " )} }}";
-
-
 
 #if UNITY_EDITOR
 		public void OnDrawGizmos()

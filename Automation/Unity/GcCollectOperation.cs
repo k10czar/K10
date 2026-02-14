@@ -2,11 +2,12 @@ using System.Collections;
 using System;
 using UnityEngine;
 
-namespace Automation.Unity
+namespace K10.Automation.Unity
 {
-	public class GcCollectOperation : Automation.IOperation
+	[ListingPath("GC/Collect")]
+	public class GcCollectOperation : Automation.BaseOperation
 	{
-		public IEnumerator ExecutionCoroutine( bool log = false ) 
+		public override IEnumerator ExecutionCoroutine( bool log = false ) 
 		{
 			GC.Collect();
 			yield return null;

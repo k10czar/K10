@@ -1,9 +1,10 @@
 using System.Collections;
 using UnityEngine;
 
-namespace Automation.Unity
+namespace K10.Automation.Unity
 {
-	public class InstantiateOperation : Automation.IOperation
+	[ListingPath("Unity/GameObject/Instantiate")]
+	public class InstantiateOperation : Automation.BaseOperation
 	{
 		[SerializeField] int _instances = 1;
 		[SerializeField] GameObject _prefab;
@@ -12,7 +13,7 @@ namespace Automation.Unity
 		[SerializeField] bool _dontDestroyOnLoad;
 		[SerializeField] int _elementsPerFrame = 0;
 
-		public IEnumerator ExecutionCoroutine( bool log = false ) 
+		public override IEnumerator ExecutionCoroutine( bool log = false ) 
 		{
 			if( _prefab != null )
 			{

@@ -1,6 +1,7 @@
 // #define DO_NOT_OPTIMIZE
 using System.Runtime.CompilerServices;
 
+
 public static class Optimizations
 {
     public const MethodImplOptions INLINE_IF_CAN = 

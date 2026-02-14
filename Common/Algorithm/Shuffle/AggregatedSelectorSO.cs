@@ -25,23 +25,23 @@ public static class AggregatedSubsetSelectorExtensions
         return true; 
     }
 
-    public static IEnumerable<T> Roll<T>( this IAggregatedSubsetSelector data )
+    public static IEnumerable<T> Roll<T>( this IAggregatedSubsetSelector data, float rollMultiplier = 1f )
     {
         var roll = new List<T>();
         var count = data.Count;
         for( int i = 0; i < count; i++ )
         {
             var subSet = data.GetEntryObject(i);
-            var subRoll = subSet.Roll<T>();
+            var subRoll = subSet.Roll<T>(rollMultiplier);
             roll.AddRange( subRoll );
         }
         return roll;
     }
 
-    public static IEnumerable<T> Roll<T>( this IAggregatedSubsetSelector<T> data ) 
+    public static IEnumerable<T> Roll<T>( this IAggregatedSubsetSelector<T> data, float rollMultiplier = 1f ) 
     {
         var dataGeneric = data as IAggregatedSubsetSelector;
-        return dataGeneric.Roll<T>();
+        return dataGeneric.Roll<T>(rollMultiplier);
     }
 }
 
@@ -55,6 +55,27 @@ public abstract class BaseAggregatedSelectorSO : ScriptableObject, IAggregatedSu
     public abstract int Count { get; }
     public abstract Type ElementType { get; }
     public abstract ISubsetSelector GetEntryObject(int i);
+
+    public bool Contains( UnityEngine.Object obj )
+    {
+        if( obj == null ) return false;
+        for( int i = 0; i < Count; i++ )
+        {
+            var entry = GetEntryObject(i);
+            for( int j = 0; j < entry.EntriesCount; j++ )
+            {
+                var element = entry.GetEntryObject(j);
+                if( element.ElementAsObject is UnityEngine.Object uObj && obj == uObj ) return true;
+            }
+        }
+        return false;
+    }
+
+    public bool Contains( UnityEngine.Object[] objs )
+    {
+        for( int i = 0; i < objs.Length; i++ ) if( Contains( objs[i] ) ) return true;
+        return false;
+    }
 }
 
 [System.Serializable]
@@ -64,7 +85,7 @@ public class AggregatedSelector<T> : IAggregatedSubsetSelector<T> where T : Scri
 
     public Type ElementType => typeof(T);
 
-    public int Count => _entries.Length;
+    public int Count => _entries != null ? _entries.Length : 0;
     public ISubsetSelector GetEntryObject(int id) => _entries[id];
     public ISubsetSelector<T> GetEntry(int id) => _entries[id];
 
@@ -77,7 +98,7 @@ public abstract class AggregatedSelectorSO<T> : BaseAggregatedSelectorSO, IAggre
 
     public override Type ElementType => typeof(T);
 
-    public override int Count => _entries.Length;
+    public override int Count => _entries != null ? _entries.Length : 0;
     public override ISubsetSelector GetEntryObject(int id) => _entries[id];
     public ISubsetSelector<T> GetEntry(int id) => _entries[id];
 

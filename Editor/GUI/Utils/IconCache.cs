@@ -38,18 +38,35 @@ public class IconCache : IIconCache
 	{
 		return Get( path ).Texture;
 	}
+	
+	public static bool Exists( string path ) => LoadIcon( path ) != null;
+    public static bool ExistAny(string[] paths)
+    {
+		var len = paths.Length;
+		for( int i = 0; i < len; i++ )
+        {
+            if( Exists( paths[i] ) ) return true;
+        }
+        return false;
+    }
 
-	string _iconName;
+    string _iconName;
 	Texture2D _icon;
 	public Texture2D Texture { get { return _icon; } }
 
-	void ReadIcon() 
+	static Texture2D LoadIcon( string path ) 
 	{ 
-		_icon = EditorGUIUtility.Load( _iconName ) as Texture2D;
-		if( _icon == null ) _icon = (Texture2D)EditorGUIUtility.Load( "K10DefaultIcons/" + _iconName + ".png" );
+		var icon = EditorGUIUtility.Load( path ) as Texture2D;
+		if( icon != null ) return icon;
+		return (Texture2D)EditorGUIUtility.Load( "K10DefaultIcons/" + path + ".png" );
 	}
-	private IconCache( string iconName ) { _iconName = iconName; ReadIcon(); }
-	public void Reset() { ReadIcon(); }
+
+	void PreCacheIcon() 
+	{ 
+		_icon = LoadIcon( _iconName );
+	}
+	private IconCache( string iconName ) { _iconName = iconName; PreCacheIcon(); }
+	public void Reset() { PreCacheIcon(); }
 
 	public void Layout() { if( _icon != null ) GUILayout.Label( _icon, GUILayout.Width( _icon.width ), GUILayout.Height( _icon.height ) ); }
 	public void Layout( float size ) { Layout( size, size ); }

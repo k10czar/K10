@@ -14,6 +14,15 @@ public class GuiColorManager
 		GUI.contentColor = color;
 	}
 
+	public static void Greyout( float factor = .2f )
+	{
+		var currColor = GUI.color;
+		_colors.Add( currColor );
+		var newColor = currColor.Enlight( 1 - factor );
+		GUI.color = newColor;
+		GUI.contentColor = newColor;
+	}
+
     public static void Revert( int count = 1 )
 	{
 		if( count <= 0 ) return;

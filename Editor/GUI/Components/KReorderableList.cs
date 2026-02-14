@@ -28,6 +28,7 @@ namespace K10.EditorGUIExtention
 		public float GetHeight( SerializedProperty prop ) 
 		{ 
 			var baseHeight = _list.headerHeight + _list.footerHeight + 10;
+			if( prop == null ) return baseHeight + _list.elementHeight;
 			var count = prop.arraySize;
 			if( count == 0 ) return baseHeight + _list.elementHeight;
 			

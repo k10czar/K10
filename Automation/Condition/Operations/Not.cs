@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace K10.Conditions
 {
+	[ListingPath(nameof(Not))]
 	public class Not : ICondition
 	{
 		[ExtendedDrawer, SerializeReference] ICondition _condition;

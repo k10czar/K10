@@ -12,27 +12,46 @@ public struct ToggleButtonFromPropExpansionLazy
 
 	public float GetHeight( SerializedProperty prop ) => _button.GetHeight();
 
+    public bool Layout( bool isExpanded, float margin = 3, GUIStyle style = null)
+    {
+        _button.Layout(ref isExpanded, margin, style);
+		return isExpanded;
+    }
+
+    public bool Layout( IValueCapsule<bool> isExpanded, float margin = 3, GUIStyle style = null)
+    {
+        var isExpandedBool = isExpanded.Get;
+        _button.Layout(ref isExpandedBool, margin, style);
+        isExpanded.Set = isExpandedBool;
+		return isExpandedBool;
+    }
+
+    public bool Layout( ref bool isExpanded, float margin = 3, GUIStyle style = null)
+    {
+        _button.Layout(ref isExpanded, margin, style);
+		return isExpanded;
+    }
+
     public bool Layout( SerializedProperty prop, float margin = 3, GUIStyle style = null)
     {
-		bool toggle = prop.isExpanded;
-        var ret = _button.Layout(ref toggle, margin, style);
-		prop.isExpanded = toggle;
-		return ret;
+        var open = Layout( prop.isExpanded, margin, style );
+		prop.isExpanded = open;
+        return open;
     }
 
     public bool Draw( SerializedProperty prop, Rect rect, GUIStyle style = null)
     {
 		bool toggle = prop.isExpanded;
-		var ret = _button.Draw( rect, ref toggle, style );
+		_button.Draw( rect, ref toggle, style );
 		prop.isExpanded = toggle;
-		return ret;
+		return toggle;
     }
 
     public bool DrawOnTop( SerializedProperty prop, ref Rect rect)
     {
 		bool toggle = prop.isExpanded;
-        var ret = _button.DrawOnTop(ref rect, ref toggle);
+        _button.DrawOnTop(ref rect, ref toggle);
 		prop.isExpanded = toggle;
-		return ret;
+		return toggle;
     }
 }

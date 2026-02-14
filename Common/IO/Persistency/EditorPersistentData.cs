@@ -55,7 +55,6 @@ public class EditorPersistentBoolState : IBoolState, ISettingsValue
 	public bool Get() => _persistentValueState.Get();
 }
 
-
 [System.Serializable]
 public class EditorPersistentValueState<T> : ValueState<T>, ISettingsValue where T : struct, System.IComparable
 {
@@ -94,13 +93,31 @@ public class EditorPersistentValueState<T> : ValueState<T>, ISettingsValue where
 	public override string ToString() { return string.Format( $"EPVS<{typeof( T )}>({Value})" ); }
 }
 
+public class LazyEditorPersistentValue<T> : IValueCapsule<T> where T : struct, System.IComparable
+{
+	string _path;
+	T _defaultValue;
+
+	EditorPersistentValue<T> _implementation;
+    EditorPersistentValue<T> Implementation => _implementation ??= EditorPersistentValue<T>.At( _path, _defaultValue );
+
+    public LazyEditorPersistentValue( string path, T defaultValue = default )
+	{
+		_path = path;
+		_defaultValue = defaultValue;
+	}
+
+    T IValueCapsule<T>.Get => Implementation.Get;
+    public T Set { set => Implementation.Set = value; }
+}
+
 public class EditorPersistentValue<T> : IValueCapsule<T> where T : struct, System.IComparable
 {
 	string _realitvePath;
 	T? _t = null;
 
 	public string PathToUse => FullPath( _realitvePath );
-	static string FullPath( string realitvePath ) => "Editor/" + realitvePath;
+	static string FullPath( string realitvePath ) => "Temp/Editor/" + realitvePath;
 
 	static Dictionary<string, EditorPersistentValue<T>> _dict = new Dictionary<string, EditorPersistentValue<T>>();
 

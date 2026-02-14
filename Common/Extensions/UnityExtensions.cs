@@ -533,9 +533,12 @@ public static class K10UnityExtensions
 		if (obj is IEnumerable enumerable)
 		{
 			if( enumerable is string str ) return str;
-			var count = "...";
-			if (obj is ICollection collection) count = collection.Count.ToString();
-			var sb = StringBuilderPool.RequestWith($"<{obj.TypeNameOrNull()}>[{count}]{{ ");
+			var count = -1;
+			var countStr = "...";
+			if (obj is ICollection collection) count = collection.Count;
+			if( count >= 0 ) countStr = count.ToString();
+			if( count == 0 ) return $"{obj.TypeNameOrNull()}[0]{{}}";
+			var sb = StringBuilderPool.RequestWith($"{obj.TypeNameOrNull()}[{countStr}]{{ ");
 			bool first = true;
 			foreach (var e in enumerable)
 			{
@@ -543,10 +546,29 @@ public static class K10UnityExtensions
 				first = false;
 				sb.Append(e.ToStringOrNull());
 			}
-			sb.Append( " }}" );
+			sb.Append( " }" );
 			return sb.ReturnToPoolAndCast();
 		}
         return obj.ToString();
+    }
+
+    [MethodImpl(AggrInline)]
+    public static string ElementsToString(this IEnumerable enumerable, string nullString = ConstsK10.NULL_STRING)
+    {
+		if( enumerable == null ) return nullString;
+		if( enumerable is string str ) return str;
+		var sb = StringBuilderPool.RequestWith($"{{ ");
+		bool first = true;
+		foreach (var e in enumerable)
+		{
+			if( !first ) sb.Append(", ");
+			first = false;
+			if( e == null ) sb.Append( nullString );
+			else if( e is IEnumerable innerEnumerable ) sb.Append( innerEnumerable.ElementsToString() );
+			else sb.Append( e.ToString() );
+		}
+		sb.Append( " }" );
+		return sb.ReturnToPoolAndCast();
     }
 
     [MethodImpl( AggrInline )] public static string ToStringOrNullColored( this object obj, Color valueColor, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.ToString().Colorfy(valueColor) : nullString.Colorfy(Colors.Console.Negation);

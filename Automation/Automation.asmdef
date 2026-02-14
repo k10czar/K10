@@ -1,6 +1,6 @@
 {
     "name": "Automation",
-    "rootNamespace": "",
+    "rootNamespace": "K10.Automation",
     "references": [
         "GUID:6ac568dd7a2af634895b6119885b2204"
     ],
