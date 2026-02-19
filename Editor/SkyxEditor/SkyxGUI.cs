@@ -164,19 +164,20 @@ namespace Skyx.SkyxEditor
             var label = drawLabel ? null : GUIContent.none;
 
             EditorGUI.BeginChangeCheck();
-            switch (property.propertyType)
-            {
-                case SerializedPropertyType.String:
-                    EditorGUI.DelayedTextField(rect, property, label); break;
-
-                case SerializedPropertyType.Integer:
-                    EditorGUI.DelayedIntField(rect, property, label); break;
-
-                case SerializedPropertyType.Float:
-                    EditorGUI.DelayedFloatField(rect, property, label); break;
-
-                default: EditorGUI.PropertyField(rect, property, label); break;
-            }
+            // switch (property.propertyType)
+            // {
+            //     case SerializedPropertyType.String:
+            //         EditorGUI.DelayedTextField(rect, property, label); break;
+            //
+            //     case SerializedPropertyType.Integer:
+            //         EditorGUI.DelayedIntField(rect, property, label); break;
+            //
+            //     case SerializedPropertyType.Float:
+            //         EditorGUI.DelayedFloatField(rect, property, label); break;
+            //
+            //     default: EditorGUI.PropertyField(rect, property, label); break;
+            // }
+            EditorGUI.PropertyField(rect, property, label);
             if (EditorGUI.EndChangeCheck()) property.Apply();
         }
 

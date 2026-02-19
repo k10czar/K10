@@ -159,9 +159,11 @@ namespace Skyx.SkyxEditor
                 EditorGUI.LabelField(rect.ExtractLabelRect(), label);
 
             var isFloat = property.propertyType is SerializedPropertyType.Float;
-            var currentValue = isFloat ? property.floatValue : property.intValue;
+            var isSetToOptional = isFloat
+                ? (optionalAtt.useInfinite ? float.IsInfinity(property.floatValue) : property.floatValue < 0)
+                : (optionalAtt.useInfinite ? property.intValue == int.MaxValue : property.intValue < 0);
 
-            if (currentValue < 0)
+            if (isSetToOptional)
             {
                 if (SkyxGUI.Button(rect, optionalAtt.compact))
                 {
@@ -174,8 +176,8 @@ namespace Skyx.SkyxEditor
             {
                 if (SkyxGUI.MiniButton(ref rect, "!", EColor.Support, optionalAtt.hint, true))
                 {
-                    if (isFloat) property.floatValue = -1;
-                    else property.intValue = -1;
+                    if (isFloat) property.floatValue = optionalAtt.useInfinite ? float.MaxValue : -1;
+                    else property.intValue = optionalAtt.useInfinite ? int.MaxValue : -1;
                     property.Apply();
                 }
 
