@@ -150,5 +150,12 @@ namespace K10.DebugSystem
 
             return log;
         }
+
+        [HideInCallstack]
+        public static T ErrorWithFallback<T>(string error, T result)
+        {
+            Debug.LogError(error);
+            return result;
+        }
     }
 }
