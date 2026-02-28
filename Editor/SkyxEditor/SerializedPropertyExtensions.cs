@@ -499,15 +499,18 @@ namespace Skyx.SkyxEditor
         {
             var root = (MonoBehaviour) property.serializedObject.targetObject;
 
+            var candidate = root.GetComponent(targetType);
+            if (candidate != null) return candidate;
+
             if (searchChildren)
             {
-                var candidate = root.GetComponentInChildren(targetType, true);
+                candidate = root.GetComponentInChildren(targetType, true);
                 if (candidate != null) return candidate;
             }
 
             if (searchParent)
             {
-                var candidate = root.GetComponentInParent(targetType, true);
+                candidate = root.transform.parent.GetComponentInParent(targetType, true);
                 if (candidate != null) return candidate;
             }
 

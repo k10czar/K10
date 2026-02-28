@@ -122,12 +122,10 @@ namespace Skyx.SkyxEditor
             if (SkyxGUI.MiniButton(ref rect, "⚙️", color, "Auto Pick", true))
             {
                 var pickerAtt = (AutoPickerAttribute) attribute;
+                var targetType = property.GetObjectReferenceType();
 
                 if (pickerAtt.getterMethod == null)
-                {
-                    var targetType = property.GetObjectReferenceType();
                     property.FillWithExisting(targetType, pickerAtt.searchChildren, pickerAtt.searchParent);
-                }
                 else
                 {
                     var ownerType = property.serializedObject.targetObject.GetType();
@@ -139,6 +137,14 @@ namespace Skyx.SkyxEditor
                     property.PrepareForChanges("Auto picker");
                     property.SetValue(result);
                     property.ApplyDirectChanges();
+                }
+
+                if (pickerAtt.addIfNotFound && property.objectReferenceValue == null)
+                {
+                    var behaviour = (MonoBehaviour) property.serializedObject.targetObject;
+                    var component = behaviour.gameObject.AddComponent(targetType);
+                    property.objectReferenceValue = component;
+                    property.Apply();
                 }
             }
 
