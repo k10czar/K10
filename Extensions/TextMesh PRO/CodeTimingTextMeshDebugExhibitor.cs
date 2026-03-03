@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 
 [DefaultExecutionOrder(EXECUTION_ORDER)]
-public sealed class CodeTimingTextMeshDebugExhibitor : CodeTimingDebugExhibitor
+public sealed class CodeTimingTextMeshDebugExhibitor : FrameTimingDebugExhibitor
 {
 	[SerializeField] TextMeshProUGUI label;
 

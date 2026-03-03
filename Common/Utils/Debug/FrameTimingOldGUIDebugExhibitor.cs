@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Text.RegularExpressions;
 
 [DefaultExecutionOrder(EXECUTION_ORDER)]
-public sealed class CodeTimingOldGUIDebugExhibitor : CodeTimingDebugExhibitor
+public sealed class FrameTimingOldGUIDebugExhibitor : FrameTimingDebugExhibitor
 {
 	[SerializeField] Rect _rect = new Rect( 0, 0, 400, 600 );
 	[SerializeField] Vector2 _shadowOffset = new Vector2( 2, 2 );

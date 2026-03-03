@@ -5,6 +5,7 @@ public static class EnumCache<T> where T : Enum, IConvertible
 {
     static IReadOnlyList<T> _cachedValues = null;
     static IReadOnlyList<string> _cachedNames = null;
+    static Dictionary<T, string> _cachedToStrings = new();
     static int _count = -1;
 
     public static IReadOnlyList<T> GetValues()
@@ -50,5 +51,15 @@ public static class EnumCache<T> where T : Enum, IConvertible
             else _count = Enum.GetValues(typeof(T)).Length;
         }
         return _count;
+    }
+
+    public static string Get( T enumValue )
+    {
+        if (!_cachedToStrings.TryGetValue(enumValue, out var str))
+        {
+            str = enumValue.ToString();
+            _cachedToStrings[enumValue] = str;
+        }
+        return str;
     }
 }
