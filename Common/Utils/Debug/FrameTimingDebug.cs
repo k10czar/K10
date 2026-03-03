@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-public static class CodeTimingDebug
+public static class FrameTimingDebug
 {
 	class FunctionTime
 	{

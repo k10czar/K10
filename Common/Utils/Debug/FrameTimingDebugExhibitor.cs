@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [DefaultExecutionOrder(EXECUTION_ORDER)]
-public abstract class CodeTimingDebugExhibitor : MonoBehaviour
+public abstract class FrameTimingDebugExhibitor : MonoBehaviour
 {
 	public const int EXECUTION_ORDER = 20000;
 
@@ -16,24 +16,24 @@ public abstract class CodeTimingDebugExhibitor : MonoBehaviour
 
     void OnEnable()
 	{
-		CodeTimingDebug.Enable();
+		FrameTimingDebug.Enable();
 		_deepToogle?.Register( TryToggleDeep );
 	}
 
 	void OnDisable()
 	{
-		CodeTimingDebug.Disable();
+		FrameTimingDebug.Disable();
 		_deepToogle?.Unregister( TryToggleDeep );
 	}
 
 	void TryToggleDeep()
 	{
-		CodeTimingDebug.ToogleDeep();
+		FrameTimingDebug.ToogleDeep();
 	}
 
 	void LateUpdate()
 	{
-		var log = CodeTimingDebug.GetLog();
+		var log = FrameTimingDebug.GetLog();
 		
 		if (tickInterval > Mathf.Epsilon)
 		{
@@ -45,6 +45,6 @@ public abstract class CodeTimingDebugExhibitor : MonoBehaviour
 		}
 
 		SetLog(log);
-		CodeTimingDebug.ClearUnusedData();
+		FrameTimingDebug.ClearUnusedData();
 	}
 }
