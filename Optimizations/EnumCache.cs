@@ -53,7 +53,7 @@ public static class EnumCache<T> where T : Enum, IConvertible
         return _count;
     }
 
-    public static string Get( T enumValue )
+    public static string GetCachedNameFrom( T enumValue )
     {
         if (!_cachedToStrings.TryGetValue(enumValue, out var str))
         {
