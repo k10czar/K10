@@ -25,6 +25,7 @@ public static class FrameTimingDebug
 
 		public void CombineWithFunctionTime(FunctionTime functionTime)
 		{
+			Parent = functionTime.Parent;
 			AccumulatedTimings += functionTime.AccumulatedTimings;
 			Calls += functionTime.Calls;
 		}
@@ -86,7 +87,7 @@ public static class FrameTimingDebug
 	}
 
 	private static readonly Dictionary<string, Stopwatch> _watches = new Dictionary<string, Stopwatch>();
-	private static readonly int _callStatckFrame = -1;
+	private static int _callStatckFrame = -1;
 	private static readonly Dictionary<string, string> _openParent = new Dictionary<string, string>();
 	private static readonly List<string> _callStatck = new List<string>();
 	private static readonly List<FrameData> _framesData = new List<FrameData>();
@@ -120,7 +121,7 @@ public static class FrameTimingDebug
 		}
 		_callStatckFrame = Time.frameCount;
 		_callStatck.Add( tag );
-		_openParent.TryAdd( tag );
+		_openParent.TryAdd( tag, _callStatck.Count > 0 ? _callStatck[_callStatck.Count-1] : null );
 	}
 	
 	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
@@ -213,7 +214,7 @@ public static class FrameTimingDebug
 			foreach (var functionTimeInFrame in frameInfo.FunctionTimes)
 			{
 				if (!functionTimesInSample.ContainsKey(functionTimeInFrame.Key))
-					functionTimesInSample.Add(functionTimeInFrame.Key, new FunctionTime());
+					functionTimesInSample.Add(functionTimeInFrame.Key, new FunctionTime(null));
 
 				functionTimesInSample[functionTimeInFrame.Key].CombineWithFunctionTime(functionTimeInFrame.Value);
 			}
