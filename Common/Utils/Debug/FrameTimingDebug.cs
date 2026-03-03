@@ -8,8 +8,14 @@ public static class FrameTimingDebug
 {
 	class FunctionTime
 	{
+		public string Parent { get; private set; }
 		public double AccumulatedTimings { get; private set; }
 		public int Calls { get; private set;}
+
+		public FunctionTime(string parent)
+		{
+			Parent = parent;
+		}
 
 		public void AddTime(double time)
 		{
@@ -39,10 +45,10 @@ public static class FrameTimingDebug
 			FunctionTimes = new Dictionary<string, FunctionTime>();
 		}
 
-		public void AddTimingData(string tag, double time)
+		public void AddTimingData(string tag, double time, string parent)
 		{
 			if (!FunctionTimes.ContainsKey(tag)) 
-				FunctionTimes.Add(tag, new FunctionTime());
+				FunctionTimes.Add(tag, new FunctionTime( parent ));
 
 			FunctionTimes[tag].AddTime(time);
 		}
@@ -80,6 +86,9 @@ public static class FrameTimingDebug
 	}
 
 	private static readonly Dictionary<string, Stopwatch> _watches = new Dictionary<string, Stopwatch>();
+	private static readonly int _callStatckFrame = -1;
+	private static readonly Dictionary<string, string> _openParent = new Dictionary<string, string>();
+	private static readonly List<string> _callStatck = new List<string>();
 	private static readonly List<FrameData> _framesData = new List<FrameData>();
 
 
@@ -103,6 +112,15 @@ public static class FrameTimingDebug
 
 		var sw = StopwatchPool.RequestStarted();
 		_watches[tag] = sw;
+
+		if( _callStatckFrame != Time.frameCount ) 
+		{
+			_callStatck.Clear();
+			_openParent.Clear();
+		}
+		_callStatckFrame = Time.frameCount;
+		_callStatck.Add( tag );
+		_openParent.TryAdd( tag );
 	}
 	
 	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
@@ -118,6 +136,21 @@ public static class FrameTimingDebug
 	{
 		if( !enabled ) return;
 
+		var stackIsRight = tag == _callStatck[_callStatck.Count-1];
+		if( stackIsRight ) _callStatck.RemoveAt( _callStatck.Count-1 );
+		else _callStatck.Remove( tag );
+
+		string parent = null;
+		if( stackIsRight && _callStatck.Count > 0 )
+		{
+			var currentStack = _callStatck[_callStatck.Count-1];
+			if( _openParent.TryGetValue( tag, out var openParent ) )
+			{
+				_openParent.Remove( tag );
+				if( openParent == currentStack ) parent = currentStack;
+			}
+		}
+
 		if( !_watches.TryGetValue( tag, out var osw ) ) return;
 		if( osw.IsRunning ) osw.Stop();
 		_watches.Remove( tag );
@@ -125,14 +158,13 @@ public static class FrameTimingDebug
 		int currentFrame = Time.frameCount;
 		if (_framesData.Count == 0 || _framesData[_framesData.Count - 1].FrameNumber != currentFrame)
 		{
-
 			var frame = new FrameData(currentFrame, Time.time, Time.unscaledDeltaTime);
 			_framesData.Add(frame);
 		}
 
 		var frameData = _framesData[_framesData.Count - 1];
 
-		frameData.AddTimingData(tag, osw.ReturnToPoolAndGetElapsedMs() );
+		frameData.AddTimingData(tag, osw.ReturnToPoolAndGetElapsedMs(), parent );
 
 		// return elapsed;
 	}
