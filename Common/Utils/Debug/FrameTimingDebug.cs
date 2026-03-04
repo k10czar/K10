@@ -137,7 +137,7 @@ public static class FrameTimingDebug
 	{
 		if( !enabled ) return;
 
-		var stackIsRight = tag == _callStatck[_callStatck.Count-1];
+		var stackIsRight = ( _callStatck.Count > 0 ) && tag == _callStatck[_callStatck.Count-1];
 		if( stackIsRight ) _callStatck.RemoveAt( _callStatck.Count-1 );
 		else _callStatck.Remove( tag );
 

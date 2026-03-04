@@ -30,4 +30,12 @@ public sealed class FrameTimingOldGUIDebugExhibitor : FrameTimingDebugExhibitor
 
 		return Regex.Replace(input, "<.*?>", string.Empty);
 	}
+
+    public void Set(Rect rect, Vector2 shadowOffset, Color shadowColor, GUIStyle style)
+    {
+		_rect = rect;
+		_shadowOffset = shadowOffset;
+		_shadowColor = shadowColor;
+        _style = style; 
+    }
 }
