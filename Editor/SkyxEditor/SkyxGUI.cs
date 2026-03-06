@@ -122,7 +122,7 @@ namespace Skyx.SkyxEditor
 
             if (targetType == typeof(int))
             {
-                if (targetType != drawInfo.requestedType)
+                if (targetType != drawInfo.requestedType && drawInfo.requestedType != null)
                     EnumTreeGUI.DrawEnumMask(rect, property, drawInfo.requestedType, drawInfo.color);
 
                 else DrawIntField(rect, property, drawInfo.hint);
