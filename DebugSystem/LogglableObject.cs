@@ -3,11 +3,13 @@ using UnityEngine;
 
 namespace K10.DebugSystem
 {
-    public interface ILoggable<T> where T : DebugCategory, new()
+    public static class LoggableDefaults
     {
         public static readonly Object[] nullOwners = { null };
-
-        Object[] LogOwners => nullOwners;
+    }
+    public interface ILoggable<T> where T : DebugCategory, new()
+    {
+        Object[] LogOwners => LoggableDefaults.nullOwners;
         Object MainLogOwner => LogOwners[0];
     }
 
