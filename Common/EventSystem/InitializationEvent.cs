@@ -10,9 +10,10 @@ public class InitializationEvent : ICustomDisposableKill
     {
         Debug.Assert(!isInitialized, "Already initialized!");
 
-        isInitialized = true;
         initialized.Trigger();
         initialized.Kill();
+
+        isInitialized = true;
     }
 
     public void CallWhenReady(Action callback)
@@ -55,9 +56,11 @@ public class InitializationEvent<T> : ICustomDisposableKill
         Debug.Assert(!isInitialized, "Already initialized!");
 
         source = sourceRef;
-        isInitialized = true;
+
         initialized.Trigger(source);
         initialized.Kill();
+
+        isInitialized = true;
     }
 
     public void CallWhenReady(Action callback)
