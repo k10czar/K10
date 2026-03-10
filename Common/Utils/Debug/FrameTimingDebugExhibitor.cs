@@ -10,6 +10,7 @@ public abstract class FrameTimingDebugExhibitor : MonoBehaviour
 
 	[SerializeField] protected float tickInterval = 0.0f;
 	[ExtendedDrawer(true),SerializeReference] IEventBinderReference _deepToogle;
+    FpsCounter _fps;
 
 	protected abstract void SetLog( string log );
 	protected abstract void OnEnableChange( bool enabled );
@@ -18,6 +19,7 @@ public abstract class FrameTimingDebugExhibitor : MonoBehaviour
 	{
 		FrameTimingDebug.Enable();
 		_deepToogle?.Register( TryToggleDeep );
+        _fps = new FpsCounter( .3333f );
 	}
 
 	void OnDisable()
@@ -33,6 +35,7 @@ public abstract class FrameTimingDebugExhibitor : MonoBehaviour
 
 	void LateUpdate()
 	{
+		_fps.Update();
 		var log = FrameTimingDebug.GetLog();
 		
 		if (tickInterval > Mathf.Epsilon)
@@ -44,7 +47,7 @@ public abstract class FrameTimingDebugExhibitor : MonoBehaviour
 				return;
 		}
 
-		SetLog(log);
+		SetLog($"{_fps.CurrentFpsText}\n{log}");
 		FrameTimingDebug.ClearUnusedData();
 	}
 }
