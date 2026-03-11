@@ -1,4 +1,4 @@
-#if MICROSOFT_GDK_SUPPORT || UNITY_GAMECORE
+#if UNITY_GAMECORE
 using Unity.XGamingRuntime;
 using UnityEngine;
 using System;
@@ -92,15 +92,15 @@ public class GdkLogCategory : IK10LogCategory
 public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategory>
 {
     // Config
-    public string Sandbox { get; private set; } = "XDKS.1";
+    public string Sandbox { get; private set; } = "ZKLCLN.2";
     // Documented as: "Specifies the SCID to be used for Save Game Storage."
-    public string Scid { get; private set; } = "00000000-0000-0000-0000-0000FFFFFFFF";
-    public string SaveScid { get; private set; } = "00000000-0000-0000-0000-0000FFFFFFFF";
+    public string Scid { get; private set; } = "00000000-0000-0000-0000-000075b4a042";
+    public string SaveScid { get; private set; } = "00000000-0000-0000-0000-000075b4a042";
 
     // Documented as: "...a default value of 'FFFFFFFF' for this element. This allows for early iteration of your
     //   title without having to immediately acquire the Id from Partner Center. It is strongly recommended to change
     //   this Id as soon as you get your title building to avoid failures when attempting to do API calls."
-    public string TitleId { get; private set; } = "FFFFFFFF";
+    public string TitleId { get; private set; } = "75B4A042";
     public uint TitleIdNumeric { get; private set; } = 0;
 
     // Initialization
@@ -310,18 +310,52 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         if (_hasCreatedDispatchTask)
             SDK.XTaskQueueDispatch(0);
     }
-    
-#endregion
 
-#region User
+    #endregion
+
+    #region User
     public void AddDefaultUser()
     {
         _userData = new GdkUserData();
-        SDK.XUserAddAsync(XUserAddOptions.AddDefaultUserSilently, (Int32 hresult, XUserHandle userHandle) =>
+
+        Debug.LogError("[GDK] XUserAddAsync: AddDefaultUserSilently (request)");
+
+        SDK.XUserAddAsync(XUserAddOptions.AddDefaultUserSilently, (hresult, userHandle) =>
+        {
+            Debug.Log($"[GDK] XUserAddAsync (silent) callback HR=0x{hresult:X8} ({HR.NameOf(hresult)}), userHandleNull={userHandle == null}");
+
+            if (HR.FAILED(hresult) || userHandle == null)
+            {
+                Debug.LogError("[GDK] Silent add FAILED (Editor may not support real silent sign-in like console).");
+                _isLogged.SetFalse();
+                return;
+            }
+
+            // XUID
+            int hrXuid = SDK.XUserGetId(userHandle, out ulong xuid);
+            Debug.LogError($"[GDK] XUserGetId HR=0x{hrXuid:X8} ({HR.NameOf(hrXuid)}), XUID={xuid}");
+
+            // Gamertag
+            int hrGt = SDK.XUserGetGamertag(userHandle, XUserGamertagComponent.Classic, out string gt);
+            Debug.LogError($"[GDK] XUserGetGamertag HR=0x{hrGt:X8} ({HR.NameOf(hrGt)}), Gamertag='{gt}'");
+
+            _gdkFileAdapter.Initialize(userHandle, SaveScid);
+            InitializeUser(userHandle);
+            _isLogged.SetTrue();
+
+            Debug.LogError("[GDK] Silent add SUCCESS (got valid user handle).");
+        });
+    }
+
+    public void RequestUserSignInUI()
+    {
+        Debug.LogError("[GDK] Requesting user sign-in UI...");
+
+        SDK.XUserAddAsync(XUserAddOptions.AddDefaultUserAllowingUI, (hresult, userHandle) =>
         {
             if (HR.FAILED(hresult) || userHandle == null)
             {
-                Debug.LogError($"Couldn't add default user {hresult}");
+                Debug.LogError($"[GDK] UI user add failed. HR=0x{hresult:X8} ({HR.NameOf(hresult)})");
                 return;
             }
 
@@ -331,9 +365,18 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         });
     }
 
+    private void FinishLogin(XUserHandle userHandle)
+    {
+        _userData.userHandle = userHandle;
+        _gdkFileAdapter.Initialize(userHandle, SaveScid);
+        InitializeUser(userHandle);
+        _isLogged.SetTrue();
+        this.Log("<color=LawnGreen>GDK User Authenticated!</color>");
+    }
+
     private void InitializeUser(XUserHandle userHandle)
     {
-        Debug.Log("Initializing user");
+        Debug.LogError("Initializing user");
         _userData.userHandle = userHandle;
 
         FetchUserData();
@@ -416,9 +459,15 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
             }
         );
     }
-#endregion
 
-#region DLC
+    public void Dispose() 
+    {
+        CleanUp();
+    }
+
+    #endregion
+
+    #region DLC
     public void FetchDLCLicense(string storeId)
     {
         if (storeId.IsNullOrEmpty())
@@ -544,19 +593,34 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
     private void CleanUp()
     {
-        Debug.Log($"GDK CleanUp");
+        Debug.Log($"GDK CleanUp starting...");
         _onStartedCleanUp.Trigger();
 
-        ExternalCoroutine.StopCoroutine(_earlyInviteHandlingCoroutine);
 #if UNITY_GAMECORE
-        SDK.XUserUnregisterForDeviceAssociationChanged(_deviceAssociationChangedRegistrationToken, true);
+        if (_deviceAssociationChangedRegistrationToken != default)
+        {
+            SDK.XUserUnregisterForDeviceAssociationChanged(_deviceAssociationChangedRegistrationToken, true);
+        }
 #endif
-        SDK.XGameInviteUnregisterForEvent(_inviteRegistrationToken);
-        SDK.XStoreCloseContextHandle(UserData.storeContext);
-        SDK.XUserCloseHandle(UserData.userHandle);
-        SDK.XBL.XblContextCloseHandle(UserData.contextHandle);
 
-        Debug.Log($"GDK CleanUp finished");
+        if (_inviteRegistrationToken != default)
+        {
+            SDK.XGameInviteUnregisterForEvent(_inviteRegistrationToken);
+        }
+
+        if (_userData != null)
+        {
+            if (_userData.storeContext != null) SDK.XStoreCloseContextHandle(_userData.storeContext);
+            if (_userData.contextHandle != null) SDK.XBL.XblContextCloseHandle(_userData.contextHandle);
+            if (_userData.userHandle != null) SDK.XUserCloseHandle(_userData.userHandle);
+        }
+
+        // This is the specific call that releases the TaskQueue handles 
+        // and stops the XERROR: handle leak detected.
+        SDK.XGameRuntimeUninitialize();
+
+        _hasCreatedDispatchTask = false;
+        _isInitialized.SetFalse();
     }
 
 #if UNITY_EDITOR
