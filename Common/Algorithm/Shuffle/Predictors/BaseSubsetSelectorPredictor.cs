@@ -32,9 +32,6 @@ public abstract class BaseSubsetSelectorPredictor<T>
 
     protected double totalChances = 0;
 
-    // public readonly List<int[]> combinations = new();
-    // public readonly List<double> combinationsChances = new();
-
     public readonly RangeSummary Score = new();
     public readonly RangeSummary ElementsCount = new();
 
@@ -202,7 +199,15 @@ public abstract class BaseSubsetSelectorPredictor<T>
             ElementsCount.SetOnlyOne( guaranteeds );
             _variationsCount = 1;
             _variationsWithPermutationCount = 1;
-            for( int i = 0; i < count; i++ ) _elementCountChance[i,_minCache[i]] = 1;
+            for( int i = 0; i < count; i++ )
+            {
+                var countOfElement = _minCache[i];
+                _realMinCount[i] = countOfElement;
+                _elementAvg[i] = countOfElement;
+                _realMaxCount[i] = countOfElement;
+                _elementCountChance[i,_minCache[i]] = 1;
+                _countOfAnyChance[countOfElement] = 1;
+            }
             return;
         }
 
@@ -254,7 +259,6 @@ public abstract class BaseSubsetSelectorPredictor<T>
                 _elementAvg[i] += j * chance;
                 _countOfAnyChance[j] += chance;
             }
-            Debug.Log( $"{i}){_elements[i].ToStringOrNull()} avg:{_elementAvg[i]}" );
         }
     }
 

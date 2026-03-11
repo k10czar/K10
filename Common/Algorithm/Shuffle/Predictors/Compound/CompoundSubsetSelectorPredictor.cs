@@ -76,7 +76,8 @@ public class CompoundSubsetSelectorPredictor<T,K> : BaseSubsetSelectorPredictor<
         if (!_crawlersDict.TryGetValue(t, out var crawler))
         {
             crawler = new AggregatedPredictor<K>();
-            crawler.Calculate(t, _scorerK);
+            crawler.SetScorer(_scorerK);
+            crawler.Calculate(t);
             _crawlersDict.Add(t, crawler);
             for( int i = 0; i < t.Count; i++ )
             {
@@ -200,7 +201,6 @@ public class CompoundSubsetSelectorPredictor<T,K> : BaseSubsetSelectorPredictor<
                         if( entry.Key == null ) continue;
                         var eId = _subElementsId[ entry.Key ];
                         _subElementsRangeScratch[eId].Combine(entry.Value, realCount);
-                        Debug.Log( $"{entry.Key} => {entry.Value}" );
                     }
                 }
                 subElementVariation *= crawler.VariationsCount;
@@ -209,7 +209,7 @@ public class CompoundSubsetSelectorPredictor<T,K> : BaseSubsetSelectorPredictor<
             }
             totalChances += realChance;
             RegisterSubElementsRangeScratch( realChance );
-            Debug.Log( $"{NameCombination(_countSimilarCache,_namesCache)} Combine {_subElementsCountRangeScratch}{realChance*100:N2}% from {base.NameScratchCombination()} {totalChances}\n ( {_subElementsRangeScratch.ElementsToString()} ) " );
+            // Debug.Log( $"{NameCombination(_countSimilarCache,_namesCache)} Combine {_subElementsCountRangeScratch}{realChance*100:N2}% from {base.NameScratchCombination()} {totalChances}\n ( {_subElementsRangeScratch.ElementsToString()} ) " );
             SubElementsCountRange.RegisterValue( _subElementsCountRangeScratch, realChance );
             // Debug.Log( $"{NameCombination(_countSimilarCache,_namesCache)} XP add {score} {permutations*chance*100:N4}% ( {permutations} * {chance*100:N4}% )" );
             Score.RegisterValue( score.min, score.avg, score.max, realChance );

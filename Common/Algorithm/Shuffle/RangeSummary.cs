@@ -131,6 +131,7 @@ public class RangeSummary
         isSingleValue = CalcIsSingleValue();
     }
 
+    public string ToStringValues() => isSingleValue ? $"{Min:N0}" : $"[ {Min:N0} ... {Average:N1} ... {Max:N0} ]";
     public override string ToString() => notSet ? "NOT_SET" : ( isSingleValue ? $"{Min:N0}" : $"[ {Min:N0} ... {Average:N1} ... {Max:N0} ]{(WrongSum?$"!WRONG!{chancesSum}!={combines}":"")}" );
     public string ToStringFull() => notSet ? "NOT_SET" : ( isSingleValue ? $"{Min:N0}" : $"[ {Min:N0} ... {Average:N1} ... {Max:N0} ] {chancesSum:N2} {combines:N2} {(WrongSum?"!WRONG!":"")}" );
 
@@ -144,6 +145,13 @@ public class RangeSummary
         notSet = false;
         isSingleValue = CalcIsSingleValue();
     }
+
+    public static int ByAverage(RangeSummary x, RangeSummary y) => x.Average.CompareTo( y.Average );
+    public static int ByMax(RangeSummary x, RangeSummary y) => x.Max.CompareTo( y.Max );
+    public static int ByMin(RangeSummary x, RangeSummary y) => x.Min.CompareTo( y.Min );
+    public static int ByDescendingAverage(RangeSummary x, RangeSummary y) => y.Average.CompareTo( x.Average );
+    public static int ByDescendingMax(RangeSummary x, RangeSummary y) => y.Max.CompareTo( x.Max );
+    public static int ByDescendingMin(RangeSummary x, RangeSummary y) => y.Min.CompareTo( x.Min );
 
     public void Combine((double min, double avg, double max) range, double mod = 1) => Combine( range.min, range.avg, range.max, mod );
 
