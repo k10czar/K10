@@ -86,6 +86,11 @@ public struct FastFloatAnimator
 		_currentSpeed = 0;
 	}
 
+	public void SetDesireToLimit( bool max )
+    {
+		SetDesire( max ? _max : _min );
+    }
+
 	public void SetDesire( float desired )
     {
 		var diff = desired - _desiredValue;
