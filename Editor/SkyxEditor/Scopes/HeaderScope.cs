@@ -19,6 +19,7 @@ namespace Skyx.SkyxEditor
         {
             var scope = pool.Get();
 
+            scope.indent = info.indent;
             scope.usesLayout = true;
             scope.IsExpanded = Begin(info);
 
@@ -32,6 +33,7 @@ namespace Skyx.SkyxEditor
         {
             var scope = pool.Get();
 
+            scope.indent = info.indent;
             scope.IsExpanded = isExpandedRef;
             scope.usesLayout = true;
 
@@ -50,6 +52,7 @@ namespace Skyx.SkyxEditor
         {
             var scope = pool.Get();
 
+            scope.indent = info.indent;
             scope.usesLayout = false;
             scope.IsExpanded = Begin(ref rect, info);
 
@@ -63,6 +66,7 @@ namespace Skyx.SkyxEditor
         {
             var scope = pool.Get();
 
+            scope.indent = info.indent;
             scope.usesLayout = false;
             scope.IsExpanded = Begin(ref rect, ref isExpandedRef, info);
 
@@ -75,10 +79,15 @@ namespace Skyx.SkyxEditor
 
         public bool IsExpanded { get; private set; }
         private bool usesLayout;
+        private bool indent;
 
         public void Dispose()
         {
-            if (IsExpanded && usesLayout) EditorGUILayout.EndVertical();
+            if (IsExpanded)
+            {
+                if (usesLayout) EditorGUILayout.EndVertical();
+                if (indent) EditorGUI.indentLevel--;
+            }
             pool.Release(this);
         }
 
@@ -156,6 +165,8 @@ namespace Skyx.SkyxEditor
             SkyxGUI.Button(headerRect, info.title, info.color, info.size, EButtonType.Plain);
 
             DrawButtons(headerRect, info, true, ref isExpandedRef);
+
+            if (isExpandedRef && info.indent) EditorGUI.indentLevel++;
 
             return isExpandedRef;
         }
