@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 [DefaultExecutionOrder(EXECUTION_ORDER)]
 public sealed class FrameTimingOldGUIDebugExhibitor : FrameTimingDebugExhibitor
 {
-	[SerializeField] Rect _rect = new Rect( 0, 0, 400, 600 );
+	[SerializeField] Rect _rect = new Rect( 20, 10, 400, 600 );
 	[SerializeField] Vector2 _shadowOffset = new Vector2( 2, 2 );
 	[SerializeField] Color _shadowColor = Color.black;
 	[SerializeField] GUIStyle _style = GUIStyle.none;
