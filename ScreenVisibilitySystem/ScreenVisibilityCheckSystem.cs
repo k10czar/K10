@@ -201,7 +201,7 @@ public sealed class ScreenVisibilityCheckSystem : IOrchestratedUpdate, IDisposab
 				var realId = _frameOffset + i;
 				_elements[realId].SetVisibility(_result[i] != byte.MinValue);
 			}
-			_frameOffset = ( _frameOffset + elements ) % eCount;
+			_frameOffset = ( eCount > 0 ) ? ( _frameOffset + elements ) % eCount : 0;
 		}
 		_waitingJobResult = false;
 
