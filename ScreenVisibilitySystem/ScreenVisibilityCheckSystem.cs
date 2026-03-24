@@ -14,7 +14,7 @@ public sealed class ScreenVisibilityCheckSystem : IOrchestratedUpdate, IDisposab
 	private ListSetCollection<int> _toRemove = new();
 
 	[SerializeField] Camera _camera;
-	[SerializeField] int _checkedElements;
+	int _checkedElementsOnThisFrame;
 
 	int _frameOffset;
 	bool _waitingJobResult = false;
@@ -101,6 +101,11 @@ public sealed class ScreenVisibilityCheckSystem : IOrchestratedUpdate, IDisposab
 		FrameTimingDebug.LogStart( CODE_TAG );
 #endif
 		if (_camera == null) _camera = Camera.main;
+		if (_camera == null)
+		{
+			_jobHandle = default;
+			return;
+		}
 		if (!_camera.isActiveAndEnabled) _camera = Camera.main;
 		var camera = _camera;
 
@@ -118,10 +123,13 @@ public sealed class ScreenVisibilityCheckSystem : IOrchestratedUpdate, IDisposab
 
 		var mat = camera.projectionMatrix * camera.worldToCameraMatrix;
 
-		_checkedElements = _elements.Count;
-		var elements = Mathf.Min(_checkedElements - _frameOffset, MAX_ELEMENTS_PER_BATCH );
+		var eCount = _elements.Count;
+		_checkedElementsOnThisFrame = Mathf.Min(eCount - _frameOffset, MAX_ELEMENTS_PER_BATCH );
 
-		for (int i = 0; i < elements; i++)
+		// Has a limited buget of elements to check on each frame that is MAX_ELEMENTS_PER_BATCH
+		// So each frame verify 
+
+		for (int i = 0; i < _checkedElementsOnThisFrame; i++)
 		{
 			var e = _elements[_frameOffset + i];
 			_positions[i] = e.Position;
@@ -137,7 +145,7 @@ public sealed class ScreenVisibilityCheckSystem : IOrchestratedUpdate, IDisposab
 			vPos = _vpos,
 		};
 
-		_jobHandle = job.Schedule(elements, 1);
+		_jobHandle = job.Schedule(_checkedElementsOnThisFrame, 1);
 #if CODE_METRICS
 		FrameTimingDebug.LogEnd( CODE_TAG );
 #endif
@@ -148,12 +156,6 @@ public sealed class ScreenVisibilityCheckSystem : IOrchestratedUpdate, IDisposab
 #if CODE_METRICS
 		const string CODE_TAG = "ScreenVisibilityCheckSystem.PostUpdate";
 		FrameTimingDebug.LogStart( CODE_TAG );
-#endif
-
-		var eCount = _elements.Count;
-		var elements = Mathf.Min( eCount - _frameOffset, MAX_ELEMENTS_PER_BATCH );
-		
-#if CODE_METRICS
 		const string JOB_CODE_TAG = "ScreenVisibilityCheckSystem.PostUpdate.jobHandle.Complete";
 		FrameTimingDebug.LogStart( JOB_CODE_TAG );
 #endif
@@ -162,53 +164,65 @@ public sealed class ScreenVisibilityCheckSystem : IOrchestratedUpdate, IDisposab
 		FrameTimingDebug.LogEnd( JOB_CODE_TAG );
 #endif
 
-		if( _isDirty )
-		{
-			var realElements = 0;
+		if( _isDirty ) CheckResultBackDirty();
+		else CheckResultBackClean();
 
-			for (int i = 0; i < elements; i++)
-			{
-				var realId = _frameOffset + i;
-				if( _toRemove.Contains( realId ) ) continue;
-				realElements++;
-				_elements[realId].SetVisibility(_result[i] != byte.MinValue);
-			}
-
-			var toRemoveCount = _toRemove.Count;
-			_toRemove.Sort();
-
-			for (int i = toRemoveCount - 1; i >= 0; i--)
-			{
-				var idToRemove = _toRemove[i];
-				_elements.RemoveAt( idToRemove );
-				eCount--;
-			}
-
-			_toRemove.Clear();
-			_isDirty = false;
-			_frameOffset = ( _frameOffset + realElements ) % eCount;
-
-			if( eCount == 0 )
-			{
-				CodeOrchestrator.Eternal.Remove( _instance );
-				_instance._isRegistered = false;
-			}
-		}
-		else
-		{
-			for (int i = 0; i < elements; i++)
-			{
-				var realId = _frameOffset + i;
-				_elements[realId].SetVisibility(_result[i] != byte.MinValue);
-			}
-			_frameOffset = ( eCount > 0 ) ? ( _frameOffset + elements ) % eCount : 0;
-		}
 		_waitingJobResult = false;
 
 #if CODE_METRICS
 		FrameTimingDebug.LogEnd( CODE_TAG );
 #endif
     }
+
+	void CheckResultBackClean()
+	{
+		for (int i = 0; i < _checkedElementsOnThisFrame; i++)
+		{
+			var realId = _frameOffset + i;
+			_elements[realId].SetVisibility(_result[i] != byte.MinValue);
+		}
+		var eCount = _elements.Count;
+		_frameOffset = ( eCount > 0 ) ? ( ( _frameOffset + _checkedElementsOnThisFrame ) % eCount ) : 0;
+	}
+
+	void CheckResultBackDirty()
+	{
+		var realElementsCheckedBack = 0;
+		for (int i = 0; i < _checkedElementsOnThisFrame; i++)
+		{
+			var realId = _frameOffset + i;
+			if( _toRemove.Contains( realId ) ) continue;
+			realElementsCheckedBack++;
+			_elements[realId].SetVisibility(_result[i] != byte.MinValue);
+		}
+
+		RemoveDelayedElementsToRemove();
+
+		var eCount = _elements.Count;
+		_frameOffset += realElementsCheckedBack;
+		if( _frameOffset >= eCount ) _frameOffset = 0;
+
+		if( eCount == 0 )
+		{
+			CodeOrchestrator.Eternal.Remove( _instance );
+			_instance._isRegistered = false;
+		}
+	}
+
+	void RemoveDelayedElementsToRemove()
+	{
+		var toRemoveCount = _toRemove.Count;
+		_toRemove.Sort();
+
+		for (int i = toRemoveCount - 1; i >= 0; i--)
+		{
+			var idToRemove = _toRemove[i];
+			_elements.RemoveAt( idToRemove );
+		}
+
+		_toRemove.Clear();
+		_isDirty = false;
+	}
 
     [BurstCompile]
 	struct Job : IJobParallelFor
