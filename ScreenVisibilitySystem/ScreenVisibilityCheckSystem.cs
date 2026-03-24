@@ -181,7 +181,7 @@ public sealed class ScreenVisibilityCheckSystem : IOrchestratedUpdate, IDisposab
 			{
 				var idToRemove = _toRemove[i];
 				_elements.RemoveAt( idToRemove );
-				eCount++;
+				eCount--;
 			}
 
 			_toRemove.Clear();
