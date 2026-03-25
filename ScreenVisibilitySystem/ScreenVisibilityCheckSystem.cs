@@ -8,20 +8,22 @@ using UnityEngine;
 
 public sealed class ScreenVisibilityCheckSystem : IOrchestratedUpdate, IDisposable
 {
+	const int MAX_ELEMENTS_START = 100;
+	const int MAX_ELEMENTS_NEW_ALLOC = 50;
 	static ScreenVisibilityCheckSystem _instance;
 	
 	private List<IScreenVisibilitySetter> _elements = new();
 	private ListSetCollection<int> _toRemove = new();
 
 	[SerializeField] Camera _camera;
+
 	int _checkedElementsOnThisFrame;
 
-	int _frameOffset;
 	bool _waitingJobResult = false;
 	bool _isDirty = false;
 	bool _isRegistered = false;
 
-	const int MAX_ELEMENTS_PER_BATCH = 32;
+	int _maxElements = 0;
     bool _cameraWasNull = false;
 
 	NativeArray<float3> _positions;
@@ -30,18 +32,31 @@ public sealed class ScreenVisibilityCheckSystem : IOrchestratedUpdate, IDisposab
 
 	JobHandle _jobHandle;
 
-	private void Alloc()
+	private void RequestSize( int requestedSize )
 	{
-		_positions = new NativeArray<float3>(MAX_ELEMENTS_PER_BATCH, Allocator.Persistent);
-		_vpos = new NativeArray<float3>(MAX_ELEMENTS_PER_BATCH, Allocator.Persistent);
-		_result = new NativeArray<byte>(MAX_ELEMENTS_PER_BATCH, Allocator.Persistent);
+		if( requestedSize <= _maxElements ) return;
+
+		if( _positions.IsCreated ) _positions.Dispose();
+		if( _vpos.IsCreated ) _vpos.Dispose();
+		if( _result.IsCreated ) _result.Dispose();
+
+		var sizeWas = _maxElements;
+		
+		if( _maxElements < MAX_ELEMENTS_START ) _maxElements = MAX_ELEMENTS_START;
+		while( requestedSize > _maxElements ) _maxElements += MAX_ELEMENTS_NEW_ALLOC;
+
+		Debug.Log( $"***** 🤏 was {sizeWas} < {requestedSize} then will be {_maxElements}" );
+
+		_positions = new NativeArray<float3>(_maxElements, Allocator.Persistent);
+		_vpos = new NativeArray<float3>(_maxElements, Allocator.Persistent);
+		_result = new NativeArray<byte>(_maxElements, Allocator.Persistent);
 	}
 
 	public void Dispose()
 	{
-		_positions.Dispose();
-		_vpos.Dispose();
-		_result.Dispose();
+		if( _positions.IsCreated ) _positions.Dispose();
+		if( _vpos.IsCreated ) _vpos.Dispose();
+		if( _result.IsCreated ) _result.Dispose();
 
 		//Since it will stop check for visibility, all will be visible
 		var elementsCount = _elements.Count;
@@ -59,11 +74,9 @@ public sealed class ScreenVisibilityCheckSystem : IOrchestratedUpdate, IDisposab
 
     public static void Add(IScreenVisibilitySetter element)
     {
-		if( _instance == null ) 
-		{
+		if( _instance == null )
 			_instance = new();
-			_instance.Alloc();
-		}
+
 		if( !_instance._isRegistered )
 		{
 			CodeOrchestrator.Eternal.Add( _instance );
@@ -95,7 +108,12 @@ public sealed class ScreenVisibilityCheckSystem : IOrchestratedUpdate, IDisposab
 
     public void PreUpdate()
 	{
+		_checkedElementsOnThisFrame = _elements.Count;
+		if( _checkedElementsOnThisFrame == 0 ) return;
+
 		_waitingJobResult = true;
+		RequestSize( _checkedElementsOnThisFrame );
+
 #if CODE_METRICS
 		const string CODE_TAG = "ScreenVisibilityCheckSystem.PreUpdate";
 		FrameTimingDebug.LogStart( CODE_TAG );
@@ -123,15 +141,12 @@ public sealed class ScreenVisibilityCheckSystem : IOrchestratedUpdate, IDisposab
 
 		var mat = camera.projectionMatrix * camera.worldToCameraMatrix;
 
-		var eCount = _elements.Count;
-		_checkedElementsOnThisFrame = Mathf.Min(eCount - _frameOffset, MAX_ELEMENTS_PER_BATCH );
-
 		// Has a limited buget of elements to check on each frame that is MAX_ELEMENTS_PER_BATCH
 		// So each frame verify 
 
 		for (int i = 0; i < _checkedElementsOnThisFrame; i++)
 		{
-			var e = _elements[_frameOffset + i];
+			var e = _elements[i];
 			_positions[i] = e.Position;
 		}
 
@@ -153,6 +168,8 @@ public sealed class ScreenVisibilityCheckSystem : IOrchestratedUpdate, IDisposab
 
     public void PostUpdate()
     {
+		if( _checkedElementsOnThisFrame == 0 ) return;
+
 #if CODE_METRICS
 		const string CODE_TAG = "ScreenVisibilityCheckSystem.PostUpdate";
 		FrameTimingDebug.LogStart( CODE_TAG );
@@ -167,22 +184,17 @@ public sealed class ScreenVisibilityCheckSystem : IOrchestratedUpdate, IDisposab
 		if( _isDirty ) CheckResultBackDirty();
 		else CheckResultBackClean();
 
-		_waitingJobResult = false;
-
 #if CODE_METRICS
 		FrameTimingDebug.LogEnd( CODE_TAG );
 #endif
+
+		_waitingJobResult = false;
     }
 
 	void CheckResultBackClean()
 	{
 		for (int i = 0; i < _checkedElementsOnThisFrame; i++)
-		{
-			var realId = _frameOffset + i;
-			_elements[realId].SetVisibility(_result[i] != byte.MinValue);
-		}
-		var eCount = _elements.Count;
-		_frameOffset = ( eCount > 0 ) ? ( ( _frameOffset + _checkedElementsOnThisFrame ) % eCount ) : 0;
+			_elements[i].SetVisibility(_result[i] != byte.MinValue);
 	}
 
 	void CheckResultBackDirty()
@@ -190,17 +202,13 @@ public sealed class ScreenVisibilityCheckSystem : IOrchestratedUpdate, IDisposab
 		var realElementsCheckedBack = 0;
 		for (int i = 0; i < _checkedElementsOnThisFrame; i++)
 		{
-			var realId = _frameOffset + i;
-			if( _toRemove.Contains( realId ) ) continue;
+			if( _toRemove.Contains( i ) ) continue;
 			realElementsCheckedBack++;
-			_elements[realId].SetVisibility(_result[i] != byte.MinValue);
+			_elements[i].SetVisibility(_result[i] != byte.MinValue);
 		}
 
 		RemoveDelayedElementsToRemove();
-
 		var eCount = _elements.Count;
-		_frameOffset += realElementsCheckedBack;
-		if( _frameOffset >= eCount ) _frameOffset = 0;
 
 		if( eCount == 0 )
 		{
