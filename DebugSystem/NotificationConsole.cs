@@ -4,9 +4,12 @@ using System;
 
 public class NotificationConsole : MonoBehaviour
 {
+    const float TOP_MARGIN = 150;
+    const float SIDE_MARGIN = 150;
+
     static NotificationConsole _instance;
 
-    [SerializeField] Rect _area = new Rect(30, 150, 1000, 1000);
+    [SerializeField] Rect _area = new Rect(SIDE_MARGIN, TOP_MARGIN, 1000, 1000);
 
     [SerializeField] List<LabelData> _labelDraws = new()
     {
@@ -73,6 +76,7 @@ public class NotificationConsole : MonoBehaviour
         {
             _style = new GUIStyle(GUI.skin.label);
             _style.fontSize = 20;
+            _style.alignment = TextAnchor.UpperRight;
             _style.normal.textColor = Color.white;
         }
 
@@ -80,6 +84,8 @@ public class NotificationConsole : MonoBehaviour
         foreach (var draw in _labelDraws)
         {
             GUI.color = draw.color;
+            _area.width = Screen.width - SIDE_MARGIN * 2;
+            _area.height = Screen.height - TOP_MARGIN;
             GUI.Label(_area.Move(draw.offset), _currentMessage, _style);
         }
         GUI.color = initialColor;
