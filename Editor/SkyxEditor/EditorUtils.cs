@@ -25,6 +25,45 @@ namespace Skyx.SkyxEditor
             EditorApplication.update += wrapper;
         }
 
+        public static void RunFor(Action<float> action, float duration, float loops = 1)
+        {
+            var startTime = EditorApplication.timeSinceStartup;
+            var completedLoops = 0;
+            EditorApplication.CallbackFunction wrapper = null;
+
+            wrapper = () =>
+            {
+                try
+                {
+                    var elapsed = EditorApplication.timeSinceStartup - startTime;
+
+                    if (elapsed > duration)
+                    {
+                        completedLoops++;
+
+                        if (completedLoops > loops)
+                        {
+                            action(1);
+                            EditorApplication.update -= wrapper;
+                            return;
+                        }
+
+                        startTime += duration;
+                        elapsed = EditorApplication.timeSinceStartup - startTime;
+                    }
+
+                    action((float)(elapsed / duration));
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                    EditorApplication.update -= wrapper;
+                }
+            };
+
+            EditorApplication.update += wrapper;
+        }
+
         public static void RunOnSceneOnce(Action<SceneView> action)
         {
             Action<SceneView> wrapper = null;
