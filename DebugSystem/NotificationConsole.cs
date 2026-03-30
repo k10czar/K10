@@ -6,6 +6,8 @@ public class NotificationConsole : MonoBehaviour
 {
     const float TOP_MARGIN = 150;
     const float SIDE_MARGIN = 150;
+    const int NORMAL_FONT_SIZE = 20;
+    const int MOBILE_FONT_SIZE = 30;
 
     static NotificationConsole _instance;
 
@@ -75,7 +77,11 @@ public class NotificationConsole : MonoBehaviour
         if (_style == null)
         {
             _style = new GUIStyle(GUI.skin.label);
-            _style.fontSize = 20;
+#if UNITY_ANDROID || UNITY_IOS
+            _style.fontSize = MOBILE_FONT_SIZE;
+#else
+            _style.fontSize = NORMAL_FONT_SIZE;
+#endif
             _style.alignment = TextAnchor.UpperRight;
             _style.normal.textColor = Color.white;
         }
