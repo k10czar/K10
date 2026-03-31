@@ -26,7 +26,7 @@ public class NotificationConsole : MonoBehaviour
     float _nextVanish = float.MaxValue;
     [SerializeField,TextArea(5,25)] string _currentMessage = string.Empty;
 
-    public static void Notify(string message, float notificationSeconds = 5f, bool alsoLogOnUnityConsole = false)
+    public static void Notify(string message, float notificationSeconds = 5f, bool alsoLogOnUnityConsole = true)
     {
         if (_instance == null)
         {
@@ -35,7 +35,7 @@ public class NotificationConsole : MonoBehaviour
         _instance.LocalNotify(message, notificationSeconds, alsoLogOnUnityConsole);
     }
 
-    private void LocalNotify(string message, float notificationSeconds, bool alsoLogOnUnityConsole = false )
+    private void LocalNotify(string message, float notificationSeconds, bool alsoLogOnUnityConsole = true )
     {
         var refTime = Time.timeSinceLevelLoad;
         if (_notifications == null) _notifications = new();
