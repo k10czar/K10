@@ -9,16 +9,24 @@ public sealed class FrameTimingOldGUIDebugExhibitor : FrameTimingDebugExhibitor
 	[SerializeField] Color _shadowColor = Color.black;
 	[SerializeField] GUIStyle _style = GUIStyle.none;
 	string log;
+	string uncoloredLog;
 
-	protected override void SetLog( string log ) { this.log = log; }
+	protected override void SetLog( string log ) { this.log = log; uncoloredLog = log.WithoutColorTags(); }
 	protected override void OnEnableChange( bool enabled ) { }
+
+	public void Start()
+	{
+#if UNITY_ANDROID && UNITY_IOS
+		_style.fontSize = MathAdapter.RoundToInt( _style.fontSize * 1.3f );
+#endif
+	}
 
 	public void OnGUI()
 	{
 		_style.richText = true;
 		var color = _style.normal.textColor;
 		_style.normal.textColor = _shadowColor;
-		GUI.Label( _rect.Move( _shadowOffset ), RemoveRichTextTags(log), _style );
+		GUI.Label( _rect.Move( _shadowOffset ), uncoloredLog, _style );
 		_style.normal.textColor = color;
 		GUI.Label( _rect, log, _style );
 	}

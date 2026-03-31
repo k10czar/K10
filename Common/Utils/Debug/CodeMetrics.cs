@@ -79,7 +79,7 @@ public static class CodeMetrics
 		_currentRunningMetrics.Remove( code );
 		var codeToUse = string.IsNullOrEmpty(newNameToUse) ? code : newNameToUse;
 #if NOTIFY_METRICS
-		NotificationConsole.Notify( $"*CodeMetrics*: {codeToUse} took {ValueToString(ms)}ms" );
+		NotificationConsole.Notify( $"<color=#0080FF>CodeMetrics</color>: <color=#FF69B4>{codeToUse}</color> took <color=#DAA520>{ValueToString(ms)}ms</color>" );
 #endif
 #if LOG_ALL_METRICS 
 		var logMessage = $"<color=#0080FF>CodeMetrics</color>: <color=#FF69B4>{codeToUse}</color> took <color=#DAA520>{ValueToString(ms)}ms</color>";
