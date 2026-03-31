@@ -5,6 +5,7 @@ using System;
 using static Colors.Console;
 using Object = UnityEngine.Object;
 
+
 #if UNITY_EDITOR
 [ExecuteInEditMode]
 public class OnlyOnPlaymodeObject : MonoBehaviour
@@ -17,7 +18,6 @@ public class OnlyOnPlaymodeObject : MonoBehaviour
 		}
 	}
 }
-
 #endif
 
 public abstract class Singleton
@@ -134,102 +134,4 @@ public abstract class Singleton<T> where T : UnityEngine.Component
 		stopwatch.Stop();
 		return default;
 	}
-}
-
-public abstract class ClassSingleton<T> where T : new()
-{
-	private static T _instance;
-
-	public static T Instance
-	{
-		get
-		{
-			if( _instance == null ) _instance = new T();
-			return _instance;
-		}
-	}
-}
-
-public class NamedSingletonComponent<T> where T : UnityEngine.Component
-{
-	private readonly AutoClearedReference<T> _instance = new AutoClearedReference<T>();
-	private GameObject _cachedObject;
-	private string _name;
-	private IEventRegister _currentReferenceDestroyEvent;
-
-	public NamedSingletonComponent( string objectAttachedName )
-	{
-		_name = objectAttachedName;
-	}
-
-	public T Instance
-	{
-		get
-		{
-			if( !_instance.IsValid )
-			{
-				if( _cachedObject == null )
-					_cachedObject = GameObject.Find( _name );
-
-				if( _cachedObject != null )
-				{
-					_instance.RegisterNewReference( _cachedObject.GetComponent<T>() );
-					_currentReferenceDestroyEvent = _cachedObject.EventRelay().OnDestroy;
-					_currentReferenceDestroyEvent.Register( OnDestroy );
-				}
-			}
-
-			return _instance.Reference;
-		}
-	}
-
-	void OnDestroy()
-	{
-		_cachedObject = null;
-		_currentReferenceDestroyEvent.Unregister( OnDestroy );
-		_currentReferenceDestroyEvent = null;
-	}
-}
-
-public abstract class Eternal<T> : Guaranteed<T> where T : UnityEngine.Component
-{
-	public new static T Instance { get { return GetInstance( true ); } }
-	public new static void Request() { GetInstance( true ); }
-}
-
-public abstract class Guaranteed<T> where T : UnityEngine.Component
-{
-	private static bool _markedEternal = false;
-
-	protected static T GetInstance( bool eternal )
-	{
-		if( !Singleton<T>.IsValid )
-		{
-			_markedEternal = false;
-			if( Singleton<T>.Instance == null )
-			{
-				GameObject obj = new GameObject( string.Format( "_GS_{0}", ( typeof( T ) ).ToString() ) );
-#if UNITY_EDITOR
-				obj.AddComponent<OnlyOnPlaymodeObject>();
-#endif
-				// Debug.Log( $"GuaranteedSingleton created for {typeof(T)}" );
-				Singleton<T>.SayHello( obj.AddComponent<T>() );
-			}
-		}
-
-		var instance = Singleton<T>.Instance;
-		if( eternal && !_markedEternal )
-		{
-			GameObject.DontDestroyOnLoad( instance.transform );
-			_markedEternal = true;
-			instance.name = string.Format( "_ES_{0}", ( typeof( T ) ).ToString() );
-
-			instance.gameObject.hideFlags = HideFlags.DontSaveInEditor | HideFlags.DontSaveInBuild;// | HideFlags.HideInHierarchy | HideFlags.HideInInspector;
-		}
-
-		return instance;
-	}
-
-	public static T Instance { get { return GetInstance( false ); } }
-	public static void Request() { GetInstance( false ); }
 }
