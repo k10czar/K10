@@ -97,6 +97,38 @@ public static class Colors
         }
     }
 
+    public static Color Mix(float value, params (float threshold, Color color)[] stops)
+{
+    if (stops.Length == 0) return Color.white;
+    if (stops.Length == 1 || value <= stops[0].threshold) return stops[0].color;
+    if (value >= stops[stops.Length - 1].threshold) return stops[stops.Length - 1].color;
+
+    for (int i = 1; i < stops.Length; i++)
+    {
+        if (value > stops[i].threshold) continue;
+
+        var from = stops[i - 1];
+        var to   = stops[i];
+        var t    = Mathf.InverseLerp(from.threshold, to.threshold, value);
+
+        Color.RGBToHSV(from.color, out float hA, out float sA, out float vA);
+        Color.RGBToHSV(to.color,   out float hB, out float sB, out float vB);
+
+        // Shortest arc on hue wheel
+        float delta = hB - hA;
+        if      (delta >  0.5f) hA += 1f;
+        else if (delta < -0.5f) hB += 1f;
+
+        var h = Mathf.Lerp(hA, hB, t) % 1f;
+        var s = Mathf.Lerp(sA, sB, t);
+        var v = Mathf.Lerp(vA, vB, t);
+
+        return Color.HSVToRGB(h, s, v);
+    }
+
+    return stops[stops.Length - 1].color;
+}
+
     public static Color FromSequence<T>(T value, bool isStatus = false, bool loop = false) where T : Enum => FromSequence((int)(object)value, isStatus, loop);
     public static Color FromSequence(int index, bool isStatus = false, bool loop = false)
     {

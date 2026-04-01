@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -64,5 +65,13 @@ public struct FpsCounter
         _frameTimes.Add( Time.unscaledTimeAsDouble );
 
         return changed;
+    }
+
+    public void Reset(int fakeFpsStartValue)
+    {
+        var currTime = Time.unscaledTimeAsDouble;
+        _frameTimes.Clear();
+        for( int i = 0; i < fakeFpsStartValue; i++ ) _frameTimes.Add( currTime - _sampleSecond * i / fakeFpsStartValue );
+        _currentFps = fakeFpsStartValue;
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 [System.Serializable]
@@ -86,6 +87,12 @@ public struct FastFloatAnimator
 		_currentSpeed = 0;
 	}
 
+	public void SetDesireToLimit( bool max )
+    {
+		SetDesire( max ? _max : _min );
+    }
+
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	public void SetDesire( float desired )
     {
 		var diff = desired - _desiredValue;
@@ -97,6 +104,7 @@ public struct FastFloatAnimator
         else _desiredValue = desired;
     }
 
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
     public bool Update( float deltaTime )
     {
 		if( deltaTime < float.Epsilon ) return false;

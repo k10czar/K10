@@ -1,5 +1,6 @@
 #if CODE_METRICS
 #define LOG_ALL_METRICS
+#define NOTIFY_METRICS
 #define LOG_REPORT_ON_SUSPEND
 #define LOG_REPORT_PARTIAL
 #endif
@@ -77,6 +78,9 @@ public static class CodeMetrics
 		var ms = sw.ReturnToPoolAndGetElapsedMs();
 		_currentRunningMetrics.Remove( code );
 		var codeToUse = string.IsNullOrEmpty(newNameToUse) ? code : newNameToUse;
+#if NOTIFY_METRICS
+		NotificationConsole.Notify( $"<color=#0080FF>CodeMetrics</color>: <color=#FF69B4>{codeToUse}</color> took <color=#DAA520>{ValueToString(ms)}ms</color>" );
+#endif
 #if LOG_ALL_METRICS 
 		var logMessage = $"<color=#0080FF>CodeMetrics</color>: <color=#FF69B4>{codeToUse}</color> took <color=#DAA520>{ValueToString(ms)}ms</color>";
 		UnityEngine.Debug.Log( logMessage );
