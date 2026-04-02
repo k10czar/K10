@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 
 namespace K10
 {
+	//TODO: Rename to HackMath
 	public static class Math
 	{
 		const MethodImplOptions AggrInline = MethodImplOptions.AggressiveInlining;

@@ -251,10 +251,6 @@ public static class FrameTimingDebug
 				{
 					var functionTime = lastFrameFunctionTimes[tag];
 
-					SB.Append( "Frame: [" );
-					SB.Append( functionTime.Calls );
-					SB.Append( "] " );
-
 					ms = functionTime.AccumulatedTimings;
 					var msString = ms.ToString( msFormat );
 					if (ms > averageMs * SPIKE_MULTIPLIER_WARNING)
@@ -266,8 +262,11 @@ public static class FrameTimingDebug
 					if( hasLastLogStopwatch )
 					{
 						SB.Append( " " );
-						var percentage = ( ms * 100 / totalMs );
-						var percentageString = percentage.ToString( percentageFormat );
+						var percentage = ms * 100 / totalMs;
+						string percentageString;
+						if( percentage >= 10 ) percentageString = percentage.ToString( "F0" );
+						else if( percentage >= 0.1 ) percentageString = percentage.ToString( "F1" );
+						else percentageString = percentage.ToString( "F2" ).TrimStart( '0' );
 						if (percentage > HIGH_FRAME_PERCENTAGE_WARNING)
 							percentageString = percentageString.Colorfy(Colors.Crimson);
 
@@ -275,6 +274,10 @@ public static class FrameTimingDebug
 						SB.Append( percentageString );
 						SB.Append( "% " );
 					}
+
+					SB.Append( "\t[" );
+					SB.Append( functionTime.Calls );
+					SB.Append( "]\t" );
 				}
 				else
 				{
@@ -282,38 +285,38 @@ public static class FrameTimingDebug
 					SB.Append("Frame: ------------------------");
 				}
 
-				SB.Append( "\t" );
+				// SB.Append( "\t" );
 					
-				SB.Append( "Avg: [");
-				SB.Append( Mathf.Round((float)kvp.Value.Calls / nFramesInSample) );
-				SB.Append( "] " );
+				// SB.Append( "Avg: [");
+				// SB.Append( Mathf.Round((float)kvp.Value.Calls / nFramesInSample) );
+				// SB.Append( "] " );
 				
-				SB.Append( "Avg: [");
-				SB.Append( Mathf.Round((float)kvp.Value.Calls / nFramesInSample) );
-				SB.Append( "] " );
+				// SB.Append( "Avg: [");
+				// SB.Append( Mathf.Round((float)kvp.Value.Calls / nFramesInSample) );
+				// SB.Append( "] " );
 
-				SB.Append( averageMs.ToString( msFormat ) );
-				SB.Append( "ms " );
+				// SB.Append( averageMs.ToString( msFormat ) );
+				// SB.Append( "ms " );
 
-				var avg = averageMs;
+				// var avg = averageMs;
 
-				averageMs = kvp.Value.AccumulatedTimings;
-				SB.Append( ( averageMs * 100 / totalSampleMs ).ToString( percentageFormat ) );
-				SB.Append( "% " );
+				// averageMs = kvp.Value.AccumulatedTimings;
+				// SB.Append( ( averageMs * 100 / totalSampleMs ).ToString( percentageFormat ) );
+				// SB.Append( "% " );
 				
-				if( avg > MathAdapter.EP2 ) 
-				{
-					var pFps = Mathf.RoundToInt( (float)( 1000f / avg ) );
-					if( pFps < 100000 ) SB.Append( "  " );
-					if( pFps < 10000 ) SB.Append( "  " );
-					if( pFps < 1000 ) SB.Append( "  " );
-					if( pFps < 100 ) SB.Append( "  " );
-					SB.Append( (1000f / avg).ToString( "N0" ) );
-				}
-				else SB.Append( "      ∞" );
-				SB.Append( "pfps " );
+				// if( avg > MathAdapter.EP2 ) 
+				// {
+				// 	var pFps = Mathf.RoundToInt( (float)( 1000f / avg ) );
+				// 	if( pFps < 100000 ) SB.Append( "  " );
+				// 	if( pFps < 10000 ) SB.Append( "  " );
+				// 	if( pFps < 1000 ) SB.Append( "  " );
+				// 	if( pFps < 100 ) SB.Append( "  " );
+				// 	SB.Append( (1000f / avg).ToString( "N0" ) );
+				// }
+				// else SB.Append( "      ∞" );
+				// SB.Append( "pfps " );
 
-				SB.Append( "\t" );
+				// SB.Append( "\t" );
 				SB.Append( tag );
 
 				SB.Append( "\n" );

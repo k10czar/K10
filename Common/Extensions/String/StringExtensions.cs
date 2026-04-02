@@ -52,6 +52,15 @@ public static class StringExtensions
 		return sb.ReturnToPoolAndCast();
     }
 
+    [MethodImpl( Optimizations.INLINE_IF_CAN )] public static string FillSides( this string text, int totalLength, char filler = ' ' )
+	{
+		var padding = totalLength - text.Length;
+		if( padding <= 0 ) return text.Substring( 0, totalLength );
+		var left = padding / 2;
+		var right = padding - left;
+		return new string( filler, left ) + text + new string( filler, right );
+	}
+
     [MethodImpl( Optimizations.INLINE_IF_CAN )] public static string ToStringOrNullColored( this object obj, Color valueColor, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.ToString().Colorfy(valueColor) : nullString.Colorfy(Colors.Console.Negation);
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static string ToStringOrNullColored( this object obj, Color valueColor, Color nullColor, string nullString = ConstsK10.NULL_STRING ) => obj != null ? obj.ToString().Colorfy(valueColor) : nullString.Colorfy(nullColor);
 }
