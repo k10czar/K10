@@ -1,6 +1,8 @@
+#if CODE_METRICS
 #define NOTIFY
 #define COLORED
 #define WITH_EMOTICONS
+#endif //CODE_METRICS
 using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
