@@ -122,8 +122,9 @@ public abstract class FrameTimingDebugExhibitor : MonoBehaviour
 		var digitCount = K10.Math.Log10( w ) + K10.Math.Log10( h ) + 2;
 		var resStr = $"{w}x{h}".Colorfy( Colors.LightPink ) + ( digitCount < 7 ? "\t" : string.Empty );
 		gfxScale = .8f;
-		var scalePrefix = ( !scaleApproxOne && gfxScale < 1f ) ? "   " : "  ";
-		var scaleStr = scaleApproxOne ? string.Empty : $"{scalePrefix}{gfxScale:G3}x\t".Colorfy( Colors.Plum );
+		var scalePct = Mathf.RoundToInt( gfxScale * 100 );
+		var scalePrefix = ( !scaleApproxOne && scalePct < 100 ) ? "  " : " ";
+		var scaleStr = scaleApproxOne ? string.Empty : $"{scalePrefix}{scalePct}%\t".Colorfy( Colors.Plum );
 		var gfxStr = $"  {apiStrColored}\t   {resStr}\t{scaleStr}";
 		var headers = scaleApproxOne ? HEADERS_WITH_SCALE : HEADERS;
 #else
