@@ -222,8 +222,8 @@ public static class DebugUtils
     public static void WireBox( Vector3 center, Vector3 dimensions ) => WireBox( center, Quaternion.identity, dimensions, DEFAULT_COLOR );
     public static void WireBox( Vector3 center, Vector3 dimensions, Color color ) => WireBox( center, Quaternion.identity, dimensions, color );
     public static void WireBox( Vector3 center, Quaternion rotation, Vector3 dimensions ) => WireBox( center, rotation, dimensions, DEFAULT_COLOR );
-    public static void WireBox(Vector3 center, float size, Color color) => WireBox(center, Quaternion.identity, Vector3.one * size, color);
-    public static void WireBox( Vector3 center, Quaternion rotation, Vector3 dimensions, Color color )
+    public static void WireBox(Vector3 center, float size, Color color, float duration = 0f) => WireBox(center, Quaternion.identity, Vector3.one * size, color, duration);
+    public static void WireBox( Vector3 center, Quaternion rotation, Vector3 dimensions, Color color, float duration = 0f)
     {
 		var f = rotation * Vector3.forward * dimensions.z;
 		var u = rotation * Vector3.up * dimensions.y;
@@ -238,22 +238,22 @@ public static class DebugUtils
 		var otr = ot + r;
 
 		//Bottom Quad
-		Debug.DrawLine( ob, obf, color);
-		Debug.DrawLine( obf, obfr, color);
-		Debug.DrawLine( obfr, obr, color);
-		Debug.DrawLine( obr, ob, color);
+		Debug.DrawLine( ob, obf, color, duration);
+		Debug.DrawLine( obf, obfr, color, duration);
+		Debug.DrawLine( obfr, obr, color, duration);
+		Debug.DrawLine( obr, ob, color, duration);
 
 		//Top Quad
-		Debug.DrawLine( ot, otf, color);
-		Debug.DrawLine( otf, otfr, color);
-		Debug.DrawLine( otfr, otr, color);
-		Debug.DrawLine( otr, ot, color);
+		Debug.DrawLine( ot, otf, color, duration);
+		Debug.DrawLine( otf, otfr, color, duration);
+		Debug.DrawLine( otfr, otr, color, duration);
+		Debug.DrawLine( otr, ot, color, duration);
 
 		//Bottom Top edges
-		Debug.DrawLine( ob, ot, color);
-		Debug.DrawLine( obf, otf, color);
-		Debug.DrawLine( obfr, otfr, color);
-		Debug.DrawLine( obr, otr, color);
+		Debug.DrawLine( ob, ot, color, duration);
+		Debug.DrawLine( obf, otf, color, duration);
+		Debug.DrawLine( obfr, otfr, color, duration);
+		Debug.DrawLine( obr, otr, color, duration);
     }
 
     public static class Gizmos
