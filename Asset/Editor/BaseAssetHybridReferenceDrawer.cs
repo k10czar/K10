@@ -1,3 +1,4 @@
+using K10.Common;
 using UnityEngine;
 using UnityEditor;
 #if USE_ADDRESSABLES
@@ -36,7 +37,7 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
 
         var resourcesIndex = path.IndexOf( RESOURCES_PATH, System.StringComparison.OrdinalIgnoreCase );
         guid.stringValue = string.Empty;
-        
+
         if( resourcesIndex != -1 )
         {
             var lastDot = path.Length - 1;
@@ -44,9 +45,9 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
             var startId = resourcesIndex + RESOURCES_PATH.Length;
             var resourcePath = path.Substring( startId, lastDot - startId );
             resourcesPath.stringValue = resourcePath;
-            
+
             refType.enumValueIndex = (int)EAssetReferenceType.Resources;
-            
+
             assetDirectRef.objectReferenceValue = null;
         }
 #if USE_ADDRESSABLES
@@ -82,7 +83,7 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
 
         var editorAssetRefGuid = property.FindPropertyRelative( "_editorAssetRefGuid" );
         UpdateOldRef( editorAssetRefGuid, property.FindPropertyRelative( "_assetHardReference" ) );
-        
+
         var instance = ((BaseAssetHybridReference)property.GetInstance());
         var assetType = instance.EDITOR_GetAssetType();
         var path = UnityEditor.AssetDatabase.GUIDToAssetPath( editorAssetRefGuid.stringValue );
@@ -127,7 +128,7 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
 
         if( deep )
         {
-            if( Application.isPlaying ) 
+            if( Application.isPlaying )
             {
                 var executionArea = area.RequestBottom( slh );
 
@@ -139,7 +140,7 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
                 EditorGUI.BeginDisabledGroup( state == EAssetReferenceState.Empty );
                 if( GUI.Button( executionArea.VerticalSlice( 1, 5 ), "Dispose" ) ) instance?.DisposeAsset();
                 EditorGUI.EndDisabledGroup();
-                
+
                 EditorGUI.BeginDisabledGroup( state != EAssetReferenceState.Empty );
                 if( GUI.Button( executionArea.VerticalSlice( 2, 5 ), "PreLoad" ) ) instance?.PreLoad();
                 EditorGUI.EndDisabledGroup();
@@ -149,7 +150,7 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
                 EditorGUI.EndDisabledGroup();
 
                 EditorGUI.BeginDisabledGroup( state == EAssetReferenceState.Loaded );
-                if( GUI.Button( executionArea.VerticalSlice( 4, 5 ), "Both" ) ) 
+                if( GUI.Button( executionArea.VerticalSlice( 4, 5 ), "Both" ) )
                 {
                     var inst = instance;
                     inst?.PreLoad();
@@ -163,10 +164,10 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
             var nextLines = area.CutTop( slh );
 
             var line = nextLines;
-            
-            
+
+
             EditorGUI.LabelField( line.RequestLeft( 100 ), ((EAssetReferenceType)refType.enumValueIndex).ToString() );
-            
+
             EditorGUI.TextField( line.CutLeft( 100 ), GUIContent.none, ( refType.enumValueIndex == (int)EAssetReferenceType.Resources ) ? resourcesPath.stringValue : guid.stringValue );
         }
 
@@ -177,7 +178,7 @@ public class BaseAssetHybridReferenceDrawer : PropertyDrawer
             EditorUtility.DisplayDialog( "ERROR", msg, "I will Never do that again!" );
             ResetData( editorAssetRefGuid, refType, directRef, guid, resourcesPath );
         }
-        
+
         GuiColorManager.Revert();
     }
 

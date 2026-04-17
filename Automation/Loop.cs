@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using Automation;
 using System.Collections.Generic;
+using K10.Common;
 
 namespace Automation
 {

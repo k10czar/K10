@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using K10.Common;
 using UnityEngine;
 
 public class TagsDebug : ScriptableObject
@@ -28,14 +29,14 @@ public class TagsDebug : ScriptableObject
             var name = tag.name;
             _guids.Add( t );
             _names.Add( name );
-            
-            SB.AppendLine( $"\t{name.Colorfy(Colors.Console.Names)}({tag.TypeNameOrNull().Colorfy(Colors.Console.TypeName)}) : {t.Colorfy(Colors.Console.Numbers)}" );	
+
+            SB.AppendLine( $"\t{name.Colorfy(Colors.Console.Names)}({tag.TypeNameOrNull().Colorfy(Colors.Console.TypeName)}) : {t.Colorfy(Colors.Console.Numbers)}" );
         }
-        
+
 		sw.Stop();
 
         UnityEditor.EditorUtility.SetDirty( this );
-        
+
         Debug.Log( $"{"Found".Colorfy(Colors.Console.Verbs)} {tags.Length.ToStringColored(Colors.Console.Numbers)} {"Tags".Colorfy(Colors.Console.TypeName)} that took {sw.Elapsed.TotalMilliseconds.ToStringColored(Colors.Console.Numbers)}ms:\n{SB}" );
 #else
         Debug.LogError( "USELESS CALL to TagDebug.Rebuild on Runtime,\nit only can build this tables in Editor" );
@@ -79,10 +80,10 @@ public class TagsDebug : ScriptableObject
     public static bool TryFind(string guid, out string name)
     {
         var result = Instance.GetNameOf( guid, null );
-        if( result == null ) 
-        { 
+        if( result == null )
+        {
             name = null;
-            return false; 
+            return false;
         }
         name = result;
         return true;

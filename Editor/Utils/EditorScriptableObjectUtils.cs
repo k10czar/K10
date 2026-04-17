@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Reflection;
+using K10.Common;
 using UnityEditor;
 using UnityEngine;
 
@@ -19,7 +20,7 @@ public static class EditorScriptableObjectUtils
 			selectedType = type;
 			foreach (var t in types) selectedType = t;
 			Debug.Log( selectedType.ToStringOrNull() + " is the only non Abstract type that implements " + type + ". So dont need to show menu" );
-			
+
 			Debug.Log( $"{rootAssetPath} + {name ?? (prop.PropPathParsed() + " + _ + " + selectedType.ToStringOrNull())}" );
 		}
 		else
@@ -55,7 +56,7 @@ public static class EditorScriptableObjectUtils
 					.SelectMany(s => s.GetTypes())
 					.Where(p => type.IsAssignableFrom(p) && !p.IsAbstract);
 
-					
+
 
 		var count = types.Count();
 		if (count <= 1)
@@ -72,7 +73,7 @@ public static class EditorScriptableObjectUtils
 			{
 				var pathAtt = t.GetCustomAttribute<CreationPathAttribute>();
 				var tParsed = ( pathAtt != null ? pathAtt.Path : t.ToStringOrNull() ).Replace( ".", "/" );
-				
+
 				GenericMenu.MenuFunction2 onTypedElementCreatedOutside = ( tp ) =>
 				{
 					var rootFolder = System.IO.Path.GetDirectoryName( rootAssetPath );

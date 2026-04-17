@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using K10.Common;
 using K10.EditorGUIExtention;
 
 [CustomPropertyDrawer( typeof( HashedSOBitMaskAttribute ) )]
@@ -21,7 +22,7 @@ public class HashedSOBitMaskDrawer : PropertyDrawer
 			var e = col.GetElementBase( i );
 			names[i] = e.ToStringOrNull();
 		}
-		
+
 		label.text = label.text + "(" + prop.intValue + ")";
 		prop.intValue = EditorGUI.MaskField( area, label, prop.intValue, names );
 	}

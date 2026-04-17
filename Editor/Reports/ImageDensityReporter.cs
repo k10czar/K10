@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using System;
 using K10.EditorGUIExtention;
 using System.Linq;
+using K10.Common;
 
 public class ImageDensityReporter : EditorWindow
 {

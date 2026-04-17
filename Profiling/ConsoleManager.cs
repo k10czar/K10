@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using K10;
+using K10.Common;
 using UnityEngine;
 
 using static Colors.Console;
@@ -44,7 +45,7 @@ public class ConsoleManager
         _isDirty = true;
     }
 
-    public ConsoleManager With( KeyCode keyCode, IConsoleInteractor console ) 
+    public ConsoleManager With( KeyCode keyCode, IConsoleInteractor console )
     {
         Register( keyCode, console );
         return this;
@@ -185,7 +186,7 @@ public class ConsoleManager
     public void OnGUI()
     {
         if( _currentConsole == null && !_showOnScreenDebug ) return;
-        
+
         var shadowOffset = new Vector2( 1.5f, 1.5f );
         var margin = new Vector2( 10, 10 );
         var area = new Rect( 0, 0, Screen.width - 2 * margin.x, Screen.height / 2 ).Move( margin );

@@ -1,3 +1,4 @@
+using K10.Common;
 using UnityEngine;
 
 using static Colors.Console;
@@ -26,7 +27,7 @@ public static class ScriptableObjectUtils
 
 		var assetRef = SetInsideSO( rootFilePath, newInsideFileName, focus, asset, false );
 		if( OnObjectCreated != null ) OnObjectCreated( assetRef );
-		
+
 		SaveAssets();
 		return assetRef;
 	}

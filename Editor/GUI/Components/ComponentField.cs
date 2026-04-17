@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections;
+using K10.Common;
 
 namespace K10.EditorGUIExtention
 {
@@ -179,7 +180,7 @@ namespace K10.EditorGUIExtention
 					// 			$" = {0}" );
 
 					EditorScriptableObjectUtils.CreateMenu( selectedAssetPath, prop, type, false, setRef );
-					
+
 					createdNewSO = true;
 				}
 				r = r.CutLeft( iconSize + 2 );
@@ -261,7 +262,7 @@ namespace K10.EditorGUIExtention
 					}, name );
 				}
 			}
-			
+
 			var newObj = EditorGUILayout.ObjectField( obj, type, false, options );
 			if( newObj != obj )
 			{

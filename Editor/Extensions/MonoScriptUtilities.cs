@@ -6,18 +6,19 @@ using System.Reflection;
 
 using static Colors.Console;
 using System.Text;
+using K10.Common;
 
 public static class MonoScriptUtilities
 {
-    [LazyConst] static string[] _scriptsGuids = null; 
+    [LazyConst] static string[] _scriptsGuids = null;
     [LazyConst] static Dictionary<System.Type,MonoScript> _cachedScripts = null;
 
     static string[] ScriptsGuids => _scriptsGuids ??= AssetDatabase.FindAssets("t:MonoScript");
-    
+
 	[ConstLike] static readonly HashSet<string> IGNORED_ASSEMBLIES =  new HashSet<string>{ "mscorlib", "Cinemachine", "Mirror", "RainbowFolders", "ParrelSync", "SimpleWebTransport", "Telepathy", "log4net" };
 	[ConstLike] static readonly string[] IGNORED_ASSEMBLIES_SUFFIX =  new string[]{ "Unity", "System", "Mono", "Bee", "I18N", "Autodesk", "kcp2k", "Mirror", "com.unity", "Newtonsoft", "nunit", "ExCSS" };
 	[ConstLike] static readonly string[] IGNORED_CLASS_SUFFIX =  new string[]{ "<" };
-	
+
 
     [UnityEditor.MenuItem("K10/Reports/Reload Domain Leak Detector")]
     private static void EDITOR_Log()
@@ -45,7 +46,7 @@ public static class MonoScriptUtilities
                 var onlyReadonly = true;
                 sb.Clear();
                 var fieldsCount = 0;
-			    foreach (var field in staticFields) 
+			    foreach (var field in staticFields)
                 {
                     var isConst = field.IsLiteral;
                     var constLike = field.GetCustomAttribute<ConstLikeAttribute>() != null;
@@ -98,8 +99,8 @@ public static class MonoScriptUtilities
             // Get the asset path from the GUID
             string assetPath = AssetDatabase.GUIDToAssetPath(guid);
             MonoScript monoScript = AssetDatabase.LoadAssetAtPath<MonoScript>(assetPath);
-            
-            if( monoScript != null && monoScript.GetClass() == type ) 
+
+            if( monoScript != null && monoScript.GetClass() == type )
             {
                 _cachedScripts[type] = monoScript;
                 return monoScript;

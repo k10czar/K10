@@ -1,3 +1,4 @@
+using K10.Common;
 using UnityEngine;
 
 
@@ -69,7 +70,7 @@ public class ReferenceOverrideRequester<T> : IReferenceHolder<T>, IReferenceRequ
 	private void UpdateReference()
 	{
 		T newRef = default( T );
-		if( _requests.Count == 0 ) newRef = _default; 
+		if( _requests.Count == 0 ) newRef = _default;
 		else newRef = _requests[_requests.Count - 1].Value;
 		_current.ChangeReference( newRef );
 	}

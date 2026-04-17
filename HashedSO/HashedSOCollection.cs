@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using K10.Common;
 using UnityEngine;
 
 public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerable<T> where T : HashedScriptableObject
@@ -20,8 +21,8 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	public IEnumerator<T> GetEnumerator() => _list.GetEnumerator();
 
 #if UNITY_EDITOR
-	protected override void Clear() 
-	{ 
+	protected override void Clear()
+	{
 		_list.Clear();
 		UnityEditor.EditorUtility.SetDirty( this );
 	}

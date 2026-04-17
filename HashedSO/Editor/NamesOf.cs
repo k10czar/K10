@@ -1,3 +1,5 @@
+using K10.Common;
+
 public class NamesOf<T> where T : IHashedSO, new()
 {
 	[ConstLike] private static string[] _array;

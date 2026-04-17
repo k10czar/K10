@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using K10.Common;
 using UnityEditor;
 using UnityEngine;
 
@@ -19,7 +20,7 @@ public static class HsoUtils
 {
 	public static bool TryTransferRef<T,K>( ref K softRef, ref T directRef ) where T : UnityEngine.ScriptableObject, IHashedSO where K : CollectionElementSoftReference<T>, new()
 	{
-		if( directRef == default(T) ) 
+		if( directRef == default(T) )
 		{
 			if( softRef == default(K) || softRef.GetReference() == default(T) )
 			{
@@ -36,7 +37,7 @@ public static class HsoUtils
 		directRef = default(T);
 		return true;
 	}
-	
+
 	public static T TryGetRef<T>( this CollectionElementSoftReference<T> softRef, T directRef = null ) where T : UnityEngine.ScriptableObject, IHashedSO
 	{
 		if( directRef == null ) directRef = null;
@@ -116,7 +117,7 @@ public static class CollectionElementSoftReferenceExtensions
 		for( int i = 0; i < from.Count; i++ )
 		{
 			var hardRef = from[i];
-			if( !Contains( to, hardRef ) ) 
+			if( !Contains( to, hardRef ) )
 			{
 				var softRef = new CollectionElementSoftReference<T>( hardRef );
 				to.Add( softRef );
@@ -136,7 +137,7 @@ public static class CollectionElementSoftReferenceExtensions
 		for( int i = 0; i < from.Length; i++ )
 		{
 			var hardRef = from[i];
-			if( !Contains( to, hardRef ) ) 
+			if( !Contains( to, hardRef ) )
 			{
 				var softRef = new CollectionElementSoftReference<T>( hardRef );
 				to.Add( softRef );
@@ -146,7 +147,7 @@ public static class CollectionElementSoftReferenceExtensions
 		from = null;
 		return modified;
 	}
-	
+
 	public static bool TransferFrom<T>( this CollectionElementSoftReference<T> to, ref T from ) where T : UnityEngine.ScriptableObject, IHashedSO
 	{
 		if( from == default(T) ) return false;
@@ -172,7 +173,7 @@ public static class CollectionElementSoftReferenceExtensions
 		if( hardRefProp.objectReferenceValue != null ) return $"{hardRefProp.objectReferenceValue.name}[{idProp.intValue}]";
 		var guidProp = prop.FindPropertyRelative( "_editorAssetRefGuid" );
 		var guid = guidProp.stringValue;
-		if( !string.IsNullOrEmpty( guid ) ) 
+		if( !string.IsNullOrEmpty( guid ) )
 		{
 			var path = AssetDatabase.GUIDToAssetPath( guid );
 			if( !string.IsNullOrEmpty( path ) )
@@ -230,7 +231,7 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 	public T EDITOR_GetAsset()
 	{
 		if( _assetHardReference != null ) return _assetHardReference;
-		if( !string.IsNullOrEmpty( _editorAssetRefGuid ) ) 
+		if( !string.IsNullOrEmpty( _editorAssetRefGuid ) )
 		{
 			var path = AssetDatabase.GUIDToAssetPath( _editorAssetRefGuid );
 			if( !string.IsNullOrEmpty( path ) )
@@ -242,7 +243,7 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 		return GetReference();
 	}
 #endif //UNITY_EDITOR
-	
+
     public bool RefreshUsedRef()
     {
 #if UNITY_EDITOR
@@ -282,7 +283,7 @@ public class CollectionElementSoftReference<T> : BaseCollectionElementSoftRefere
 #if UNITY_EDITOR
 
 #endif //UNITY_EDITOR
-		if( _id >= 0 && _assetRuntimeReference == null || (_assetRuntimeReference != null &&_assetRuntimeReference.HashID != _id )) 
+		if( _id >= 0 && _assetRuntimeReference == null || (_assetRuntimeReference != null &&_assetRuntimeReference.HashID != _id ))
 		{
 			var collection = GetCollection();
             if( collection == null ) return null;
