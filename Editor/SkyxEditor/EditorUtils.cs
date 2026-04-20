@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
@@ -221,6 +222,43 @@ namespace Skyx.SkyxEditor
             if (onlyFirstLine) line = line.Split(new[]{'\r','\n'}, 2, StringSplitOptions.None)[0];
 
             return line;
+        }
+
+        public static Match FindConsoleMessage(Regex pattern, bool onlyFirstLine = true)
+        {
+            var logEntriesType = Type.GetType("UnityEditor.LogEntries, UnityEditor");
+            var logEntryType = Type.GetType("UnityEditor.LogEntry, UnityEditor");
+
+            if (logEntriesType == null || logEntryType == null)
+                return null;
+
+            var getCountMethod = logEntriesType.GetMethod("GetCount", BindingFlags.Static | BindingFlags.Public);
+            var getEntryMethod = logEntriesType.GetMethod("GetEntryInternal", BindingFlags.Static | BindingFlags.Public);
+            var messageField = logEntryType.GetField("message", BindingFlags.Instance | BindingFlags.Public);
+
+            if (getCountMethod == null || getEntryMethod == null || messageField == null)
+                return null;
+
+            var count = (int) getCountMethod.Invoke(null, null);
+
+            for (var i = 0; i < count; i++)
+            {
+                var entry = Activator.CreateInstance(logEntryType);
+
+                var parameters = new[] { i, entry };
+                var result = (bool)getEntryMethod.Invoke(null, parameters);
+                if (!result) continue;
+
+                var message = (string) messageField.GetValue(entry);
+                if (string.IsNullOrEmpty(message)) continue;
+
+                if (onlyFirstLine) message = message.Split(new[]{'\r','\n'}, 2, StringSplitOptions.None)[0];
+
+                var match = pattern.Match(message);
+                if (match.Success) return match;
+            }
+
+            return null;
         }
 
         #endregion
