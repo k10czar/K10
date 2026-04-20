@@ -54,7 +54,10 @@ namespace K10.DebugSystem
         }
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
-        public static void Log(LogSeverity severity, string log, Object consoleTarget = null) => Log(severity, log, severity is LogSeverity.Warning, consoleTarget, new[] { consoleTarget });
+        public static void Log(LogSeverity severity, string log) => Log(severity, log, severity is LogSeverity.Warning, null, LoggableDefaults.nullOwners);
+
+        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        public static void Log(LogSeverity severity, string log, Object consoleTarget) => Log(severity, log, severity is LogSeverity.Warning, consoleTarget, new[] { consoleTarget });
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
         public static void Log(string log, Object consoleTarget = null) => Log(LogSeverity.Info, log, false, consoleTarget, new[] { consoleTarget });
