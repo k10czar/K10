@@ -115,7 +115,7 @@ namespace Skyx.SkyxEditor
             if (canExpand)
             {
                 extractedSize = 15;
-                var toggleRect = SkyxGUI.ExtractRect(ref headerRect, extractedSize, false, 0);
+                var toggleRect = headerRect.ExtractRect(extractedSize, false, 0);
                 GUI.Toggle(toggleRect, isExpandedRef, GUIContent.none, EditorStyles.foldout);
             }
 
@@ -125,7 +125,7 @@ namespace Skyx.SkyxEditor
                 EditorGUI.LabelField(headerRect, info.title, SkyxStyles.DefaultLabel);
             else
             {
-                var labelRect = SkyxGUI.ExtractRect(ref headerRect, EditorGUIUtility.labelWidth - extractedSize, false, 0);
+                var labelRect = headerRect.ExtractRect(EditorGUIUtility.labelWidth - extractedSize, false, 0);
                 EditorGUI.LabelField(labelRect, prop.displayName, SkyxStyles.DefaultLabel);
 
                 var (text, color) = prop.managedReferenceValue == null

@@ -15,28 +15,43 @@ namespace Skyx.SkyxEditor
             return rect;
         }
 
+        private static float DivideSize(float totalSize, int elementsCount)
+        {
+            return (totalSize - (SkyxStyles.ElementsMargin * (elementsCount - 1))) / elementsCount;
+        }
+
         #region Extensions
 
         public static void SlideRect(this ref Rect rect, float newWidth, float margin = SkyxStyles.ElementsMargin)
-            => SkyxGUI.SlideRect(ref rect, newWidth, margin);
+        {
+            rect.x += rect.width + margin;
+            rect.width = newWidth;
+        }
 
         public static void SlideSame(this ref Rect rect, float margin = SkyxStyles.ElementsMargin)
-            => SkyxGUI.SlideSameRect(ref rect, margin);
+            => SlideRect(ref rect, rect.width, margin);
 
         public static void RemainingRect(this ref Rect rect, float endX)
-            => SkyxGUI.RemainingRect(ref rect, endX);
-
-        public static void NextLine(this ref Rect rect, float startX, float width)
-            => SkyxGUI.NextLine(ref rect, startX, width);
-
-        public static void NextLineWithSeparator(this ref Rect rect, float startX, float width, float separatorMargin = 3)
         {
-            SkyxGUI.NextLine(ref rect, startX, width);
+            rect.x += rect.width + SkyxStyles.ElementsMargin;
+            rect.width = endX - rect.x;
+        }
+
+        public static void NextLine(this ref Rect rect, float startX, float totalWidth)
+        {
+            rect.x = startX;
+            rect.y += SkyxStyles.FullLineHeight;
+            rect.width = totalWidth;
+        }
+
+        public static void NextLineWithSeparator(this ref Rect rect, float startX, float totalWidth, float separatorMargin = 3)
+        {
+            NextLine(ref rect, startX, totalWidth);
             SkyxGUI.Separator(ref rect, separatorMargin);
         }
 
         public static void NextDividedLine(this ref Rect rect, float startX, float totalWidth, int divideCount)
-            => SkyxGUI.NextDividedLine(ref rect, startX, totalWidth, divideCount);
+            => NextLine(ref rect, startX, DivideSize(totalWidth, divideCount));
 
         public static void NextSameLine(this ref Rect rect)
             => NextLine(ref rect, rect.x, rect.width);
@@ -50,10 +65,10 @@ namespace Skyx.SkyxEditor
         }
 
         public static void DivideRect(this ref Rect rect, int elementsCount)
-            => SkyxGUI.DivideRect(ref rect, elementsCount);
+            => DivideRect(ref rect, rect.width, elementsCount);
 
         public static void DivideRect(this ref Rect rect, float totalWidth, int elementsCount)
-            => SkyxGUI.DivideRect(ref rect, totalWidth, elementsCount);
+            => rect.width = DivideSize(totalWidth, elementsCount);
 
         public static void DivideVertically(this ref Rect rect, int elementsCount)
             => rect.height = (rect.height - (SkyxStyles.ElementsMargin * (elementsCount - 1))) / elementsCount;
@@ -73,26 +88,29 @@ namespace Skyx.SkyxEditor
             else if (dir is ERectSlideDir.Horizontal) rect.SlideSame();
         }
 
-        public static Rect ExtractRect(this ref Rect rect, float width, bool fromEnd = false)
-            => SkyxGUI.ExtractRect(ref rect, width, fromEnd);
+        public static Rect ExtractRect(this ref Rect rect, float width, bool fromEnd = false, float margin = SkyxStyles.ElementsMargin)
+        {
+            if (fromEnd) return ExtractEndRect(ref rect, width, margin);
 
-        public static Rect ExtractEndRect(this ref Rect rect, float width)
-            => SkyxGUI.ExtractEndRect(ref rect, width);
+            var remaining = rect.width - width - margin;
 
-        public static Rect ExtractLabelRect(this ref Rect rect)
-            => SkyxGUI.ExtractRect(ref rect, EditorGUIUtility.labelWidth - SkyxStyles.ElementsMargin, false);
+            rect.width = width;
+            var newRect = new Rect(rect);
 
-        public static Rect ExtractMediumButton(this ref Rect rect, bool fromEnd = false)
-            => SkyxGUI.ExtractMediumButton(ref rect, fromEnd);
+            SlideRect(ref rect, remaining, margin);
 
-        public static Rect ExtractSmallButton(this ref Rect rect, bool fromEnd = false)
-            => SkyxGUI.ExtractSmallButton(ref rect, fromEnd);
+            return newRect;
+        }
 
-        public static Rect ExtractMiniButton(this ref Rect rect, bool fromEnd = false)
-            => SkyxGUI.ExtractMiniButton(ref rect, fromEnd);
+        public static Rect ExtractEndRect(this ref Rect rect, float width, float margin = SkyxStyles.ElementsMargin)
+        {
+            rect.width = rect.width - width - margin;
 
-        public static Rect ExtractHint(this ref Rect rect, bool fromEnd = false)
-            => SkyxGUI.ExtractHint(ref rect, fromEnd);
+            var newRect = new Rect(rect);
+            SlideRect(ref newRect, width, margin);
+
+            return newRect;
+        }
 
         public static Rect ExtractVertical(this ref Rect rect, float height, float margin = SkyxStyles.ElementsMargin)
         {
@@ -219,6 +237,25 @@ namespace Skyx.SkyxEditor
                 }
             }
         }
+
+        #endregion
+
+        #region Sugar Extractions
+
+        public static Rect ExtractLabelRect(this ref Rect rect)
+            => ExtractRect(ref rect, EditorGUIUtility.labelWidth - SkyxStyles.ElementsMargin, false);
+
+        public static Rect ExtractMediumButton(this ref Rect rect, bool fromEnd = false)
+            => ExtractRect(ref rect, SkyxStyles.MediumButtonSize, fromEnd);
+
+        public static Rect ExtractSmallButton(this ref Rect rect, bool fromEnd = false)
+            => ExtractRect(ref rect, SkyxStyles.SmallButtonSize, fromEnd);
+
+        public static Rect ExtractMiniButton(this ref Rect rect, bool fromEnd = false)
+            => ExtractRect(ref rect, SkyxStyles.MiniButtonSize, fromEnd);
+
+        public static Rect ExtractHint(this ref Rect rect, bool fromEnd = false)
+            => ExtractRect(ref rect, SkyxStyles.HintIconWidth, fromEnd);
 
         #endregion
     }
