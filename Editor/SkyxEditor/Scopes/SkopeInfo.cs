@@ -21,12 +21,12 @@ namespace Skyx.SkyxEditor
         public readonly bool indent = false;
         public readonly bool isDisabled = false;
 
-        public List<(string, EColor, Action)> buttons = new();
+        public List<SkopeButton> buttons = new();
 
         public bool HasDescription => !string.IsNullOrEmpty(description);
         public bool CanExpand() => hasCustomExpand || HasDescription || property.CanExpand();
 
-        public void AddUniqueButton((string label, EColor buttonColor, Action callback) entry)
+        public void AddUniqueButton(SkopeButton entry)
         {
             if (buttons.Contains(entry)) return;
             buttons.Add(entry);

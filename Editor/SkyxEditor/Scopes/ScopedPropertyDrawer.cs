@@ -10,9 +10,9 @@ namespace Skyx.SkyxEditor
     {
         #region Default Header Buttons
 
-        public static readonly (string, EColor, Action) defaultDescriptionToggle = ("?", EColor.Info, () => isShowingDescriptions = !isShowingDescriptions);
-        public static (string, EColor, Action) GetManagedPicker(SerializedProperty property) => ("⚙️", EColor.Support, () => SerializedRefLib.DrawTypePickerMenu(property));
-        public static (string, EColor, Action) GetArrayRemoval(SerializedProperty property) => ("X", EColor.Warning, property.RemoveSelfFromArrayDelayed);
+        public static readonly SkopeButton defaultDescriptionToggle = new("?", EColor.Info, () => isShowingDescriptions = !isShowingDescriptions);
+        public static SkopeButton GetManagedPicker(SerializedProperty property) => new("⚙️", EColor.Support, () => SerializedRefLib.DrawTypePickerMenu(property));
+        public static SkopeButton GetArrayRemoval(SerializedProperty property) => new("X", EColor.Warning, property.RemoveSelfFromArrayDelayed);
 
         #endregion
 
@@ -21,7 +21,7 @@ namespace Skyx.SkyxEditor
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
             => OnGUI(rect, property, (ScopedAttribute) attribute);
 
-        protected static void OnGUI(Rect rect, SerializedProperty property, ScopedAttribute scopedAtt)
+        protected void OnGUI(Rect rect, SerializedProperty property, ScopedAttribute scopedAtt)
         {
             var isSerialized = property.IsManagedRef();
             var info = scopedAtt.GetInfo(property);
@@ -48,20 +48,25 @@ namespace Skyx.SkyxEditor
                 rect.AdjustToLine();
             }
 
+            DrawContent(ref rect, property, info);
+        }
+
+        protected virtual void DrawContent(ref Rect rect, SerializedProperty property, SkopeInfo info)
+        {
             if (property.hasVisibleChildren)
             {
                 EditorGUI.BeginDisabledGroup(info.isDisabled);
                 property.DrawAllInnerProperties(ref rect, true);
                 EditorGUI.EndDisabledGroup();
             }
-            else if (scopedAtt.scopeType.ShowNoChildProperties())
+            else if (info.scopeType.ShowNoChildProperties())
                 EditorGUI.LabelField(rect, "No properties.");
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
             => GetPropertyHeight(property, (ScopedAttribute) attribute);
 
-        protected static float GetPropertyHeight(SerializedProperty property, ScopedAttribute scopedAtt)
+        protected float GetPropertyHeight(SerializedProperty property, ScopedAttribute scopedAtt)
         {
             var isSerialized = property.IsManagedRef();
             if (isSerialized && property.managedReferenceValue == null) return SkyxStyles.FullLineHeight;
@@ -71,14 +76,21 @@ namespace Skyx.SkyxEditor
 
             if (property.isExpanded)
             {
-                height += property.GetPropertyHeight(true);
-
                 if (isShowingDescriptions && info.HasDescription)
                     height += SkyxStyles.GetHelpBoxHeight(info.description.LineCount(), true);
 
-                if (info.scopeType.ShowNoChildProperties() && !property.hasVisibleChildren)
-                    height += SkyxStyles.FullLineHeight;
+                height += GetContentHeight(property, info);
             }
+
+            return height;
+        }
+
+        protected virtual float GetContentHeight(SerializedProperty property, SkopeInfo info)
+        {
+            var height = property.GetPropertyHeight(true);
+
+            if (info.scopeType.ShowNoChildProperties() && !property.hasVisibleChildren)
+                height += SkyxStyles.FullLineHeight;
 
             return height;
         }

@@ -528,7 +528,7 @@ namespace Skyx.SkyxEditor
 
         #region Drawers
 
-        public static void DrawAllInnerProperties(this SerializedProperty property, ref Rect rect, bool isManaged)
+        public static void DrawAllInnerProperties(this SerializedProperty property, ref Rect rect, bool isManaged, params string[] except)
         {
             var iterator = property.Copy();
             var endProperty = iterator.GetEndProperty();
@@ -539,17 +539,22 @@ namespace Skyx.SkyxEditor
             {
                 if (SerializedProperty.EqualContents(iterator, endProperty)) break;
 
-                rect.height = EditorGUI.GetPropertyHeight(iterator, true);
-                EditorGUI.BeginChangeCheck();
-                EditorGUI.PropertyField(rect, iterator, true);
-                if (EditorGUI.EndChangeCheck()) iterator.Apply();
-                rect.y += rect.height + SkyxStyles.ElementsMargin;
+                if (!except.Contains(iterator.name))
+                {
+                    rect.height = EditorGUI.GetPropertyHeight(iterator, true);
+
+                    EditorGUI.BeginChangeCheck();
+                    EditorGUI.PropertyField(rect, iterator, true);
+                    if (EditorGUI.EndChangeCheck()) iterator.Apply();
+
+                    rect.y += rect.height + SkyxStyles.ElementsMargin;
+                }
 
                 if (!iterator.NextVisible(false)) break;
             }
         }
 
-        public static float GetPropertyHeight(this SerializedProperty property, bool isManaged)
+        public static float GetPropertyHeight(this SerializedProperty property, bool isManaged, params string[] except)
         {
             var height = 0f;
 
@@ -561,7 +566,10 @@ namespace Skyx.SkyxEditor
             while (true)
             {
                 if (SerializedProperty.EqualContents(iterator, endProperty)) break;
-                height += EditorGUI.GetPropertyHeight(iterator, true) + SkyxStyles.ElementsMargin;
+
+                if (!except.Contains(iterator.name))
+                    height += EditorGUI.GetPropertyHeight(iterator, true) + SkyxStyles.ElementsMargin;
+
                 if (!iterator.NextVisible(false)) break;
             }
 
