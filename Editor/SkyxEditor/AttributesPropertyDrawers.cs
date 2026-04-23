@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     [CustomPropertyDrawer(typeof(SingleLineDrawer))]
     public class SingleLineDrawerPropertyDrawer : PropertyDrawer

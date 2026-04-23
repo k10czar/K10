@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public static class BoxGUI
     {

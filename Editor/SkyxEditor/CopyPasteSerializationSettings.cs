@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEditor;
 using Object = UnityEngine.Object;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public class SerializeFieldContractResolver : DefaultContractResolver
     {

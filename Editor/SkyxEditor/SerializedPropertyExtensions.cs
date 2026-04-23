@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public static class SerializedPropertyExtension
     {
@@ -289,76 +289,16 @@ namespace Skyx.SkyxEditor
 
         #endregion
 
-        #region Type Queries
+        #region Cache IDs
 
-        private static readonly Dictionary<string, Dictionary<string, Type>> propertyTypeCache = new();
+        public static int GetMainCacheID(this SerializedObject serializedObject)
+            => serializedObject.targetObject.GetInstanceID();
 
-        public static string GetCacheID(this SerializedObject serializedObject)
-            => serializedObject.targetObject.GetInstanceID().ToString();
+        public static (int, string) GetCacheID(this SerializedProperty property)
+            => (property.serializedObject.GetMainCacheID(), property.propertyPath);
 
-        public static Type GetCachedType(this SerializedProperty property)
-        {
-            var cacheID = property.serializedObject.GetCacheID();
-            if (!propertyTypeCache.TryGetValue(cacheID, out var cache))
-            {
-                cache = new Dictionary<string, Type>();
-                propertyTypeCache[cacheID] = cache;
-            }
-
-            if (cache.TryGetValue(property.propertyPath, out var cachedType))
-                return cachedType;
-
-            var value = GetValue(property);
-            if (value == null) return null;
-
-            var type = value.GetType();
-            cache[property.propertyPath] = type;
-
-            return type;
-        }
-
-        public static void InvalidateTypeCache(this SerializedObject serializedObject)
-        {
-            var cacheID = serializedObject.GetCacheID();
-            propertyTypeCache.Remove(cacheID);
-        }
-
-        [MenuItem("Rogue/Editor/Clear Property Type Cache")]
-        public static void ClearCache() => propertyTypeCache.Clear();
-
-        public static Type GetObjectReferenceType(this SerializedProperty property)
-        {
-            if (property.propertyType != SerializedPropertyType.ObjectReference)
-            {
-                Debug.LogError($"Trying to get type from non-ObjectReference property: {property.propertyPath}");
-                return null;
-            }
-
-            return property.objectReferenceValue != null
-                ? property.objectReferenceValue.GetType()
-                : GetTypeFromPropertyTypeString(property);
-        }
-
-        private static Type GetTypeFromPropertyTypeString(SerializedProperty property)
-        {
-            var typeName = property.type;
-
-            if (string.IsNullOrEmpty(typeName) || !typeName.StartsWith("PPtr<") || !typeName.EndsWith(">"))
-            {
-                Debug.LogError($"Don't know how to parse property type: {typeName}");
-                return null;
-            }
-
-            typeName = typeName.Substring(5, typeName.Length - 6).TrimStart('$');
-
-            foreach (var type in TypeCache.GetTypesDerivedFrom<Object>())
-            {
-                if (type.Name == typeName) return type;
-            }
-
-            Debug.LogError($"Couldn't find type matching property type: {typeName}");
-            return null;
-        }
+        public static int GetMainCacheID(this SerializedProperty property)
+            => property.serializedObject.GetMainCacheID();
 
         #endregion
 

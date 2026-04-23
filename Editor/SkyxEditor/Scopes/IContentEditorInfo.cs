@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public interface IContentEditorInfo
     {

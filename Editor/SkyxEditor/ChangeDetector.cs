@@ -1,6 +1,6 @@
 ﻿using UnityEditor;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public class ChangeDetector : AssetPostprocessor
     {

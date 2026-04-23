@@ -1,4 +1,4 @@
-﻿namespace Skyx.SkyxEditor
+﻿namespace Rogue.REditor
 {
     public interface IPropertyChangedListener
     {

@@ -3,7 +3,7 @@ using Skyx.Trees;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public static class ClassTreePicker
     {

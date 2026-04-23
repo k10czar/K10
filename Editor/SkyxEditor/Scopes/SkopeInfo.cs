@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Skyx.RuntimeEditor;
 using UnityEditor;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public class SkopeInfo
     {

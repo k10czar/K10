@@ -3,7 +3,7 @@ using Skyx.RuntimeEditor;
 using UnityEditor;
 using UnityEngine;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public static class HeaderList
     {

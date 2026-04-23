@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public interface ILayoutScope : IDisposable
     {

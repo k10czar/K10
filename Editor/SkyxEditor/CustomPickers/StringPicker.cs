@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public static class StringPicker
     {

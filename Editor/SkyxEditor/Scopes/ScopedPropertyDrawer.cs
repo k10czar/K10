@@ -3,7 +3,7 @@ using Skyx.RuntimeEditor;
 using UnityEditor;
 using UnityEngine;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     [CustomPropertyDrawer(typeof(ScopedAttribute))]
     public class ScopedPropertyDrawer : PropertyDrawer
@@ -35,7 +35,11 @@ namespace Skyx.SkyxEditor
             }
 
             var hasDescription = info.HasDescription;
-            if (hasDescription) info.AddUniqueButton(defaultDescriptionToggle);
+            if (hasDescription)
+            {
+                defaultDescriptionToggle.color = isShowingDescriptions ? EColor.Info : EColor.Support;
+                info.AddUniqueButton(defaultDescriptionToggle);
+            }
 
             using var scope = Skope.Open(ref rect, info);
             if (!scope.IsExpanded) return;

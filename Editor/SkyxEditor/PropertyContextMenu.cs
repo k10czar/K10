@@ -4,7 +4,7 @@ using Unity.Plastic.Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public static class PropertyContextMenu
     {
