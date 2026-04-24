@@ -105,7 +105,7 @@ namespace Rogue.REditor
                 foreach (var (label, color, action) in info.buttons)
                 {
                     if (SkyxGUI.MiniButton(ref headerRect, label, color, null, true))
-                        action();
+                        action(info.property);
                 }
             }
 

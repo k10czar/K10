@@ -10,9 +10,9 @@ namespace Rogue.REditor
     {
         #region Default Header Buttons
 
-        public static readonly SkopeButton defaultDescriptionToggle = new("?", EColor.Info, () => isShowingDescriptions = !isShowingDescriptions);
-        public static SkopeButton GetManagedPicker(SerializedProperty property) => new("⚙️", EColor.Support, () => SerializedRefLib.DrawTypePickerMenu(property));
-        public static SkopeButton GetArrayRemoval(SerializedProperty property) => new("X", EColor.Warning, property.RemoveSelfFromArrayDelayed);
+        public static readonly SkopeButton descriptionToggleSkopeButton = new("?", EColor.Info, _ => isShowingDescriptions = !isShowingDescriptions);
+        public static readonly SkopeButton managedPickerSkopeButton = new("⚙️", EColor.Support, property => SerializedRefLib.DrawTypePickerMenu(property));
+        public static readonly SkopeButton arrayRemovalSkopeButton = new("X", EColor.Warning, property => property.RemoveSelfFromArrayDelayed());
 
         #endregion
 
@@ -31,14 +31,14 @@ namespace Rogue.REditor
                 if (SerializedRefLib.TryDrawMissingRef(ref rect, property, info.name)) return;
 
                 if (info.buttons.Count == 0 && info.scopeType is not EScopeType.Inline)
-                    info.buttons.Add(GetManagedPicker(property));
+                    info.buttons.Add(managedPickerSkopeButton);
             }
 
             var hasDescription = info.HasDescription;
             if (hasDescription)
             {
-                defaultDescriptionToggle.color = isShowingDescriptions ? EColor.Info : EColor.Support;
-                info.AddUniqueButton(defaultDescriptionToggle);
+                descriptionToggleSkopeButton.color = isShowingDescriptions ? EColor.Info : EColor.Support;
+                info.AddUniqueButton(descriptionToggleSkopeButton);
             }
 
             using var scope = Skope.Open(ref rect, info);

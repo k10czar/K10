@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace Skyx.RuntimeEditor
@@ -106,16 +107,16 @@ namespace Skyx.RuntimeEditor
     {
         public readonly string label;
         public EColor color;
-        public Action onClick;
+        public Action<SerializedProperty> onClick;
 
-        public SkopeButton(string label, EColor color, Action onClick)
+        public SkopeButton(string label, EColor color, Action<SerializedProperty> onClick)
         {
             this.label = label;
             this.color = color;
             this.onClick = onClick;
         }
 
-        public void Deconstruct(out string dLabel, out EColor dColor, out Action dOnClick)
+        public void Deconstruct(out string dLabel, out EColor dColor, out Action<SerializedProperty> dOnClick)
         {
             dLabel = label;
             dColor = color;
