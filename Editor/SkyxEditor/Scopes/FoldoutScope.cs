@@ -113,10 +113,7 @@ namespace Rogue.REditor
                 foreach (var (label, color, action) in info.buttons)
                 {
                     if (SkyxGUI.MiniButton(ref buttonsRect, label, color, null, true))
-                    {
                         action();
-                        isExpandedRef = true;
-                    }
                 }
             }
 

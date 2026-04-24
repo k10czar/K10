@@ -186,10 +186,7 @@ namespace Rogue.REditor
                 {
                     var buttonRect = rect.ExtractMiniButton(true);
                     if (buttonRect.TryUseClick(false))
-                    {
                         action();
-                        isExpandedRef = true;
-                    }
                 }
             }
         }
