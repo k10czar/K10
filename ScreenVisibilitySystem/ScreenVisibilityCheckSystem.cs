@@ -173,7 +173,7 @@ public sealed class ScreenVisibilityCheckSystem : IOrchestratedUpdate, IDisposab
 #if CODE_METRICS
 		const string CODE_TAG = "ScreenVisibilityCheckSystem.PostUpdate";
 		FrameTimingDebug.LogStart( CODE_TAG );
-		const string JOB_CODE_TAG = "ScreenVisibilityCheckSystem.PostUpdate.jobHandle.Complete";
+		const string JOB_CODE_TAG = "jobHandle.Complete";
 		FrameTimingDebug.LogStart( JOB_CODE_TAG );
 #endif
 		_jobHandle.Complete();

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace K10.Promises
 {
 	public interface IFutureBase 
@@ -7,12 +10,12 @@ namespace K10.Promises
 
 	public interface IFutureObserver : IFutureBase
 	{
-		IEventRegister OnCompletion { get; }
+		void Register( Action listener );
 	}
 
 	public interface IFutureObserver<Result> : IFutureBase
 	{
-		IEventRegister<Result> OnCompletion { get; }
+		void Register( Action<Result> listener );
 	}
 
 	public interface IFuture : IFutureObserver
@@ -29,9 +32,19 @@ namespace K10.Promises
 	{
 		bool _isComplete = false;
 
-		EventSlot _completion = new EventSlot();
+		List<Action> _onCompletion = null;
 
-		public IEventRegister OnCompletion { get { return _completion; } }
+		public void Register( Action listener )
+		{
+			if( listener == null ) return;
+			if( _isComplete ) 
+			{
+				listener();
+				return;
+			}
+			if( _onCompletion == null ) _onCompletion = new();
+			_onCompletion.Add( listener );
+		}
 
 		public void ForceComplete()
 		{
@@ -39,7 +52,12 @@ namespace K10.Promises
 				return;
 
 			_isComplete = true;
-			_completion.Trigger();
+
+			if( _onCompletion == null ) return;
+
+			foreach( var act in _onCompletion ) act();
+			_onCompletion.Clear();
+			_onCompletion = null;
 		}
 
 		public bool IsComplete { get { return _isComplete; } }
@@ -48,19 +66,40 @@ namespace K10.Promises
 	public class Future<Result> : IFuture<Result>
 	{
 		bool _isComplete = false;
+		Result _result;
 
-		EventSlot<Result> _completion = new EventSlot<Result>();
+		List<Action<Result>> _onCompletion;
+        public bool IsComplete => _isComplete;
 
-		public IEventRegister<Result> OnCompletion { get { return _completion; } }
+		public void Reset()
+		{
+			_isComplete = false;
+		}
+
+        public void Register( Action<Result> listener )
+		{
+			if( listener == null ) return;
+			if( _isComplete ) 
+			{
+				listener( _result );
+				return;
+			}
+			if( _onCompletion == null ) _onCompletion = new();
+			_onCompletion.Add( listener );
+		}
 
 		public void ForceComplete( Result result )
 		{
 			if( _isComplete ) return;
 
 			_isComplete = true;
-			_completion.Trigger( result );
-		}
+			_result = result;
 
-		public bool IsComplete { get { return _isComplete; } }
+			if( _onCompletion == null ) return;
+
+			foreach( var act in _onCompletion ) act( _result );
+			_onCompletion.Clear();
+			_onCompletion = null;
+		}
 	}
 }

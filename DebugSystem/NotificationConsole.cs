@@ -7,7 +7,7 @@ public class NotificationConsole : MonoBehaviour
     const float TOP_MARGIN = 160;
     const float SIDE_MARGIN = 150;
     const int NORMAL_FONT_SIZE = 20;
-    const int MOBILE_FONT_SIZE = 26;
+    const int MOBILE_FONT_SIZE = 24;
 
     static NotificationConsole _instance;
 

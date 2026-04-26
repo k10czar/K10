@@ -1,3 +1,4 @@
+#if UNITY_GAMECORE
 using UnityEngine;
 
 public class GdkPlatformSettingsData : ScriptableObject, IGdkRuntimeData
@@ -13,3 +14,4 @@ public class GdkPlatformSettingsData : ScriptableObject, IGdkRuntimeData
     public string TitleId => titleId;
     public uint TitleIdNumeric => uint.Parse(titleId, System.Globalization.NumberStyles.HexNumber);
 }
+#endif

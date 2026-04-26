@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
 using UnityEngine;
 
@@ -8,52 +7,62 @@ public static class FrameTimingDebug
 {
 	class FunctionTime
 	{
-		public string Parent { get; private set; }
 		public double AccumulatedTimings { get; private set; }
 		public int Calls { get; private set;}
 
-		public FunctionTime(string parent)
-		{
-			Parent = parent;
-		}
-
-		public void AddTime(double time)
+		public void Accumulate(double time, int calls)
 		{
 			AccumulatedTimings += time;
-			Calls++;
-		}
-
-		public void CombineWithFunctionTime(FunctionTime functionTime)
-		{
-			Parent = functionTime.Parent;
-			AccumulatedTimings += functionTime.AccumulatedTimings;
-			Calls += functionTime.Calls;
+			Calls += calls;
 		}
 	}
 
 	class FrameData
 	{
+		public string Tag { get; }
 		public int FrameNumber { get; }
 		public float StartTime { get; }
 		public float UnscaledDeltaTime { get; }
-		public Dictionary<string, FunctionTime> FunctionTimes;
+		public double AccumulatedTimings { get; private set; }
+		public int Calls { get; private set; }
+		public List<FrameData> Childs { get; } = new();
 
+		// Root frame node
 		public FrameData(int frameNumber, float startTime, float unscaledDeltaTime)
 		{
-			this.FrameNumber = frameNumber;
-			this.StartTime = startTime;
-			this.UnscaledDeltaTime = unscaledDeltaTime;
-			FunctionTimes = new Dictionary<string, FunctionTime>();
+			FrameNumber = frameNumber;
+			StartTime = startTime;
+			UnscaledDeltaTime = unscaledDeltaTime;
 		}
 
-		public void AddTimingData(string tag, double time, string parent)
+		// Function entry node
+		public FrameData(string tag) { Tag = tag; }
+
+		public void AddTime(double time) { AccumulatedTimings += time; Calls++; }
+
+		public FrameData GetOrAddChild(string tag)
 		{
-			if (!FunctionTimes.ContainsKey(tag)) 
-				FunctionTimes.Add(tag, new FunctionTime( parent ));
-
-			FunctionTimes[tag].AddTime(time);
+			foreach (var child in Childs)
+				if (child.Tag == tag) return child;
+			var newChild = new FrameData(tag);
+			Childs.Add(newChild);
+			return newChild;
 		}
-    }
+
+		public void AccumulateInto(Dictionary<string, FunctionTime> dict)
+		{
+			foreach (var child in Childs)
+			{
+				if (!dict.TryGetValue(child.Tag, out var ft))
+				{
+					ft = new FunctionTime();
+					dict[child.Tag] = ft;
+				}
+				ft.Accumulate(child.AccumulatedTimings, child.Calls);
+				child.AccumulateInto(dict);
+			}
+		}
+	}
 
 	const float AVERAGE_SAMPLE_TIME = 3f;
 	const float HIGH_FRAME_PERCENTAGE_WARNING = 3f;
@@ -68,18 +77,18 @@ public static class FrameTimingDebug
     public static void ToogleDeep() => deep = !deep;
 
 	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
-    public static void Enable() 
-	{ 
+    public static void Enable()
+	{
 		// #if UNITY_EDITOR || CHEATS_ENABLED
-		enabled = true; 
+		enabled = true;
 		// #else
 		// enabled = false;
 		// #endif
 	}
-	
+
 	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
-	public static void Disable() 
-	{ 
+	public static void Disable()
+	{
 		if( !enabled ) return;
 		enabled = false;
 		Clear();
@@ -88,14 +97,12 @@ public static class FrameTimingDebug
 
 	private static readonly Dictionary<string, Stopwatch> _watches = new Dictionary<string, Stopwatch>();
 	private static int _callStatckFrame = -1;
-	private static readonly Dictionary<string, string> _openParent = new Dictionary<string, string>();
-	private static readonly List<string> _callStatck = new List<string>();
+	private static readonly List<string> _callStack = new List<string>();
+	private static readonly List<int> _stackSizeStack = new List<int>(); // parallel to _callStatck: stores _callStatck.Count at the time of each LogStart
 	private static readonly List<FrameData> _framesData = new List<FrameData>();
 
-
-
 	private static Stopwatch _logStopwatch = new Stopwatch();
-	
+
 	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
 	public static void LogDeepStart( string tag )
 	{
@@ -103,7 +110,6 @@ public static class FrameTimingDebug
 		if( !deep ) return;
 		LogStart( tag );
 	}
-
 
 	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
 	public static void LogStart( string tag )
@@ -114,16 +120,18 @@ public static class FrameTimingDebug
 		var sw = StopwatchPool.RequestStarted();
 		_watches[tag] = sw;
 
-		if( _callStatckFrame != Time.frameCount ) 
+		var frameId = Time.frameCount;
+		if( _callStatckFrame != frameId )
 		{
-			_callStatck.Clear();
-			_openParent.Clear();
+			_callStack.Clear();
+			_stackSizeStack.Clear();
+			_callStatckFrame = frameId;
 		}
-		_callStatckFrame = Time.frameCount;
-		_callStatck.Add( tag );
-		_openParent.TryAdd( tag, _callStatck.Count > 0 ? _callStatck[_callStatck.Count-1] : null );
+
+		_stackSizeStack.Add( _callStack.Count ); // record depth before pushing
+		_callStack.Add( tag );
 	}
-	
+
 	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
 	public static void LogDeepEnd( string tag )
 	{
@@ -137,37 +145,34 @@ public static class FrameTimingDebug
 	{
 		if( !enabled ) return;
 
-		var stackIsRight = ( _callStatck.Count > 0 ) && tag == _callStatck[_callStatck.Count-1];
-		if( stackIsRight ) _callStatck.RemoveAt( _callStatck.Count-1 );
-		else _callStatck.Remove( tag );
+		var stackSize = _callStack.Count;
+		if( stackSize == 0 ) return;
 
-		string parent = null;
-		if( stackIsRight && _callStatck.Count > 0 )
-		{
-			var currentStack = _callStatck[_callStatck.Count-1];
-			if( _openParent.TryGetValue( tag, out var openParent ) )
-			{
-				_openParent.Remove( tag );
-				if( openParent == currentStack ) parent = currentStack;
-			}
-		}
+		var stackIdx = stackSize - 1;
+		var stackIsRight = stackSize > 0 && tag == _callStack[stackIdx];
+		if( !stackIsRight ) stackIdx = _callStack.LastIndexOf( tag );
+
+		if( stackIdx == -1 ) return;
+		_callStack.RemoveAt( stackIdx );
+		
+		var startSize = _stackSizeStack[stackIdx];
+		_stackSizeStack.RemoveAt( stackIdx );
 
 		if( !_watches.TryGetValue( tag, out var osw ) ) return;
 		if( osw.IsRunning ) osw.Stop();
 		_watches.Remove( tag );
 
 		int currentFrame = Time.frameCount;
-		if (_framesData.Count == 0 || _framesData[_framesData.Count - 1].FrameNumber != currentFrame)
-		{
-			var frame = new FrameData(currentFrame, Time.time, Time.unscaledDeltaTime);
-			_framesData.Add(frame);
-		}
+		if( _framesData.Count == 0 || _framesData[^1].FrameNumber != currentFrame )
+			_framesData.Add( new FrameData( currentFrame, Time.time, Time.unscaledDeltaTime ) );
 
-		var frameData = _framesData[_framesData.Count - 1];
+		// Navigate to the correct parent depth using ancestor tags stored at LogStart time.
+		// GetOrAddChild searches existing Childs first, so repeated calls accumulate on the same node.
+		var node = _framesData[^1];
+		for( int i = 0; i < startSize && i < _callStack.Count; i++ )
+			node = node.GetOrAddChild( _callStack[i] );
 
-		frameData.AddTimingData(tag, osw.ReturnToPoolAndGetElapsedMs(), parent );
-
-		// return elapsed;
+		node.GetOrAddChild( tag ).AddTime( osw.ReturnToPoolAndGetElapsedMs() );
 	}
 
 	[Conditional(ConstsK10.CODE_METRICS_CONDITIONAL)]
@@ -191,27 +196,71 @@ public static class FrameTimingDebug
 	}
 
 	private static readonly StringBuilder SB = new StringBuilder();
-	private static System.Comparison<KeyValuePair<string, FunctionTime>> DESCENDING_COMPARISON = ( KeyValuePair<string, FunctionTime> a, KeyValuePair<string, FunctionTime> b ) => b.Value.AccumulatedTimings.CompareTo( a.Value.AccumulatedTimings );
 
+	static void AppendEntry( FrameData node, Dictionary<string, FunctionTime> sampleTimes,
+		int nFramesInSample, double totalMs, bool hasLastLogStopwatch, string msFormat, int depth )
+	{
+		var indent = depth > 1 ? new string( ' ', ( depth - 1 ) * 4 ) : string.Empty;
+		if( depth > 0 ) indent += "└-- ";
+		var ms = node.AccumulatedTimings;
+
+		double averageMs = 0;
+		if( sampleTimes.TryGetValue( node.Tag, out var sampleFt ) )
+			averageMs = sampleFt.AccumulatedTimings / nFramesInSample;
+
+		var msString = ms.ToString( msFormat );
+		if( ms > averageMs * SPIKE_MULTIPLIER_WARNING )
+			msString = msString.Colorfy( Colors.OrangeRed );
+
+		SB.Append( indent );
+		SB.Append( msString );
+		SB.Append( "ms" );
+
+		if( hasLastLogStopwatch && totalMs > 0 )
+		{
+			var percentage = ms * 100 / totalMs;
+			string percentageString;
+			if( percentage >= 10 ) percentageString = percentage.ToString( "F0" );
+			else if( percentage >= 0.1 ) percentageString = percentage.ToString( "F1" );
+			else percentageString = percentage.ToString( "F2" ).TrimStart( '0' );
+			if( percentage > HIGH_FRAME_PERCENTAGE_WARNING )
+				percentageString = percentageString.Colorfy( Colors.Crimson );
+
+			SB.Append( " " );
+			SB.Append( percentageString );
+			SB.Append( "%" );
+		}
+
+		SB.Append( "\t[" );
+		SB.Append( node.Calls );
+		SB.Append( "]\t" );
+		SB.Append( node.Tag );
+		SB.Append( "\n" );
+
+		node.Childs.Sort( ( a, b ) => b.AccumulatedTimings.CompareTo( a.AccumulatedTimings ) );
+		foreach( var child in node.Childs )
+			AppendEntry( child, sampleTimes, nFramesInSample, totalMs, hasLastLogStopwatch, msFormat, depth + 1 );
+	}
 
 	public static string GetLog( string msFormat = "F3", string percentageFormat = "F1" )
 	{
 		var hasLastLogStopwatch = _logStopwatch.IsRunning;
 		var totalMs = _logStopwatch.Elapsed.TotalMilliseconds;
 		SB.Clear();
-		
+
 		if( hasLastLogStopwatch )
 		{
 			_logStopwatch.Stop();
-			// SB.Append( "Total time: " );
 			SB.Append( totalMs.ToString( msFormat ) );
 			SB.Append( "ms\n" );
 		}
 
 		if (_framesData.Count > 0)
 		{
+			SB.AppendLine( "" );
 			float totalSampleTime = 0;
-			Dictionary<string, FunctionTime> functionTimesInSample = new Dictionary<string, FunctionTime>();
+			var sampleTimes = new Dictionary<string, FunctionTime>();
+
 			for (int i = _framesData.Count - 1; i >= 0 && i >= firstSampleFrame; i--)
 			{
 				var frameInfo = _framesData[i];
@@ -223,101 +272,16 @@ public static class FrameTimingDebug
 					break;
 				}
 
-				foreach (var functionTimeInFrame in frameInfo.FunctionTimes)
-				{
-					if (!functionTimesInSample.ContainsKey(functionTimeInFrame.Key))
-						functionTimesInSample.Add(functionTimeInFrame.Key, new FunctionTime(null));
-
-					functionTimesInSample[functionTimeInFrame.Key].CombineWithFunctionTime(functionTimeInFrame.Value);
-				}
-
+				frameInfo.AccumulateInto( sampleTimes );
 				totalSampleTime += frameInfo.UnscaledDeltaTime;
 			}
-			var totalSampleMs = totalSampleTime * 1000f;
-
-			var timings = functionTimesInSample.ToList();
-			timings.Sort( DESCENDING_COMPARISON );
-
-			var lastFrameFunctionTimes = _framesData[_framesData.Count - 1].FunctionTimes;
 
 			int nFramesInSample = _framesData.Count - firstSampleFrame;
-			foreach( var kvp in timings )
-			{
-				var tag = kvp.Key;
-				double ms = 0;
-				var averageMs = kvp.Value.AccumulatedTimings / nFramesInSample ;
+			var lastFrame = _framesData[^1];
 
-				if (lastFrameFunctionTimes.ContainsKey(tag))
-				{
-					var functionTime = lastFrameFunctionTimes[tag];
-
-					SB.Append( "Frame: [" );
-					SB.Append( functionTime.Calls );
-					SB.Append( "] " );
-
-					ms = functionTime.AccumulatedTimings;
-					var msString = ms.ToString( msFormat );
-					if (ms > averageMs * SPIKE_MULTIPLIER_WARNING)
-						msString = msString.Colorfy(Colors.OrangeRed);
-
-					SB.Append( msString );
-					SB.Append( "ms" );
-
-					if( hasLastLogStopwatch )
-					{
-						SB.Append( " " );
-						var percentage = ( ms * 100 / totalMs );
-						var percentageString = percentage.ToString( percentageFormat );
-						if (percentage > HIGH_FRAME_PERCENTAGE_WARNING)
-							percentageString = percentageString.Colorfy(Colors.Crimson);
-
-						SB.Append( " " );
-						SB.Append( percentageString );
-						SB.Append( "% " );
-					}
-				}
-				else
-				{
-					// SB.Append("Frame: [0] 0.000ms 0.0%");
-					SB.Append("Frame: ------------------------");
-				}
-
-				SB.Append( "\t" );
-					
-				SB.Append( "Avg: [");
-				SB.Append( Mathf.Round((float)kvp.Value.Calls / nFramesInSample) );
-				SB.Append( "] " );
-				
-				SB.Append( "Avg: [");
-				SB.Append( Mathf.Round((float)kvp.Value.Calls / nFramesInSample) );
-				SB.Append( "] " );
-
-				SB.Append( averageMs.ToString( msFormat ) );
-				SB.Append( "ms " );
-
-				var avg = averageMs;
-
-				averageMs = kvp.Value.AccumulatedTimings;
-				SB.Append( ( averageMs * 100 / totalSampleMs ).ToString( percentageFormat ) );
-				SB.Append( "% " );
-				
-				if( avg > MathAdapter.EP2 ) 
-				{
-					var pFps = Mathf.RoundToInt( (float)( 1000f / avg ) );
-					if( pFps < 100000 ) SB.Append( "  " );
-					if( pFps < 10000 ) SB.Append( "  " );
-					if( pFps < 1000 ) SB.Append( "  " );
-					if( pFps < 100 ) SB.Append( "  " );
-					SB.Append( (1000f / avg).ToString( "N0" ) );
-				}
-				else SB.Append( "      ∞" );
-				SB.Append( "pfps " );
-
-				SB.Append( "\t" );
-				SB.Append( tag );
-
-				SB.Append( "\n" );
-			}
+			lastFrame.Childs.Sort( ( a, b ) => b.AccumulatedTimings.CompareTo( a.AccumulatedTimings ) );
+			foreach( var root in lastFrame.Childs )
+				AppendEntry( root, sampleTimes, nFramesInSample, totalMs, hasLastLogStopwatch, msFormat, 0 );
 		}
 
 		var log = SB.ToString();
