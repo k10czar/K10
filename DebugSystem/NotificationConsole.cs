@@ -100,7 +100,7 @@ public class NotificationConsole : MonoBehaviour
     }
 
     [Serializable]
-    public struct Notification
+    private struct Notification
     {
         public string message;
         public double vanishTime;
@@ -113,7 +113,7 @@ public class NotificationConsole : MonoBehaviour
     }
 
     [Serializable]
-    public struct LabelData
+    private struct LabelData
     {
         public Color color;
         public Vector2 offset;
