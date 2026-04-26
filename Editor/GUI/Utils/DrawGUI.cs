@@ -51,7 +51,7 @@ namespace K10.EditorGUIExtention
 			if( boxed ) height += BOXING_SIZE;
 
 			if( ShowExpandedProp( property ) )
-				height += EditorGUIUtility.singleLineHeight;
+				height += CalculateInlinePropertiesEditorHeight( property );
 
 			return height;
 		}
@@ -191,27 +191,24 @@ namespace K10.EditorGUIExtention
 
 			if( ShowExpandedProp( property ) )
 			{
-
 				var obj = (ScriptableObject)property.objectReferenceValue;
 				if( obj != null )
 				{
-					EditorGUI.LabelField( area, "🦗 Inline Editor are not implemented correctly for now" );
-					// EditorGUI.LabelField( area, "🦗 Buggy implementation Editor show bellow everything ⤵" );
-					// var editor = CustomEditorUtility.GetEditor( obj );
-				    // if( editor != null )
-				    // {
-					// 	// Debug.Log( $"{Event.current} area:{area}" );
-					// 	// GUILayout.BeginArea(area);
-				    //     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-				    //     EditorGUILayout.LabelField($"Inline editor of: {obj.name}");
-				    //     editor.OnInspectorGUI();
-				    //     EditorGUILayout.EndVertical();
-        			// 	// GUILayout.EndArea();
-				    // }
-					// else
-					// {
-					// 	EditorGUI.LabelField( area, "Editor not found!" );
-					// }
+					var editor = CustomEditorUtility.GetEditor( obj );
+					if( editor != null )
+					{
+						GUILayout.BeginArea( area );
+						EditorGUILayout.BeginVertical( EditorStyles.helpBox );
+						EditorGUI.indentLevel++;
+						editor.OnInspectorGUI();
+						EditorGUI.indentLevel--;
+						EditorGUILayout.EndVertical();
+						GUILayout.EndArea();
+					}
+					else
+					{
+						PropertyFieldsFromObject( area, obj );
+					}
 				}
 			}
 
