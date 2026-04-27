@@ -4,16 +4,18 @@ using System;
 
 public class NotificationConsole : MonoBehaviour
 {
+    const int POOL_PROVISION = 10;
+
     const float TOP_MARGIN = 160;
     const float SIDE_MARGIN = 150;
     const int NORMAL_FONT_SIZE = 20;
-    const int MOBILE_FONT_SIZE = 24;
+    const int MOBILE_FONT_SIZE = 26;
 
     static NotificationConsole _instance;
 
     [SerializeField] Rect _area = new Rect(SIDE_MARGIN, TOP_MARGIN, 1000, 1000);
 
-    [SerializeField] List<LabelData> _labelDraws = new()
+    [SerializeField] LabelData[] _labelDraws = new LabelData[]
     {
         new LabelData( Colors.AlmostBlack, new Vector2(2, 2), false ),
         new LabelData( Colors.KeyLime, new Vector2(0, 0) )
@@ -22,6 +24,7 @@ public class NotificationConsole : MonoBehaviour
     GUIStyle _style;
 
     List<Notification> _notifications = new();
+    List<Notification> _notificationsPool;
     [SerializeField] bool _isDirty = false;
     double _nextVanish = double.MaxValue;
     [SerializeField,TextArea(5,25)] string _currentMessage = string.Empty;
@@ -39,10 +42,34 @@ public class NotificationConsole : MonoBehaviour
     {
         var refTime = Time.realtimeSinceStartupAsDouble;
         if (_notifications == null) _notifications = new();
-        _notifications.Add(new Notification(message, refTime + notificationSeconds));
-        if( refTime < _nextVanish ) _nextVanish = refTime;
+
+        var vTime = refTime + notificationSeconds;
+        _notifications.Add( CreateNotificationInstance(message, vTime) );
+
+        if (vTime < _nextVanish) _nextVanish = vTime;
         _isDirty = true;
-        if( alsoLogOnUnityConsole ) Debug.Log( $"{"NotificationConsole".Colorfy(Colors.Erin)}: {message}\nwill last {notificationSeconds.ToStringColored(Colors.Console.Numbers)}s" );
+        if (alsoLogOnUnityConsole) Debug.Log($"{"NotificationConsole".Colorfy(Colors.Erin)}: {message}\nwill last {notificationSeconds.ToStringColored(Colors.Console.Numbers)}s");
+    }
+
+    private Notification CreateNotificationInstance(string message, double vTime)
+    {
+        if (_notificationsPool == null) 
+        {
+            _notificationsPool = new();
+            for (int i = 0; i < POOL_PROVISION; i++) _notificationsPool.Add( new() );
+        }
+
+        var poolCount = _notificationsPool.Count;
+        if (poolCount > 0)
+        {
+            var lastId = poolCount - 1;
+            var inst = _notificationsPool[lastId];
+            _notificationsPool.RemoveAt(lastId);
+            inst.Setup(message, vTime);
+            return inst;
+        }
+        
+        return new Notification(message, vTime);
     }
 
     void TryBuildMessage()
@@ -56,13 +83,18 @@ public class NotificationConsole : MonoBehaviour
         for (int i = _notifications.Count - 1; i >= 0; i--)
         {
             var n = _notifications[i];
-            if (refTime > n.vanishTime)
+            var vt = n.vanishTime;
+            var diff = refTime - vt;
+            var approx = diff > float.Epsilon || diff < -float.Epsilon;
+            if (refTime > vt && approx && n.draws > 0 )
             {
                 _notifications.RemoveAt(i);
-                i--;
+                n.Clear();
+                _notificationsPool.Add( n );
+                // i--;
                 continue;
             }
-            if( n.vanishTime < _nextVanish ) _nextVanish = n.vanishTime;
+            if( vt < _nextVanish ) _nextVanish = vt;
             SB.AppendLine(n.message);
         }
 
@@ -97,18 +129,35 @@ public class NotificationConsole : MonoBehaviour
             GUI.Label(_area.Move(draw.offset), text, _style);
         }
         GUI.color = initialColor;
+
+        if( Event.current.type == EventType.Repaint )
+            for( int i = _notifications.Count - 1; i >= 0; i-- )
+                _notifications[i].draws++;
     }
 
     [Serializable]
-    private struct Notification
+    private class Notification
     {
         public string message;
         public double vanishTime;
+        public int draws;
 
-        public Notification(string message, double vanishTime)
+        public Notification(string message = "", double vanishTime = 0)
+        {
+            Setup( message, vanishTime );
+        }
+
+        public void Setup( string message, double vanishTime )
         {
             this.message = message;
             this.vanishTime = vanishTime;
+            this.draws = 0;
+        }
+
+        public void Clear()
+        {
+            message = string.Empty;
+            this.draws = 0;
         }
     }
 
