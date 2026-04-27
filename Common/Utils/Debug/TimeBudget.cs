@@ -11,7 +11,7 @@ public class TimeBudget : System.IDisposable
 {
 	private static readonly Queue<TimeBudget> _pool = new();
     private bool _returned = false;
-	private long _timeBudget = 0;
+	private uint _timeBudget = 0;
 
 	Stopwatch _stopwatch;
 
@@ -48,7 +48,7 @@ public class TimeBudget : System.IDisposable
 		else _stopwatch.Restart();
 	}
 
-	public static TimeBudget RentStarted( long miliseconds = 100 )
+	public static TimeBudget RentStarted( uint miliseconds = 100 )
 	{
 		var instance = Rent();
 		instance._timeBudget = miliseconds;
