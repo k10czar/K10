@@ -260,7 +260,11 @@ public class UiTexturesReporter : EditorWindow
             {
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.Label($"{selCount} selected", GUILayout.ExpandWidth(false));
-                if (GUILayout.Button($"Create Atlas '{(ctx.Target != null ? ctx.Target.name : "")}' @ {FindCommonFolder(ctx)}", GUILayout.ExpandWidth(false)))
+
+                if (GUILayout.Button($"Create Atlas V2 '{(ctx.Target != null ? ctx.Target.name : "")}' @ {FindCommonFolder(ctx)}", GUILayout.ExpandWidth(false)))
+                    CreateAtlasV2(ctx);
+
+                if (GUILayout.Button($"Create Atlas V1", GUILayout.ExpandWidth(false)))
                     CreateAtlas(ctx);
 
                 if (GUILayout.Button("Add to Atlas ▾", GUILayout.ExpandWidth(false)))
@@ -519,6 +523,33 @@ public class UiTexturesReporter : EditorWindow
         AssetDatabase.CreateAsset(atlas, atlasPath);
         AssetDatabase.SaveAssets();
         EditorGUIUtility.PingObject(atlas);
+    }
+
+    private static void CreateAtlasV2(ContextData ctx)
+    {
+        var selected = ctx.Entries.Where(e => e.IsSelected).ToList();
+        if (selected.Count == 0) return;
+
+        var assetPaths = selected
+            .Select(e => AssetDatabase.GetAssetPath(e.Texture))
+            .Where(p => !string.IsNullOrEmpty(p))
+            .Distinct()
+            .ToList();
+
+        var folder = FindCommonFolder(assetPaths);
+        var atlasName = ctx.Target != null ? ctx.Target.name : "NewAtlas";
+        var atlasPath = AssetDatabase.GenerateUniqueAssetPath($"{folder}/{atlasName}.spriteatlasv2");
+
+        var atlas = new SpriteAtlasAsset();
+        var packables = assetPaths
+            .Select(p => AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(p))
+            .Where(o => o != null)
+            .ToArray();
+        if (packables.Length > 0) atlas.Add(packables);
+
+        AssetDatabase.CreateAsset(atlas, atlasPath);
+        AssetDatabase.SaveAssets();
+        EditorGUIUtility.PingObject(AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(atlasPath));
     }
 
 
