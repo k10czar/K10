@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEditor.U2D;
+using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -52,7 +53,16 @@ public class SpriteAtlasAssetInspectorExtension : Editor
             var objPath = AssetDatabase.GUIDToAssetPath(match.Groups[1].Value);
             if (string.IsNullOrEmpty(objPath)) continue;
             var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(objPath);
-            if (obj != null) packables.Add(obj);
+            if (obj == null) continue;
+            if (obj is DefaultAsset)
+            {
+                foreach (var texGuid in AssetDatabase.FindAssets("t:Texture2D", new[] { objPath }))
+                {
+                    var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(AssetDatabase.GUIDToAssetPath(texGuid));
+                    if (tex != null) packables.Add(tex);
+                }
+            }
+            else packables.Add(obj);
         }
         return packables.ToArray();
     }

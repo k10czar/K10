@@ -16,9 +16,12 @@ public class UiTexturesReporter : EditorWindow
     private readonly List<GameObject> _targets = new List<GameObject>();
     private readonly List<ContextData> _contexts = new List<ContextData>();
     private readonly Dictionary<string, long> _atlasMemories = new Dictionary<string, long>();
-    private Dictionary<string, string> _atlasLookupCache;
+    private Dictionary<string, SpriteAtlas> _atlasLookupCache;
     private Comparison<TextureEntry> _lastComparison;
     private readonly List<(Comparison<TextureEntry> base_, bool descending)> _sortStack = new List<(Comparison<TextureEntry>, bool)>();
+    private static readonly System.Reflection.MethodInfo _getPreviewTextures =
+        typeof(SpriteAtlasExtensions).GetMethod("GetPreviewTextures",
+            System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
 
     [MenuItem("K10/Reports/UI Textures Reporter")] private static void Init() { GetWindow<UiTexturesReporter>("UI Textures Reporter"); }
 
@@ -33,7 +36,11 @@ public class UiTexturesReporter : EditorWindow
         {
             var atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(AssetDatabase.GUIDToAssetPath(guid));
             if (atlas == null) continue;
-            _atlasMemories[atlas.name] = UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(atlas);
+            long atlasSize = 0;
+            if (_getPreviewTextures?.Invoke(null, new object[] { atlas }) is Texture2D[] pages)
+                foreach (var page in pages)
+                    if (page != null) atlasSize += UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(page);
+            _atlasMemories[atlas.name] = atlasSize;
         }
 
         _contexts.Clear();
@@ -59,8 +66,8 @@ public class UiTexturesReporter : EditorWindow
             if (tex == null) continue;
             if (!texDict.TryGetValue(tex, out var entry))
             {
-                var (inAtlas, atlasName) = GetAtlasInfo(img.sprite, lookup);
-                entry = new TextureEntry(tex, inAtlas, atlasName);
+                var (inAtlas, atlasObj) = GetAtlasInfo(img.sprite, lookup);
+                entry = new TextureEntry(tex, inAtlas, atlasObj);
                 texDict[tex] = entry;
             }
             entry.AddUser(img.gameObject);
@@ -95,9 +102,9 @@ public class UiTexturesReporter : EditorWindow
                 entry.SharedContextCount = sharedCount.TryGetValue(entry.Texture, out var count) ? count : 1;
     }
 
-    private static Dictionary<string, string> BuildAtlasLookup()
+    private static Dictionary<string, SpriteAtlas> BuildAtlasLookup()
     {
-        var lookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var lookup = new Dictionary<string, SpriteAtlas>(StringComparer.OrdinalIgnoreCase);
         foreach (var guid in AssetDatabase.FindAssets("t:SpriteAtlas"))
         {
             var atlasPath = AssetDatabase.GUIDToAssetPath(guid);
@@ -110,19 +117,19 @@ public class UiTexturesReporter : EditorWindow
                 if (packable is DefaultAsset)
                 {
                     foreach (var sg in AssetDatabase.FindAssets("t:Sprite", new[] { path }))
-                        lookup[AssetDatabase.GUIDToAssetPath(sg)] = atlas.name;
+                        lookup[AssetDatabase.GUIDToAssetPath(sg)] = atlas;
                 }
-                else lookup[path] = atlas.name;
+                else lookup[path] = atlas;
             }
         }
         return lookup;
     }
 
-    private static (bool inAtlas, string atlasName) GetAtlasInfo(Sprite sprite, Dictionary<string, string> atlasLookup)
+    private static (bool inAtlas, SpriteAtlas atlasObj) GetAtlasInfo(Sprite sprite, Dictionary<string, SpriteAtlas> atlasLookup)
     {
         var path = AssetDatabase.GetAssetPath(sprite);
-        if (!string.IsNullOrEmpty(path) && atlasLookup.TryGetValue(path, out var atlasName))
-            return (true, atlasName);
+        if (!string.IsNullOrEmpty(path) && atlasLookup.TryGetValue(path, out var atlas))
+            return (true, atlas);
         return (false, null);
     }
 
@@ -242,6 +249,37 @@ public class UiTexturesReporter : EditorWindow
                 GUILayout.Label($"{selCount} selected", GUILayout.ExpandWidth(false));
                 if (GUILayout.Button($"Create Atlas '{(ctx.Target != null ? ctx.Target.name : "")}' @ {FindCommonFolder(ctx)}", GUILayout.ExpandWidth(false)))
                     CreateAtlas(ctx);
+
+                if (GUILayout.Button("Add to Atlas ▾", GUILayout.ExpandWidth(false)))
+                {
+                    var capturedCtx = ctx;
+                    var menu = new GenericMenu();
+                    foreach (var guid in AssetDatabase.FindAssets("t:SpriteAtlas"))
+                    {
+                        var atlasPath = AssetDatabase.GUIDToAssetPath(guid);
+                        var atlasAsset = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(atlasPath);
+                        if (atlasAsset == null) continue;
+                        menu.AddItem(new GUIContent(atlasAsset.name), false, () =>
+                        {
+                            var toAdd = capturedCtx.Entries
+                                .Where(e => e.IsSelected)
+                                .Select(e => AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(AssetDatabase.GetAssetPath(e.Texture)))
+                                .Where(o => o != null)
+                                .ToArray();
+                            if (toAdd.Length == 0) return;
+                            atlasAsset.Add(toAdd);
+                            EditorUtility.SetDirty(atlasAsset);
+                            AssetDatabase.SaveAssets();
+                            foreach (var e in capturedCtx.Entries.Where(e => e.IsSelected))
+                            {
+                                e.InAtlas = true;
+                                e.AtlasObject = atlasAsset;
+                            }
+                        });
+                    }
+                    if (menu.GetItemCount() == 0) menu.AddDisabledItem(new GUIContent("No SpriteAtlas found"));
+                    menu.ShowAsContext();
+                }
                 EditorGUILayout.EndHorizontal();
             }
             for (int i = 0; i < ctx.Entries.Count; i++)
@@ -280,7 +318,10 @@ public class UiTexturesReporter : EditorWindow
         if (Event.current.type == EventType.Repaint) EditorGUI.DrawRect(rect, _ctxHeaderBg);
         var selCount = ctx.SelectedCount;
         var selLabel = selCount > 0 ? $"  [{selCount} selected]" : "";
+        var prevFoldout = ctx.Foldout;
         ctx.Foldout = EditorGUILayout.Foldout(ctx.Foldout, $"{ctx.Entries.Count} tex  |  {FormatMemory(ComputeTotalMemory(ctx.Entries))}  |  {ctx.Target.NameOrNull()}{selLabel}");
+        if (ctx.Foldout != prevFoldout && Event.current.shift)
+            foreach (var c in _contexts) c.Foldout = ctx.Foldout;
         GuiLabelWidthManager.New(50);
         var newTarget = (GameObject)EditorGUILayout.ObjectField(GUIContent.none, ctx.Target, typeof(GameObject), true);
         GuiLabelWidthManager.Revert();
@@ -341,8 +382,9 @@ public class UiTexturesReporter : EditorWindow
     public class TextureEntry
     {
         public readonly Texture Texture;
-        public readonly bool InAtlas;
-        public readonly string AtlasName;
+        public bool InAtlas;
+        public SpriteAtlas AtlasObject;
+        public string AtlasName => AtlasObject != null ? AtlasObject.name : string.Empty;
         public readonly long MemorySize;
         public readonly bool IsPowerOfTwo;
         public readonly bool HasMipMap;
@@ -353,11 +395,11 @@ public class UiTexturesReporter : EditorWindow
 
         public int UsageCount => _users.Count;
 
-        public TextureEntry(Texture texture, bool inAtlas, string atlasName)
+        public TextureEntry(Texture texture, bool inAtlas, SpriteAtlas atlasObj)
         {
             Texture = texture;
             InAtlas = inAtlas;
-            AtlasName = atlasName ?? string.Empty;
+            AtlasObject = atlasObj;
             MemorySize = UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(texture);
             IsPowerOfTwo = IsPot(texture.width) && IsPot(texture.height);
             HasMipMap = texture.mipmapCount > 1;
@@ -400,7 +442,33 @@ public class UiTexturesReporter : EditorWindow
             GuiColorManager.New(InAtlas ? Color.green : Color.red);
             EditorGUILayout.LabelField(InAtlas ? "Yes" : "No", atlasW);
             GuiColorManager.Revert(3);
-            EditorGUILayout.LabelField(AtlasName, atlasNameW);
+            if( AtlasObject != null )
+                EditorGUILayout.ObjectField(AtlasObject, typeof(SpriteAtlas), false, atlasNameW);
+            else if (GUILayout.Button("+ Atlas ▾", atlasNameW))
+            {
+                var capturedTex = Texture;
+                var menu = new GenericMenu();
+                foreach (var guid in AssetDatabase.FindAssets("t:SpriteAtlas"))
+                {
+                    var atlasPath = AssetDatabase.GUIDToAssetPath(guid);
+                    var atlasAsset = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(atlasPath);
+                    if (atlasAsset == null) continue;
+                    var capturedEntry = this;
+                    menu.AddItem(new GUIContent(atlasAsset.name), false, () =>
+                    {
+                        var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(AssetDatabase.GetAssetPath(capturedTex));
+                        if (obj == null) return;
+                        atlasAsset.Add(new[] { obj });
+                        EditorUtility.SetDirty(atlasAsset);
+                        AssetDatabase.SaveAssets();
+                        capturedEntry.InAtlas = true;
+                        capturedEntry.AtlasObject = atlasAsset;
+                    });
+                }
+                if (menu.GetItemCount() == 0) menu.AddDisabledItem(new GUIContent("No SpriteAtlas found"));
+                menu.ShowAsContext();
+            }
+            
             if (GUILayout.Button(UsageCount.ToString(), usageW))
                 Selection.objects = _users.ToArray<UnityEngine.Object>();
             var isExclusive = SharedContextCount <= 1;
@@ -439,6 +507,7 @@ public class UiTexturesReporter : EditorWindow
         AssetDatabase.SaveAssets();
         EditorGUIUtility.PingObject(atlas);
     }
+
 
     private static string FindCommonFolder( ContextData ctx )
     {

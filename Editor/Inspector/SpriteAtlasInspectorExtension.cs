@@ -51,8 +51,24 @@ public class SpriteAtlasInspectorExtension : Editor
 
 public static class SpriteAtlasTools
 {
+    private enum MatchLevel { None, Some, All }
+    private static readonly Color _colorAll  = new(0.4f, 0.9f, 0.4f);
+    private static readonly Color _colorSome = new(0.9f, 0.85f, 0.4f);
+
+    private struct Stats
+    {
+        public int Total;
+        public int FullRect, Tight;
+        public int FilterPoint, FilterBilinear, FilterTrilinear;
+        public int SRGB, Linear;
+        public int CompNone, CompNormal, CompHQ, CompLQ;
+    }
+
     public static void DrawTools(UnityEngine.Object[] packables)
     {
+        var paths = CollectTexturePaths(packables);
+        var s = CollectStats(paths);
+
         EditorGUILayout.Space();
         EditorGUILayout.BeginVertical(GUI.skin.box);
 
@@ -64,32 +80,71 @@ public static class SpriteAtlasTools
 
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("Sprite Mesh Type:", GUILayout.Width(110));
-        if (GUILayout.Button("FullRect")) SetMeshType(packables, SpriteMeshType.FullRect);
-        if (GUILayout.Button("Tight"))    SetMeshType(packables, SpriteMeshType.Tight);
+        if (ColoredButton("FullRect", Level(s.FullRect, s.Total))) SetMeshType(packables, SpriteMeshType.FullRect);
+        if (ColoredButton("Tight",    Level(s.Tight,    s.Total))) SetMeshType(packables, SpriteMeshType.Tight);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("Filter Mode:", GUILayout.Width(70));
-        if (GUILayout.Button("Point"))     SetFilterMode(packables, FilterMode.Point);
-        if (GUILayout.Button("Bilinear"))  SetFilterMode(packables, FilterMode.Bilinear);
-        if (GUILayout.Button("Trilinear")) SetFilterMode(packables, FilterMode.Trilinear);
+        if (ColoredButton("Point",     Level(s.FilterPoint,     s.Total))) SetFilterMode(packables, FilterMode.Point);
+        if (ColoredButton("Bilinear",  Level(s.FilterBilinear,  s.Total))) SetFilterMode(packables, FilterMode.Bilinear);
+        if (ColoredButton("Trilinear", Level(s.FilterTrilinear, s.Total))) SetFilterMode(packables, FilterMode.Trilinear);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("sRGB:", GUILayout.Width(35));
-        if (GUILayout.Button("Enable sRGB"))  SetSRGB(packables, true);
-        if (GUILayout.Button("Disable sRGB")) SetSRGB(packables, false);
+        if (ColoredButton("Enable sRGB",  Level(s.SRGB,   s.Total))) SetSRGB(packables, true);
+        if (ColoredButton("Disable sRGB", Level(s.Linear, s.Total))) SetSRGB(packables, false);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("Compression:", GUILayout.Width(85));
-        if (GUILayout.Button("None"))   SetCompression(packables, TextureImporterCompression.Uncompressed);
-        if (GUILayout.Button("Normal")) SetCompression(packables, TextureImporterCompression.Compressed);
-        if (GUILayout.Button("HQ"))     SetCompression(packables, TextureImporterCompression.CompressedHQ);
-        if (GUILayout.Button("LQ"))     SetCompression(packables, TextureImporterCompression.CompressedLQ);
+        if (ColoredButton("None",   Level(s.CompNone,   s.Total))) SetCompression(packables, TextureImporterCompression.Uncompressed);
+        if (ColoredButton("Normal", Level(s.CompNormal, s.Total))) SetCompression(packables, TextureImporterCompression.Compressed);
+        if (ColoredButton("HQ",     Level(s.CompHQ,     s.Total))) SetCompression(packables, TextureImporterCompression.CompressedHQ);
+        if (ColoredButton("LQ",     Level(s.CompLQ,     s.Total))) SetCompression(packables, TextureImporterCompression.CompressedLQ);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.EndVertical();
+    }
+
+    private static MatchLevel Level(int count, int total) =>
+        count == 0 ? MatchLevel.None : count >= total ? MatchLevel.All : MatchLevel.Some;
+
+    private static bool ColoredButton(string label, MatchLevel level)
+    {
+        if (level != MatchLevel.None) GuiColorManager.New(level == MatchLevel.All ? _colorAll : _colorSome);
+        var pressed = GUILayout.Button(label);
+        if (level != MatchLevel.None) GuiColorManager.Revert();
+        return pressed;
+    }
+
+    private static Stats CollectStats(HashSet<string> paths)
+    {
+        var s = new Stats { Total = paths.Count };
+        foreach (var path in paths)
+        {
+            var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer == null) { s.Total--; continue; }
+            var settings = new TextureImporterSettings();
+            importer.ReadTextureSettings(settings);
+            if (settings.spriteMeshType == SpriteMeshType.FullRect) s.FullRect++; else s.Tight++;
+            switch (importer.filterMode)
+            {
+                case FilterMode.Point:     s.FilterPoint++;     break;
+                case FilterMode.Bilinear:  s.FilterBilinear++;  break;
+                case FilterMode.Trilinear: s.FilterTrilinear++; break;
+            }
+            if (importer.sRGBTexture) s.SRGB++; else s.Linear++;
+            switch (importer.textureCompression)
+            {
+                case TextureImporterCompression.Uncompressed: s.CompNone++;   break;
+                case TextureImporterCompression.Compressed:   s.CompNormal++; break;
+                case TextureImporterCompression.CompressedHQ: s.CompHQ++;     break;
+                case TextureImporterCompression.CompressedLQ: s.CompLQ++;     break;
+            }
+        }
+        return s;
     }
 
     private static HashSet<string> CollectTexturePaths(UnityEngine.Object[] packables)
