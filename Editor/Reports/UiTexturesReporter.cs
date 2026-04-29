@@ -176,8 +176,21 @@ public class UiTexturesReporter : EditorWindow
 
         EditorGUILayout.EndHorizontal();
 
+        var seenTextures = new HashSet<Texture>();
+        var countedAtlases = new HashSet<string>();
+        long globalMem = 0;
+        foreach (var ctx in _contexts)
+            foreach (var e in ctx.Entries)
+                if (seenTextures.Add(e.Texture))
+                {
+                    if (e.InAtlas)
+                    { if (!string.IsNullOrEmpty(e.AtlasName) && countedAtlases.Add(e.AtlasName) && _atlasMemories.TryGetValue(e.AtlasName, out var am)) globalMem += am; }
+                    else globalMem += e.MemorySize;
+                }
+        var globalLabel = _contexts.Count > 0 ? $"Targets ({_targets.Count})  |  {seenTextures.Count} unique tex  |  {FormatMemory(globalMem)}" : $"Targets ({_targets.Count})";
+
         EditorGUILayout.BeginHorizontal();
-        _showTargets = EditorGUILayout.BeginFoldoutHeaderGroup( _showTargets, $"Targets ({_targets.Count})" );
+        _showTargets = EditorGUILayout.BeginFoldoutHeaderGroup( _showTargets, globalLabel );
         if (_targets.Count > 0 && GUILayout.Button(EditorGUIUtility.IconContent("TreeEditor.Trash"), GUILayout.Width(28), GUILayout.Height(18)))
         {
             _targets.Clear();
