@@ -517,41 +517,5 @@ namespace Rogue.REditor
         }
 
         #endregion
-
-        #region JSON Manipulation
-
-        public static void CopyValue<T>(this SerializedProperty property, T value, string reason) where T : class
-        {
-            var json = JsonConvert.SerializeObject(value, GetSerializationSettings());
-            SetValueFromJson(property, json, typeof(T), reason);
-        }
-
-        public static string GetJson(this SerializedProperty property)
-        {
-            var value = property.GetValue();
-            return JsonConvert.SerializeObject(value, GetSerializationSettings());
-        }
-
-        public static void SetValueFromJson(this SerializedProperty property, string json, Type valueType, string reason)
-        {
-            PrepareForChanges(property, reason);
-
-            var deserializedObject = JsonConvert.DeserializeObject(json, valueType, GetSerializationSettings());
-            SetValue(property, deserializedObject);
-
-            ApplyDirectChanges(property);
-        }
-
-        private static JsonSerializerSettings GetSerializationSettings() => new()
-        {
-            NullValueHandling = NullValueHandling.Ignore,
-            MissingMemberHandling = MissingMemberHandling.Ignore,
-            TypeNameHandling = TypeNameHandling.Auto,
-
-            ContractResolver = new SerializeFieldContractResolver(),
-            Converters = { new UnityObjectConverter() },
-        };
-
-        #endregion
     }
 }

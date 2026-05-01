@@ -3,6 +3,7 @@ using System.Globalization;
 using Skyx.RuntimeEditor;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Rogue.REditor
 {
@@ -148,7 +149,7 @@ namespace Rogue.REditor
             else if (targetType == typeof(float))
                 DrawFloatField(rect, property, drawInfo.hint);
 
-            else if (targetType.IsClass)
+            else if (targetType.IsClass && targetType.InheritsOrImplements(typeof(Object)))
                 DrawObjectField(rect, property, targetType, drawInfo.hint, true);
 
             else if (targetType == typeof(bool))

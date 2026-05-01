@@ -253,10 +253,18 @@ namespace Rogue.REditor
 
         #region Rect Draw
 
+        public void Draw(ref Rect rect, string propertyName, ERectSlideDir slideDir = ERectSlideDir.Vertical, bool isBacking = false)
+        {
+            var property = Get(propertyName, isBacking);
+            SkyxGUI.Draw(rect, property, true);
+            rect.Slide(slideDir);
+        }
+
         public void Draw(ref Rect rect, string propertyName, bool slideRect = true, bool isBacking = false, bool drawLabel = false)
         {
             var property = Get(propertyName, isBacking);
             SkyxGUI.Draw(rect, property, drawLabel);
+
             if (slideRect) rect.SlideSame();
         }
 
