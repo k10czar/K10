@@ -9,6 +9,8 @@ namespace Rogue.REditor
     {
         #region Serialized Properties
 
+        public static Action<SerializedProperty> onPasted;
+
         public static void CopyValue<T>(this SerializedProperty property, T value, string reason) where T : class
         {
             var json = JsonConvert.SerializeObject(value, GetSerializationSettings());
@@ -25,10 +27,18 @@ namespace Rogue.REditor
         {
             property.PrepareForChanges(reason);
 
-            var deserializedObject = JsonConvert.DeserializeObject(json, valueType, GetSerializationSettings());
-            property.SetValue(deserializedObject);
+            var currentValue = property.GetValue();
+            var prePasteData = currentValue is IPasteSerializationFix prePasteFix ? prePasteFix.GetPrePasteData() : null;
 
+            var deserializedObject = JsonConvert.DeserializeObject(json, valueType, GetSerializationSettings());
+
+            if (deserializedObject is IPasteSerializationFix pasteFix)
+                pasteFix.FixSerializationPostPaste(prePasteData);
+
+            property.SetValue(deserializedObject);
             property.ApplyDirectChanges();
+
+            onPasted?.Invoke(property);
         }
 
         #endregion
@@ -46,7 +56,12 @@ namespace Rogue.REditor
 
         public static void SetValueFromJson(object target, string json)
         {
+            var prePasteData = target is IPasteSerializationFix prePasteFix ? prePasteFix.GetPrePasteData() : null;
+
             JsonConvert.PopulateObject(json, target, GetSerializationSettings());
+
+            if (target is IPasteSerializationFix pasteFix)
+                pasteFix.FixSerializationPostPaste(prePasteData);
         }
 
         #endregion
@@ -60,5 +75,11 @@ namespace Rogue.REditor
             ContractResolver = new SerializeFieldContractResolver(),
             Converters = { new UnityObjectConverter() },
         };
+    }
+
+    public interface IPasteSerializationFix
+    {
+        public object GetPrePasteData() => null;
+        public void FixSerializationPostPaste(object prePasteData);
     }
 }
