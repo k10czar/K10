@@ -37,7 +37,6 @@ public class TextureAssetInspectorExtension : Editor
         var t = Type.GetType("UnityEditor.TextureImporterInspector, UnityEditor");
         if (t != null) _nativeEditor = CreateEditor(targets, t);
         _textureSearched = false;
-        if (_atlasCache == null) BuildAtlasCache();
     }
 
     private void OnDisable()
@@ -108,6 +107,7 @@ public class TextureAssetInspectorExtension : Editor
 
     private void FindReferencingAtlases()
     {
+        if (_atlasCache == null) BuildAtlasCache();
         _textureSearched = true;
         _referencingAtlases = new List<UnityEngine.Object>();
         var texPath = ((AssetImporter)target).assetPath;
@@ -120,24 +120,19 @@ public class TextureAssetInspectorExtension : Editor
         EditorGUILayout.Space();
         EditorGUILayout.BeginVertical(GUI.skin.box);
         var count = _referencingAtlases?.Count ?? 0;
-        EditorGUILayout.LabelField($"🎨 SpriteAtlas References ({count})", EditorStyles.boldLabel);
         EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button("🔎 Atlas"))
+        var refreshIcon = EditorGUIUtility.IconContent("Refresh");
+        refreshIcon.text = " ▾";
+        if (GUILayout.Button(refreshIcon, GUILayout.ExpandWidth(false)))
         {
-            BuildAtlasCache();
-            Repaint();
+            var menu = new GenericMenu();
+            menu.AddItem(new GUIContent("Full Refresh"), false, () => { BuildAtlasCache(); FindReferencingAtlases(); Repaint(); });
+            menu.AddItem(new GUIContent("Recache Project Atlas"), false, () => { BuildAtlasCache(); Repaint(); });
+            menu.AddItem(new GUIContent("Find only Texture References"), false, () => { FindReferencingAtlases(); Repaint(); });
+            menu.ShowAsContext();
         }
-        if (GUILayout.Button("🕵️ Refs"))
-        {
-            FindReferencingAtlases();
-            Repaint();
-        }
-        if (GUILayout.Button("🌀 Full Refresh"))
-        {
-            BuildAtlasCache();
-            FindReferencingAtlases();
-            Repaint();
-        }
+        if( count == 0 ) EditorGUILayout.LabelField($"This texture is NOT used by any Atlas", EditorStyles.boldLabel);
+        else EditorGUILayout.LabelField($"🖼 in {count} SpriteAtlas", EditorStyles.boldLabel);
         EditorGUILayout.EndHorizontal();
         if (count > 0)
         {

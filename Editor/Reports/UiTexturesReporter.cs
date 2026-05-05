@@ -227,7 +227,6 @@ public class UiTexturesReporter : EditorWindow
         var memW = GUILayout.Width(90);
         var potW = GUILayout.Width(40);
         var mipW = GUILayout.Width(40);
-        var atlasW = GUILayout.Width(45);
         var atlasNameW = GUILayout.Width(150);
         var enabledW = GUILayout.Width(75);
         var usageW = GUILayout.Width(45);
@@ -242,8 +241,7 @@ public class UiTexturesReporter : EditorWindow
         if (GUILayout.Button("Memory", memW)) ToggleSortAll(MEM_SIZE_SORT);
         if (GUILayout.Button("PoT", potW)) ToggleSortAll(POT_SORT);
         if (GUILayout.Button("Mip", mipW)) ToggleSortAll(MIP_SORT);
-        if (GUILayout.Button("Atlas", atlasW)) ToggleSortAll(ATLAS_SORT);
-        if (GUILayout.Button("Atlas Name", atlasNameW)) ToggleSortAll(ATLAS_NAME_SORT);
+        if (GUILayout.Button("Atlas", atlasNameW)) ToggleSortAll(ATLAS_NAME_SORT);
         if (GUILayout.Button("Enabled", enabledW)) ToggleSortAll(ENABLED_SORT);
         if (GUILayout.Button("Uses", usageW)) ToggleSortAll(USAGE_SORT);
         var showShared = _contexts.Count > 1;
@@ -261,7 +259,7 @@ public class UiTexturesReporter : EditorWindow
             DrawSelectionHeader(ctx);
             for (int i = 0; i < ctx.Entries.Count; i++)
             {
-                var (clicked, shift) = ctx.Entries[i].Draw(i, numW, texW, dimW, memW, potW, mipW, atlasW, atlasNameW, enabledW, usageW, sharedW, folderW, showShared);
+                var (clicked, shift) = ctx.Entries[i].Draw(i, numW, texW, dimW, memW, potW, mipW, atlasNameW, enabledW, usageW, sharedW, folderW, showShared);
                 if (!clicked) continue;
                 if (shift && ctx.LastSelectedIndex >= 0)
                 {
@@ -476,7 +474,7 @@ public class UiTexturesReporter : EditorWindow
         private static readonly Color _rowSomeEnabled = new Color(0.8f, 0.5f, 0, 0.05f);
         private static readonly Color _rowAllEnabled = new Color(0.1f, 0.8f, 0, 0.05f);
 
-        public (bool clicked, bool shift) Draw(int index, GUILayoutOption numW, GUILayoutOption texW, GUILayoutOption dimW, GUILayoutOption memW, GUILayoutOption potW, GUILayoutOption mipW, GUILayoutOption atlasW, GUILayoutOption atlasNameW, GUILayoutOption enabledW, GUILayoutOption usageW, GUILayoutOption sharedW, GUILayoutOption folderW, bool showShared)
+        public (bool clicked, bool shift) Draw(int index, GUILayoutOption numW, GUILayoutOption texW, GUILayoutOption dimW, GUILayoutOption memW, GUILayoutOption potW, GUILayoutOption mipW, GUILayoutOption atlasNameW, GUILayoutOption enabledW, GUILayoutOption usageW, GUILayoutOption sharedW, GUILayoutOption folderW, bool showShared)
         {
             bool clicked = false;
             bool shift = false;
@@ -509,9 +507,7 @@ public class UiTexturesReporter : EditorWindow
             EditorGUILayout.LabelField(IsPowerOfTwo ? "Yes" : "No", potW);
             GuiColorManager.New(HasMipMap ? Color.yellow : Color.white);
             EditorGUILayout.LabelField(HasMipMap ? "Yes" : "No", mipW);
-            GuiColorManager.New(InAtlas ? Color.green : Color.red);
-            EditorGUILayout.LabelField(InAtlas ? "Yes" : "No", atlasW);
-            GuiColorManager.Revert(3);
+            GuiColorManager.Revert(2);
             if( AtlasObject != null )
                 EditorGUILayout.ObjectField(AtlasObject, typeof(SpriteAtlas), false, atlasNameW);
             else if (GUILayout.Button("+ Atlas ▾", atlasNameW))
