@@ -70,7 +70,7 @@ public class UiTexturesReporter : EditorWindow
                 entry = new TextureEntry(tex, inAtlas, atlasObj);
                 texDict[tex] = entry;
             }
-            entry.AddUser(img.gameObject);
+            entry.AddUser(img);
         }
         foreach (var raw in ctx.Target.GetComponentsInChildren<RawImage>(_includeDisabled))
         {
@@ -80,7 +80,7 @@ public class UiTexturesReporter : EditorWindow
                 entry = new TextureEntry(raw.texture, false, null);
                 texDict[raw.texture] = entry;
             }
-            entry.AddUser(raw.gameObject);
+            entry.AddUser(raw);
         }
         ctx.Entries.AddRange(texDict.Values);
         if (_lastComparison != null) ctx.Entries.Sort(_lastComparison);
@@ -229,6 +229,7 @@ public class UiTexturesReporter : EditorWindow
         var mipW = GUILayout.Width(40);
         var atlasW = GUILayout.Width(45);
         var atlasNameW = GUILayout.Width(150);
+        var enabledW = GUILayout.Width(75);
         var usageW = GUILayout.Width(45);
         var sharedW = GUILayout.Width(60);
         var folderW = GUILayout.Width(250);
@@ -243,8 +244,10 @@ public class UiTexturesReporter : EditorWindow
         if (GUILayout.Button("Mip", mipW)) ToggleSortAll(MIP_SORT);
         if (GUILayout.Button("Atlas", atlasW)) ToggleSortAll(ATLAS_SORT);
         if (GUILayout.Button("Atlas Name", atlasNameW)) ToggleSortAll(ATLAS_NAME_SORT);
+        if (GUILayout.Button("Enabled", enabledW)) ToggleSortAll(ENABLED_SORT);
         if (GUILayout.Button("Uses", usageW)) ToggleSortAll(USAGE_SORT);
-        if (GUILayout.Button("Shared", sharedW)) ToggleSortAll(SHARED_SORT);
+        var showShared = _contexts.Count > 1;
+        if (showShared && GUILayout.Button("Shared", sharedW)) ToggleSortAll(SHARED_SORT);
         if (GUILayout.Button("Folder")) ToggleSortAll(FOLDER_SORT);
         EditorGUILayout.EndHorizontal();
 
@@ -255,53 +258,10 @@ public class UiTexturesReporter : EditorWindow
             var ctx = _contexts[ci];
             if (DrawContextHeader(ctx)) { removeIndex = ci; break; }
             if (!ctx.Foldout) continue;
-            var selCount = ctx.SelectedCount;
-            if (selCount > 0)
-            {
-                EditorGUILayout.BeginHorizontal();
-                GUILayout.Label($"{selCount} selected", GUILayout.ExpandWidth(false));
-
-                if (GUILayout.Button($"Create Atlas V2 '{(ctx.Target != null ? ctx.Target.name : "")}' @ {FindCommonFolder(ctx)}", GUILayout.ExpandWidth(false)))
-                    CreateAtlasV2(ctx);
-
-                if (GUILayout.Button($"Create Atlas V1", GUILayout.ExpandWidth(false)))
-                    CreateAtlas(ctx);
-
-                if (GUILayout.Button("Add to Atlas ▾", GUILayout.ExpandWidth(false)))
-                {
-                    var capturedCtx = ctx;
-                    var menu = new GenericMenu();
-                    foreach (var guid in AssetDatabase.FindAssets("t:SpriteAtlas"))
-                    {
-                        var atlasPath = AssetDatabase.GUIDToAssetPath(guid);
-                        var atlasAsset = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(atlasPath);
-                        if (atlasAsset == null) continue;
-                        menu.AddItem(new GUIContent(atlasAsset.name), false, () =>
-                        {
-                            var toAdd = capturedCtx.Entries
-                                .Where(e => e.IsSelected)
-                                .Select(e => AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(AssetDatabase.GetAssetPath(e.Texture)))
-                                .Where(o => o != null)
-                                .ToArray();
-                            if (toAdd.Length == 0) return;
-                            atlasAsset.Add(toAdd);
-                            EditorUtility.SetDirty(atlasAsset);
-                            AssetDatabase.SaveAssets();
-                            foreach (var e in capturedCtx.Entries.Where(e => e.IsSelected))
-                            {
-                                e.InAtlas = true;
-                                e.AtlasObject = atlasAsset;
-                            }
-                        });
-                    }
-                    if (menu.GetItemCount() == 0) menu.AddDisabledItem(new GUIContent("No SpriteAtlas found"));
-                    menu.ShowAsContext();
-                }
-                EditorGUILayout.EndHorizontal();
-            }
+            DrawSelectionHeader(ctx);
             for (int i = 0; i < ctx.Entries.Count; i++)
             {
-                var (clicked, shift) = ctx.Entries[i].Draw(i, numW, texW, dimW, memW, potW, mipW, atlasW, atlasNameW, usageW, sharedW, folderW);
+                var (clicked, shift) = ctx.Entries[i].Draw(i, numW, texW, dimW, memW, potW, mipW, atlasW, atlasNameW, enabledW, usageW, sharedW, folderW, showShared);
                 if (!clicked) continue;
                 if (shift && ctx.LastSelectedIndex >= 0)
                 {
@@ -325,6 +285,55 @@ public class UiTexturesReporter : EditorWindow
             RebuildSharedCounts();
             Repaint();
         }
+    }
+
+    private void DrawSelectionHeader(ContextData ctx)
+    {
+        var selCount = ctx.SelectedCount;
+        if (selCount == 0) return;
+
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("✕", GUILayout.Width(18), GUILayout.Height(16)))
+            foreach (var e in ctx.Entries) e.IsSelected = false;
+        GUILayout.Label($"{selCount} selected", EditorStyles.miniLabel, GUILayout.ExpandWidth(false));
+
+        if (GUILayout.Button($"Create Atlas V2 '{(ctx.Target != null ? ctx.Target.name : "")}' @ {FindCommonFolder(ctx)}", GUILayout.ExpandWidth(false)))
+            CreateAtlasV2(ctx);
+
+        if (GUILayout.Button("Create Atlas V1", GUILayout.ExpandWidth(false)))
+            CreateAtlas(ctx);
+
+        if (GUILayout.Button("Add to Atlas ▾", GUILayout.ExpandWidth(false)))
+        {
+            var capturedCtx = ctx;
+            var menu = new GenericMenu();
+            foreach (var guid in AssetDatabase.FindAssets("t:SpriteAtlas"))
+            {
+                var atlasPath = AssetDatabase.GUIDToAssetPath(guid);
+                var atlasAsset = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(atlasPath);
+                if (atlasAsset == null) continue;
+                menu.AddItem(new GUIContent(atlasAsset.name), false, () =>
+                {
+                    var toAdd = capturedCtx.Entries
+                        .Where(e => e.IsSelected)
+                        .Select(e => AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(AssetDatabase.GetAssetPath(e.Texture)))
+                        .Where(o => o != null)
+                        .ToArray();
+                    if (toAdd.Length == 0) return;
+                    atlasAsset.Add(toAdd);
+                    EditorUtility.SetDirty(atlasAsset);
+                    AssetDatabase.SaveAssets();
+                    foreach (var e in capturedCtx.Entries.Where(e => e.IsSelected))
+                    {
+                        e.InAtlas = true;
+                        e.AtlasObject = atlasAsset;
+                    }
+                });
+            }
+            if (menu.GetItemCount() == 0) menu.AddDisabledItem(new GUIContent("No SpriteAtlas found"));
+            menu.ShowAsContext();
+        }
+        EditorGUILayout.EndHorizontal();
     }
 
     private static readonly Color _ctxHeaderBg = new Color(0.2f, 0.3f, 0.5f, 0.4f);
@@ -407,13 +416,15 @@ public class UiTexturesReporter : EditorWindow
         public readonly bool HasMipMap;
         public int SharedContextCount = 1;
         public bool IsSelected;
+        public int EnabledCount;
         public readonly string FolderPath;
-        private readonly List<GameObject> _users = new List<GameObject>();
+        private readonly List<MonoBehaviour> _users = new List<MonoBehaviour>();
 
         public int UsageCount => _users.Count;
 
         public TextureEntry(Texture texture, bool inAtlas, SpriteAtlas atlasObj)
         {
+            EnabledCount = 0;
             Texture = texture;
             InAtlas = inAtlas;
             AtlasObject = atlasObj;
@@ -426,22 +437,38 @@ public class UiTexturesReporter : EditorWindow
 
         private static bool IsPot(int v) => v > 0 && (v & (v - 1)) == 0;
 
-        public void AddUser(GameObject go) => _users.Add(go);
+        public void AddUser(MonoBehaviour mb)
+        {
+            _users.Add(mb);
+            if( mb.isActiveAndEnabled ) EnabledCount++;
+        }
 
         private static readonly Color _rowEven = new Color(0f, 0f, 0f, 0f);
         private static readonly Color _rowOdd = new Color(0f, 0f, 0f, 0.08f);
         private static readonly Color _rowSelected = new Color(0.2f, 0.5f, 0.9f, 0.25f);
+        private static readonly Color _rowNoneEnabled = new Color(0f, 0f, 0f, 0.25f);
+        private static readonly Color _rowSomeEnabled = new Color(0.8f, 0.5f, 0, 0.05f);
+        private static readonly Color _rowAllEnabled = new Color(0.1f, 0.8f, 0, 0.05f);
 
-        public (bool clicked, bool shift) Draw(int index, GUILayoutOption numW, GUILayoutOption texW, GUILayoutOption dimW, GUILayoutOption memW, GUILayoutOption potW, GUILayoutOption mipW, GUILayoutOption atlasW, GUILayoutOption atlasNameW, GUILayoutOption usageW, GUILayoutOption sharedW, GUILayoutOption folderW)
+        public (bool clicked, bool shift) Draw(int index, GUILayoutOption numW, GUILayoutOption texW, GUILayoutOption dimW, GUILayoutOption memW, GUILayoutOption potW, GUILayoutOption mipW, GUILayoutOption atlasW, GUILayoutOption atlasNameW, GUILayoutOption enabledW, GUILayoutOption usageW, GUILayoutOption sharedW, GUILayoutOption folderW, bool showShared)
         {
             bool clicked = false;
             bool shift = false;
+
+            var enabledCount = EnabledCount;
+            var total = UsageCount;
+
+            var allEnabled = enabledCount == total;
+            var noneEnabled = enabledCount == 0;
             
             var rect = EditorGUILayout.BeginHorizontal();
             if (Event.current.type == EventType.Repaint)
             {
                 EditorGUI.DrawRect(rect, index % 2 == 0 ? _rowEven : _rowOdd);
                 if (IsSelected) EditorGUI.DrawRect(rect, _rowSelected);
+                else if( noneEnabled ) EditorGUI.DrawRect(rect, _rowNoneEnabled);
+                else if( !allEnabled ) EditorGUI.DrawRect(rect, _rowSomeEnabled);
+                else EditorGUI.DrawRect(rect, _rowAllEnabled);
             }
             if (GUILayout.Button((index + 1).ToString(), K10GuiStyles.smallRightStyle, numW))
             {
@@ -486,12 +513,29 @@ public class UiTexturesReporter : EditorWindow
                 menu.ShowAsContext();
             }
             
-            if (GUILayout.Button(UsageCount.ToString(), usageW))
-                Selection.objects = _users.ToArray<UnityEngine.Object>();
-            var isExclusive = SharedContextCount <= 1;
-            GuiColorManager.New(isExclusive ? Color.green : Color.yellow);
-            EditorGUILayout.LabelField(isExclusive ? "Exclusive" : $"{SharedContextCount} ctx", sharedW);
+            if (allEnabled) GuiColorManager.New(Color.green);
+            else if (!noneEnabled) GuiColorManager.New(Color.yellow);
+            else GuiColorManager.New(Color.gray);
+
+            if( noneEnabled ) EditorGUI.BeginDisabledGroup(noneEnabled);
+            
+            var enabledLabel = allEnabled ? "All" : noneEnabled ? "None"
+                : $"{enabledCount} ({Mathf.RoundToInt(100f * enabledCount / total)}%)";
+            if (GUILayout.Button(enabledLabel, enabledW))
+                Selection.objects = _users.Where(mb => mb != null && mb.isActiveAndEnabled).Select(mb => mb.gameObject).ToArray<UnityEngine.Object>();
+            
+            if( noneEnabled ) EditorGUI.EndDisabledGroup();
+
             GuiColorManager.Revert();
+            if (GUILayout.Button(total.ToString(), usageW))
+                Selection.objects = _users.Select(mb => mb.gameObject).ToArray<UnityEngine.Object>();
+            if (showShared)
+            {
+                var isExclusive = SharedContextCount <= 1;
+                GuiColorManager.New(isExclusive ? Color.green : Color.yellow);
+                EditorGUILayout.LabelField(isExclusive ? "Exclusive" : $"{SharedContextCount} ctx", sharedW);
+                GuiColorManager.Revert();
+            }
             EditorGUILayout.LabelField(FolderPath);
             EditorGUILayout.EndHorizontal();
             return (clicked, shift);
@@ -588,6 +632,11 @@ public class UiTexturesReporter : EditorWindow
     private static readonly Comparison<TextureEntry> MIP_SORT = (a, b) => a.HasMipMap.CompareTo(b.HasMipMap);
     private static readonly Comparison<TextureEntry> ATLAS_SORT = (a, b) => a.InAtlas.CompareTo(b.InAtlas);
     private static readonly Comparison<TextureEntry> ATLAS_NAME_SORT = (a, b) => string.Compare(a.AtlasName, b.AtlasName, StringComparison.Ordinal);
+    private static readonly Comparison<TextureEntry> ENABLED_SORT = (a, b) => {
+        float ra = a.UsageCount > 0 ? (float)a.EnabledCount / a.UsageCount : 0f;
+        float rb = b.UsageCount > 0 ? (float)b.EnabledCount / b.UsageCount : 0f;
+        return ra.CompareTo(rb);
+    };
     private static readonly Comparison<TextureEntry> USAGE_SORT = (a, b) => a.UsageCount.CompareTo(b.UsageCount);
     private static readonly Comparison<TextureEntry> SHARED_SORT = (a, b) => a.SharedContextCount.CompareTo(b.SharedContextCount);
     private static readonly Comparison<TextureEntry> FOLDER_SORT = (a, b) => string.Compare(a.FolderPath, b.FolderPath, StringComparison.Ordinal);

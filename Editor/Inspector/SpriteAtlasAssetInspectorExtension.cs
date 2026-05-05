@@ -1,8 +1,10 @@
 using UnityEditor;
 using UnityEditor.U2D;
 using UnityEngine;
+using UnityEngine.U2D;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 [CustomEditor(typeof(SpriteAtlasImporter))]
@@ -10,6 +12,12 @@ using System.Text.RegularExpressions;
 public class SpriteAtlasAssetInspectorExtension : Editor
 {
     private Editor _nativeEditor;
+    private int _previewPage;
+    private bool _previewFoldout = true;
+
+    private static readonly MethodInfo _getPreviewTextures =
+        typeof(SpriteAtlasExtensions).GetMethod("GetPreviewTextures",
+            BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
 
     private void OnEnable()
     {
@@ -29,6 +37,57 @@ public class SpriteAtlasAssetInspectorExtension : Editor
         SpriteAtlasTools.DrawTools(packables);
         if (_nativeEditor != null) _nativeEditor.OnInspectorGUI();
         else DrawDefaultInspector();
+        DrawAtlasPreview(assetPath);
+    }
+
+    private void DrawAtlasPreview(string assetPath)
+    {
+        var atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(assetPath);
+        if (atlas == null) return;
+        if (_getPreviewTextures == null) return;
+        if (_getPreviewTextures.Invoke(null, new object[] { atlas }) is not Texture2D[] pages || pages.Length == 0) return;
+
+        _previewPage = Mathf.Clamp(_previewPage, 0, pages.Length - 1);
+        var tex = pages[_previewPage];
+
+        EditorGUILayout.Space();
+        EditorGUILayout.BeginVertical(GUI.skin.box);
+
+        EditorGUILayout.BeginHorizontal();
+        _previewFoldout = EditorGUILayout.Foldout(_previewFoldout, "Generated Textures", true, EditorStyles.foldoutHeader);
+        GUILayout.FlexibleSpace();
+        if (tex != null)
+            EditorGUILayout.LabelField($"{tex.width} x {tex.height}", GUILayout.Width(90));
+        EditorGUILayout.LabelField($"{pages.Length} page{(pages.Length != 1 ? "s" : "")}", GUILayout.Width(60));
+        EditorGUILayout.EndHorizontal();
+
+        if (_previewFoldout)
+        {
+            if (pages.Length > 1)
+            {
+                EditorGUILayout.BeginHorizontal();
+                EditorGUI.BeginDisabledGroup(_previewPage == 0);
+                if (GUILayout.Button("< Prev")) _previewPage--;
+                EditorGUI.EndDisabledGroup();
+                GUILayout.Label($"Page {_previewPage + 1} / {pages.Length}", EditorStyles.centeredGreyMiniLabel);
+                EditorGUI.BeginDisabledGroup(_previewPage == pages.Length - 1);
+                if (GUILayout.Button("Next >")) _previewPage++;
+                EditorGUI.EndDisabledGroup();
+                EditorGUILayout.EndHorizontal();
+            }
+
+            if (tex != null)
+            {
+                float maxSize = EditorGUIUtility.currentViewWidth - 30f;
+                float aspect = (float)tex.height / tex.width;
+                float w = Mathf.Min(maxSize, tex.width);
+                float h = w * aspect;
+                var rect = GUILayoutUtility.GetRect(w, h, GUILayout.ExpandWidth(false));
+                EditorGUI.DrawTextureTransparent(rect, tex);
+            }
+        }
+
+        EditorGUILayout.EndVertical();
     }
 
     // SpriteAtlasImporter is the importer for .spriteatlasv2 files.
