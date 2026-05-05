@@ -295,13 +295,8 @@ public class UiTexturesReporter : EditorWindow
         EditorGUILayout.BeginHorizontal();
         if (GUILayout.Button("✕", GUILayout.Width(18), GUILayout.Height(16)))
             foreach (var e in ctx.Entries) e.IsSelected = false;
-        GUILayout.Label($"{selCount} selected", EditorStyles.miniLabel, GUILayout.ExpandWidth(false));
-
-        if (GUILayout.Button($"Create Atlas V2 '{(ctx.Target != null ? ctx.Target.name : "")}' @ {FindCommonFolder(ctx)}", GUILayout.ExpandWidth(false)))
-            CreateAtlasV2(ctx);
-
-        if (GUILayout.Button("Create Atlas V1", GUILayout.ExpandWidth(false)))
-            CreateAtlas(ctx);
+        var selectedSize = ctx.Entries.Where(e => e.IsSelected).Sum(e => e.MemorySize);
+        GUILayout.Label($"{selCount} selected\n{FormatMemory(selectedSize)}", EditorStyles.miniLabel, GUILayout.ExpandWidth(false));
 
         if (GUILayout.Button("Add to Atlas ▾", GUILayout.ExpandWidth(false)))
         {
@@ -333,10 +328,41 @@ public class UiTexturesReporter : EditorWindow
             if (menu.GetItemCount() == 0) menu.AddDisabledItem(new GUIContent("No SpriteAtlas found"));
             menu.ShowAsContext();
         }
+
+        EditorGUILayout.BeginHorizontal(GUI.skin.box);
+        GUILayout.Label("Create Atlas:", MiniLabelMiddle, GUILayout.ExpandWidth(false));
+        var savedFolder = _createAtlasFolder.Get;
+        var isCustom = !string.IsNullOrEmpty(savedFolder);
+        var effectiveFolder = isCustom ? savedFolder : FindCommonFolder(ctx);
+        var displayFolder = effectiveFolder.Length > 90 ? "…" + effectiveFolder[^87..] : effectiveFolder;
+        if (GUILayout.Button($"@ {displayFolder} ▾", GUILayout.ExpandWidth(false)))
+        {
+            var menu = new GenericMenu();
+            menu.AddItem(new GUIContent("Common Parent Folder"), !isCustom, () => _createAtlasFolder.Set = string.Empty);
+            menu.AddItem(new GUIContent("Custom Folder…"), isCustom, () =>
+            {
+                var folder = EditorUtility.OpenFolderPanel("Select Atlas Save Folder", isCustom ? savedFolder : "Assets", "");
+                if (string.IsNullOrEmpty(folder)) return;
+                if (folder.StartsWith(Application.dataPath))
+                    folder = "Assets" + folder[Application.dataPath.Length..];
+                _createAtlasFolder.Set = folder;
+            });
+            menu.ShowAsContext();
+        }
+        GuiColorManager.New(new Color(.55f, 1f, 0.55f));
+        if (GUILayout.Button("🌟V2", GUILayout.ExpandWidth(false))) CreateAtlasV2(ctx, effectiveFolder);
+        GuiColorManager.New(new Color(1f, .8f, 0.55f));
+        if (GUILayout.Button("V1", GUILayout.ExpandWidth(false))) CreateAtlas(ctx, effectiveFolder);
+        GuiColorManager.Revert(2);
+        EditorGUILayout.EndHorizontal();
+
         EditorGUILayout.EndHorizontal();
     }
 
     private static readonly Color _ctxHeaderBg = new Color(0.2f, 0.3f, 0.5f, 0.4f);
+    private static readonly EditorPersistentString _createAtlasFolder = EditorPersistentString.At( "UiTexturesReporter/CreateAtlasFolder" );
+    private static GUIStyle _miniLabelMiddle;
+    private static GUIStyle MiniLabelMiddle => _miniLabelMiddle ??= new GUIStyle(EditorStyles.miniLabel) { alignment = TextAnchor.MiddleCenter };
 
     private bool DrawContextHeader(ContextData ctx)
     {
@@ -542,7 +568,7 @@ public class UiTexturesReporter : EditorWindow
         }
     }
 
-    private static void CreateAtlas(ContextData ctx)
+    private static void CreateAtlas(ContextData ctx, string folder = null)
     {
         var selected = ctx.Entries.Where(e => e.IsSelected).ToList();
         if (selected.Count == 0) return;
@@ -553,7 +579,7 @@ public class UiTexturesReporter : EditorWindow
             .Distinct()
             .ToList();
 
-        var folder = FindCommonFolder(assetPaths);
+        folder ??= FindCommonFolder(assetPaths);
         var atlasName = ctx.Target != null ? ctx.Target.name : "NewAtlas";
         var atlasPath = AssetDatabase.GenerateUniqueAssetPath($"{folder}/{atlasName}.spriteatlas");
 
@@ -564,12 +590,17 @@ public class UiTexturesReporter : EditorWindow
             .ToArray();
         atlas.Add(packables);
 
+        var ps = atlas.GetPackingSettings();
+        ps.enableRotation = false;
+        ps.enableTightPacking = false;
+        atlas.SetPackingSettings(ps);
+
         AssetDatabase.CreateAsset(atlas, atlasPath);
         AssetDatabase.SaveAssets();
         EditorGUIUtility.PingObject(atlas);
     }
 
-    private static void CreateAtlasV2(ContextData ctx)
+    private static void CreateAtlasV2(ContextData ctx, string folder = null)
     {
         var selected = ctx.Entries.Where(e => e.IsSelected).ToList();
         if (selected.Count == 0) return;
@@ -580,7 +611,7 @@ public class UiTexturesReporter : EditorWindow
             .Distinct()
             .ToList();
 
-        var folder = FindCommonFolder(assetPaths);
+        folder ??= FindCommonFolder(assetPaths);
         var atlasName = ctx.Target != null ? ctx.Target.name : "NewAtlas";
         var atlasPath = AssetDatabase.GenerateUniqueAssetPath($"{folder}/{atlasName}.spriteatlasv2");
 
@@ -593,6 +624,17 @@ public class UiTexturesReporter : EditorWindow
 
         AssetDatabase.CreateAsset(atlas, atlasPath);
         AssetDatabase.SaveAssets();
+
+        var importer = AssetImporter.GetAtPath(atlasPath) as SpriteAtlasImporter;
+        if (importer != null)
+        {
+            var ps = importer.packingSettings;
+            ps.enableRotation = false;
+            ps.enableTightPacking = false;
+            importer.packingSettings = ps;
+            importer.SaveAndReimport();
+        }
+
         EditorGUIUtility.PingObject(AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(atlasPath));
     }
 
