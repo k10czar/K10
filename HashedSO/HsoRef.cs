@@ -1,5 +1,15 @@
 ﻿using UnityEngine;
 
+public static class HsoRefExtension
+{
+	public static bool NeedMigration<T>( this HsoRef<T> hsoRef, T t ) where T : HashedScriptableObject
+	{
+		var need = hsoRef == null || ( t != null && hsoRef.ReferenceHashID != t.HashID ) || ( t == null && hsoRef.ReferenceHashID != -1 );
+		// if( need ) Debug.Log( $"Need Migration on {hsoRef.ToStringOrNull()} from {t.ToStringOrNull()}" );
+		return need;
+	}
+}
+
 [System.Serializable]
 public class HsoRef<T> : IReferenceOf<T> where T : HashedScriptableObject
 {

@@ -16,8 +16,9 @@ public class HsoRefDrawer : PropertyDrawer
 		if( hashIdProp == null ) { EditorGUI.LabelField( position, label, EditorGUIUtility.TrTextContent( "Missing _referenceHashID" ) ); return; }
 
 		var hsoRefType = UnwrapCollectionType( fieldInfo.FieldType );
-		var tType = hsoRefType.GetGenericArguments()[0];
-		var collection = GetCollection( hsoRefType );
+		var tType = GetElementType( hsoRefType );
+		if( tType == null ) { EditorGUI.LabelField( position, label, EditorGUIUtility.TrTextContent( $"Cannot resolve T from {hsoRefType.Name}" ) ); return; }
+		var collection = GetCollection( tType );
 		var currentId = hashIdProp.intValue;
 		var current = currentId != -1 ? collection?.GetElementBase( currentId ) as HashedScriptableObject : null;
 		var broken = currentId != -1 && current == null;
@@ -25,7 +26,8 @@ public class HsoRefDrawer : PropertyDrawer
 		if( broken ) GuiColorManager.New( _brokenColor );
 		EditorGUI.BeginProperty( position, label, property );
 		EditorGUI.BeginChangeCheck();
-		var newObj = EditorGUI.ObjectField( position, label, current, tType, false ) as HashedScriptableObject;
+		var displayLabel = new GUIContent( $"{label.text} ( {hashIdProp.intValue} )", label.image, label.tooltip );
+		var newObj = EditorGUI.ObjectField( position, displayLabel, current, tType, false ) as HashedScriptableObject;
 		if( EditorGUI.EndChangeCheck() )
 		{
 			var newId = newObj != null ? newObj.HashID : -1;
@@ -39,17 +41,33 @@ public class HsoRefDrawer : PropertyDrawer
 	private static Type UnwrapCollectionType( Type type )
 	{
 		if( type.IsArray ) return type.GetElementType();
-		if( type.IsGenericType ) return type.GetGenericArguments()[0];
+		if( type.IsGenericType && type.GetGenericTypeDefinition() == typeof( List<> ) )
+			return type.GetGenericArguments()[0];
 		return type;
 	}
 
-	private static IHashedSOCollection GetCollection( Type hsoRefType )
+	private static Type GetElementType( Type type )
 	{
-		if( _collectionCache.TryGetValue( hsoRefType, out var cached ) ) return cached;
-		var dummyField = hsoRefType.GetProperty( "DummyInstance", BindingFlags.Static | BindingFlags.NonPublic );
-		var dummy = dummyField?.GetValue( null ) as HashedScriptableObject;
-		var collection = dummy?.GetCollection();
-		if( collection != null ) _collectionCache[hsoRefType] = collection;
-		return collection;
+		while( type != null && type != typeof( object ) )
+		{
+			if( type.IsGenericType && type.GetGenericTypeDefinition() == typeof( HsoRef<> ) )
+				return type.GetGenericArguments()[0];
+			type = type.BaseType;
+		}
+		return null;
+	}
+
+	private static IHashedSOCollection GetCollection( Type tType )
+	{
+		if( _collectionCache.TryGetValue( tType, out var cached ) ) return cached;
+		foreach( var guid in AssetDatabase.FindAssets( $"t:{tType.Name}" ) )
+		{
+			var asset = AssetDatabase.LoadAssetAtPath( AssetDatabase.GUIDToAssetPath( guid ), tType ) as HashedScriptableObject;
+			var collection = asset?.GetCollection();
+			if( collection == null ) continue;
+			_collectionCache[tType] = collection;
+			return collection;
+		}
+		return null;
 	}
 }
