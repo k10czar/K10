@@ -168,7 +168,7 @@ namespace Rogue.REditor
             }
         }
 
-        private static void FixFooterHeight(this ReorderableList list)
+        public static void FixFooterHeight(this ReorderableList list)
         {
             if (!list.displayAdd && !list.displayRemove)
                 list.footerHeight = 0;

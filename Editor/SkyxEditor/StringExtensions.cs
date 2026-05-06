@@ -5,16 +5,16 @@ namespace Rogue.REditor
 {
     public static class StringExtensions
     {
-        public static string TryAppendInfo(this string baseString, object info, EColor color = EColor.Support, EElementSize size = EElementSize.Primary)
-            => info == null ? baseString : AppendInfo(baseString, info, color, size);
+        public static string TryAppendInfo(this string baseString, object info, EElementSize size = EElementSize.Primary, EColor color = EColor.Support)
+            => info == null ? baseString : AppendInfo(baseString, info, size, color);
 
-        public static string AppendInfo(this string baseString, object info, EColor color = EColor.Support, EElementSize size = EElementSize.Primary)
-            => AppendInfo(baseString, info.ToString(), color, size);
+        public static string AppendInfo(this string baseString, object info, EElementSize size = EElementSize.Primary, EColor color = EColor.Support)
+            => AppendInfo(baseString, info.ToString(), size, color);
 
-        public static string AppendInfo(this string baseString, Enum info, EColor color = EColor.Support, EElementSize size = EElementSize.Primary)
-            => AppendInfo(baseString, info.Pretty(), color, size);
+        public static string AppendInfo(this string baseString, Enum info, EElementSize size = EElementSize.Primary, EColor color = EColor.Support)
+            => AppendInfo(baseString, info.Pretty(), size, color);
 
-        public static string AppendInfo(this string baseString, string infoString, EColor color = EColor.Support, EElementSize size = EElementSize.Primary)
+        public static string AppendInfo(this string baseString, string infoString, EElementSize size = EElementSize.Primary, EColor color = EColor.Support)
         {
             var targetColor = color.Get();
 

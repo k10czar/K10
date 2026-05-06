@@ -153,7 +153,7 @@ namespace Rogue.REditor
             var hasAppend = !string.IsNullOrEmpty(append);
 
             var title = hasName
-                ? hasAppend ? name.AppendInfo(append, size: scopedAtt.elementSize) : name
+                ? hasAppend ? name.AppendInfo(append, scopedAtt.elementSize) : name
                 : hasAppend ? append : "Missing Name!";
 
             var info = new SkopeInfo(scopedAtt.scopeType, property, name, title, description, color, scopedAtt.elementSize, scopedAtt.indent, scopedAtt.isDisabled);
