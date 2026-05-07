@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Unity.Plastic.Newtonsoft.Json;
+using Unity.Plastic.Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -48,7 +51,6 @@ namespace Rogue.REditor
         public static void CopyValues<T>(T source, T target) where T : class
         {
             var json = GetJson(source);
-            Debug.Log(json);
             SetValueFromJson(target, json);
         }
 
@@ -62,6 +64,32 @@ namespace Rogue.REditor
 
             if (target is IPasteSerializationFix pasteFix)
                 pasteFix.FixSerializationPostPaste(prePasteData);
+        }
+
+        public static object GetFromJson(string json)
+        {
+            var obj = JsonConvert.DeserializeObject(json, GetSerializationSettings());
+
+            if (obj is IPasteSerializationFix pasteFix)
+                pasteFix.FixSerializationPostPaste(null);
+
+            return obj;
+        }
+
+        public static T GetFromJson<T>(string json) where T : class
+            => GetFromJson(json) as T;
+
+        public static List<object> GetObjectListFromJson(string json)
+        {
+            var settings = GetSerializationSettings();
+
+            var jArray = JsonConvert.DeserializeObject(json, settings) as JArray;
+            if (jArray == null) return null;
+
+            var serializer = JsonSerializer.Create(settings);
+            var entries = jArray.Select(token => token.ToObject<object>(serializer)).ToList();
+
+            return entries;
         }
 
         #endregion
