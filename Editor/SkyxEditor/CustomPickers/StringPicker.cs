@@ -7,14 +7,16 @@ namespace Rogue.REditor
 {
     public static class StringPicker
     {
-        public static void Draw(Rect position, string[] validValues, SerializedProperty property)
+        public static void Draw(Rect position, string[] validValues, SerializedProperty property, Action callback)
         {
             Draw(position, validValues, property.stringValue, OnChanged);
 
             void OnChanged(string newValue)
             {
                 property.stringValue = newValue;
-                property.Apply();
+
+                if (callback != null) callback();
+                else property.Apply();
             }
         }
 
