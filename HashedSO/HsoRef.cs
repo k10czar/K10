@@ -20,6 +20,8 @@ public class HsoRef<T> : IReferenceOf<T> where T : HashedScriptableObject
 	private static T DummyInstance => _dummyInstance != null ? _dummyInstance : ( _dummyInstance = ScriptableObject.CreateInstance<T>() );
 
 	public int ReferenceHashID => _referenceHashID;
+	
+	public HsoRef() :this(-1) {}
 
 	public HsoRef( T reference )
 	{
