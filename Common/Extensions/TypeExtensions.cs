@@ -32,15 +32,15 @@ public static class TypeExtensions
 
         while (type != typeof(object)) {
             if (baseType == type || HasAnyInterfaces(type, baseType)) return true;
-                
+
             type = ResolveGenericType(type.BaseType);
             if (type == null) return false;
         }
-            
+
         return false;
     }
 
-        
+
     static Type ResolveGenericType(Type type) {
         if (type is not { IsGenericType: true }) return type;
 
@@ -51,12 +51,20 @@ public static class TypeExtensions
     static bool HasAnyInterfaces(Type type, Type intefaceType) {
         return type.GetInterfaces().Any(i => ResolveGenericType(i) == intefaceType);
     }
-    
+
 	public static string TypeNameOrNullColored( this object obj, string nullString = ConstsK10.NULL_STRING ) => TypeNameOrNullColored( obj, Colors.Console.TypeName, Colors.Console.Negation, nullString );
 	public static string TypeNameOrNullColored( this object obj, Color color, string nullString = ConstsK10.NULL_STRING ) => TypeNameOrNullColored( obj, color, Colors.Console.Negation, nullString );
     public static string TypeNameOrNullColored( this object obj, Color color, Color nullColor, string nullString = ConstsK10.NULL_STRING )
     {
         if( obj == null ) return nullString.Colorfy( nullColor );
         return obj.GetType().Name.Colorfy( color );
+    }
+
+    public static Type GetTopmostBaseType(this Type type)
+    {
+        while (type.BaseType != null && type.BaseType != typeof(object))
+            type = type.BaseType;
+
+        return type;
     }
 }
