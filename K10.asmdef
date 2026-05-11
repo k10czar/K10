@@ -4,7 +4,8 @@
     "references": [
         "GUID:d8b63aba1907145bea998dd612889d6b",
         "GUID:c3394204debbc8d43b7332e4edf990e3",
-        "GUID:5ee1933b8c8d484ea7cb408c3d679e50"
+        "GUID:5ee1933b8c8d484ea7cb408c3d679e50",
+        "GUID:776d03a35f1b52c4a9aed9f56d7b4229"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -23,6 +24,11 @@
             "name": "com.unity.mathematics",
             "expression": "0",
             "define": "TRY_USE_NEW_MATH"
+        },
+        {
+            "name": "com.dbrizov.naughtyattributes",
+            "expression": "0",
+            "define": "NAUGHTY_ATTRIBUTES"
         }
     ],
     "noEngineReferences": false
