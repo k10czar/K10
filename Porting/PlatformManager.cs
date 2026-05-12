@@ -45,12 +45,30 @@ namespace K10.Platforms
         PC          = 1 << 0,
         Console     = 1 << 1,
         Mobile      = 1 << 2,
+        COUNT
     }
 
     public static class PlatformManager
     {
+#if UNITY_EDITOR
+        public static EPlatform DebugPlatform = EPlatform.COUNT;
+        public static EPlatformType DebugPlatformType = EPlatformType.COUNT;
+        public static EPlatformFamily DebugPlatformFamily = EPlatformFamily.COUNT;
+#endif
+
+        public static bool IsOnMobile => GetPlatformType() == EPlatformType.Mobile;
+        public static bool IsOnConsole => GetPlatformType() == EPlatformType.Console;
+        public static bool IsOnPC => GetPlatformType() == EPlatformType.PC;
+        public static bool IsOnXboxEnvironment => GetPlatformFamily() == EPlatformFamily.Xbox;
+        public static bool IsOnPlayStation => GetPlatformFamily() == EPlatformFamily.PlayStation;
+
         public static EPlatform GetPlatform()
         {
+#if UNITY_EDITOR
+            if (DebugPlatform != EPlatform.COUNT)
+                return DebugPlatform;
+#endif
+
 #if UNITY_SWITCH
             return EPlatform.Switch;
 #elif UNITY_PS4
@@ -75,26 +93,31 @@ namespace K10.Platforms
         public static EPlatform GetPlatformFamilyMask()
         {
 #if UNITY_SWITCH
-            return SwitchPlatformFilter();
+            return SwitchPlatformFilter;
 #elif UNITY_PS4 || UNITY_PS5
-            return PlaystationPlatformFilter();
+            return PlaystationPlatformFilter;
 #elif UNITY_GAMECORE || MICROSOFT_GDK_SUPPORT
-            return XboxPlatformFilter();
+            return XboxPlatformFilter;
 #elif UNITY_ANDROID || UNITY_IOS
-            return MobilePlatformFilter();
+            return MobilePlatformFilter;
 #else
-            return SteamPlatformFilter();
+            return SteamPlatformFilter;
 #endif
         }
 
-        public static EPlatform XboxPlatformFilter() => EPlatform.XboxPC | EPlatform.XboxOne | EPlatform.XboxSeries;
-        public static EPlatform SteamPlatformFilter() => EPlatform.Steam;
-        public static EPlatform PlaystationPlatformFilter() => EPlatform.PS4 | EPlatform.PS5;
-        public static EPlatform SwitchPlatformFilter() => EPlatform.Switch;
-        public static EPlatform MobilePlatformFilter() => EPlatform.Android | EPlatform.IOS;
+        public static EPlatform XboxPlatformFilter => EPlatform.XboxPC | EPlatform.XboxOne | EPlatform.XboxSeries;
+        public static EPlatform SteamPlatformFilter => EPlatform.Steam;
+        public static EPlatform PlaystationPlatformFilter => EPlatform.PS4 | EPlatform.PS5;
+        public static EPlatform SwitchPlatformFilter => EPlatform.Switch;
+        public static EPlatform MobilePlatformFilter => EPlatform.Android | EPlatform.IOS;
         
         public static EPlatformFamily GetPlatformFamily()
         {
+#if UNITY_EDITOR
+            if (DebugPlatformFamily != EPlatformFamily.COUNT)
+                return DebugPlatformFamily;
+#endif
+
 #if UNITY_SWITCH
             return EPlatformFamily.Switch;
 #elif UNITY_PS4 || UNITY_PS5
@@ -110,6 +133,12 @@ namespace K10.Platforms
 
         public static EPlatformType GetPlatformType()
         {
+#if UNITY_EDITOR
+            if (DebugPlatformType != EPlatformType.COUNT)
+                return DebugPlatformType;
+#endif
+
+        
 #if UNITY_PS5 || UNITY_PS4 || UNITY_XBOXONE || UNITY_GAMECORE || UNITY_SWITCH
             return EPlatformType.Console;
 #elif UNITY_ANDROID || UNITY_IOS
@@ -221,10 +250,10 @@ namespace K10.Platforms
 
         // public static int CountFamiliesIn( EPlatform filter )
         // {
-        //     var steam = ( filter & SteamPlatformFilter() ) != 0;
-        //     var xbox = ( filter &  XboxPlatformFilter() ) != 0;
-        //     var ps = ( filter &  PlaystationPlatformFilter() ) != 0;
-        //     var nintendo = ( filter &  SwitchPlatformFilter() ) != 0;
+        //     var steam = ( filter & SteamPlatformFilter ) != 0;
+        //     var xbox = ( filter &  XboxPlatformFilter ) != 0;
+        //     var ps = ( filter &  PlaystationPlatformFilter ) != 0;
+        //     var nintendo = ( filter &  SwitchPlatformFilter ) != 0;
             
         //     var families = 0;
         //     if( steam ) families++;
