@@ -64,7 +64,7 @@ public static class HardwareTier
     static void DebugTier()
     {
 #if CODE_METRICS
-        var logMesage = $"Hardware Tier: {_cachedTier}: {PerformanceRules.Log()}";
+        var logMesage = $"Hardware Tier: {_cachedTier}";
 #if DEBUG_NOTIFY
         NotificationConsole.Notify( logMesage );
 #else
