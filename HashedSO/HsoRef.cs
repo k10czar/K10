@@ -13,13 +13,22 @@ public static class HsoRefExtension
 [System.Serializable]
 public class HsoRef<T> : IReferenceOf<T> where T : HashedScriptableObject
 {
-	[SerializeField] int _referenceHashID;
+	[SerializeField] int _referenceHashID = -1;
 	[System.NonSerialized] T _reference;
 
 	private static T _dummyInstance;
 	private static T DummyInstance => _dummyInstance != null ? _dummyInstance : ( _dummyInstance = ScriptableObject.CreateInstance<T>() );
 
 	public int ReferenceHashID => _referenceHashID;
+
+	public T Reference
+	{
+		get
+		{
+			if( _reference == null && _referenceHashID >= 0 ) _reference = (T)GetCollection().GetElementBase( _referenceHashID );
+			return _reference;
+		}
+	}
 	
 	public HsoRef() :this(-1) {}
 
@@ -51,15 +60,6 @@ public class HsoRef<T> : IReferenceOf<T> where T : HashedScriptableObject
 	{
 		// if( _dummyInstance == null ) _dummyInstance = new T();
 		return DummyInstance.GetCollection();
-	}
-
-	public T Reference
-	{
-		get
-		{
-			if( _reference == null && _referenceHashID >= 0 ) _reference = (T)GetCollection().GetElementBase( _referenceHashID );
-			return _reference;
-		}
 	}
 
 	public override string ToString() => $"[{_referenceHashID}]=>{_reference.ToStringOrNull()}({_reference.NameOrNull()})";
