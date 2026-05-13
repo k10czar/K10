@@ -1,5 +1,7 @@
 #if ADDRESSABLES
+#if CODE_METRICS
 #define DEBUG_NOTIFY
+#endif
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -23,7 +25,7 @@ public class LazyAddressableRef<T> where T : Object
 		_handle = Addressables.LoadAssetAsync<T>( _address );
 		_handle.Completed += OnCompleted;
 #if DEBUG_NOTIFY
-		NotificationConsole.Notify( $"LazyAddressableRef Loading: {_address}" );
+		NotificationConsole.Notify( $"<color=#0080FF>LazyAddressableRef</color> Loading: \"{_address}\"" );
 #endif //DEBUG_NOTIFY
 	}
 
@@ -34,10 +36,27 @@ public class LazyAddressableRef<T> where T : Object
 			if( _loaded ) return _asset;
 			
 			if( !_isLoading ) Preload();
+			
+#if CODE_METRICS
+			var sw = StopwatchPool.RequestStarted();
+#endif // CODE_METRICS
+
 			_handle.WaitForCompletion();
+
+#if CODE_METRICS
+			var message = $"😴<color=#0080FF>LazyAddressableRef</color> \"{_address}\" Request miss took: <color=#DAA520>{ValueToString(sw.ReturnToPoolAndGetElapsedMs())}ms</color>";
+#if DEBUG_NOTIFY
+			NotificationConsole.Notify( message );
+#else
+			Debug.Log( message );
+#endif //DEBUG_NOTIFY
+#endif //CODE_METRICS
+
 			return _asset;
 		}
 	}
+	
+    static string ValueToString(double ms) => ms > 10 ? $"{ms:N0}" : ( ms > 1 ? $"{ms:N1}" : ( ms > .1 ? $"{ms:N2}" : ( ms > .01 ? $"{ms:N3}" : $"{ms:N6}" ) ) );
 
 	public void Release()
 	{
