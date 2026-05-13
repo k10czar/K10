@@ -7,7 +7,7 @@ using UnityEngine;
 public abstract class MonoBehaviorAutomation<T> : BaseOperation where T : MonoBehaviour
 {        
     public virtual bool WaitForActiveAndEnable => true;
-    public virtual float WaitTimeForSearch => .1f;
+    public virtual float WaitTimeForSearch => 1f;
     public virtual FindObjectsInactive SearchParam => FindObjectsInactive.Include;
     
     public abstract IEnumerator ExecuteOnMonoBehaviour( T t, bool log = false );

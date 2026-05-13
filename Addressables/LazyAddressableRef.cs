@@ -41,8 +41,12 @@ public class LazyAddressableRef<T> where T : Object
 			var sw = StopwatchPool.RequestStarted();
 #endif // CODE_METRICS
 
-			_handle.WaitForCompletion();
-
+			if( _handle.IsValid() ) 
+			{
+				if( _handle.Status == AsyncOperationStatus.None ) _handle.WaitForCompletion();
+				_asset = _handle.Result;
+				_loaded = true;
+			}
 #if CODE_METRICS
 			var message = $"😴<color=#0080FF>LazyAddressableRef</color> \"{_address}\" Request miss took: <color=#DAA520>{ValueToString(sw.ReturnToPoolAndGetElapsedMs())}ms</color>";
 #if DEBUG_NOTIFY
