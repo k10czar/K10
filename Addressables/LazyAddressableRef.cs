@@ -1,4 +1,5 @@
 #if ADDRESSABLES
+#define DEBUG_NOTIFY
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -21,6 +22,9 @@ public class LazyAddressableRef<T> where T : Object
 		_isLoading = true;
 		_handle = Addressables.LoadAssetAsync<T>( _address );
 		_handle.Completed += OnCompleted;
+#if DEBUG_NOTIFY
+		NotificationConsole.Notify( $"LazyAddressableRef Loading: {_address}" );
+#endif //DEBUG_NOTIFY
 	}
 
 	public T Asset
@@ -29,12 +33,7 @@ public class LazyAddressableRef<T> where T : Object
 		{
 			if( _loaded ) return _asset;
 			
-			if( !_isLoading )
-			{
-				_isLoading = true;
-				_handle = Addressables.LoadAssetAsync<T>( _address );
-				_handle.Completed += OnCompleted;
-			}
+			if( !_isLoading ) Preload();
 			_handle.WaitForCompletion();
 			return _asset;
 		}
