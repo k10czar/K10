@@ -33,7 +33,7 @@ public class GdkSocialService : IService
     {
         _gdkService = gdkService;
         InitializeSocial();
-        RegisterToActivityRelatedEvents();
+        // RegisterToActivityRelatedEvents();
 
         _updateCoroutine = ExternalCoroutine.StartCoroutine(UpdateCoroutine());
         _gdkService.OnStartedCleanUp.Register(CleanUp);
@@ -118,30 +118,30 @@ public class GdkSocialService : IService
 #endregion
 
 #region Activity
-    private void RegisterToActivityRelatedEvents()
-    {
-        Party.OnChangeMembers.RegisterValidated(_validator, UpdateActivity);
-        PhotonDirector.connectionRoutineFinished.RegisterValidated(_validator, OnOnlineStateChanged);
-    }
+    // private void RegisterToActivityRelatedEvents()
+    // {
+    //     Party.OnChangeMembers.RegisterValidated(_validator, UpdateActivity);
+    //     PhotonDirector.connectionRoutineFinished.RegisterValidated(_validator, OnOnlineStateChanged);
+    // }
     
-    private void OnOnlineStateChanged()
-    {
-        if (PhotonDirector.OfflineMode)
-            SetActivityUnjoinable();
-        else
-            UpdateActivity();
-    }
+    // private void OnOnlineStateChanged()
+    // {
+    //     if (PhotonDirector.OfflineMode)
+    //         SetActivityUnjoinable();
+    //     else
+    //         UpdateActivity();
+    // }
 
     public void SetActivityUnjoinable() => UpdateActivity(false);
     private void UpdateActivity() => UpdateActivity(true);
     private void UpdateActivity(bool joinable)
     {
         var info  = new XblMultiplayerActivityInfo();
-        info.ConnectionString = Party.ID.CurrentReference;
-        info.GroupId = Party.ID.CurrentReference;
+        info.ConnectionString = "TODO PARTY ID"; // TODO // Party.ID.CurrentReference;
+        info.GroupId = "TODO: PARTY"; // TODO // Party.ID.CurrentReference;
         info.JoinRestriction = XblMultiplayerActivityJoinRestriction.InviteOnly;
-        info.CurrentPlayers = (uint)Mathf.Max(Party.MembersCount, 1);
-        info.MaxPlayers = joinable ? (uint)Constants.Networking.PARTY_MAX_MEMBERS_COUNT : info.CurrentPlayers;
+        // info.CurrentPlayers = (uint)Mathf.Max(Party.MembersCount, 1);
+        // info.MaxPlayers = joinable ? (uint)Constants.Networking.PARTY_MAX_MEMBERS_COUNT : info.CurrentPlayers;
 
         // Debug.Log($">>> Setting activity: {info.GroupId} ({info.CurrentPlayers}/{info.MaxPlayers})");
 

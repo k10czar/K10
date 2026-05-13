@@ -91,7 +91,8 @@ public static class NameValidation
             for (int i = 0; i < candidates.Count; i++)
             {
                 string candidate = candidates[i];
-                candidatesWithoutPrefixs[i] = PartyMember.GetNicknameWithoutPlatformCode(candidate);
+                // candidatesWithoutPrefixs[i] = PartyMember.GetNicknameWithoutPlatformCode(candidate); // TODO:
+                candidatesWithoutPrefixs[i] = candidate;
 #if LOG
                 SBD.AppendLine($"   {i}){candidate}");
 #endif
@@ -142,7 +143,8 @@ public static class NameValidation
                                 Debug.Log($"*<color=yellow>VVVSSS</color> String {candidate} is not adequate to Xbox services because it is {reason}");
                             }
 
-                            string obfuscatedName = NameChecker.ObfuscateName(candidate);
+                            // string obfuscatedName = NameChecker.ObfuscateName(candidate);
+                            string obfuscatedName = candidate; // TODO:
                             _validatedNames[candidate] = obfuscatedName;
                             _pendingValidations.Remove(candidate);
                             future.ForceComplete(obfuscatedName);

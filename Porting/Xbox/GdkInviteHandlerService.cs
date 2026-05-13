@@ -23,12 +23,13 @@ public class GdkInviteHandlerService : IService
     public GdkInviteHandlerService(GdkGameRuntimeService gdkService)
     {
         _gdkService = gdkService;
-        _gdkService.OnReceivedInvite.RegisterValidated(_validator, HandleUriInvite);
+        _gdkService.OnReceivedInvite.RegisterValidated(_validator, HandleUriInvite_ZOMBIE);
     }
 
-    public void SendInvite(ulong userId, string partyId)
+    public void SendInvite_ZOMBIE(ulong userId, string partyId)
     {
-        CommunicationPermissionCache.CallIfPermitted(userId, () => ReallySendInvite(new ulong[] { userId }, partyId));
+        // TODO: Circular dependency
+        // CommunicationPermissionCache.CallIfPermitted(userId, () => ReallySendInvite(new ulong[] { userId }, partyId));
     }
 
     private void ReallySendInvite(ulong[] userIds, string partyId)
@@ -40,7 +41,7 @@ public class GdkInviteHandlerService : IService
         );
     }
 
-    private void HandleUriInvite(string inviteUri)
+    private void HandleUriInvite_ZOMBIE(string inviteUri)
     {
         Debug.Log($"Invite URI: {inviteUri}");
 
@@ -84,26 +85,27 @@ public class GdkInviteHandlerService : IService
         connectionStringEnd = (connectionStringEnd == -1) ? inviteUri.Length : connectionStringEnd;
         string connectionString = inviteUri[connectionStringStart..connectionStringEnd];
 
-        HandleInvite(UInt64.Parse(userInParty), UInt64.Parse(invitedUser), connectionString);
+        HandleInvite_ZOMBIE(UInt64.Parse(userInParty), UInt64.Parse(invitedUser), connectionString);
     }
 
-    private void HandleInvite(ulong userWhoInvited, ulong invitedUser, string partyId)
+    private void HandleInvite_ZOMBIE(ulong userWhoInvited, ulong invitedUser, string partyId)
     {
         if (invitedUser != UserData.userXUID)
             return;
 
-        BlockList.CallIfNotBlocked( userWhoInvited, () =>
-        {
-            // CommunicationPermissionCache.CallIfPermitted( userWhoInvited,
-	            // () => {
-                    _gdkService.AskForPrivilege(_gdkService.UserData.Privileges.Multiplayer, () => {
-                        // TODO: Actually accept event
-	                    // var inviteHandler = ServiceLocator.Get<InviteHandlerService>();
-	                    // inviteHandler.AcceptInvite(partyId);
-	                }, null);
-	            // }
-	        // );
-        } );
+        // TODO: Move to a common invite handler to avoid circular dependency. Maybe just invoke an event and let the common invite handler hanlde it
+        // BlockList.CallIfNotBlocked( userWhoInvited, () =>
+        // {
+        //     // CommunicationPermissionCache.CallIfPermitted( userWhoInvited,
+	    //         // () => {
+        //             _gdkService.AskForPrivilege(_gdkService.UserData.Privileges.Multiplayer, () => {
+        //                 // TODO: Actually accept event
+	    //                 // var inviteHandler = ServiceLocator.Get<InviteHandlerService>();
+	    //                 // inviteHandler.AcceptInvite(partyId);
+	    //             }, null);
+	    //         // }
+	    //     // );
+        // } );
     }
 }
 #endif
