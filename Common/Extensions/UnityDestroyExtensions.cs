@@ -28,6 +28,22 @@ namespace K10.Common
                 Object.Destroy(component.gameObject);
         }
 
+        public static void SafeDestroyChildren(this Transform transform)
+        {
+            if (transform.IsNullOrDestroyed()) return;
+
+            for (var i = transform.childCount - 1; i >= 0; i--)
+            {
+                var child = transform.GetChild(i).gameObject;
+
+                #if UNITY_EDITOR
+                if (!Application.isPlaying) Object.DestroyImmediate(child);
+                else
+                #endif
+                    Object.Destroy(child);
+            }
+        }
+
         public static void DestroyAll(this IEnumerable<GameObject> gameObjects)
         {
             if (gameObjects == null) return;
