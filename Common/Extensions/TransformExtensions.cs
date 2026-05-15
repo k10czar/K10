@@ -60,5 +60,29 @@ namespace K10.Common
 
 			return result;
 		}
+
+		public static string GetRelativePath(this Transform current, Transform targetParent)
+		{
+			var builder = StringBuilderPool.RequestEmpty();
+			var found = false;
+
+			while (current != null)
+			{
+				if (builder.Length > 0)
+					builder.Insert(0, '/');
+
+				builder.Insert(0, current.name);
+				current = current.parent;
+
+				if (current != targetParent) continue;
+
+				found = true;
+				break;
+			}
+
+			if (!found) Debug.LogError($"GetRelativePath did not find {targetParent.name} in it's path");
+
+			return builder.ReturnToPoolAndCast();
+		}
 	}
 }
