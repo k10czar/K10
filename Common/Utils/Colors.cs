@@ -156,7 +156,7 @@ public static class Colors
     private const System.Reflection.BindingFlags FLAGS = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
 
 #if UNITY_EDITOR
-    [UnityEditor.MenuItem("K10/Colors/Log")]
+    // [UnityEditor.MenuItem("K10/Colors/Log")]
     private static void EDITOR_Log()
     {
         var binding = FLAGS;
@@ -165,7 +165,7 @@ public static class Colors
         typeof(Console).ReflectListMembers<Color>( EDITOR_DebugColor, binding, 0 ).Log();
     }
 
-    [UnityEditor.MenuItem("K10/Colors/Log Codes")]
+    // [UnityEditor.MenuItem("K10/Colors/Log Codes")]
     private static void EDITOR_LogCodes()
     {
         var binding = FLAGS;
@@ -174,8 +174,19 @@ public static class Colors
         typeof(Console).ReflectListMembers<Color>( EDITOR_DebugColorCode, binding, 0 ).Log();
     }
 
-    private static string EDITOR_DebugColor( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{name} █  </color>";
-    private static string EDITOR_DebugColorCode( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>#{ColorUtility.ToHtmlStringRGB(color)}█</color>";
+    // [UnityEditor.MenuItem("K10/Colors/Log Both")]
+    [UnityEditor.MenuItem("K10/Log Colors")]
+    private static void EDITOR_LogBoth()
+    {
+        var binding = FLAGS;
+        typeof(Color).ReflectListMembers<Color>( EDITOR_DebugColorBooth, binding, 0 ).Log();
+        typeof(Colors).ReflectListMembers<Color>( EDITOR_DebugColorBooth, binding, 0 ).Log();
+        typeof(Console).ReflectListMembers<Color>( EDITOR_DebugColorBooth, binding, 0 ).Log();
+    }
+
+    private static string EDITOR_DebugColor( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{name} █</color>  ";
+    private static string EDITOR_DebugColorCode( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>#{ColorUtility.ToHtmlStringRGB(color)}█</color> ";
+    private static string EDITOR_DebugColorBooth( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>█ {name} #{ColorUtility.ToHtmlStringRGB(color)}</color> \t";
 #endif
 
     public static class Console
