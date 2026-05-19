@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -39,7 +40,7 @@ namespace K10.DebugSystem
             {
                 #if UNITY_EDITOR
                 if (!string.IsNullOrEmpty(category.Name))
-                    log = $"<b><color={category.Color.ToHexRGB()}>[{category.Name}]</color></b> {log}\nOwners: {string.Join(", ", owners)}";
+                    log = $"<b><color={category.Color.ToHexRGB()}>[{category.Name}]</color></b> {log}{GetOwnersDebugStr(owners)}";
 
                 log = K10Log.ReplaceColorsNames(log);
                 #else
@@ -64,6 +65,13 @@ namespace K10.DebugSystem
 
         [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
         public static void LogVerbose(string log, Object consoleTarget = null) => Log(LogSeverity.Warning, log, true, consoleTarget, new[] { consoleTarget });
+
+        private static string GetOwnersDebugStr(IEnumerable<Object> owners)
+        {
+            return owners != LoggableDefaults.nullOwners && owners != null && owners.Any()
+                ? $"\nOwners: {string.Join(", ", owners)}"
+                : string.Empty;
+        }
     }
 
     public static class K10Log
