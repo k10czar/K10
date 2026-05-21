@@ -154,12 +154,12 @@ namespace Rogue.REditor
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => SkyxStyles.LineHeight;
     }
 
-    [CustomPropertyDrawer(typeof(OptionalAttribute))]
-    public class OptionalAttributePropertyDrawer : PropertyDrawer
+    [CustomPropertyDrawer(typeof(OptionalNumAttribute))]
+    public class OptionalNumAttributePropertyDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
         {
-            var optionalAtt = (OptionalAttribute) attribute;
+            var optionalAtt = (OptionalNumAttribute) attribute;
 
             if (optionalAtt.showLabel)
                 EditorGUI.LabelField(rect.ExtractLabelRect(), label);

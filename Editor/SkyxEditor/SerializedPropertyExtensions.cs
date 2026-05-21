@@ -156,6 +156,23 @@ namespace Rogue.REditor
             return obj;
         }
 
+        public static FieldInfo GetFieldInfo(this SerializedProperty property)
+        {
+            object obj = property.serializedObject.targetObject;
+            var fieldStructure = GetPathStructure(property);
+
+            for (var index = 0; index < fieldStructure.Length - 1; index++)
+            {
+                var pathPiece = fieldStructure[index];
+                obj = pathPiece.Contains("[")
+                    ? GetFieldValueWithIndex(pathPiece, obj)
+                    : GetFieldValue(pathPiece, obj);
+            }
+
+            var lastField = fieldStructure[^1];
+            return GetField(lastField, obj);
+        }
+
         public static T GetValue<T>(this SerializedProperty property) where T : class => GetValue(property) as T;
 
         public static bool SetValue(this SerializedProperty property, object value)
