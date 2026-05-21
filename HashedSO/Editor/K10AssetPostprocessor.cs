@@ -1,3 +1,6 @@
+#if CODE_METRICS
+#define LOG
+#endif
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
@@ -29,9 +32,13 @@ public sealed class K10AssetPostprocessor : AssetPostprocessor
 		for (int i = 0; i < collections.Count; i++)
 		{
 			var collection = collections[i];
+#if LOG
 			Debug.Log($"{"OnPostprocessAllAssets".Colorfy(TypeName)} {"Before".Colorfy(Keyword)} {"EditorRemoveWrongElements".Colorfy(Verbs)}( {AssetDatabase.GetAssetPath(collection as Object)} )\n{collection}");
+#endif //LOG
 			collection.EditorRemoveWrongElements();
+#if LOG
 			Debug.Log($"{"OnPostprocessAllAssets".Colorfy(TypeName)} {"After".Colorfy(Warning)} {"EditorRemoveWrongElements".Colorfy(Verbs)}( {AssetDatabase.GetAssetPath(collection as Object)} )\n{collection}");
+#endif //LOG
 		}
 
 		for (int i = 0; i < elements.Count; i++)
@@ -41,18 +48,26 @@ public sealed class K10AssetPostprocessor : AssetPostprocessor
 			if (col != null)
 			{
 				var oHso = hso as Object;
+#if LOG
 				Debug.Log($"{"OnPostprocessAllAssets".Colorfy(TypeName)} {"Before".Colorfy(Keyword)} of {"EditorRequestMember".Colorfy(Verbs)}( {oHso.NameOrNull()}[{hso.HashID}] ) on Collection {col.ToStringOrNull()}");
+#endif //LOG
 				col.EditorRequestMember(oHso);
+#if LOG
 				Debug.Log($"{"OnPostprocessAllAssets".Colorfy(TypeName)} {"After".Colorfy(Warning)} of {"EditorRequestMember".Colorfy(Verbs)}( {oHso.NameOrNull()}[{hso.HashID}] ) on Collection {col.ToStringOrNull()}");
+#endif //LOG
 			}
 		}
 
 		for (int i = 0; i < collections.Count; i++)
 		{
 			var collection = collections[i];
+#if LOG
 			Debug.Log($"{"OnPostprocessAllAssets".Colorfy(TypeName)} {"Before".Colorfy(Keyword)} {"EditorCheckConsistency".Colorfy(Verbs)}( {AssetDatabase.GetAssetPath(collection as Object)} )\n{collection}");
+#endif //LOG
 			collection.EditorCheckConsistency();
+#if LOG
 			Debug.Log($"{"OnPostprocessAllAssets".Colorfy(TypeName)} {"After".Colorfy(Warning)} {"EditorCheckConsistency".Colorfy(Verbs)}( {AssetDatabase.GetAssetPath(collection as Object)} )\n{collection}");
+#endif //LOG
 		}
 
 		sw.Stop();
@@ -67,7 +82,9 @@ public sealed class K10AssetPostprocessor : AssetPostprocessor
 		if (movedAssets.Length > 0) log += $"\n{$"{movedAssets.Length.ToString().Colorfy(Numbers)} moved assets:".Colorfy(TypeName)}{afterLine}{string.Join(",\n   -", movedAssets).Colorfy(Names)}{Colorfy.CloseTag()}";
 		if (movedFromAssetPaths.Length > 0) log += $"\n{$"{movedFromAssetPaths.Length.ToString().Colorfy(Numbers)} moved from asset paths:".Colorfy(Interfaces)}{afterLine}{string.Join(",\n   -", movedFromAssetPaths).Colorfy(Names)}{Colorfy.CloseTag()}";
 
+#if LOG
 		Debug.Log(log);
+#endif //LOG
 
 		if (containsTags) TagsDebug.Instance.Rebuild();
 	}
