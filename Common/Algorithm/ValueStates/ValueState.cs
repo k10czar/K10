@@ -51,7 +51,7 @@ public class ValueState<T> : IValueState<T>, ICustomDisposableKill where T : str
 	}
 }
 
-public static class ValueStateExtention
+public static class ValueStateExtension
 {
 	public static void Synchronize<T>( this IValueStateObserver<T> state, System.Action evnt ) where T : struct { Synchronize( state, new ActionCapsule( evnt ) ); }
 	public static void Synchronize<T>( this IValueStateObserver<T> state, System.Action evnt, IEventValidator validation ) where T : struct { Synchronize( state, validation.Validated( evnt ) ); }

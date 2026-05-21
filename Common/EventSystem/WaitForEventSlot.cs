@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class WaitForEventSlot : CustomYieldInstruction
 {
-    private readonly IEvent targetEvent;
+    private readonly IEventRegister targetEvent;
     private readonly Func<bool> validator;
 
     private bool eventTriggered = false;
@@ -19,13 +19,13 @@ public class WaitForEventSlot : CustomYieldInstruction
         targetEvent.Unregister(Triggered);
     }
 
-    public WaitForEventSlot(IEvent targetEvent)
+    public WaitForEventSlot(IEventRegister targetEvent)
     {
         this.targetEvent = targetEvent;
         targetEvent.Register(Triggered);
     }
 
-    public WaitForEventSlot(IEvent targetEvent, Func<bool> validator)
+    public WaitForEventSlot(IEventRegister targetEvent, Func<bool> validator)
     {
         this.targetEvent = targetEvent;
         this.validator = validator;

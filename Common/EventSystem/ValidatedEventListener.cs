@@ -1,6 +1,3 @@
-
-
-[UnityEngine.HideInInspector]
 public sealed class ValidatedEventListener : BaseConditionalEventListener, IEventTrigger
 {
 	IEventTrigger _evnt;
@@ -43,7 +40,6 @@ public sealed class ValidatedEventListener : BaseConditionalEventListener, IEven
 	public override int GetHashCode() => _hashCode;
 }
 
-[UnityEngine.HideInInspector]
 public sealed class ValidatedEventListener<T> : BaseConditionalEventListener, IEventTrigger<T>
 {
 	IEventTrigger<T> _evnt;
@@ -86,7 +82,6 @@ public sealed class ValidatedEventListener<T> : BaseConditionalEventListener, IE
 	public override int GetHashCode() => _hashCode;
 }
 
-[UnityEngine.HideInInspector]
 public sealed class ValidatedEventListener<T, K> : BaseConditionalEventListener, IEventTrigger<T, K>
 {
 	IEventTrigger<T, K> _evnt;
@@ -129,7 +124,6 @@ public sealed class ValidatedEventListener<T, K> : BaseConditionalEventListener,
 	public override int GetHashCode() => _hashCode;
 }
 
-[UnityEngine.HideInInspector]
 public sealed class ValidatedEventListener<T,K,J> : BaseConditionalEventListener, IEventTrigger<T,K,J>
 {
 	IEventTrigger<T,K,J> _evnt;
