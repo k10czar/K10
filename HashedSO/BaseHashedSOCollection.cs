@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using K10.Common;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;

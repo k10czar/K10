@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace Skyx.RuntimeEditor
@@ -37,7 +38,7 @@ namespace Skyx.RuntimeEditor
         public readonly string[] targetChildren;
 
         public bool isDisabled;
-        public List<(string, EColor, Action)> buttons;
+        public List<SkopeButton> buttons;
 
         public ScopedAttribute() {}
 
@@ -100,5 +101,30 @@ namespace Skyx.RuntimeEditor
         };
 
         #endregion
+    }
+
+    public class SkopeButton
+    {
+        public readonly string label;
+        public EColor color;
+        public Action<SerializedProperty> onClick;
+
+        public SkopeButton(string label, EColor color, Action<SerializedProperty> onClick)
+        {
+            this.label = label;
+            this.color = color;
+            this.onClick = onClick;
+        }
+
+        public void Deconstruct(out string dLabel, out EColor dColor, out Action<SerializedProperty> dOnClick)
+        {
+            dLabel = label;
+            dColor = color;
+            dOnClick = onClick;
+        }
+
+        public override bool Equals(object obj) => obj is SkopeButton other && Equals(other);
+        protected bool Equals(SkopeButton other) => label == other.label;
+        public override int GetHashCode() => HashCode.Combine(label);
     }
 }

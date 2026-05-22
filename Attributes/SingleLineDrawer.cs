@@ -49,4 +49,6 @@ public class SingleLineDrawer : PropertyAttribute
     {
         drawInfos = fieldNames.Select((entry, index) => new FieldDrawInfo(entry, index)).ToArray();
     }
+
+    public SingleLineDrawer() : this("key", "value") {}
 }

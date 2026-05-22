@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEditor;
 using Object = UnityEngine.Object;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public class SerializeFieldContractResolver : DefaultContractResolver
     {
@@ -105,7 +105,7 @@ namespace Skyx.SkyxEditor
             var jsonObject = JObject.Load(reader);
             var instanceID = jsonObject["instanceID"]!.ToObject<int>();
 
-            var unityObject = EditorUtility.InstanceIDToObject(instanceID);
+            var unityObject = EditorUtility.EntityIdToObject(instanceID);
             if (unityObject != null) return unityObject;
 
             if (instanceID != 0) Debug.LogError($"Unity object with instanceID {instanceID} not found.");

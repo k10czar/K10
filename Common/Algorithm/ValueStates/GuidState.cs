@@ -1,4 +1,5 @@
 using System;
+using K10.Common;
 using UnityEngine;
 
 public interface IGuidStateObserver : IValueStateObserver<Guid>
@@ -45,7 +46,7 @@ public class GuidState : IGuidState, ICustomDisposableKill
 	}
 
 	public void Clear() { Setter( Guid.Empty ); }
-	
+
 	public void Kill()
 	{
 		_isEmpty?.Kill();

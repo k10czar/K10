@@ -9,7 +9,7 @@ using Unity.Profiling;
 using UnityEditorInternal;
 using Object = UnityEngine.Object;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public class PropertyCollection : ILoggable<EditorDebug>
     {
@@ -18,7 +18,7 @@ namespace Skyx.SkyxEditor
         private static readonly ProfilerMarker getCollectionMarker = new("PropertyCollection.Get");
         private static readonly ProfilerMarker applyCollectionMarker = new("PropertyCollection.Apply");
 
-        [ResetedOnLoad] private static readonly Dictionary<string, Dictionary<string, PropertyCollection>> collections = new();
+        [ResetedOnLoad] private static readonly Dictionary<int, Dictionary<string, PropertyCollection>> collections = new();
         [ResetedOnLoad] private static readonly HashSet<SerializedObject> scheduledResets = new();
 
         public static PropertyCollection Get(SerializedObject serializedObject) => Get(serializedObject, "");
@@ -28,7 +28,7 @@ namespace Skyx.SkyxEditor
         {
             using var profilerMarker = getCollectionMarker.Auto();
 
-            var id = root.GetCacheID();
+            var id = root.GetMainCacheID();
             if (!collections.TryGetValue(id, out var objectCollections))
             {
                 objectCollections = new Dictionary<string, PropertyCollection>();
@@ -79,7 +79,7 @@ namespace Skyx.SkyxEditor
         {
             foreach (var serializedObject in scheduledResets)
             {
-                serializedObject.InvalidateTypeCache();
+                SerializedTypeCache.InvalidateCacheFromTarget(serializedObject.GetMainCacheID());
                 ResetCollections(serializedObject);
             }
 
@@ -88,7 +88,7 @@ namespace Skyx.SkyxEditor
 
         private static void ResetCollections(SerializedObject serializedObject)
         {
-            var id = serializedObject.GetCacheID();
+            var id = serializedObject.GetMainCacheID();
             if (!collections.TryGetValue(id, out var objectCollections)) return;
 
             serializedObject.Update();
@@ -116,7 +116,7 @@ namespace Skyx.SkyxEditor
 
         public static void Release(SerializedObject root)
         {
-            var id = root.GetCacheID();
+            var id = root.GetMainCacheID();
             if (!collections.ContainsKey(id)) return;
 
             Log($"Releasing PropertyCollections for {root.targetObject.name}");
@@ -156,14 +156,14 @@ namespace Skyx.SkyxEditor
             Undo.undoRedoPerformed += OnUndoRedoPerformed;
         }
 
-        [MenuItem("Meow/Editor/Clear PropertyCollections")]
+        [MenuItem("Rogue/Editor/Clear PropertyCollections")]
         public static void ClearCollections()
         {
             collections.Clear();
             scheduledResets.Clear();
         }
 
-        [MenuItem("Meow/Editor/Log PropertyCollections")]
+        [MenuItem("Rogue/Editor/Log PropertyCollections")]
         private static void LogPropertyCollections()
         {
             var total = collections.Sum(entry => entry.Value.Count);
@@ -204,10 +204,7 @@ namespace Skyx.SkyxEditor
         public void DrawList(string propertyName, bool displayHeader = true, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
-
-            if (!HasList(property)) RegisterList(property, displayHeader);
-
-            var list = GetReorderableList(property);
+            var list = GetOrRegisterDefaultList(property, displayHeader);
             list.DoLayoutList();
         }
 
@@ -256,10 +253,18 @@ namespace Skyx.SkyxEditor
 
         #region Rect Draw
 
+        public void Draw(ref Rect rect, string propertyName, ERectSlideDir slideDir = ERectSlideDir.Vertical, bool isBacking = false)
+        {
+            var property = Get(propertyName, isBacking);
+            SkyxGUI.Draw(rect, property, true);
+            rect.Slide(slideDir);
+        }
+
         public void Draw(ref Rect rect, string propertyName, bool slideRect = true, bool isBacking = false, bool drawLabel = false)
         {
             var property = Get(propertyName, isBacking);
             SkyxGUI.Draw(rect, property, drawLabel);
+
             if (slideRect) rect.SlideSame();
         }
 
@@ -365,10 +370,7 @@ namespace Skyx.SkyxEditor
         public void DrawList(Rect rect, string propertyName, bool displayHeader = true, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
-
-            if (!HasList(property)) RegisterList(property, displayHeader);
-
-            var list = GetReorderableList(property);
+            var list = GetOrRegisterDefaultList(property, displayHeader);
             list.DoList(rect);
         }
 
@@ -414,140 +416,27 @@ namespace Skyx.SkyxEditor
 
         #region Lists
 
-        private readonly Dictionary<SerializedProperty, ReorderableList> lists = new();
+        public bool HasList(string propertyName, bool isBacking = false) => ReorderableListCache.HasList(Get(propertyName, isBacking));
+        public bool HasList(SerializedProperty property) => ReorderableListCache.HasList(property);
 
-        public delegate bool IsElementHighlighted(SerializedProperty elementProperty);
-        public delegate void DrawElement(PropertyCollection properties, Rect rect, int index, bool isActive, bool isFocused);
-        public delegate void DrawListHeader(PropertyCollection properties, Rect rect);
-
-        public bool HasList(string propertyName, bool isBacking = false) => lists.ContainsKey(Get(propertyName, isBacking));
-        public bool HasList(SerializedProperty property) => lists.ContainsKey(property);
-
-        public ReorderableList GetReorderableList(SerializedProperty property)
-        {
-            if (lists.TryGetValue(property, out var list)) return list;
-
-            Debug.LogError($"ReorderableList for {property} not found!");
-            return null;
-        }
-
-        public ReorderableList RegisterList(
-            string propertyName,
-            bool displayHeader = true,
-            bool draggable = true,
-            bool displayAddButton = true,
-            bool displayRemoveButton = true,
-            DrawElement customDrawElement = null,
-            Action<SerializedProperty> newElementSetup = null,
-            DrawListHeader customHeader = null,
-            IsElementHighlighted isElementHighlighted = null,
-            bool isBacking = false)
-        {
-            var property = Get(propertyName, isBacking);
-            return RegisterList(property, displayHeader, draggable, displayAddButton, displayRemoveButton, customDrawElement, newElementSetup, customHeader, isElementHighlighted);
-        }
-
-        public ReorderableList RegisterList(
+        public ReorderableList GetOrRegisterDefaultList(
             SerializedProperty property,
             bool displayHeader = true,
             bool draggable = true,
             bool displayAddButton = true,
             bool displayRemoveButton = true,
-            DrawElement customDrawElement = null,
+            ReorderableListCache.DrawElement customDrawElement = null,
             Action<SerializedProperty> newElementSetup = null,
-            DrawListHeader customHeader = null,
-            IsElementHighlighted isElementHighlighted = null)
+            ReorderableListCache.DrawListHeader customHeader = null,
+            ReorderableListCache.IsElementHighlighted isElementHighlighted = null,
+            bool isBacking = false)
         {
-            if (lists.TryGetValue(property, out var list)) return list;
+            if (ReorderableListCache.TryGet(property, out var list)) return list;
 
-            list = new ReorderableList(property.serializedObject, property, draggable, displayHeader, displayAddButton, displayRemoveButton)
-            {
-                drawHeaderCallback = DrawHeaderCallback,
-                drawElementCallback = DrawElementCallback,
-                elementHeightCallback = ElementHeightCallback,
-                onAddCallback = OnAddCallback,
-                onRemoveCallback = OnRemoveCallback,
-                onReorderCallback = OnReorderCallback,
-                drawElementBackgroundCallback = DrawElementBackgroundCallback,
-            };
-
-            if (!displayAddButton && !displayRemoveButton)
-                list.footerHeight = 0;
-
-            lists.Add(property, list);
+            list = ReorderableListCache.CreateDefaultList(property, displayHeader, draggable, displayAddButton, displayRemoveButton, customDrawElement, newElementSetup, customHeader, isElementHighlighted);
+            ReorderableListCache.Add(property, list);
 
             return list;
-
-            void DrawElementBackgroundCallback(Rect rect, int index, bool isActive, bool isFocused)
-            {
-                if (index < 0) ReorderableList.defaultBehaviours.DrawElementBackground(rect, index, isActive, isFocused, draggable);
-
-                else
-                {
-                    var color = isElementHighlighted?.Invoke(property.GetArrayElementAtIndex(index)) ?? false
-                        ? (isActive ? Colors.Console.SpecialBackgroundVar : Colors.Console.SpecialBackground)
-                        : (isFocused ? Colors.CeruleanBlue : (index % 2 == 0 ? Colors.Console.Dark: Colors.Console.DarkerDark));
-
-                    EditorGUI.DrawRect(rect, color);
-                }
-            }
-
-            void DrawElementCallback(Rect rect, int index, bool isActive, bool isFocused)
-            {
-                var innerProp = property.GetArrayElementAtIndex(index);
-
-                PropertyContextMenu.ContextGUI(ref rect, innerProp, newElementSetup);
-
-                if (customDrawElement == null) SkyxGUI.Draw(rect, innerProp);
-                else customDrawElement(this, rect, index, isActive, isFocused);
-            }
-
-            float ElementHeightCallback(int index)
-            {
-                var target = property.GetArrayElementAtIndex(index);
-                return EditorGUI.GetPropertyHeight(target, true);
-            }
-
-            void DrawHeaderCallback(Rect rect)
-            {
-                PropertyContextMenu.ContextGUI(ref rect, property, newElementSetup);
-
-                if (customHeader == null) EditorGUI.LabelField(rect, property.PrettyName());
-                else customHeader(this, rect);
-            }
-
-            void OnAddCallback(ReorderableList thisList)
-            {
-                var index = thisList.selectedIndices.Count > 0 ? Mathf.Min(property.arraySize, thisList.selectedIndices[0] + 1) : property.arraySize;
-                property.InsertArrayElementAtIndex(index);
-                property.Apply($"New array element: {property.propertyPath}");
-
-                var newElement = property.GetArrayElementAtIndex(index);
-                newElement.ResetDefaultValues(newElementSetup, false, true);
-            }
-
-            void OnRemoveCallback(ReorderableList thisList)
-            {
-                ReorderableList.defaultBehaviours.DoRemoveButton(thisList);
-                property.Apply($"Remove array element: {property.propertyPath}");
-            }
-
-            void OnReorderCallback(ReorderableList thisList)
-            {
-                property.Apply($"Reorder array element: {property.propertyPath}");
-            }
-        }
-
-        // index = -1 means at end
-        public void InsertArrayElementAtIndex(string propertyName, int index, bool isBacking = false, Action<SerializedProperty> newElementSetup = null)
-        {
-            var prop = Get(propertyName, isBacking);
-            index = index == -1 ? prop.arraySize : index;
-            prop.InsertArrayElementAtIndex(index);
-            prop.Apply();
-
-            var newElement = prop.GetArrayElementAtIndex(index);
-            newElement.ResetDefaultValues(newElementSetup, false, true);
         }
 
         #endregion
@@ -563,7 +452,7 @@ namespace Skyx.SkyxEditor
                 var property = Get(field, false);
                 total += SkyxStyles.ElementsMargin;
 
-                if (lists.TryGetValue(property, out var list)) total += list.GetHeight();
+                if (ReorderableListCache.TryGet(property, out var list)) total += list.GetHeight();
                 else total += EditorGUI.GetPropertyHeight(property, true);
             }
 
@@ -580,7 +469,7 @@ namespace Skyx.SkyxEditor
 
                 total += SkyxStyles.ElementsMargin;
 
-                if (lists.TryGetValue(property, out var list)) total += list.GetHeight();
+                if (ReorderableListCache.TryGet(property, out var list)) total += list.GetHeight();
                 else total += EditorGUI.GetPropertyHeight(property, true);
             }
 
@@ -591,7 +480,7 @@ namespace Skyx.SkyxEditor
         {
             if (!TryGet(propertyName, isBacking, out var property)) return 0;
 
-            return lists.TryGetValue(property, out var list)
+            return ReorderableListCache.TryGet(property, out var list)
                 ? list.GetHeight()
                 : EditorGUI.GetPropertyHeight(property, true);
         }
@@ -621,30 +510,6 @@ namespace Skyx.SkyxEditor
             return (fromObject ? root.GetIterator() : root.FindProperty(propertyPath), fromObject);
         }
 
-        private bool IsValid(SerializedObject serializedObject)
-        {
-            return true;
-            // TODO: Find valid way to check is things changed
-            // if (root != serializedObject) return false;
-
-            // var (targetProperty, fromObject) = GetRootProperty();
-            //
-            // if (targetProperty.IsManagedRef())
-            //     return rootProperty.managedReferenceId == targetProperty.managedReferenceId;
-            //
-            // return SerializedProperty.EqualContents(targetProperty, rootProperty);
-
-            // try
-            // {
-            //     _ = properties.Values.All(entry => entry.isExpanded); // Forces internal Verify call
-            //     return true;
-            // }
-            // catch
-            // {
-            //     return false;
-            // }
-        }
-
         private void Setup()
         {
             bool fromObject;
@@ -667,7 +532,7 @@ namespace Skyx.SkyxEditor
         private void Reset(SerializedObject newRoot)
         {
             properties.Clear();
-            lists.Clear();
+            ReorderableListCache.InvalidateCacheFromTarget(newRoot.GetMainCacheID());
 
             root = newRoot;
             owner = root.targetObject;

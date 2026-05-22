@@ -3,13 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using K10;
+using K10.Common;
 
 [Serializable]
 public class Blackboard : IBlackboard
 {
     Dictionary<string, object> entries = new();
 
-    public void Debug( string nameToDebug = null ) 
+    public void Debug( string nameToDebug = null )
     {
         var SB = ObjectPool<StringBuilder>.Request();
         SB.AppendLine( $"Blackboard: {(nameToDebug != null ? nameToDebug : "")}" );
@@ -27,15 +28,15 @@ public class Blackboard : IBlackboard
             value = castedEntry;
             return true;
         }
-        
+
         value = default;
         return false;
     }
-    
+
     public void Set<T>(string key, T value) {
         entries[key] = value;
     }
-    
+
     public bool ContainsKey(string key) => entries.ContainsKey(key);
     public bool Remove(string key) => entries.Remove(key);
 

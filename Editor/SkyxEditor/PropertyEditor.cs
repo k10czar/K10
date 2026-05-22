@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public abstract class PropertyEditor : PropertyDrawer
     {

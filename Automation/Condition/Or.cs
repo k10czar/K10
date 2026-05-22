@@ -1,4 +1,5 @@
 using System.Linq;
+using K10.Common;
 using UnityEngine;
 
 namespace K10.Conditions
@@ -16,8 +17,8 @@ namespace K10.Conditions
 			}
 			return false;
 		}
-		
-		override public string ToString() 
+
+		override public string ToString()
 		{
 			return $"({string.Join( " || ", _operands.Select( ( o ) => o.ToStringOrNull() ).ToArray() )})";
 		}

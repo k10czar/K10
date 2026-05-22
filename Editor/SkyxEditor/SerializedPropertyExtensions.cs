@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public static class SerializedPropertyExtension
     {
@@ -156,6 +156,23 @@ namespace Skyx.SkyxEditor
             return obj;
         }
 
+        public static FieldInfo GetFieldInfo(this SerializedProperty property)
+        {
+            object obj = property.serializedObject.targetObject;
+            var fieldStructure = GetPathStructure(property);
+
+            for (var index = 0; index < fieldStructure.Length - 1; index++)
+            {
+                var pathPiece = fieldStructure[index];
+                obj = pathPiece.Contains("[")
+                    ? GetFieldValueWithIndex(pathPiece, obj)
+                    : GetFieldValue(pathPiece, obj);
+            }
+
+            var lastField = fieldStructure[^1];
+            return GetField(lastField, obj);
+        }
+
         public static T GetValue<T>(this SerializedProperty property) where T : class => GetValue(property) as T;
 
         public static bool SetValue(this SerializedProperty property, object value)
@@ -289,76 +306,16 @@ namespace Skyx.SkyxEditor
 
         #endregion
 
-        #region Type Queries
+        #region Cache IDs
 
-        private static readonly Dictionary<string, Dictionary<string, Type>> propertyTypeCache = new();
+        public static int GetMainCacheID(this SerializedObject serializedObject)
+            => serializedObject.targetObject.GetInstanceID();
 
-        public static string GetCacheID(this SerializedObject serializedObject)
-            => serializedObject.targetObject.GetInstanceID().ToString();
+        public static (int, string) GetCacheID(this SerializedProperty property)
+            => (property.serializedObject.GetMainCacheID(), property.propertyPath);
 
-        public static Type GetCachedType(this SerializedProperty property)
-        {
-            var cacheID = property.serializedObject.GetCacheID();
-            if (!propertyTypeCache.TryGetValue(cacheID, out var cache))
-            {
-                cache = new Dictionary<string, Type>();
-                propertyTypeCache[cacheID] = cache;
-            }
-
-            if (cache.TryGetValue(property.propertyPath, out var cachedType))
-                return cachedType;
-
-            var value = GetValue(property);
-            if (value == null) return null;
-
-            var type = value.GetType();
-            cache[property.propertyPath] = type;
-
-            return type;
-        }
-
-        public static void InvalidateTypeCache(this SerializedObject serializedObject)
-        {
-            var cacheID = serializedObject.GetCacheID();
-            propertyTypeCache.Remove(cacheID);
-        }
-
-        [MenuItem("Meow/Editor/Clear Property Type Cache")]
-        public static void ClearCache() => propertyTypeCache.Clear();
-
-        public static Type GetObjectReferenceType(this SerializedProperty property)
-        {
-            if (property.propertyType != SerializedPropertyType.ObjectReference)
-            {
-                Debug.LogError($"Trying to get type from non-ObjectReference property: {property.propertyPath}");
-                return null;
-            }
-
-            return property.objectReferenceValue != null
-                ? property.objectReferenceValue.GetType()
-                : GetTypeFromPropertyTypeString(property);
-        }
-
-        private static Type GetTypeFromPropertyTypeString(SerializedProperty property)
-        {
-            var typeName = property.type;
-
-            if (string.IsNullOrEmpty(typeName) || !typeName.StartsWith("PPtr<") || !typeName.EndsWith(">"))
-            {
-                Debug.LogError($"Don't know how to parse property type: {typeName}");
-                return null;
-            }
-
-            typeName = typeName.Substring(5, typeName.Length - 6).TrimStart('$');
-
-            foreach (var type in TypeCache.GetTypesDerivedFrom<Object>())
-            {
-                if (type.Name == typeName) return type;
-            }
-
-            Debug.LogError($"Couldn't find type matching property type: {typeName}");
-            return null;
-        }
+        public static int GetMainCacheID(this SerializedProperty property)
+            => property.serializedObject.GetMainCacheID();
 
         #endregion
 
@@ -528,7 +485,7 @@ namespace Skyx.SkyxEditor
 
         #region Drawers
 
-        public static void DrawAllInnerProperties(this SerializedProperty property, ref Rect rect, bool isManaged)
+        public static void DrawAllInnerProperties(this SerializedProperty property, ref Rect rect, bool isManaged, params string[] except)
         {
             var iterator = property.Copy();
             var endProperty = iterator.GetEndProperty();
@@ -539,17 +496,22 @@ namespace Skyx.SkyxEditor
             {
                 if (SerializedProperty.EqualContents(iterator, endProperty)) break;
 
-                rect.height = EditorGUI.GetPropertyHeight(iterator, true);
-                EditorGUI.BeginChangeCheck();
-                EditorGUI.PropertyField(rect, iterator);
-                if (EditorGUI.EndChangeCheck()) iterator.Apply();
-                rect.y += rect.height + SkyxStyles.ElementsMargin;
+                if (!except.Contains(iterator.name))
+                {
+                    rect.height = EditorGUI.GetPropertyHeight(iterator, true);
+
+                    EditorGUI.BeginChangeCheck();
+                    EditorGUI.PropertyField(rect, iterator, true);
+                    if (EditorGUI.EndChangeCheck()) iterator.Apply();
+
+                    rect.y += rect.height + SkyxStyles.ElementsMargin;
+                }
 
                 if (!iterator.NextVisible(false)) break;
             }
         }
 
-        public static float GetPropertyHeight(this SerializedProperty property, bool isManaged)
+        public static float GetPropertyHeight(this SerializedProperty property, bool isManaged, params string[] except)
         {
             var height = 0f;
 
@@ -561,48 +523,15 @@ namespace Skyx.SkyxEditor
             while (true)
             {
                 if (SerializedProperty.EqualContents(iterator, endProperty)) break;
-                height += EditorGUI.GetPropertyHeight(iterator, true) + SkyxStyles.ElementsMargin;
+
+                if (!except.Contains(iterator.name))
+                    height += EditorGUI.GetPropertyHeight(iterator, true) + SkyxStyles.ElementsMargin;
+
                 if (!iterator.NextVisible(false)) break;
             }
 
             return height;
         }
-
-        #endregion
-
-        #region JSON Manipulation
-
-        public static void CopyValue<T>(this SerializedProperty property, T value, string reason) where T : class
-        {
-            var json = JsonConvert.SerializeObject(value, GetSerializationSettings());
-            SetValueFromJson(property, json, typeof(T), reason);
-        }
-
-        public static string GetJson(this SerializedProperty property)
-        {
-            var value = property.GetValue();
-            return JsonConvert.SerializeObject(value, GetSerializationSettings());
-        }
-
-        public static void SetValueFromJson(this SerializedProperty property, string json, Type valueType, string reason)
-        {
-            PrepareForChanges(property, reason);
-
-            var deserializedObject = JsonConvert.DeserializeObject(json, valueType, GetSerializationSettings());
-            SetValue(property, deserializedObject);
-
-            ApplyDirectChanges(property);
-        }
-
-        private static JsonSerializerSettings GetSerializationSettings() => new()
-        {
-            NullValueHandling = NullValueHandling.Ignore,
-            MissingMemberHandling = MissingMemberHandling.Ignore,
-            TypeNameHandling = TypeNameHandling.Auto,
-
-            ContractResolver = new SerializeFieldContractResolver(),
-            Converters = { new UnityObjectConverter() },
-        };
 
         #endregion
     }

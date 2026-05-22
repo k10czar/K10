@@ -3,8 +3,9 @@ using System.Globalization;
 using Skyx.RuntimeEditor;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public static class SkyxGUI
     {
@@ -18,7 +19,7 @@ namespace Skyx.SkyxEditor
             if (string.IsNullOrEmpty(property.stringValue)) DrawHindInlaid(rect, inlaidHint);
         }
 
-        public static void DrawValidatedTextField(Rect rect, SerializedProperty property, string inlaidHint, string[] validValues, bool allowEmpty = false, string overlayHint = null, bool canWriteCustom = true)
+        public static void DrawValidatedTextField(Rect rect, SerializedProperty property, string[] validValues, bool allowEmpty = false, bool canWriteCustom = true, Action callback = null)
         {
             var isNumber = float.TryParse(property.stringValue, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out _);
             var currentIndex = isNumber ? -1 : Array.IndexOf(validValues, property.stringValue);
@@ -38,7 +39,7 @@ namespace Skyx.SkyxEditor
             var dropdownRect = innerRect.ExtractEndRect(10);
 
             if (dropdownRect.TryUseClick(false))
-                StringPicker.Draw(dropdownRect, validValues, property);
+                StringPicker.Draw(dropdownRect, validValues, property, callback);
 
             innerRect.ApplyStartMargin();
 
@@ -47,11 +48,38 @@ namespace Skyx.SkyxEditor
 
             property.stringValue = EditorGUI.DelayedTextField(innerRect, GUIContent.none, property.stringValue, SkyxStyles.DefaultLabel);
 
-            if (canWriteCustom) { if (EditorGUI.EndChangeCheck()) property.Apply(); }
+            if (canWriteCustom)
+            {
+                if (EditorGUI.EndChangeCheck())
+                {
+                    if (callback != null) callback();
+                    else property.Apply();
+                }
+            }
             else EditorGUI.EndDisabledGroup();
 
-            DrawHintOverlay(ref innerRect, overlayHint ?? inlaidHint);
-            if (isEmpty) DrawHindInlaid(innerRect, inlaidHint);
+        }
+
+        public static void DrawTextFieldWithSuggestions(Rect rect, SerializedProperty property, string[] suggestions, Action callback = null)
+        {
+            GUI.Box(rect, GUIContent.none, SkyxStyles.DropDownButton);
+
+            var innerRect = rect;
+            var dropdownRect = innerRect.ExtractEndRect(10);
+
+            EditorGUI.BeginChangeCheck();
+
+            if (dropdownRect.TryUseClick(false))
+                StringPicker.Draw(dropdownRect, suggestions, property, callback);
+
+            innerRect.ApplyStartMargin();
+
+            property.stringValue = EditorGUI.DelayedTextField(innerRect, GUIContent.none, property.stringValue, SkyxStyles.DefaultLabel);
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (callback != null) callback();
+                else property.Apply();
+            }
         }
 
         public static void DrawTextAreaField(Rect rect, SerializedProperty property, string hint)
@@ -148,13 +176,13 @@ namespace Skyx.SkyxEditor
             else if (targetType == typeof(float))
                 DrawFloatField(rect, property, drawInfo.hint);
 
-            else if (targetType.IsClass)
+            else if (targetType.IsClass && targetType.InheritsOrImplements(typeof(Object)))
                 DrawObjectField(rect, property, targetType, drawInfo.hint, true);
 
             else if (targetType == typeof(bool))
                 DrawEnableToggle(rect, "Enabled", "Disabled", property, drawInfo.hint);
 
-            else throw new Exception("Unknown type");
+            else EditorGUI.PropertyField(rect, property, GUIContent.none);
 
             if (EditorGUI.EndChangeCheck()) property.Apply();
         }
@@ -164,20 +192,7 @@ namespace Skyx.SkyxEditor
             var label = drawLabel ? null : GUIContent.none;
 
             EditorGUI.BeginChangeCheck();
-            // switch (property.propertyType)
-            // {
-            //     case SerializedPropertyType.String:
-            //         EditorGUI.DelayedTextField(rect, property, label); break;
-            //
-            //     case SerializedPropertyType.Integer:
-            //         EditorGUI.DelayedIntField(rect, property, label); break;
-            //
-            //     case SerializedPropertyType.Float:
-            //         EditorGUI.DelayedFloatField(rect, property, label); break;
-            //
-            //     default: EditorGUI.PropertyField(rect, property, label); break;
-            // }
-            EditorGUI.PropertyField(rect, property, label);
+            EditorGUI.PropertyField(rect, property, label, true);
             if (EditorGUI.EndChangeCheck()) property.Apply();
         }
 
@@ -198,19 +213,19 @@ namespace Skyx.SkyxEditor
             => DrawToggle(rect, onLabel, offLabel, Colors.Console.Special, Colors.Console.Info, property, hint);
 
         public static bool MiniSuccessToggle(ref Rect rect, SerializedProperty toggleProp, string label, string hint, bool fromEnd = false)
-            => DrawSuccessToggle(ExtractMiniButton(ref rect, fromEnd), label, toggleProp, hint);
+            => DrawSuccessToggle(rect.ExtractMiniButton(fromEnd), label, toggleProp, hint);
 
         public static bool MiniEnableToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint, bool fromEnd = false)
-            => DrawEnableToggle(ExtractMiniButton(ref rect, fromEnd), onLabel, offLabel, toggleProp, hint);
+            => DrawEnableToggle(rect.ExtractMiniButton(fromEnd), onLabel, offLabel, toggleProp, hint);
 
         public static bool MiniWarningToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint, bool fromEnd = false)
-            => DrawWarningToggle(ExtractMiniButton(ref rect, fromEnd), onLabel, offLabel, toggleProp, hint);
+            => DrawWarningToggle(rect.ExtractMiniButton(fromEnd), onLabel, offLabel, toggleProp, hint);
 
         public static bool MiniChoiceToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint, bool fromEnd = false)
-            => DrawChoiceToggle(ExtractMiniButton(ref rect, fromEnd), onLabel, offLabel, toggleProp, hint);
+            => DrawChoiceToggle(rect.ExtractMiniButton(fromEnd), onLabel, offLabel, toggleProp, hint);
 
         public static bool MiniToggle(ref Rect rect, SerializedProperty toggleProp, string onLabel, string offLabel, string hint, Color onColor, Color offColor, bool useExpandField = false, bool fromEnd = false)
-            => DrawToggle(ExtractMiniButton(ref rect, fromEnd), onLabel, offLabel, onColor, offColor, toggleProp, hint, useExpandField);
+            => DrawToggle(rect.ExtractMiniButton(fromEnd), onLabel, offLabel, onColor, offColor, toggleProp, hint, useExpandField);
 
         public static bool DrawToggle(Rect rect, string onLabel, string offLabel, Color onColor, Color offColor, SerializedProperty toggleProp, string hint, bool useExpandField = false)
         {
@@ -238,7 +253,7 @@ namespace Skyx.SkyxEditor
 
         public static bool ExpandButton(ref Rect rect, SerializedProperty isExpandedProp)
         {
-            var extracted = ExtractMiniButton(ref rect);
+            var extracted = rect.ExtractMiniButton();
 
             var label = isExpandedProp.isExpanded ? "⇓" : ">";
             var backgroundColor = isExpandedProp.isExpanded ? Colors.Console.GrayOut : Colors.Console.DarkerGrayOut;
@@ -271,7 +286,7 @@ namespace Skyx.SkyxEditor
         // see: https://github.com/halak/unity-editor-icons
         public static bool ButtonBuiltInIcon(ref Rect rect, string builtInIconName, EColor color, string hint, bool fromEnd = false, EElementSize size = EElementSize.Mini, EButtonType type = EButtonType.Default)
         {
-            var buttonRect = ExtractRect(ref rect, SkyxStyles.MiniButtonSize, fromEnd);
+            var buttonRect = rect.ExtractMiniButton(fromEnd);
 
             using var backgroundScope = BackgroundColorScope.Set(color);
             var icon = EditorGUIUtility.IconContent(builtInIconName);
@@ -283,19 +298,19 @@ namespace Skyx.SkyxEditor
         }
 
         public static bool MiniSuccessButton(ref Rect rect, string label, string hint, bool fromEnd = false)
-            => Button(ExtractMiniButton(ref rect, fromEnd), label, EColor.Success, EElementSize.Mini, EButtonType.Default, hint);
+            => Button(rect.ExtractMiniButton(fromEnd), label, EColor.Success, EElementSize.Mini, EButtonType.Default, hint);
 
         public static bool MiniEnableButton(ref Rect rect, string label, string hint, bool fromEnd = false)
-            => Button(ExtractMiniButton(ref rect, fromEnd), label, EColor.Secondary, EElementSize.Mini, EButtonType.Default, hint);
+            => Button(rect.ExtractMiniButton(fromEnd), label, EColor.Secondary, EElementSize.Mini, EButtonType.Default, hint);
 
         public static bool MiniWarningButton(ref Rect rect, string label, string hint, bool fromEnd = false)
-            => Button(ExtractMiniButton(ref rect, fromEnd), label, EColor.Warning, EElementSize.Mini, EButtonType.Default, hint);
+            => Button(rect.ExtractMiniButton(fromEnd), label, EColor.Warning, EElementSize.Mini, EButtonType.Default, hint);
 
         public static bool MiniDangerButton(ref Rect rect, string label, string hint, bool fromEnd = false)
-            => Button(ExtractMiniButton(ref rect, fromEnd), label, EColor.Danger, EElementSize.Mini, EButtonType.Default, hint);
+            => Button(rect.ExtractMiniButton(fromEnd), label, EColor.Danger, EElementSize.Mini, EButtonType.Default, hint);
 
         public static bool MiniButton(ref Rect rect, string label, EColor color, string hint = null, bool fromEnd = false)
-            => Button(ExtractMiniButton(ref rect, fromEnd), label, color, EElementSize.Mini, EButtonType.Default, hint);
+            => Button(rect.ExtractMiniButton(fromEnd), label, color, EElementSize.Mini, EButtonType.Default, hint);
 
         #endregion
 
@@ -324,7 +339,7 @@ namespace Skyx.SkyxEditor
 
         public static void HintIcon(ref Rect rect, string icon, string hint, bool fromEnd = false)
         {
-            var hintRect = ExtractRect(ref rect, SkyxStyles.HintIconWidth, fromEnd);
+            var hintRect = rect.ExtractHint(fromEnd);
 
             EditorGUI.LabelField(hintRect, $"<b>{icon}</b>", SkyxStyles.HintIconStyle);
             DrawHintOverlay(ref hintRect, hint);
@@ -333,7 +348,7 @@ namespace Skyx.SkyxEditor
         // see: https://github.com/halak/unity-editor-icons
         public static void HintBuiltInIcon(ref Rect rect, string builtInIconName, string hint, bool fromEnd = false)
         {
-            var hintRect = ExtractRect(ref rect, SkyxStyles.HintIconWidth, fromEnd);
+            var hintRect = rect.ExtractHint(fromEnd);
 
             var icon = EditorGUIUtility.IconContent(builtInIconName);
             EditorGUI.LabelField(hintRect, icon, SkyxStyles.CenterBoldStyle);
@@ -396,76 +411,5 @@ namespace Skyx.SkyxEditor
             rect.y += rect.height;
             if (property.isExpanded) Separator(ref rect);
         }
-
-        #region Rect Control
-
-        public static void SlideRect(ref Rect rect, float newWidth, float margin = SkyxStyles.ElementsMargin)
-        {
-            rect.x += rect.width + margin;
-            rect.width = newWidth;
-        }
-
-        public static void SlideSameRect(ref Rect rect, float margin = SkyxStyles.ElementsMargin)
-            => SlideRect(ref rect, rect.width, margin);
-
-        public static void RemainingRect(ref Rect rect, float endX)
-        {
-            rect.x += rect.width + SkyxStyles.ElementsMargin;
-            rect.width = endX - rect.x;
-        }
-
-        public static void NextLine(ref Rect rect, float startX, float totalWidth)
-        {
-            rect.x = startX;
-            rect.y += SkyxStyles.FullLineHeight;
-            rect.width = totalWidth;
-        }
-
-        public static void NextDividedLine(ref Rect rect, float startX, float totalWidth, int divideCount)
-            => NextLine(ref rect, startX, DivideRect(totalWidth, divideCount));
-
-        private static float DivideRect(float totalWidth, int elementsCount)
-        {
-            return (totalWidth - (SkyxStyles.ElementsMargin * (elementsCount - 1))) / elementsCount;
-        }
-
-        public static void DivideRect(ref Rect rect, int elementsCount)
-            => DivideRect(ref rect, rect.width, elementsCount);
-
-        public static void DivideRect(ref Rect rect, float totalWidth, int elementsCount)
-        {
-            rect.width = DivideRect(totalWidth, elementsCount);
-        }
-
-        public static Rect ExtractRect(ref Rect rect, float width, bool fromEnd = false, float margin = SkyxStyles.ElementsMargin)
-        {
-            if (fromEnd) return ExtractEndRect(ref rect, width, margin);
-
-            var remaining = rect.width - width - margin;
-
-            rect.width = width;
-            var newRect = new Rect(rect);
-
-            SlideRect(ref rect, remaining, margin);
-
-            return newRect;
-        }
-
-        public static Rect ExtractEndRect(ref Rect rect, float width, float margin = SkyxStyles.ElementsMargin)
-        {
-            rect.width = rect.width - width - margin;
-
-            var newRect = new Rect(rect);
-            SlideRect(ref newRect, width, margin);
-
-            return newRect;
-        }
-
-        public static Rect ExtractMediumButton(ref Rect rect, bool fromEnd = false) => ExtractRect(ref rect, SkyxStyles.MediumButtonSize, fromEnd);
-        public static Rect ExtractSmallButton(ref Rect rect, bool fromEnd = false) => ExtractRect(ref rect, SkyxStyles.SmallButtonSize, fromEnd);
-        public static Rect ExtractMiniButton(ref Rect rect, bool fromEnd = false) => ExtractRect(ref rect, SkyxStyles.MiniButtonSize, fromEnd);
-        public static Rect ExtractHint(ref Rect rect, bool fromEnd = false) => ExtractRect(ref rect, SkyxStyles.HintIconWidth, fromEnd);
-
-        #endregion
     }
 }

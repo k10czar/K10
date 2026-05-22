@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using K10.Common;
 
 public enum ELogType
 {
@@ -13,7 +14,7 @@ public static class StringExtension
 {
     static readonly HashSet<char> INVALID_FILENAME_CHARS = new HashSet<char>( System.IO.Path.GetInvalidFileNameChars() );
     static readonly HashSet<char> INVALID_PATH_CHARS = new HashSet<char>( System.IO.Path.GetInvalidPathChars() );
-    
+
     public static void Log( this string[] log, ELogType logType = ELogType.Basic )
     {
         if( log == null ) return;
@@ -29,7 +30,7 @@ public static class StringExtension
             case ELogType.Error: UnityEngine.Debug.LogError( log ); break;
         }
     }
-    
+
     public static string SanitizeFileName( this string fileName ) => RemoveChars( fileName, INVALID_FILENAME_CHARS );
     public static string SanitizePathName( this string fileName ) => RemoveChars( fileName, INVALID_PATH_CHARS );
 
@@ -57,7 +58,7 @@ public static class StringExtension
         for( int i = 0; i < fileName.Length; i++ ) if( !charsToRemove.Contains( fileName[i] ) ) newName[it++] = fileName[i];
         return new string( newName );
     }
-    
+
     public static bool IsCommand( this string str, out string commandParameter, params string[] commands )
     {
         if( commands != null )
@@ -84,7 +85,7 @@ public static class StringExtension
         var dx = 0;
 		for( int i = path.Length - 1; i >= 0; i-- )
 		{
-			if( path[i] == '.' ) 
+			if( path[i] == '.' )
 			{
 				dx = path.Length - i;
 				break;

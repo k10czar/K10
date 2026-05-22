@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
-
+using K10.Common;
 using static Colors.Console;
 
 public sealed class PermanentHashedSOImporter : AssetPostprocessor
@@ -68,7 +68,7 @@ public sealed class PermanentHashedSOImporter : AssetPostprocessor
 		if( movedFromAssetPaths.Length > 0 ) log += $"\n{$"{movedFromAssetPaths.Length.ToString().Colorfy( Numbers )} moved from asset paths:".Colorfy( Interfaces )}{afterLine}{string.Join( ",\n   -", movedFromAssetPaths ).Colorfy( Names )}{Colorfy.CloseTag()}";
 
 		Debug.Log( log );
-		
+
 		if( containsTags ) TagsDebug.Instance.Rebuild();
 	}
 }

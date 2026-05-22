@@ -1,3 +1,4 @@
+using K10.Common;
 using UnityEngine;
 
 namespace Automation.Unity

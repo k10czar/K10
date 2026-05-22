@@ -1,10 +1,11 @@
 using System;
 using System.Runtime.CompilerServices;
+using K10.Common;
 
 public static class MaskExtensions
 {
 	const MethodImplOptions AggrInline = MethodImplOptions.AggressiveInlining;
-	
+
 	[MethodImpl( AggrInline )] public static bool AsMaskContains<T>( this T data, T mask ) where T : struct, IConvertible => ( data.ToInt32( null ) & mask.ToInt32( null ) ) == mask.ToInt32( null );
 	[MethodImpl( AggrInline )] public static bool AsMaskContainsID<T>(this T mask, T elementID) where T : struct, IConvertible => mask.ToInt32(null).AsMaskContains(1 << elementID.ToInt32(null));
 
@@ -36,7 +37,7 @@ public static class MaskExtensions
 		return str;
 	}
 
-	public static void WriteBitsAsRef( this ref int data, int initialBit, int bitCount, int value ) 
+	public static void WriteBitsAsRef( this ref int data, int initialBit, int bitCount, int value )
 	{
 		data = WriteBits( data, initialBit, bitCount, value );
 	}

@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     [CustomPropertyDrawer(typeof(SingleLineDrawer))]
     public class SingleLineDrawerPropertyDrawer : PropertyDrawer
@@ -154,12 +154,12 @@ namespace Skyx.SkyxEditor
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => SkyxStyles.LineHeight;
     }
 
-    [CustomPropertyDrawer(typeof(OptionalAttribute))]
-    public class OptionalAttributePropertyDrawer : PropertyDrawer
+    [CustomPropertyDrawer(typeof(OptionalNumAttribute))]
+    public class OptionalNumAttributePropertyDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
         {
-            var optionalAtt = (OptionalAttribute) attribute;
+            var optionalAtt = (OptionalNumAttribute) attribute;
 
             if (optionalAtt.showLabel)
                 EditorGUI.LabelField(rect.ExtractLabelRect(), label);
@@ -184,6 +184,41 @@ namespace Skyx.SkyxEditor
                 {
                     if (isFloat) property.floatValue = optionalAtt.useInfinite ? float.MaxValue : -1;
                     else property.intValue = optionalAtt.useInfinite ? int.MaxValue : -1;
+                    property.Apply();
+                }
+
+                EditorGUI.PropertyField(rect, property, GUIContent.none);
+            }
+        }
+
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => SkyxStyles.LineHeight;
+    }
+
+    [CustomPropertyDrawer(typeof(OptionalStringAttribute))]
+    public class OptionalStringAttributePropertyDrawer : PropertyDrawer
+    {
+        public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
+        {
+            var optionalAtt = (OptionalStringAttribute) attribute;
+
+            if (optionalAtt.showLabel)
+                EditorGUI.LabelField(rect.ExtractLabelRect(), label);
+
+            var isSetToOptional = property.stringValue == optionalAtt.optionalValue;
+
+            if (isSetToOptional)
+            {
+                if (SkyxGUI.Button(rect, optionalAtt.compact))
+                {
+                    property.stringValue = optionalAtt.defaultValue;
+                    property.Apply();
+                }
+            }
+            else
+            {
+                if (SkyxGUI.MiniButton(ref rect, "!", EColor.Support, optionalAtt.hint, true))
+                {
+                    property.stringValue = optionalAtt.optionalValue;
                     property.Apply();
                 }
 

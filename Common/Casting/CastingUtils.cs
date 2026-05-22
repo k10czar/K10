@@ -1,3 +1,4 @@
+using K10.Common;
 using UnityEngine;
 
 using static Colors.Console;
@@ -87,7 +88,7 @@ public static class CastingExtensions
                 return true;
             }
             catch( System.Exception exTK ) { if( logFailAsError ) exTkLog = $"{"exception".Colorfy( Negation )} trying cast as {$"( {typeof(T).FullName}, {typeof(K).FullName} )".Colorfy( TypeName )}:{exTK.Message}"; }
-            
+
             if( typeof( T ) == typeof( K ) )
             {
                 if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Negation)} to parse as {$"( {typeof(T).FullName}, {typeof(K).FullName} )".Colorfy( TypeName )} the {"( object, object )".Colorfy( TypeName )}: {obj.ToStringOrNull().Colorfy( Numbers)}\n{exTkLog}" );
@@ -129,7 +130,7 @@ public static class CastingExtensions
                 return true;
             }
             catch( System.Exception exTK ) { if( logFailAsError ) exTkLog = $"{"exception".Colorfy( Negation )} trying cast as {$"( {typeof(T).FullName}, {typeof(K).FullName} )".Colorfy( TypeName )}:{exTK.Message}"; }
-            
+
             if( typeof( T ) == typeof( K ) )
             {
                 if( logFailAsError ) Debug.LogError( $"{"Fail".Colorfy( Negation)} to parse as {$"( {typeof(T).FullName}, {typeof(K).FullName} )".Colorfy( TypeName )} the {"( string, string )".Colorfy( TypeName )}: {obj.ToStringOrNull().Colorfy( Numbers)}\n{exTkLog}" );

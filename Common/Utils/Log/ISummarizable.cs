@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Text;
 using K10;
+using K10.Common;
 using UnityEngine;
 
 public interface ISummarizable
@@ -15,11 +16,11 @@ public static class SummarizableExtensions
 		if( obj == null ) return ConstsK10.NULL_STRING;
 		if( obj is ISummarizable sum ) return sum.Summarize();
 		if( obj is Object uObj ) return uObj.NameAndType();
-		if( obj is IEnumerable collection ) 
+		if( obj is IEnumerable collection )
 		{
 			ObjectPool.Request<StringBuilder>( out var SB );
 			bool first = true;
-			foreach( var item in collection ) 
+			foreach( var item in collection )
 			{
 				if( !first ) SB.Append( collectionSeparator );
 				SB.Append( item.TrySummarize( collectionSeparator ) );

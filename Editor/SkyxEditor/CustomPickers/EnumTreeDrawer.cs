@@ -8,7 +8,7 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     [CustomPropertyDrawer(typeof(Enum), true)]
     public sealed class EnumTreeDrawer : PropertyDrawer

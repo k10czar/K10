@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using K10.Common;
+using UnityEngine;
 using UnityEditor;
 
 public static class K10EditorGUIUtils
@@ -154,7 +155,7 @@ public static class K10EditorGUIUtils
 				}
 				var name = prop.Name;
 
-				try 
+				try
 				{
 					var semaphore = (K)prop.GetValue( t, null );
 					K10EditorGUIUtils.Semaphore( semaphore, name );

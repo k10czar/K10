@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using K10.Common;
+using UnityEngine;
 
 public abstract class SerializablePermanentHashedSOReference<T> : BaseSerializablePermanentHashedSOReference<T>
 	 															where T : HashedScriptableObject, new()

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using K10.EditorGUIExtention;
 using System.Collections;
 using System.Linq;
+using K10.Common;
 
 [CustomPropertyDrawer( typeof( HashedElementFilterBitsAttribute ) )]
 public class HashedElementFilterBitsDrawer : PropertyDrawer
@@ -64,7 +65,7 @@ public class HashedElementFilterBitsDrawer : PropertyDrawer
 			var val = BitsManipulator.QuerySector32( adapter, i );
 			var newVal = EditorGUI.MaskField( masksArea.VerticalSlice( i, steps ), GUIContent.none, val, n );
 
-			if( newVal != val ) 
+			if( newVal != val )
 			{
 				var changes = newVal ^ val;
 				for( int j = 0; j < 32; j++ )

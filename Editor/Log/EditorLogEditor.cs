@@ -1,3 +1,4 @@
+using K10.Common;
 using K10.EditorGUIExtention;
 using UnityEditor;
 using UnityEngine;
@@ -32,7 +33,7 @@ public class EditorLogEditor : Editor
 		GUILayout.TextField( System.DateTime.Now.ToStringOrNull() );
 		EditorGUILayout.EndHorizontal();
 		textToAdd = GUILayout.TextArea( textToAdd );
-		if( GUILayout.Button( "Add Custom Log" ) ) 
+		if( GUILayout.Button( "Add Custom Log" ) )
 		{
 			var log = (EditorLog)target;
 			log.Add( textToAdd );

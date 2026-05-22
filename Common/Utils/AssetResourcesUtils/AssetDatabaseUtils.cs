@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using K10.Common;
 using UnityEngine;
 
 using static Colors.Console;
@@ -39,7 +40,7 @@ public static class AssetDatabaseUtils
         Debug.LogError( $"RequestPath( {path} ) {ConsoleMessage.ONLY_EDITOR}" );
 #endif //UNITY_EDITOR
     }
-    
+
     public static T GetFirst<T>( string name, bool debug = true ) where T : ScriptableObject
     {
 #if UNITY_EDITOR
@@ -59,7 +60,7 @@ public static class AssetDatabaseUtils
         return null;
 #endif //UNITY_EDITOR
     }
-    
+
     public static T[] GetAll<T>( string name, bool debug = true ) where T : ScriptableObject
     {
 #if UNITY_EDITOR
@@ -79,7 +80,7 @@ public static class AssetDatabaseUtils
         return null;
 #endif //UNITY_EDITOR
     }
-    
+
     public static T[] GetAll<T>( bool debug = true ) where T : ScriptableObject
     {
 #if UNITY_EDITOR
@@ -98,8 +99,8 @@ public static class AssetDatabaseUtils
         return null;
 #endif //UNITY_EDITOR
     }
-    
-    public static ScriptableObject[] GetAll( System.Type type, bool debug = true ) 
+
+    public static ScriptableObject[] GetAll( System.Type type, bool debug = true )
     {
 #if UNITY_EDITOR
         string[] assetNames = UnityEditor.AssetDatabase.FindAssets( $"t:{type.Name}" );

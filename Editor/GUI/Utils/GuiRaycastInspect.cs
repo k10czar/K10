@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using System;
+using K10.Common;
 using UnityEngine.UI;
 
 public class GuiRaycastInspect : EditorWindow
@@ -130,7 +131,7 @@ public class GuiRaycastInspect : EditorWindow
 				var c = t.GetComponent<CanvasGroup>();
 				var gs = t.GetComponents<Graphic>();
 				// if( c == null && gs.Length == 0 ) branches.AddRange( BuildChilds( t ) );
-				// else 
+				// else
 				branches.Add( new Branch( t, c, gs ) );
 				return branches;
 			}

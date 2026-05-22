@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
+using K10.Common;
 using UnityEditor;
 using UnityEngine;
 
@@ -192,10 +193,10 @@ public class TestCustomSerializedMessages : EditorWindow
 		var errorStr = "";
 
 		try { serializationReturn = serializeMethod.Invoke( _instance, new object[] { _instance } ) as byte[]; }
-		catch( System.Exception ex ) 
-		{ 
-			failToSerialize = true; 
-			errorType = ex.GetType().ToString(); 
+		catch( System.Exception ex )
+		{
+			failToSerialize = true;
+			errorType = ex.GetType().ToString();
 			errorStr = ex.Message;
 			errorStack = ex.StackTrace;
 		}
@@ -251,7 +252,7 @@ public class TestCustomSerializedMessages : EditorWindow
 			GUILayout.TextField( obj.ToStringOrNull(), FIELD_WIDTH_PROP );
 			EditorGUI.EndDisabledGroup();
 		}
-		else 
+		else
 		{
 			EditorGUI.BeginDisabledGroup( true );
 			GUILayout.TextField( obj.ToStringOrNull(), DOUBLE_FIELD_WIDTH_PROP );

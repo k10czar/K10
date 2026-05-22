@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Pool;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public class FoldoutScope : ILayoutScope
     {
@@ -113,10 +113,7 @@ namespace Skyx.SkyxEditor
                 foreach (var (label, color, action) in info.buttons)
                 {
                     if (SkyxGUI.MiniButton(ref buttonsRect, label, color, null, true))
-                    {
-                        action();
-                        isExpandedRef = true;
-                    }
+                        action(info.property);
                 }
             }
 

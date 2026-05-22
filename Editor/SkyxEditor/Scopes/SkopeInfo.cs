@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Skyx.RuntimeEditor;
 using UnityEditor;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public class SkopeInfo
     {
@@ -21,12 +21,12 @@ namespace Skyx.SkyxEditor
         public readonly bool indent = false;
         public readonly bool isDisabled = false;
 
-        public List<(string, EColor, Action)> buttons = new();
+        public List<SkopeButton> buttons = new();
 
         public bool HasDescription => !string.IsNullOrEmpty(description);
         public bool CanExpand() => hasCustomExpand || HasDescription || property.CanExpand();
 
-        public void AddUniqueButton((string label, EColor buttonColor, Action callback) entry)
+        public void AddUniqueButton(SkopeButton entry)
         {
             if (buttons.Contains(entry)) return;
             buttons.Add(entry);
@@ -153,7 +153,7 @@ namespace Skyx.SkyxEditor
             var hasAppend = !string.IsNullOrEmpty(append);
 
             var title = hasName
-                ? hasAppend ? name.AppendInfo(append, size: scopedAtt.elementSize) : name
+                ? hasAppend ? name.AppendInfo(append, scopedAtt.elementSize) : name
                 : hasAppend ? append : "Missing Name!";
 
             var info = new SkopeInfo(scopedAtt.scopeType, property, name, title, description, color, scopedAtt.elementSize, scopedAtt.indent, scopedAtt.isDisabled);

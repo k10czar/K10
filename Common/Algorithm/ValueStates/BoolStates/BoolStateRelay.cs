@@ -1,3 +1,5 @@
+using K10.Common;
+
 public class BoolStateRelay : IBoolStateObserver, ICustomDisposableKill
 {
 	bool _killed = false;
@@ -24,8 +26,8 @@ public class BoolStateRelay : IBoolStateObserver, ICustomDisposableKill
 		}
 	}
 	public IEventRegister<bool> OnChange
-	{ 
-		get 
+	{
+		get
 		{
 			if( _killed ) return FakeEvent<bool>.Instance;
 			if( _onChange == null )
@@ -33,7 +35,7 @@ public class BoolStateRelay : IBoolStateObserver, ICustomDisposableKill
 				_onChange = new EventSlot<bool>();
 				if( _currentSource != null ) _currentSource.OnChange.Register( Validator.Validated<bool>( _onChange ) );
 			}
-			return _onChange; 
+			return _onChange;
 		}
 	}
 	public IEventRegister OnTrueState

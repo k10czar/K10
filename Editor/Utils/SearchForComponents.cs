@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
+using K10.Common;
 using UnityEditor.SceneManagement;
 
 [System.Serializable]

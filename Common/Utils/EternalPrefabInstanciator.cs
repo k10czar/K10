@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using K10.Common;
 
 public class EternalPrefabInstanciator : MonoBehaviour
 {
@@ -20,7 +21,7 @@ public class EternalPrefabInstanciator : MonoBehaviour
     {
         if( _prefab == null ) return;
         if( ContainsInstance( _prefab ) ) return;
-        
+
         var watch = new System.Diagnostics.Stopwatch();
         watch.Start();
         var instance = GameObject.Instantiate( _prefab );

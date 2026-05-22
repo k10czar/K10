@@ -1,3 +1,4 @@
+using K10.Common;
 using UnityEngine;
 
 public interface IStateRequesterInfo
@@ -61,7 +62,7 @@ public class StateRequester : IStateRequester, ICustomDisposableKill
 
 	public bool Value { get { return Requested; } }
 	public bool Get() { return Requested; }
-	public IEventRegister<bool> OnChange 
+	public IEventRegister<bool> OnChange
 	{
 		get
 		{
@@ -72,7 +73,7 @@ public class StateRequester : IStateRequester, ICustomDisposableKill
 			}
 			return _invertedSemaphoreStateChange;
 		}
-	} 
+	}
 	public IEventRegister OnTrueState { get { return SemaphoreToInvert.OnBlock; } }
 	public IEventRegister OnFalseState { get { return SemaphoreToInvert.OnRelease; } }
 	public IEventRegister OnInteraction => SemaphoreToInvert.OnInteraction;

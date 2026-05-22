@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.Pool;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public class BackgroundColorScope : IDisposable
     {

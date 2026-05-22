@@ -1,3 +1,4 @@
+using K10.Common;
 using UnityEditor;
 using UnityEngine;
 using static UnityEditor.Sprites.Packer;
@@ -14,7 +15,7 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
     [ConstLike] static readonly Color RED_COLOR = Color.Lerp( Color.red, Color.white, .5f );
 
     public virtual string DebugSuffix( SerializedProperty property ) => "";
-    
+
     public void UpdateOldRef( SerializedProperty editorAssetRefGuid, SerializedProperty hardRef )
     {
         if( hardRef.objectReferenceValue == null ) return;
@@ -34,7 +35,7 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
 
         var deep = property.isExpanded && !refIsNull;
         var slh = EditorGUIUtility.singleLineHeight;
-        
+
         var refState = property.FindPropertyRelative( "_referenceState" );
         var id = property.FindPropertyRelative( "_id" );
 
@@ -48,7 +49,7 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
 		var assetType = instance.EDITOR_GetAssetType();
         var path = UnityEditor.AssetDatabase.GUIDToAssetPath( editorAssetRefGuid.stringValue );
         realRef = UnityEditor.AssetDatabase.LoadAssetAtPath( path, assetType );
-        
+
         var color = Color.white;
         if( refIsNull ) color = RED_COLOR;
         GuiColorManager.New( color );
@@ -56,7 +57,7 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
         var firstLine = area.RequestTop( slh );
         var labelRect = firstLine.RequestLeft( EditorGUIUtility.labelWidth );
         property.isExpanded = EditorGUI.BeginFoldoutHeaderGroup( firstLine.RequestLeft( EditorGUIUtility.labelWidth ), property.isExpanded, label );
-        
+
 		var newRef = EditorGUI.ObjectField( firstLine.CutLeft( EditorGUIUtility.labelWidth ), GUIContent.none, realRef, assetType, true );
         if( realRef != newRef )
         {
@@ -67,14 +68,14 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
 
         var specifiedRealRef = (IHashedSO)newRef;
         id.intValue = specifiedRealRef?.HashID ?? -1;
-        
+
         area = area.CutTop( slh );
 
         EditorGUI.EndFoldoutHeaderGroup();
 
         if( deep )
         {
-            if( Application.isPlaying ) 
+            if( Application.isPlaying )
             {
                 var executionW = DISPOSE_WIDTH + GET_REFERENCE_WIDTH + STATE_WIDTH;
                 var ew = Mathf.Min( ( area.width * 2 ) / 5, executionW );
@@ -89,19 +90,19 @@ public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer
                 EditorGUI.BeginDisabledGroup( state == EAssetReferenceState.Empty );
                 if( GUI.Button( executionArea.VerticalSlice( 0, executionW, DISPOSE_WIDTH ), "Dispose" ) ) ((BaseCollectionElementSoftReference)property.GetInstance())?.DisposeAsset();
                 EditorGUI.EndDisabledGroup();
-                
+
                 EditorGUI.BeginDisabledGroup( state != EAssetReferenceState.Empty );
                 if( GUI.Button( executionArea.VerticalSlice( DISPOSE_WIDTH, executionW, GET_REFERENCE_WIDTH ), "Get Reference" ) ) ((BaseCollectionElementSoftReference)property.GetInstance())?.GetBaseReference();
                 EditorGUI.EndDisabledGroup();
             }
-            
+
             if( specifiedRealRef != null ) EditorGUI.TextField( area, GUIContent.none, $"{specifiedRealRef.GetType().ToString()}{DebugSuffix(property)}[{id.intValue}] => {newRef.name}" );
             else EditorGUI.TextField( area, GUIContent.none, $"NULL{DebugSuffix(property)}[{id.intValue}] => NULL" );
         }
-        
+
         GuiColorManager.Revert();
     }
-    
+
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
     {
         var editorAssetRefGuid = property.FindPropertyRelative( "_editorAssetRefGuid" );

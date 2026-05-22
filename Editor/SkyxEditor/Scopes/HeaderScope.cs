@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Pool;
 
-namespace Skyx.SkyxEditor
+namespace Rogue.REditor
 {
     public class HeaderScope : ILayoutScope
     {
@@ -186,10 +186,7 @@ namespace Skyx.SkyxEditor
                 {
                     var buttonRect = rect.ExtractMiniButton(true);
                     if (buttonRect.TryUseClick(false))
-                    {
-                        action();
-                        isExpandedRef = true;
-                    }
+                        action(info.property);
                 }
             }
         }

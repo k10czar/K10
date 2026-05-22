@@ -1,3 +1,5 @@
+using K10.Common;
+
 public struct LazyBoolStateReverterHolder
 {
 	private bool _killed;
