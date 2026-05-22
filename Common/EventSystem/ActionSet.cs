@@ -10,6 +10,8 @@ public class ActionSet
 
     #region Register Interface
 
+    public void Track(IVoidable capsule) => registeredActions.Add(capsule);
+
     public IVoidable Register(IEventRegister target, Action action)
     {
         var capsule = new ActionCapsule(action, target);

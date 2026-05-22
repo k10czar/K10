@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using K10.EventSystem;
 using UnityEngine.Pool;
 
 public class EventSlot : IEvent, ICustomDisposableKill
@@ -88,7 +89,7 @@ public class EventSlot : IEvent, ICustomDisposableKill
 		return removed;
 	}
 
-	public void Register(Action act) => _ = new ActionCapsule(act, this);
+	public ActionCapsule Register(Action act) => new(act, this);
 	public bool Unregister(Action act) => Unregister(new ActionCapsule(act, true));
 
 	#endregion
@@ -172,12 +173,6 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 		listeners.Add(listener);
 	}
 
-	public void Register(IEventTrigger listener)
-	{
-		if (killed || listener == null) return;
-		Register(listener.Trigger);
-	}
-
 	public bool Unregister(IEventTrigger<T> listener)
 	{
 		if (killed || listeners == null) return false;
@@ -188,10 +183,19 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 		return removed;
 	}
 
+	public void Register(IEventTrigger listener)
+	{
+		if (killed || listener == null) return;
+		Register(listener.Trigger);
+	}
+
 	public bool Unregister(IEventTrigger listener) => !killed && Unregister(listener.Trigger);
 
-	public void Register(Action act) => _ = new ActionCapsule<T>(act, this);
-	public void Register(Action<T> act) => _ = new ActionCapsule<T>(act, this);
+	public ActionCapsule<T> Register(Action act) => new(act, this);
+	public ActionCapsule<T> Register(Action<T> act) => new(act, this);
+
+	public IFilteredActionCapsule RegisterFiltered(Action act) => new FilteredActionCapsule<T>(act, this);
+	public IFilteredActionCapsule RegisterFiltered(Action<T> act) => new FilteredActionCapsule<T>(act, this);
 
 	public bool Unregister(Action act) => Unregister(new ActionCapsule<T>(act, true));
 	public bool Unregister(Action<T> act) => Unregister(new ActionCapsule<T>(act, true));
@@ -302,10 +306,15 @@ public class EventSlot<T,K> : IEvent<T,K>, ICustomDisposableKill
 	public bool Unregister(IEventTrigger<T> listener) => !killed && Unregister(listener.Trigger);
 	public bool Unregister(IEventTrigger listener) => !killed && Unregister(listener.Trigger);
 
-	public void Register(Action act) => _ = new ActionCapsule<T,K>(act, this);
-	public void Register(Action<T> act) => _ = new ActionCapsule<T,K>(act, this);
-	public void Register(Action<K> act) => _ = new ActionCapsule<T,K>(act, this);
-	public void Register(Action<T,K> act) => _ = new ActionCapsule<T,K>(act, this);
+	public ActionCapsule<T,K> Register(Action act) => new(act, this);
+	public ActionCapsule<T,K> Register(Action<T> act) => new(act, this);
+	public ActionCapsule<T,K> Register(Action<K> act) => new(act, this);
+	public ActionCapsule<T,K> Register(Action<T,K> act) => new(act, this);
+
+	public IFilteredActionCapsule RegisterFiltered(Action act) => new FilteredActionCapsule<T,K>(act, this);
+	public IFilteredActionCapsule RegisterFiltered(Action<T> act) => new FilteredActionCapsule<T,K>(act, this);
+	public IFilteredActionCapsule RegisterFiltered(Action<K> act) => new FilteredActionCapsule<T,K>(act, this);
+	public IFilteredActionCapsule RegisterFiltered(Action<T,K> act) => new FilteredActionCapsule<T,K>(act, this);
 
 	public bool Unregister(Action act) => Unregister(new ActionCapsule<T,K>(act, true));
 	public bool Unregister(Action<T> act) => Unregister(new ActionCapsule<T,K>(act, true));
@@ -425,13 +434,23 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 	public bool Unregister(IEventTrigger<T> listener) => !killed && Unregister(listener.Trigger);
 	public bool Unregister(IEventTrigger listener) => !killed && Unregister(listener.Trigger);
 
-	public void Register(Action act) => _ = new ActionCapsule<T,K,L>(act, this);
-	public void Register(Action<T> act) => _ = new ActionCapsule<T,K,L>(act, this);
-	public void Register(Action<K> act) => _ = new ActionCapsule<T,K,L>(act, this);
-	public void Register(Action<L> act) => _ = new ActionCapsule<T,K,L>(act, this);
-	public void Register(Action<T,K> act) => _ = new ActionCapsule<T,K,L>(act, this);
-	public void Register(Action<T,L> act) => _ = new ActionCapsule<T,K,L>(act, this);
-	public void Register(Action<K,L> act) => _ = new ActionCapsule<T,K,L>(act, this);
+	public ActionCapsule<T,K,L> Register(Action act) => new(act, this);
+	public ActionCapsule<T,K,L> Register(Action<T> act) => new(act, this);
+	public ActionCapsule<T,K,L> Register(Action<K> act) => new(act, this);
+	public ActionCapsule<T,K,L> Register(Action<L> act) => new(act, this);
+	public ActionCapsule<T,K,L> Register(Action<T,K> act) => new(act, this);
+	public ActionCapsule<T,K,L> Register(Action<T,L> act) => new(act, this);
+	public ActionCapsule<T,K,L> Register(Action<K,L> act) => new(act, this);
+	public ActionCapsule<T,K,L> Register(Action<T,K,L> act) => new(act, this);
+
+	public IFilteredActionCapsule RegisterFiltered(Action act) => new FilteredActionCapsule<T,K,L>(act, this);
+	public IFilteredActionCapsule RegisterFiltered(Action<T> act) => new FilteredActionCapsule<T,K,L>(act, this);
+	public IFilteredActionCapsule RegisterFiltered(Action<K> act) => new FilteredActionCapsule<T,K,L>(act, this);
+	public IFilteredActionCapsule RegisterFiltered(Action<L> act) => new FilteredActionCapsule<T,K,L>(act, this);
+	public IFilteredActionCapsule RegisterFiltered(Action<T,K> act) => new FilteredActionCapsule<T,K,L>(act, this);
+	public IFilteredActionCapsule RegisterFiltered(Action<T,L> act) => new FilteredActionCapsule<T,K,L>(act, this);
+	public IFilteredActionCapsule RegisterFiltered(Action<K,L> act) => new FilteredActionCapsule<T,K,L>(act, this);
+	public IFilteredActionCapsule RegisterFiltered(Action<T,K,L> act) => new FilteredActionCapsule<T,K,L>(act, this);
 
 	public bool Unregister(Action act) => Unregister(new ActionCapsule<T,K,L>(act, true));
 	public bool Unregister(Action<T> act) => Unregister(new ActionCapsule<T,K,L>(act, true));

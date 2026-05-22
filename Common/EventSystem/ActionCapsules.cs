@@ -46,11 +46,11 @@ public class ActionCapsule : ActionCapsuleBase, IEventTrigger
 
 public class ActionCapsule<T> : ActionCapsuleBase, IEventTrigger<T>
 {
-	private readonly Action<T> callback;
+	protected readonly Action<T> callback;
 	private readonly IEventRegister<T> observed;
 
 	[HideInCallstack]
-	public void Trigger(T t) => callback(t);
+	public virtual void Trigger(T t) => callback(t);
 
 	public override void Void()
 	{
@@ -75,8 +75,7 @@ public class ActionCapsule<T> : ActionCapsuleBase, IEventTrigger<T>
 		if (IsValid) observed.Register(this);
 	}
 
-	public ActionCapsule(Action callback, IEventRegister<T> observed)
-		: base(callback)
+	public ActionCapsule(Action callback, IEventRegister<T> observed) : base(callback)
 	{
 		this.callback = callback.Wrap<T>();
 		this.observed = observed;
@@ -97,11 +96,11 @@ public class ActionCapsule<T> : ActionCapsuleBase, IEventTrigger<T>
 
 public class ActionCapsule<T,K> : ActionCapsuleBase, IEventTrigger<T,K>
 {
-	private readonly Action<T,K> callback;
+	protected readonly Action<T,K> callback;
 	private readonly IEventRegister<T,K> observed;
 
 	[HideInCallstack]
-	public void Trigger(T t, K k) => callback(t, k);
+	public virtual void Trigger(T t, K k) => callback(t, k);
 
 	public override void Void()
 	{
@@ -163,11 +162,11 @@ public class ActionCapsule<T,K> : ActionCapsuleBase, IEventTrigger<T,K>
 
 public class ActionCapsule<T,K,L> : ActionCapsuleBase, IEventTrigger<T,K,L>
 {
-	private readonly Action<T,K,L> callback;
+	protected readonly Action<T,K,L> callback;
 	private readonly IEventRegister<T,K,L> observed;
 
 	[HideInCallstack]
-	public void Trigger(T t, K k, L l) => callback(t, k, l);
+	public virtual void Trigger(T t, K k, L l) => callback(t, k, l);
 
 	public override void Void()
 	{
