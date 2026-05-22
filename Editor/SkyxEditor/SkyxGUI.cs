@@ -19,6 +19,42 @@ namespace Rogue.REditor
             if (string.IsNullOrEmpty(property.stringValue)) DrawHindInlaid(rect, inlaidHint);
         }
 
+        public static void DrawValidatedTextField(Rect rect, SerializedProperty property, string inlaidHint, string[] validValues, bool allowEmpty = false, string overlayHint = null, bool canWriteCustom = true)
+        {
+            var isNumber = float.TryParse(property.stringValue, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out _);
+            var currentIndex = isNumber ? -1 : Array.IndexOf(validValues, property.stringValue);
+            var isEmpty = string.IsNullOrEmpty(property.stringValue);
+
+            var color = isEmpty
+                ? (allowEmpty ? Colors.Console.Success : Colors.Console.Warning)
+                : (currentIndex != -1)
+                    ? Colors.Console.SuccessBackground
+                    : (isNumber ? Colors.Console.Success : Colors.Console.Danger);
+
+            using var backgroundColor = BackgroundColorScope.Set(color);
+
+            GUI.Box(rect, GUIContent.none, SkyxStyles.DropDownButton);
+
+            var innerRect = rect;
+            var dropdownRect = innerRect.ExtractEndRect(10);
+
+            if (dropdownRect.TryUseClick(false))
+                StringPicker.Draw(dropdownRect, validValues, property, null);
+
+            innerRect.ApplyStartMargin();
+
+            if (canWriteCustom) EditorGUI.BeginChangeCheck();
+            else EditorGUI.BeginDisabledGroup(true);
+
+            property.stringValue = EditorGUI.DelayedTextField(innerRect, GUIContent.none, property.stringValue, SkyxStyles.DefaultLabel);
+
+            if (canWriteCustom) { if (EditorGUI.EndChangeCheck()) property.Apply(); }
+            else EditorGUI.EndDisabledGroup();
+
+            DrawHintOverlay(ref innerRect, overlayHint ?? inlaidHint);
+            if (isEmpty) DrawHindInlaid(innerRect, inlaidHint);
+        }
+
         public static void DrawValidatedTextField(Rect rect, SerializedProperty property, string[] validValues, bool allowEmpty = false, bool canWriteCustom = true, Action callback = null)
         {
             var isNumber = float.TryParse(property.stringValue, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out _);
@@ -57,7 +93,6 @@ namespace Rogue.REditor
                 }
             }
             else EditorGUI.EndDisabledGroup();
-
         }
 
         public static void DrawTextFieldWithSuggestions(Rect rect, SerializedProperty property, string[] suggestions, Action callback = null)

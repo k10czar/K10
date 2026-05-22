@@ -340,6 +340,29 @@ namespace Rogue.REditor
         public static SerializedProperty FindBackingProperty(this SerializedObject serializedObject, string propertyName)
             => serializedObject.FindProperty(propertyName.ToBackingFieldName());
 
+        public static SerializedProperty FindParentProperty(this SerializedProperty property)
+        {
+            if (property == null) return null;
+
+            var path = property.propertyPath;
+
+            var lastDotIndex = path.LastIndexOf('.');
+            if (lastDotIndex < 0) return null;
+
+            var parentPath = path[..lastDotIndex];
+            var removedPath = path[(lastDotIndex + 1)..];
+
+            if (removedPath.StartsWith(".data[") && parentPath.EndsWith(".Array."))
+            {
+                lastDotIndex = path.LastIndexOf('.');
+                if (lastDotIndex < 0) throw new ArgumentException($"Strange property path '{property.propertyPath}'");
+
+                parentPath = path[..lastDotIndex];
+            }
+
+            return property.serializedObject.FindProperty(parentPath);
+        }
+
         public static string ToBackingFieldName(this string name) => $"<{name}>k__BackingField";
 
         public static string GetReadablePath(this SerializedObject serializedObject, string propertyPath)

@@ -204,7 +204,7 @@ namespace Rogue.REditor
         public void DrawList(string propertyName, bool displayHeader = true, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
-            var list = GetOrRegisterDefaultList(property, displayHeader);
+            var list = GetOrRegisterList(property, displayHeader);
             list.DoLayoutList();
         }
 
@@ -370,7 +370,7 @@ namespace Rogue.REditor
         public void DrawList(Rect rect, string propertyName, bool displayHeader = true, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
-            var list = GetOrRegisterDefaultList(property, displayHeader);
+            var list = GetOrRegisterList(property, displayHeader);
             list.DoList(rect);
         }
 
@@ -419,8 +419,8 @@ namespace Rogue.REditor
         public bool HasList(string propertyName, bool isBacking = false) => ReorderableListCache.HasList(Get(propertyName, isBacking));
         public bool HasList(SerializedProperty property) => ReorderableListCache.HasList(property);
 
-        public ReorderableList GetOrRegisterDefaultList(
-            SerializedProperty property,
+        public ReorderableList GetOrRegisterList(
+            string propertyName,
             bool displayHeader = true,
             bool draggable = true,
             bool displayAddButton = true,
@@ -430,6 +430,20 @@ namespace Rogue.REditor
             ReorderableListCache.DrawListHeader customHeader = null,
             ReorderableListCache.IsElementHighlighted isElementHighlighted = null,
             bool isBacking = false)
+        {
+            return GetOrRegisterList(Get(propertyName, isBacking), displayHeader, draggable, displayAddButton, displayRemoveButton, customDrawElement, newElementSetup, customHeader, isElementHighlighted);
+        }
+
+        public ReorderableList GetOrRegisterList(
+            SerializedProperty property,
+            bool displayHeader = true,
+            bool draggable = true,
+            bool displayAddButton = true,
+            bool displayRemoveButton = true,
+            ReorderableListCache.DrawElement customDrawElement = null,
+            Action<SerializedProperty> newElementSetup = null,
+            ReorderableListCache.DrawListHeader customHeader = null,
+            ReorderableListCache.IsElementHighlighted isElementHighlighted = null)
         {
             if (ReorderableListCache.TryGet(property, out var list)) return list;
 
