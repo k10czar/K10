@@ -19,6 +19,12 @@ public class ActionSet
         return capsule;
     }
 
+    public void Register(Action action, params IEventRegister[] targets)
+    {
+        foreach (var target in targets)
+            registeredActions.Add(new ActionCapsule(action, target));
+    }
+
     public IVoidable Register<T>(IEventRegister<T> target, Action<T> action)
     {
         var capsule = new ActionCapsule<T>(action, target);
