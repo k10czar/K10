@@ -349,6 +349,13 @@ namespace Rogue.REditor
 
         #endregion
 
+        public static void ClearAllCaches()
+        {
+            PropertyCollection.ClearCollections();
+            SerializedTypeCache.Clear();
+            CustomDrawersCache.ClearCache();
+        }
+
         public static void DrawLabel(ref Rect rect, string label, bool extractLabelRect = true, EColor color = EColor.Primary)
         {
             var drawRect = extractLabelRect ? rect.ExtractLabelRect() : rect;

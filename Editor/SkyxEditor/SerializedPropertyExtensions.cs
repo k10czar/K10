@@ -309,13 +309,43 @@ namespace Rogue.REditor
         #region Cache IDs
 
         public static int GetMainCacheID(this SerializedObject serializedObject)
-            => serializedObject.targetObject.GetInstanceID();
+        {
+            try
+            {
+                return serializedObject.targetObject.GetInstanceID();
+            }
+            catch (Exception)
+            {
+                SkyxGUI.ClearAllCaches();
+                throw;
+            }
+        }
 
         public static (int, string) GetCacheID(this SerializedProperty property)
-            => (property.serializedObject.GetMainCacheID(), property.propertyPath);
+        {
+            try
+            {
+                return (property.serializedObject.GetMainCacheID(), property.propertyPath);
+            }
+            catch (Exception)
+            {
+                SkyxGUI.ClearAllCaches();
+                throw;
+            }
+        }
 
         public static int GetMainCacheID(this SerializedProperty property)
-            => property.serializedObject.GetMainCacheID();
+        {
+            try
+            {
+                return property.serializedObject.GetMainCacheID();
+            }
+            catch (Exception)
+            {
+                SkyxGUI.ClearAllCaches();
+                throw;
+            }
+        }
 
         #endregion
 
