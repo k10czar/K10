@@ -2,7 +2,7 @@
 
 public static class HsoRefExtension
 {
-	public static bool NeedMigration<T>( this HsoRef<T> hsoRef, T t ) where T : HashedScriptableObject
+	public static bool NeedMigration<T>( this BaseHsoRef<T> hsoRef, T t ) where T : HashedScriptableObject
 	{
 		var need = hsoRef == null || ( t != null && hsoRef.ReferenceHashID != t.HashID ) || ( t == null && hsoRef.ReferenceHashID != -1 );
 		// if( need ) Debug.Log( $"Need Migration on {hsoRef.ToStringOrNull()} from {t.ToStringOrNull()}" );
@@ -11,7 +11,13 @@ public static class HsoRefExtension
 }
 
 [System.Serializable]
-public class HsoRef<T> : IReferenceOf<T> where T : HashedScriptableObject
+public class HsoRef<T> : BaseHsoRef<T> where T : HashedScriptableObject, new()
+{
+	
+}
+
+[System.Serializable]
+public abstract class BaseHsoRef<T> : IReferenceOf<T> where T : HashedScriptableObject
 {
 	[SerializeField] int _referenceHashID = -1;
 	[System.NonSerialized] T _reference;
@@ -30,15 +36,15 @@ public class HsoRef<T> : IReferenceOf<T> where T : HashedScriptableObject
 		}
 	}
 	
-	public HsoRef() :this(-1) {}
+	public BaseHsoRef() :this(-1) {}
 
-	public HsoRef( T reference )
+	public BaseHsoRef( T reference )
 	{
 		_reference = reference;
 		_referenceHashID = _reference != null ? _reference.HashID : -1;
 	}
 
-	public HsoRef( int hashId )
+	public BaseHsoRef( int hashId )
 	{
 		_reference = null;
 		_referenceHashID = hashId;

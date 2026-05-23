@@ -4,8 +4,8 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-[CustomPropertyDrawer( typeof( HsoRef<> ), true )]
-public class HsoRefDrawer : PropertyDrawer
+[CustomPropertyDrawer( typeof( BaseHsoRef<> ), true )]
+public class BaseHsoRefDrawer : PropertyDrawer
 {
 	static readonly Dictionary<Type, IHashedSOCollection> _collectionCache = new();
 	[ConstLike] static readonly Color _brokenColor = Color.Lerp( Color.red, Color.white, .5f );
@@ -50,7 +50,7 @@ public class HsoRefDrawer : PropertyDrawer
 	{
 		while( type != null && type != typeof( object ) )
 		{
-			if( type.IsGenericType && type.GetGenericTypeDefinition() == typeof( HsoRef<> ) )
+			if( type.IsGenericType && type.GetGenericTypeDefinition() == typeof( BaseHsoRef<> ) )
 				return type.GetGenericArguments()[0];
 			type = type.BaseType;
 		}
