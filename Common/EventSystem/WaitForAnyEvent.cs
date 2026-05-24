@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class WaitForAnyEvent : CustomYieldInstruction
@@ -17,6 +18,12 @@ public class WaitForAnyEvent : CustomYieldInstruction
 
         eventTriggered = true;
         listeners.Void();
+    }
+
+    public WaitForAnyEvent(IEnumerable<IEventRegister> events)
+    {
+        foreach (var targetEvent in events)
+            listeners.Register(targetEvent, Triggered);
     }
 
     public WaitForAnyEvent(params IEventRegister[] events)
