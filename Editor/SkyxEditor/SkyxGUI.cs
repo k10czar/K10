@@ -222,13 +222,17 @@ namespace Rogue.REditor
             if (EditorGUI.EndChangeCheck()) property.Apply();
         }
 
-        public static void Draw(Rect rect, SerializedProperty property, bool drawLabel = false)
+        public static bool Draw(Rect rect, SerializedProperty property, bool drawLabel = false)
         {
             var label = drawLabel ? null : GUIContent.none;
 
             EditorGUI.BeginChangeCheck();
             EditorGUI.PropertyField(rect, property, label, true);
-            if (EditorGUI.EndChangeCheck()) property.Apply();
+
+            var changed = EditorGUI.EndChangeCheck();
+            if (changed) property.Apply();
+
+            return changed;
         }
 
         #endregion
@@ -349,11 +353,13 @@ namespace Rogue.REditor
 
         #endregion
 
+        [MenuItem("Rogue/Editor/Clear All Caches")]
         public static void ClearAllCaches()
         {
             PropertyCollection.ClearCollections();
             SerializedTypeCache.Clear();
             CustomDrawersCache.ClearCache();
+            ReorderableListCache.Clear();
         }
 
         public static void DrawLabel(ref Rect rect, string label, bool extractLabelRect = true, EColor color = EColor.Primary)
@@ -404,7 +410,7 @@ namespace Rogue.REditor
             DrawHintOverlay(ref rect, hint);
         }
 
-        public static void Separator(ref Rect rect, float margin = SkyxStyles.ElementsMargin, EColor color = EColor.Clear, int size = 1)
+        public static void Separator(ref Rect rect, float margin = SkyxStyles.ElementsMargin, EColor color = EColor.Clear, float size = SkyxStyles.DefaultSeparatorSize)
         {
             var separator = new Rect(rect.x, rect.y, rect.width, size);
             EditorGUI.DrawRect(separator, color is EColor.Clear ? Colors.Transparent02 : color.Get());

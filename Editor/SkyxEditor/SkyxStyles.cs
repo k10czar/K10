@@ -22,6 +22,7 @@ namespace Rogue.REditor
         public const float ElementsMargin = 5;
         public const float CompactSpace = 2;
         public const float CompactListElement = LineHeight + CompactSpace;
+        public const float FullSeparatorSize = DefaultSeparatorSize + ElementsMargin;
 
         public const float MediumButtonSize = 110;
         public const float SmallButtonSize = 60;

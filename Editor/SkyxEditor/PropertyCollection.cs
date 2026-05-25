@@ -156,7 +156,6 @@ namespace Rogue.REditor
             Undo.undoRedoPerformed += OnUndoRedoPerformed;
         }
 
-        [MenuItem("Rogue/Editor/Clear PropertyCollections")]
         public static void ClearCollections()
         {
             collections.Clear();
@@ -253,19 +252,24 @@ namespace Rogue.REditor
 
         #region Rect Draw
 
-        public void Draw(ref Rect rect, string propertyName, ERectSlideDir slideDir = ERectSlideDir.Vertical, bool isBacking = false)
+        public bool Draw(ref Rect rect, string propertyName, ERectSlideDir slideDir = ERectSlideDir.Vertical, bool drawLabel = true, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
-            SkyxGUI.Draw(rect, property, true);
+            var changed = SkyxGUI.Draw(rect, property, drawLabel);
             rect.Slide(slideDir);
+
+            return changed;
         }
 
-        public void Draw(ref Rect rect, string propertyName, bool slideRect = true, bool isBacking = false, bool drawLabel = false)
+        [Obsolete("Use Draw(ref rect, propertyName, slideDir) instead.")]
+        public bool Draw(ref Rect rect, string propertyName, bool slideRect = true, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
-            SkyxGUI.Draw(rect, property, drawLabel);
 
+            var changed = SkyxGUI.Draw(rect, property);
             if (slideRect) rect.SlideSame();
+
+            return changed;
         }
 
         public void DrawFloat(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false, bool alwaysDrawInlaid = false)

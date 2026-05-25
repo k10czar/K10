@@ -68,7 +68,6 @@ namespace Rogue.REditor
                 cache.Remove(key);
         }
 
-        [MenuItem("Rogue/Editor/Clear SerializedType Cache")]
         public static void Clear() => cache.Clear();
 
         static SerializedTypeCache() => Selection.selectionChanged += Clear;

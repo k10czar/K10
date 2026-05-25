@@ -564,6 +564,21 @@ namespace Rogue.REditor
             }
         }
 
+        public static void DrawAllInnerProperties(this SerializedProperty property, ref Rect rect, params string[] including)
+        {
+            foreach (var fieldName in including)
+            {
+                var targetProp =  property.FindPropertyRelative(fieldName);
+                rect.height = EditorGUI.GetPropertyHeight(targetProp, true);
+
+                EditorGUI.BeginChangeCheck();
+                EditorGUI.PropertyField(rect, targetProp, true);
+                if (EditorGUI.EndChangeCheck()) targetProp.Apply();
+
+                rect.y += rect.height + SkyxStyles.ElementsMargin;
+            }
+        }
+
         public static float GetPropertyHeight(this SerializedProperty property, bool isManaged, params string[] except)
         {
             var height = 0f;
