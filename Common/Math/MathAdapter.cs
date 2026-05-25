@@ -67,6 +67,7 @@ public static class MathAdapter
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float acos( float a ) => math.acos( a );
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float tan( float a ) => math.tan( a );
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float atan2( float y, float x ) => math.atan2( y, x );
+	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float pow( float y, float x ) => math.pow( y, x );
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float smoothStep(float a, float b, float x) => math.smoothstep( a, b, x );
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static int CeilToInt( float a ) => Mathf.CeilToInt( a ); // TODO: Change to New Mathematics
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static int RoundToInt( float a ) => Mathf.RoundToInt( a ); // TODO: Change to New Mathematics
@@ -80,6 +81,7 @@ public static class MathAdapter
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float acos( float a ) => Mathf.Acos( a );
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float tan( float a ) => Mathf.Tan( a );
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float atan2( float y, float x ) => Mathf.Atan2( y, x );
+	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float pow( float y, float x ) => Mathf.Pow( y, x );
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static float smoothStep(float a, float b, float x) => Mathf.SmoothStep( a, b, x );
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static int CeilToInt( float a ) => Mathf.CeilToInt( a );
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static int RoundToInt( float a ) => Mathf.RoundToInt( a );

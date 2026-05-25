@@ -123,4 +123,6 @@ public static class ColorExtention
 
 	private static int HexToInt( char hexValue ) { return int.Parse( hexValue.ToString(), System.Globalization.NumberStyles.HexNumber ); }
 	private static float HexToFloat( char hexValue ) { return HexToInt( hexValue ) / 255f; }
+
+	public static Color Multiply( this Color color, Color other ) => new Color( color.r * other.r, color.g * other.g, color.b * other.b, color.a * other.a );
 }

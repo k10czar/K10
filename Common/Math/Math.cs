@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 
 namespace K10
 {
+	//TODO: Rename to HackMath
 	public static class Math
 	{
 		const MethodImplOptions AggrInline = MethodImplOptions.AggressiveInlining;
@@ -46,6 +47,20 @@ namespace K10
 		{
 			if(y == 0) return valueIfZero;
 			return x / y;
+		}
+
+		static ulong[] facts = null;
+		[MethodImpl( AggrInline )] public static ulong Factorial( int f )
+		{
+			if( f < 0 ) return 0;
+			if( f > 20 ) return ulong.MaxValue;
+			if( facts == null ) 
+			{
+				facts = new ulong[21];
+				facts[0] = 1;
+				for( ulong i = 1; i < 21; i++) facts[i] = i * facts[i-1];
+			}
+			return facts[f];
 		}
 	}
 }

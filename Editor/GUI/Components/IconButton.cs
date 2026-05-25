@@ -32,7 +32,7 @@ namespace K10.EditorGUIExtention
 			else
 			{
 				GuiColorManager.New( failColor );
-				ret = GUILayout.Button( new GUIContent( failLetter.ToString(), tooltip ), GUILayout.MaxWidth( 20 ) );
+				ret = GUILayout.Button( new GUIContent( failLetter.ToString(), tooltip ), GUILayout.MaxWidth( iconSize ), GUILayout.MaxHeight( iconSize ) );
 				GuiColorManager.Revert();
 			}
 			return ret;

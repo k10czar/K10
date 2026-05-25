@@ -84,6 +84,15 @@ public class CachedCollection<T> : ICachedCollection<T>, ICustomDisposableKill
         TriggerRemoveEvents( e );
     }
 
+    public void RemoveWithLastSwapUsingInsideReverseFor( int i )
+    {
+        var removedElement = _list[i];
+        var lastId = _list.Count - 1;
+        _list[i] = _list[lastId];
+        _list.RemoveAt( lastId );
+        TriggerRemoveEvents( removedElement );
+    }
+
     public void Insert(int i, T t)
     {
         _list.Insert( i, t );

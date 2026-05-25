@@ -67,22 +67,91 @@ public static class SerializedPropertyExtensions
         object targetObject = property.serializedObject.targetObject;
 		var objectType = targetObject.GetType();
         FieldInfo field = objectType.GetField(property.propertyPath,
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic );
         if (field != null)
         {
             return field.FieldType;
         }
+		return TryGetTypeRecursive( targetObject, property.propertyPath.Split( "." ) );
+
         return null; // Or handle the case where the type is not found
+    }
+
+    private static System.Type TryGetTypeRecursive(object targetObject, string[] pathSplitted)
+    {
+		for( int i = 0; i < pathSplitted.Length; i++ )
+		{
+			if( targetObject == null ) return null;
+			var type = targetObject.GetType();
+			if( type == null ) return null;
+			var memberPath = pathSplitted[i];
+			if( memberPath.EndsWith( "]" ) )
+			{
+				var arrays = memberPath.Split( "[" );
+				if( arrays.Length <= 1 ) return null;
+				var afInfo = type.GetField( arrays[0], BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic );
+				if( afInfo != null )
+				{
+					targetObject = afInfo.GetValue( targetObject );
+					if( !( targetObject is System.Collections.IList list ) ) return null;
+					for( int j = 1; j < arrays.Length; j++)
+					{
+						var id = arrays[j];
+						id = id.Substring( 0, id.Length - 1 );
+						var intId = int.Parse( id );
+						targetObject = list[ intId ];
+					}
+				}
+				else
+				{
+					var apInfo = type.GetProperty( arrays[0], BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic );
+					if( apInfo != null )
+					{
+						targetObject = apInfo.GetValue( targetObject );
+						if( !( targetObject is System.Collections.IList list ) ) return null;
+						for( int j = 1; j < arrays.Length; j++)
+						{
+							var id = arrays[j];
+							id = id.Substring( 0, id.Length - 1 );
+							var intId = int.Parse( id );
+							targetObject = list[ intId ];
+						}
+					}
+					else return null;
+				}
+				return null;
+			}
+			var fInfo = type.GetField( memberPath, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic );
+			if( fInfo != null )
+			{
+				targetObject = fInfo.GetValue( targetObject );
+			}
+			else
+			{
+				var pInfo = type.GetProperty( memberPath, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic );
+				if( pInfo != null ) targetObject = pInfo.GetValue( targetObject );
+				else return null;
+			}
+		}
+		return targetObject?.GetType();
     }
 
     public static void DrawChildProps( this SerializedProperty prop, bool includeChildren = true, float spacing = 0, SerializedProperty ignoreProp = null )
 	{
-		IterateThroughChildProps( prop, ( sp ) => DrawElementLayout( sp, includeChildren, spacing ), ignoreProp );
+		try
+		{
+			IterateThroughChildProps( prop, ( sp ) => DrawElementLayout( sp, includeChildren, spacing ), ignoreProp );
+		}
+		catch ( System.Exception ex ) { Debug.LogException( ex ); }
 	}
 
     public static void DrawChildProps( this SerializedProperty prop, Rect rect, bool includeChildren = true, float spacing = 0, SerializedProperty ignoreProp = null )
 	{
-		IterateThroughChildProps( prop, ( sp ) => DrawElement( ref rect, sp, includeChildren, spacing ), ignoreProp );
+		try
+		{
+			IterateThroughChildProps( prop, ( sp ) => DrawElement( ref rect, sp, includeChildren, spacing ), ignoreProp );
+		}
+		catch ( System.Exception ex ) { Debug.LogException( ex ); }
 	}
 
     public static float CalcChildPropsHeight( this SerializedProperty prop, bool includeChildren = true, float spacing = 0 )
@@ -228,7 +297,7 @@ public static class SerializedPropertyExtensions
 		isActiveProp.TryDrawIsActiveLayout( EditorGUIUtility.singleLineHeight );
 
 		var isInactive = IsInactive( isActiveProp );
-		if( isInactive ) GuiColorManager.New( Colors.Console.GrayOut );
+		if( isInactive ) GuiColorManager.Greyout();
 
 		var listingData = TypeListDataCache.GetFrom( type );
 
@@ -342,7 +411,7 @@ public static class SerializedPropertyExtensions
 		}
 
 		var isInactive = IsInactive( isActiveProp );
-		if( isInactive ) GuiColorManager.New( Colors.Console.GrayOut );
+		if( isInactive ) GuiColorManager.Greyout();
 
         rect = rect.CutTop(EditorGUIUtility.singleLineHeight + spacing);
 		var listingData = TypeListDataCache.GetFrom( type );
@@ -389,15 +458,18 @@ public static class SerializedPropertyExtensions
 		 return -1;
 	}
 
-    private static void CheckSelectionChange( SerializedProperty prop, TypeListData listingData, int oldIndex, int newIndex )
+    private static bool CheckSelectionChange( SerializedProperty prop, TypeListData listingData, int oldIndex, int newIndex )
     {
-        if( newIndex == oldIndex ) return;
+        if( newIndex == oldIndex ) return false;
 		var types = listingData.GetTypes();
 		var newType = (newIndex >= 0) ? types[newIndex] : null;
 		var newTypeName = newType?.FullName ?? ConstsK10.NULL_STRING;
 		var oldTypeName = ( oldIndex < 0 || oldIndex >= types.Length ) ? "MISSING" : types[oldIndex]?.FullName ?? ConstsK10.NULL_STRING;
 		Debug.Log($"{"Changed".Colorfy( Colors.Console.Verbs )} {"SerializedReference".Colorfy( Colors.Console.TypeName )} {prop.propertyPath.Colorfy( Colors.Console.Interfaces )} type from {$"{oldTypeName}[{oldIndex}]".Colorfy(Colors.Console.TypeName)} to {$"{newTypeName}[{newIndex}]".Colorfy(Colors.Console.Numbers)}");
-		prop.managedReferenceValue = newType.CreateInstance();
+		var newData = newType.CreateInstance();
+		Debug.Log( $"NewData:{newData.ToStringOrNull()}\nOld:{prop.managedReferenceValue.ToStringOrNull()}" );
+		prop.managedReferenceValue = newData;
+		return true;
     }
 
 	public static string ToFileName( this SerializedProperty prop )

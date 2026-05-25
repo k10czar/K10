@@ -24,7 +24,7 @@ public class StoreGuidFromDrawer : PropertyDrawer {
         var myAttribute = attribute as StoreGuidFromAttribute;
         var guid = property.stringValue;
         var path = AssetDatabase.GUIDToAssetPath( guid );
-        var type = myAttribute.TypeRestriction;
+        var type = myAttribute.ResolveType();
         var objRef = AssetDatabase.LoadAssetAtPath( path, type );
         var newRef = ScriptableObjectField.Draw( area, label.text, objRef, type, myAttribute.NewPath, false );
         if( objRef != newRef )

@@ -97,6 +97,54 @@ public static class Colors
         }
     }
 
+    public struct ColorThreshold
+    {
+        public float threshold;
+        public Color color;
+
+        public ColorThreshold(float threshold, Color color)
+        {
+            this.threshold = threshold;
+            this.color = color;
+        }
+
+        public static implicit operator ColorThreshold((float threshold, Color color) t) => new(t.threshold, t.color);
+    }
+
+    public static Color Mix(float value, params ColorThreshold[] stops)
+    {
+        var len = stops.Length;
+        if (len == 0) return Color.white;
+        if (len == 1 || value <= stops[0].threshold) return stops[0].color;
+        var lastId = len - 1;
+        if (value >= stops[lastId].threshold) return stops[lastId].color;
+
+        for (int i = 1; i < len; i++)
+        {
+            if (value > stops[i].threshold) continue;
+
+            var from = stops[i - 1];
+            var to   = stops[i];
+            var t    = Mathf.InverseLerp(from.threshold, to.threshold, value);
+
+            Color.RGBToHSV(from.color, out float hA, out float sA, out float vA);
+            Color.RGBToHSV(to.color,   out float hB, out float sB, out float vB);
+
+            // Shortest arc on hue wheel
+            float delta = hB - hA;
+            if      (delta >  0.5f) hA += 1f;
+            else if (delta < -0.5f) hB += 1f;
+
+            var h = Mathf.Lerp(hA, hB, t) % 1f;
+            var s = Mathf.Lerp(sA, sB, t);
+            var v = Mathf.Lerp(vA, vB, t);
+
+            return Color.HSVToRGB(h, s, v);
+        }
+
+        return stops[lastId].color;
+    }
+
     public static Color FromSequence<T>(T value, bool isStatus = false, bool loop = false) where T : Enum => FromSequence((int)(object)value, isStatus, loop);
     public static Color FromSequence(int index, bool isStatus = false, bool loop = false)
     {
@@ -108,7 +156,7 @@ public static class Colors
     private const System.Reflection.BindingFlags FLAGS = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
 
 #if UNITY_EDITOR
-    [UnityEditor.MenuItem("K10/Colors/Log")]
+    // [UnityEditor.MenuItem("K10/Colors/Log")]
     private static void EDITOR_Log()
     {
         var binding = FLAGS;
@@ -117,7 +165,7 @@ public static class Colors
         typeof(Console).ReflectListMembers<Color>( EDITOR_DebugColor, binding, 0 ).Log();
     }
 
-    [UnityEditor.MenuItem("K10/Colors/Log Codes")]
+    // [UnityEditor.MenuItem("K10/Colors/Log Codes")]
     private static void EDITOR_LogCodes()
     {
         var binding = FLAGS;
@@ -126,8 +174,19 @@ public static class Colors
         typeof(Console).ReflectListMembers<Color>( EDITOR_DebugColorCode, binding, 0 ).Log();
     }
 
-    private static string EDITOR_DebugColor( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{name} █  </color>";
-    private static string EDITOR_DebugColorCode( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>#{ColorUtility.ToHtmlStringRGB(color)}█</color>";
+    // [UnityEditor.MenuItem("K10/Colors/Log Both")]
+    [UnityEditor.MenuItem("K10/Log Colors")]
+    private static void EDITOR_LogBoth()
+    {
+        var binding = FLAGS;
+        typeof(Color).ReflectListMembers<Color>( EDITOR_DebugColorBooth, binding, 0 ).Log();
+        typeof(Colors).ReflectListMembers<Color>( EDITOR_DebugColorBooth, binding, 0 ).Log();
+        typeof(Console).ReflectListMembers<Color>( EDITOR_DebugColorBooth, binding, 0 ).Log();
+    }
+
+    private static string EDITOR_DebugColor( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{name} █</color>  ";
+    private static string EDITOR_DebugColorCode( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>#{ColorUtility.ToHtmlStringRGB(color)}█</color> ";
+    private static string EDITOR_DebugColorBooth( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>█ {name} #{ColorUtility.ToHtmlStringRGB(color)}</color> \t";
 #endif
 
     public static class Console

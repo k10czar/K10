@@ -1,3 +1,4 @@
+#define COLOR_ON_BUILD
 using UnityEngine;
 
 public static class LogUtility
@@ -22,7 +23,10 @@ public static class LogUtility
 		#else
 		bool isEditor = false;
 		#endif
+
+		#if !COLOR_ON_BUILD
 		if( !isEditor && !evenOutEditor ) return str;
+		#endif
 
 		SB.Clear();
         SB.Append( $"<color={colorName}>" );

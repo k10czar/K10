@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 using K10.EditorGUIExtention;
-using Automation;
+using K10.Automation;
 
 [CustomEditor( typeof( OperationObject ) )]
 public class OperationObjectEditor : Editor

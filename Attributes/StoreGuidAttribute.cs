@@ -6,6 +6,7 @@ public class StoreGuidAttribute : PropertyAttribute { }
 public class StoreGuidFromAttribute : PropertyAttribute
 {
     public readonly Type TypeRestriction;
+    public readonly string TypeRestrictionName;
     public readonly string NewPath = string.Empty;
     public readonly bool AllowSceneObjects = false;
 
@@ -15,6 +16,15 @@ public class StoreGuidFromAttribute : PropertyAttribute
         AllowSceneObjects = allowSceneObjects;
         NewPath = newPath;
     }
+
+    public StoreGuidFromAttribute(string typeName, bool allowSceneObjects = false, string newPath = "")
+    {
+        TypeRestrictionName = typeName;
+        AllowSceneObjects = allowSceneObjects;
+        NewPath = newPath;
+    }
+
+    public Type ResolveType() => TypeRestriction ?? Type.GetType(TypeRestrictionName);
 }
 
 public class StoreFileIDAttribute : PropertyAttribute { }

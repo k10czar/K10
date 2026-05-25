@@ -35,6 +35,11 @@ public static class PropDrawerCache
             candidate = pd.CreateInstance() as PropertyDrawer;
             if( candidate != null ) break;
         }
+        
+        if( candidate == null && type != typeof( Enum ) && type.IsSubclassOf( typeof( Enum ) ) )
+        {
+            candidate = From( typeof( Enum ) );
+        }
 
         _drawersCache.Add( type, candidate );
 
@@ -49,11 +54,16 @@ public static class PropDrawerCache
     {
         if( propertyDrawerType == null ) return false;
         if( !propertyDrawerType.IsSubclassOf( PROP_TYPE ) ) return false;
-        var att = propertyDrawerType.GetCustomAttribute<CustomPropertyDrawer>();
-        if( att == null ) return false;
-        if( TYPE_FIELD == null ) return false;
-        var attType = TYPE_FIELD.GetValue( att ) as System.Type;
-        if( attType == null ) return false;
-        return propertyDrawerType.IsSubclassOf( attType );
+        var atts = propertyDrawerType.GetCustomAttributes<CustomPropertyDrawer>();
+        if( atts == null ) return false;
+        foreach( var att in atts )
+        {
+            if( TYPE_FIELD != null )
+            {
+                var attType = TYPE_FIELD.GetValue( att ) as System.Type;
+                if( attType != null && propertyDrawerType.IsSubclassOf( attType ) ) return true;
+            }
+        }
+        return false;
     }
 }
