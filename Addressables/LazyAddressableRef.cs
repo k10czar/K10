@@ -13,6 +13,9 @@ public class LazyAddressableRef<T> where T : Object
 	bool _isLoading;
 	bool _loaded;
 	T _asset;
+#if UNITY_EDITOR
+	T _safeEditorAsset;
+#endif
 
 	public LazyAddressableRef( string address ) => _address = address;
 
@@ -27,6 +30,25 @@ public class LazyAddressableRef<T> where T : Object
 #if DEBUG_NOTIFY
 		NotificationConsole.Notify( $"<color=#0080FF>LazyAddressableRef</color> Loading: \"{_address}\"" );
 #endif //DEBUG_NOTIFY
+	}
+
+	public T SafeInstance
+	{
+		get
+		{
+#if UNITY_EDITOR
+			if(!Application.isPlaying)
+			{
+				if( _safeEditorAsset == null )
+				{
+					var guids = UnityEditor.AssetDatabase.FindAssets($"t:{typeof(T)}");
+					_safeEditorAsset = UnityEditor.AssetDatabase.LoadAssetAtPath<T>(UnityEditor.AssetDatabase.GUIDToAssetPath(guids[0]));
+				}
+				return _safeEditorAsset;
+			}
+#endif
+			return Asset;
+		}
 	}
 
 	public T Asset
