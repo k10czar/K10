@@ -12,6 +12,8 @@ namespace K10.Platforms
             Override,
         }
 
+        [Space(5)]
+        [Header("Button Config")]
         [SerializeField] private Button _button;
         [SerializeField] private EButtonEventSetMode _eventSetMode;
         [SerializeField] private UnityEvent _onClickDefaultEvents;
