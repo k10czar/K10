@@ -1,11 +1,40 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Animations;
+
+public enum EVisualDebugShape
+{
+	X,
+	Circle,
+	Triangle,
+	Arrow,
+	WireBox,
+}
 
 public static class DebugUtils
 {
 	const float K_DEFAULT_ANGLE_PRECISION = Mathf.PI / 20;
 	static readonly Color DEFAULT_COLOR = Color.green;
+
+	public static void Show(EVisualDebugShape shape, Vector3 position, float size, Color color, float duration = 0f)
+	{
+		switch (shape)
+		{
+			case EVisualDebugShape.X:
+				X(position, size, color, duration); break;
+			case EVisualDebugShape.Circle:
+				Circle(position, size, color, duration); break;
+			case EVisualDebugShape.Triangle:
+				Triangle(position, Vector3.forward, Vector3.up, 60, size, color, duration); break;
+			case EVisualDebugShape.Arrow:
+				Arrow(position, Vector3.forward, Vector3.up, size, color, duration); break;
+			case EVisualDebugShape.WireBox:
+				WireBox(position, size, color, duration); break;
+			default:
+				throw new ArgumentOutOfRangeException(nameof(shape), shape, null);
+		}
+
+	}
 
 	public static void Rect( RectTransform rect, Color color )
 	{
@@ -54,34 +83,24 @@ public static class DebugUtils
 		}
 	}
 
-	public static void CircleTime( Vector3 pos, float radius, Color color, float time ) { CircleTime( pos, Vector3.forward, Vector3.up, radius, color, false, time ); }
-	public static void CircleTime( Vector3 pos, float radius, Color color, float anglePrecision, float time ) { CircleTime( pos, Vector3.forward, Vector3.up, radius, color, false, anglePrecision, time ); }
-	public static void CircleTime( Vector3 pos, Vector3 forward, Vector3 up, float radius, Color color, bool forwardGuide, float time ) { CircleTime( pos, forward, up, radius, color, forwardGuide, K_DEFAULT_ANGLE_PRECISION, time ); }
-    public static void CircleTime( Vector3 pos, Vector3 forward, Vector3 up, float radius, Color color, bool forwardGuide, float anglePrecision, float time )
-    {
-        var a = forward.normalized * radius;
-        if( forwardGuide ) Debug.DrawLine( pos, pos + a, color, time );
+    public static void Circle(Vector3 pos, float radius, Color color, float duration = 0f)
+	    => Circle(pos, Vector3.forward, Vector3.up, K_DEFAULT_ANGLE_PRECISION, radius, color, false, duration);
 
-        for( float ang = 0; ang <= 2 * Mathf.PI; ang += anglePrecision )
-        {
-            var b = Quaternion.AngleAxis( anglePrecision * Mathf.Rad2Deg, up ) * a;
-            Debug.DrawLine( pos + a, pos + b, color, time );
-            a = b;
-        }
-	}
+    public static void Circle(Vector3 pos, float anglePrecision, float radius, Color color, float duration = 0f)
+	    => Circle(pos, Vector3.forward, Vector3.up, anglePrecision, radius, color, false, duration);
 
-	public static void Circle( Vector3 pos, float radius, Color color ) { Circle( pos, Vector3.forward, Vector3.up, radius, color, false ); }
-	public static void Circle( Vector3 pos, float radius, Color color, float anglePrecision ) { Circle( pos, Vector3.forward, Vector3.up, radius, color, false, anglePrecision ); }
-	public static void Circle( Vector3 pos, Vector3 forward, Vector3 up, float radius, Color color, bool forwardGuide ) { Circle( pos, forward, up, radius, color, forwardGuide, K_DEFAULT_ANGLE_PRECISION ); }
-	public static void Circle(Vector3 pos, Vector3 forward, Vector3 up, float radius, Color color, bool forwardGuide, float anglePrecision)
+    public static void Circle(Vector3 pos, Vector3 forward, Vector3 up, float radius, Color color, bool forwardGuide, float duration = 0f)
+	    => Circle(pos, forward, up, K_DEFAULT_ANGLE_PRECISION, radius, color, forwardGuide, duration);
+
+	public static void Circle(Vector3 pos, Vector3 forward, Vector3 up, float anglePrecision, float radius, Color color, bool forwardGuide, float duration = 0f)
 	{
 		var a = forward.normalized * radius;
-		if (forwardGuide) Debug.DrawLine(pos, pos + a, color);
+		if (forwardGuide) Debug.DrawLine(pos, pos + a, color, duration);
 
 		for (float ang = 0; ang <= 2 * Mathf.PI; ang += anglePrecision)
 		{
 			var b = Quaternion.AngleAxis(anglePrecision * Mathf.Rad2Deg, up) * a;
-			Debug.DrawLine(pos + a, pos + b, color);
+			Debug.DrawLine(pos + a, pos + b, color, duration);
 			a = b;
 		}
 	}
@@ -130,17 +149,17 @@ public static class DebugUtils
 		if( a != last ) Debug.DrawLine( pos + a, pos + last, color );
 	}
 
-    public static void Triangle( Vector3 pos, Vector3 forward, Vector3 up, float angle, float distance, Color color )
-    {
-        var first = Quaternion.AngleAxis( -angle / 2 * Mathf.Rad2Deg, up ) * (forward.normalized * distance);
-        var last = Quaternion.AngleAxis( angle / 2 * Mathf.Rad2Deg, up ) * (forward.normalized * distance);
-        Debug.DrawLine( pos, pos + first, color );
-        Debug.DrawLine( pos, pos + last, color );
+	public static void Triangle(Vector3 pos, Vector3 forward, Vector3 up, float angle, float distance, Color color, float duration = 0f)
+	{
+		var first = Quaternion.AngleAxis(-angle / 2 * Mathf.Rad2Deg, up) * (forward.normalized * distance);
+		var last = Quaternion.AngleAxis(angle / 2 * Mathf.Rad2Deg, up) * (forward.normalized * distance);
 
-        Debug.DrawLine( pos + first, pos + last, color );
-    }
+		Debug.DrawLine(pos, pos + first, color, duration);
+		Debug.DrawLine(pos, pos + last, color, duration);
+		Debug.DrawLine(pos + first, pos + last, color, duration);
+	}
 
-    public static void Diamond( Vector3 pos, float angle, float distance, Color color )
+	public static void Diamond( Vector3 pos, float angle, float distance, Color color )
     {
         var first1 = Quaternion.AngleAxis( -angle / 2 * Mathf.Rad2Deg, Vector3.forward ) * (-Vector3.up.normalized * distance);
         var last1 = Quaternion.AngleAxis( angle / 2 * Mathf.Rad2Deg, Vector3.forward ) * (-Vector3.up.normalized * distance);
@@ -159,16 +178,17 @@ public static class DebugUtils
         Debug.DrawLine( pos + last2, pos + first1, color );
     }
 
-    public static void X( Vector3 pos, float radius, Color color, float time = 0 ) { X( pos, Vector3.forward, Vector3.up, radius, color, time ); }
-	public static void X(Vector3 pos, Vector3 forward, Vector3 up, float radius, Color color, float time = 0)
-	{
-		var a = forward.normalized * radius;
+	public static void X(Vector3 pos, float radius, Color color, float duration = 0) => X(pos, Vector3.forward, Vector3.up, radius, color, duration);
 
-		Debug.DrawLine(pos + Quaternion.AngleAxis(45, up) * a, pos + Quaternion.AngleAxis(225, up) * a, color, time );
-		Debug.DrawLine(pos + Quaternion.AngleAxis(315, up) * a, pos + Quaternion.AngleAxis(135, up) * a, color, time );
-	}
+    public static void X(Vector3 pos, Vector3 forward, Vector3 up, float radius, Color color, float duration = 0)
+    {
+	    var a = forward.normalized * radius;
 
-	public static void TravelArrow( Vector3 origin, Vector3 destination, float tipScale, Color color, float time = 0 ) { TravelArrow( origin, destination, Vector3.up, tipScale, color ); }
+	    Debug.DrawLine(pos + Quaternion.AngleAxis(45, up) * a, pos + Quaternion.AngleAxis(225, up) * a, color, duration);
+	    Debug.DrawLine(pos + Quaternion.AngleAxis(315, up) * a, pos + Quaternion.AngleAxis(135, up) * a, color, duration);
+    }
+
+    public static void TravelArrow( Vector3 origin, Vector3 destination, float tipScale, Color color, float time = 0 ) { TravelArrow( origin, destination, Vector3.up, tipScale, color ); }
 	public static void TravelArrow( Vector3 origin, Vector3 destination, Vector3 up, float tipScale, Color color ) { TravelArrow( origin, destination, up, tipScale, color, 30 ); }
 	public static void TravelArrow( Vector3 origin, Vector3 destination, Vector3 up, float tipScale, Color color, float angle, float time = 0 ) { TravelArrow( origin, destination, up, tipScale, color, color, angle ); }
 	public static void TravelArrow( Vector3 origin, Vector3 destination, Vector3 up, float tipScale, Color color, Color tipColor, float angle, float time = 0 )
