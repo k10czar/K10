@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Skyx.RuntimeEditor;
 using UnityEditor;
+using UnityEngine;
 
 namespace Rogue.REditor
 {
@@ -21,16 +22,46 @@ namespace Rogue.REditor
         public readonly bool indent = false;
         public readonly bool isDisabled = false;
 
-        public List<SkopeButton> buttons = new();
-
         public bool HasDescription => !string.IsNullOrEmpty(description);
         public bool CanExpand() => hasCustomExpand || HasDescription || property.CanExpand();
+
+        #region Buttons
+
+        public List<SkopeButton> buttons = new();
 
         public void AddUniqueButton(SkopeButton entry)
         {
             if (buttons.Contains(entry)) return;
             buttons.Add(entry);
         }
+
+        public void DrawButtons(Rect rect, bool reallyDraw)
+        {
+            if (buttons == null) return;
+
+            EditorGUI.BeginDisabledGroup(isDisabled);
+
+            rect.y += 5;
+            rect.x -= 4;
+            rect.height = SkyxStyles.LineHeight;
+
+            foreach (var (label, color, action) in buttons)
+            {
+                if (reallyDraw) SkyxGUI.MiniButton(ref rect, label, color, null, true);
+                else
+                {
+                    var buttonRect = rect.ExtractMiniButton(true);
+                    if (buttonRect.TryUseClick(false))
+                        action(property);
+                }
+            }
+
+            EditorGUI.EndDisabledGroup();
+        }
+
+        #endregion
+
+        #region Constructors
 
         public SkopeInfo(EScopeType scopeType, SerializedProperty property, string title, EColor color, EElementSize size)
         {
@@ -85,6 +116,8 @@ namespace Rogue.REditor
             this.size = size;
             this.indent = indent;
         }
+
+        #endregion
     }
 
     public static class SkopeInfoExtensions

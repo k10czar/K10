@@ -17,6 +17,7 @@ namespace Skyx.RuntimeEditor
         HeaderNameOnly,
         HeaderPropertySummary,
         HeaderNameSummary,
+        InlineHeaderNameSummary,
     }
 
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Class)]
@@ -98,6 +99,8 @@ namespace Skyx.RuntimeEditor
             { EScopePreset.Inline, new ScopedAttribute(EScopeType.Inline, EEditorInfoSource.EditorContent, EEditorInfoSource.Nothing, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
             { EScopePreset.InlinePropertySummary, new ScopedAttribute(EScopeType.Inline, EEditorInfoSource.Property, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
             { EScopePreset.InlineFullContent, new ScopedAttribute(EScopeType.Inline, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
+
+            { EScopePreset.InlineHeaderNameSummary, new ScopedAttribute(EScopeType.InlineHeader, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
         };
 
         #endregion

@@ -261,7 +261,7 @@ namespace Rogue.REditor
             return changed;
         }
 
-        [Obsolete("Use Draw(ref rect, propertyName, slideDir) instead.")]
+        // [Obsolete("Use Draw(ref rect, propertyName, slideDir) instead.")]
         public bool Draw(ref Rect rect, string propertyName, bool slideRect = true, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);

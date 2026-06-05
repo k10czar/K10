@@ -19,7 +19,7 @@ public class ActionSet
         return capsule;
     }
 
-    public void Register(Action action, params IEventRegister[] targets)
+    public void Register(Action action, IEnumerable<IEventRegister> targets)
     {
         foreach (var target in targets)
             registeredActions.Add(new ActionCapsule(action, target));

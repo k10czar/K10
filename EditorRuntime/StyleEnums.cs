@@ -56,7 +56,7 @@ namespace Skyx.RuntimeEditor
         {
             EScopeType.Header => EElementSize.Primary,
             EScopeType.Foldout => EElementSize.SingleLine,
-            EScopeType.InlineHeader => EElementSize.Primary,
+            EScopeType.InlineHeader => EElementSize.Secondary,
             EScopeType.Inline => EElementSize.SingleLine,
             _ => throw new ArgumentOutOfRangeException(nameof(scopeType), scopeType, null)
         };

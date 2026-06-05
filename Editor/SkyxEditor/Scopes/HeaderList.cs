@@ -21,7 +21,7 @@ namespace Rogue.REditor
         {
             var drawingRect = rect;
             if (resetHeight) drawingRect.height = GetPropertyHeight(property, scopeType, size);
-            rect.y += drawingRect.height + SkyxStyles.ElementsMargin;
+            rect.y += drawingRect.height;
 
             title = string.IsNullOrEmpty(title) ? property.PrettyName() : title;
             newText = string.IsNullOrEmpty(newText) ? "New Entry" : newText;

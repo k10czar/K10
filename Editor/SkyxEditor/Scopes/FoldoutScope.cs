@@ -110,11 +110,15 @@ namespace Rogue.REditor
                 buttonsRect.x -= 4;
                 buttonsRect.height = SkyxStyles.LineHeight;
 
+                EditorGUI.BeginDisabledGroup(info.isDisabled);
+
                 foreach (var (label, color, action) in info.buttons)
                 {
                     if (SkyxGUI.MiniButton(ref buttonsRect, label, color, null, true))
                         action(info.property);
                 }
+
+                EditorGUI.EndDisabledGroup();
             }
 
             if (canExpand && headerRect.TryUseClick(false))

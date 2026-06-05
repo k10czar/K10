@@ -36,6 +36,13 @@ namespace K10.Common
 			transform.localScale = Vector3.one;
 		}
 
+		public static GameObject CreateChild(this Transform parent, string name)
+		{
+			var newObj = new GameObject(name);
+			newObj.transform.ReParent(parent);
+			return newObj;
+		}
+
 		public static void DestroyChildren(this Transform transform)
 		{
 			for (var i = transform.childCount - 1; i >= 0; i--)
