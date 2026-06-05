@@ -24,6 +24,8 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 	private BoolState _isAlive;
 	private Validator _lifetimeValidator;
 
+	public bool triggerEventsOnApplicationQuit = false;
+
 	IEventRegister IUnityEventsRelay.OnDestroy => OnDestroyEvent;
 
 	// public IEventRegister OnLateDestroy => Lazy.Request( ref _onLateDestroy );
@@ -103,9 +105,13 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 	void Clear()
 	{
 		_destroyed = true;
-		_onDestroy?.Trigger(gameObject);
-		_isAlive?.SetFalse();
-		_lifetimeValidator?.OnDestroy();
+
+		if (triggerEventsOnApplicationQuit || !ApplicationEventsRelay.isQuitting)
+		{
+			_onDestroy?.Trigger(gameObject);
+			_isAlive?.SetFalse();
+			_lifetimeValidator?.OnDestroy();
+		}
 
 		GcClear.AfterKill(ref _onDestroy);
 		GcClear.AfterKill(ref _isAlive);
@@ -120,6 +126,8 @@ public class GameObjectEventsRelay : MonoBehaviour, IUnityEventsRelay
 
 	void OnDisable()
 	{
+		if (!triggerEventsOnApplicationQuit && ApplicationEventsRelay.isQuitting) return;
+
 		// Debug.Log( $"GameObjectEventsRelay.OnDisable( {DebugName} ) => {GetStateDebug()}" );
 		_isActive?.SetFalse();
 		_onDisable?.Trigger(gameObject);

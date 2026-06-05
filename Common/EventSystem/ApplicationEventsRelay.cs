@@ -8,29 +8,33 @@ using UnityEditor;
 
 public class ApplicationEventsRelay : MonoBehaviour
 {
-    private static Thread _mainThread;
-    EventSlot _onQuit = new();
-    BoolState _isFocused = new();
-    BoolState _isPaused = new();
-    BoolState _isSuspended = new();
+    private static ApplicationEventsRelay instance;
+    private static Thread mainThread;
 
-    public static bool HasInstance => Singleton<ApplicationEventsRelay>.IsValid;
+    public static readonly BoolState isQuitting = new();
+    public static readonly BoolState isFocused = new();
+    public static readonly BoolState isPaused = new();
+    public static readonly BoolState isSuspended = new();
 
-    public static IEventRegister OnQuit => Eternal<ApplicationEventsRelay>.Instance._onQuit;
-    public static IBoolStateObserver IsFocused  => Eternal<ApplicationEventsRelay>.Instance._isFocused;
-    public static IBoolStateObserver IsPaused  => Eternal<ApplicationEventsRelay>.Instance._isPaused;
-    public static IBoolStateObserver IsSuspended  => Eternal<ApplicationEventsRelay>.Instance._isSuspended;
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void Initialize()
+    {
+        if (instance != null) return;
+
+        var obj = new GameObject("[ApplicationEventsRelay]");
+        instance = obj.AddComponent<ApplicationEventsRelay>();
+        DontDestroyOnLoad(obj);
+    }
 
     private void Awake()
     {
-        if (_mainThread == null)
-            _mainThread = Thread.CurrentThread;
+        mainThread ??= Thread.CurrentThread;
 
 #if LOG_EVENTS
         Debug.Log( $"<color=magenta>ApplicationEventsRelay</color>.Awake()" );
 #endif
-        _isFocused = new BoolState(Application.isFocused);
-        _isPaused = new BoolState(!Application.isPlaying);
+        isFocused.Setter(Application.isFocused);
+        isPaused.Setter(!Application.isPlaying);
 
 #if UNITY_EDITOR
         EditorApplication.playModeStateChanged += OnExitPlayMode;
@@ -74,19 +78,16 @@ public class ApplicationEventsRelay : MonoBehaviour
 #if UNITY_EDITOR
         if( !Application.isPlaying ) return false;
 #endif
-        if (!HasInstance)
-            Eternal<ApplicationEventsRelay>.Request();
-
-        return _mainThread != null && _mainThread.Equals(Thread.CurrentThread);
+        return mainThread != null && mainThread.Equals(Thread.CurrentThread);
     }
 
     private void OnApplicationQuit()
     {
-        _isSuspended?.SetTrue();
+        isSuspended.SetTrue();
 #if LOG_EVENTS
         Debug.Log( $"<color=magenta>ApplicationEventsRelay</color>.<color=cyan>OnApplicationQuit</color>()" );
 #endif
-        _onQuit?.Trigger();
+        isQuitting.SetTrue();
     }
 
     private void OnApplicationFocus(bool focus)
@@ -94,7 +95,7 @@ public class ApplicationEventsRelay : MonoBehaviour
 #if LOG_EVENTS
         Debug.Log( $"<color=magenta>ApplicationEventsRelay</color>.<color=cyan>OnApplicationFocus</color>( {focus} )" );
 #endif
-        _isFocused?.Setter(focus);
+        isFocused.Setter(focus);
     }
 
     private void OnApplicationPause(bool pauseStatus)
@@ -102,7 +103,7 @@ public class ApplicationEventsRelay : MonoBehaviour
 #if LOG_EVENTS
         Debug.Log( $"<color=magenta>ApplicationEventsRelay</color>.<color=cyan>OnApplicationPause</color>( {pauseStatus} )" );
 #endif
-        _isPaused?.Setter(pauseStatus);
+        isPaused.Setter(pauseStatus);
     }
 
 #if UNITY_GAMECORE || UNITY_SWITCH || UNITY_PS4 || UNITY_PS5
@@ -111,18 +112,17 @@ public class ApplicationEventsRelay : MonoBehaviour
 #if LOG_EVENTS
         Debug.Log( $"<color=magenta>ApplicationEventsRelay</color>.<color=cyan>OnDestroy</color>()" );
 #endif
-        _onQuit?.Trigger();
+        isQuitting.SetTrue();
     }
 #endif
 
 #if UNITY_EDITOR
     private void OnExitPlayMode(PlayModeStateChange change)
     {
-        if (change == PlayModeStateChange.ExitingPlayMode)
-        {
-            _isSuspended?.SetTrue();
-            _onQuit?.Trigger();
-        }
+        if (change != PlayModeStateChange.ExitingPlayMode) return;
+
+        isSuspended.SetTrue();
+        isQuitting.SetTrue();
     }
 #endif
 }

@@ -23,8 +23,8 @@ public class FakePlayerLog : IService
 
         MoveToPrevPlayerLog();
 
-        ApplicationEventsRelay.IsSuspended.RegisterOnFalse(OnResume);
-        ApplicationEventsRelay.IsSuspended.RegisterOnTrue(OnSuspend);
+        ApplicationEventsRelay.isSuspended.RegisterOnFalse(OnResume);
+        ApplicationEventsRelay.isSuspended.RegisterOnTrue(OnSuspend);
 
         Debug.Log($":::><::: Started FakePlayerLog with base path: {basePath}");
     }
