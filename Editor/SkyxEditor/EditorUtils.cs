@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
@@ -224,7 +225,7 @@ namespace Rogue.REditor
             return line;
         }
 
-        public static Match FindConsoleMessage(Regex pattern, bool onlyFirstLine = true)
+        public static List<Match> FindConsoleMessages(Regex pattern, bool onlyFirstLine = true)
         {
             var logEntriesType = Type.GetType("UnityEditor.LogEntries, UnityEditor");
             var logEntryType = Type.GetType("UnityEditor.LogEntry, UnityEditor");
@@ -240,6 +241,7 @@ namespace Rogue.REditor
                 return null;
 
             var count = (int) getCountMethod.Invoke(null, null);
+            var matches = new List<Match>();
 
             for (var i = 0; i < count; i++)
             {
@@ -255,10 +257,10 @@ namespace Rogue.REditor
                 if (onlyFirstLine) message = message.Split(new[]{'\r','\n'}, 2, StringSplitOptions.None)[0];
 
                 var match = pattern.Match(message);
-                if (match.Success) return match;
+                if (match.Success) matches.Add(match);
             }
 
-            return null;
+            return matches;
         }
 
         #endregion
