@@ -31,6 +31,29 @@ public class LazyAddressableRef<T> where T : Object
 		NotificationConsole.Notify( $"<color=#0080FF>LazyAddressableRef</color> Loading: \"{_address}\"" );
 #endif //DEBUG_NOTIFY
 	}
+	
+	public async Awaitable<T> PreloadAsync()
+	{
+		if (_loaded)
+			return _asset;
+
+		if (!_isLoading || _handle.Status == AsyncOperationStatus.None)
+		{
+			_isLoading = true;
+			_handle = Addressables.LoadAssetAsync<T>(_address);
+		}
+
+		if (!_handle.IsDone)
+			await _handle.Task;
+
+		OnCompleted(_handle);
+			
+#if DEBUG_NOTIFY
+		NotificationConsole.Notify( $"<color=#0080FF>LazyAddressableRef</color> Loading: \"{_address}\"" );
+#endif //DEBUG_NOTIFY
+
+		return _asset;
+	}
 
 	public T SafeInstance
 	{
