@@ -61,6 +61,7 @@ namespace K10.Platforms
         public static bool IsOnPC => GetPlatformType() == EPlatformType.PC;
         public static bool IsOnXboxEnvironment => GetPlatformFamily() == EPlatformFamily.Xbox;
         public static bool IsOnPlayStation => GetPlatformFamily() == EPlatformFamily.PlayStation;
+        public static bool IsOnSwitch => GetPlatformFamily() == EPlatformFamily.Switch;
 
         public static EPlatform GetPlatform()
         {
