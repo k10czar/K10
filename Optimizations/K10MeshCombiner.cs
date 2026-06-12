@@ -29,12 +29,22 @@ public enum ECombineType
 /// </summary>
 public static class K10MeshCombiner
 {
+    public static int CountVertices(this IList<CombineInstance> instances)
+    {
+        int count = 0;
+        for (int i = 0; i < instances.Count; i++)
+            count += instances[i].mesh.vertexCount;
+        return count;
+    }
+
     public static Mesh Combine(IList<CombineInstance> instances, ECombineType combineType)
     {
         switch (combineType)
         {            
             case ECombineType.UnityMeshCombine:
                 var mesh = new Mesh();
+                if( instances.CountVertices() > 65535 )
+                    mesh.indexFormat = IndexFormat.UInt32;
                 mesh.CombineMeshes(instances.ToArray(), true, true);
                 return mesh;
             case ECombineType.CustomSingleThread:
@@ -48,6 +58,108 @@ public static class K10MeshCombiner
         throw new System.ArgumentException("Invalid combine type");
     }
 
+    public static void MergeGroup(
+        IList<MeshFilter> filters,
+        Material material,
+        Transform parent,
+        int predictedVerts, 
+        ECombineType combineType = ECombineType.UnityMeshCombine,
+        List<GameObject> objectsExecuted = null )
+    {
+#if UNITY_EDITOR
+        bool hasStaticBatching = UnityEditor.PlayerSettings.GetStaticBatchingForPlatform( UnityEditor.EditorUserBuildSettings.activeBuildTarget );
+#endif
+        var count = filters.Count;
+        var combine = new List<CombineInstance>();
+        bool castShadows = false;
+        int verts = 0;
+        int layer = 0;
+        var matWorldToLocal = parent.worldToLocalMatrix;
+        var SB = StringBuilderPool.RequestWith( $"MergeGroup: {predictedVerts}v {material}\n" );
+
+        for (int j = 0; j < count; j++)
+        {
+            var filter = filters[j];
+            if (filter == null) continue;
+
+#if UNITY_EDITOR
+            if (hasStaticBatching && filter.gameObject.isStatic)
+                Debug.LogError( $"filter {filter.HierarchyNameOrNull()} is static but staticBatching is enabled — remove from merge group or disable Static flag", filter );
+#endif
+
+            layer = filter.gameObject.layer;
+            var meshRenderer = filter.GetComponent<MeshRenderer>();
+            var instMesh = filter.sharedMesh;
+
+            if (instMesh == null)
+            {
+                SB.AppendLine( $"{filter.HierarchyNameOrNull()} with null sharedMesh" );
+                Debug.LogError( $"filter {filter.HierarchyNameOrNull()} does not has sharedMesh", filter );
+                continue;
+            }
+
+            if (!instMesh.isReadable)
+            {
+                SB.AppendLine( $"{filter.HierarchyNameOrNull()} with not readable sharedMesh" );
+                Debug.LogError( $"filter {filter.HierarchyNameOrNull()} has not readable sharedMesh", filter );
+                continue;
+            }
+
+            combine.Add( new CombineInstance
+            {
+                mesh      = instMesh,
+                transform = matWorldToLocal * filter.transform.localToWorldMatrix,
+            } );
+
+            verts += instMesh.vertexCount;
+
+            if (meshRenderer.shadowCastingMode.Equals( ShadowCastingMode.On ))
+                castShadows = true;
+
+            meshRenderer.enabled = false;
+            objectsExecuted?.Add( filter.gameObject );
+
+            SB.AppendLine( $"{instMesh.name}({instMesh.vertexCount}) from {filter.HierarchyNameOrNull()}" );
+        }
+
+        if (combine.Count == 0) return;
+
+        var combinedMesh = Combine( combine, ECombineType.UnityMeshCombine );
+        combinedMesh.name = $"[Merge] {combine.Count}/{count} {parent.gameObject.name} {material.name}_mesh";
+
+        var combineGameObject = new GameObject( $"[Merge] {combine.Count}/{count} {parent.gameObject.name} {material.name} v:{verts}" );
+        var newT = combineGameObject.transform;
+        newT.SetParent( parent );
+        newT.localPosition    = Vector3.zero;
+        newT.localScale       = Vector3.one;
+        newT.localEulerAngles = Vector3.zero;
+
+        combineGameObject.AddComponent<MeshFilter>().sharedMesh = combinedMesh;
+        var combinedMeshRenderer = combineGameObject.AddComponent<MeshRenderer>();
+        combinedMeshRenderer.sharedMaterial    = material;
+        combinedMeshRenderer.shadowCastingMode = castShadows ? ShadowCastingMode.On : ShadowCastingMode.Off;
+
+        combineGameObject.layer    = layer;
+        combineGameObject.isStatic = true;
+
+        var diff = verts - predictedVerts;
+        if (diff != 0) Debug.Log( $"{combineGameObject.name}:: <color=magenta>diff({diff})</color> {SB.ReturnToPoolAndCast()}", combineGameObject );
+        else           Debug.Log( $"{combineGameObject.name}:: diff({diff}) {SB.ReturnToPoolAndCast()}", combineGameObject );
+
+        if (Application.isPlaying)
+        {
+            for (int j = 0; j < count; j++)
+            {
+                var filter = filters[j];
+                if (filter == null) continue;
+                var meshRenderer = filter.GetComponent<MeshRenderer>();
+                if (meshRenderer.enabled) continue;
+                Object.Destroy( filter );
+                if (meshRenderer != null)
+                    Object.Destroy( meshRenderer );
+            }
+        }
+    }
 
 #if TRY_USE_NEW_MATH
     public static Mesh CombineJobBurst(IList<CombineInstance> instances)
