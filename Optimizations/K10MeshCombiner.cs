@@ -27,7 +27,7 @@ public enum ECombineType
 /// Without TRY_USE_NEW_MATH: same pipeline, single-threaded on the main thread.
 /// All instances are merged into a single submesh (same-material batching).
 /// </summary>
-public static class MeshCombiner
+public static class K10MeshCombiner
 {
     public static Mesh Combine(IList<CombineInstance> instances, ECombineType combineType)
     {
@@ -38,10 +38,10 @@ public static class MeshCombiner
                 mesh.CombineMeshes(instances.ToArray(), true, true);
                 return mesh;
             case ECombineType.CustomSingleThread:
-                return Combine(instances);
+                return CombineCustonSingleThread(instances);
 #if TRY_USE_NEW_MATH
             case ECombineType.CustomJobsBurst:
-                return CombineJob(instances);
+                return CombineJobBurst(instances);
 #endif
         }
 
@@ -50,7 +50,7 @@ public static class MeshCombiner
 
 
 #if TRY_USE_NEW_MATH
-    public static Mesh CombineJob(IList<CombineInstance> instances)
+    public static Mesh CombineJobBurst(IList<CombineInstance> instances)
     {
         int n = instances.Count;
 // #if CODE_METRICS
@@ -257,7 +257,7 @@ public static class MeshCombiner
     }
 #endif //TRY_USE_NEW_MATH
 
-    public static Mesh Combine(IList<CombineInstance> instances)
+    public static Mesh CombineCustonSingleThread(IList<CombineInstance> instances)
     {
         int n = instances.Count;
 
