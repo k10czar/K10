@@ -260,138 +260,92 @@ public static class MeshCombiner
     public static Mesh Combine(IList<CombineInstance> instances)
     {
         int n = instances.Count;
-// #if CODE_METRICS
-//             string CODE_TAG = $"MeshCombiner.Combine( {n} )";
-//             CodeMetrics.Start( CODE_TAG );
-// #endif
-        var meshList = new List<Mesh>(n);
-        for (int i = 0; i < n; i++)
-            meshList.Add(instances[i].mesh);
 
-        var srcData = Mesh.AcquireReadOnlyMeshData(meshList);
-
-        var vertexOffsets  = new int[n];
-        var indexOffsets   = new int[n];
+        int totalVerts = 0;
         var subMeshIndices = new int[n];
-
-        int totalVerts   = 0;
-        int totalIndices = 0;
-
         for (int i = 0; i < n; i++)
         {
-            var inst   = instances[i];
-            int subIdx = Mathf.Clamp(inst.subMeshIndex, 0, srcData[i].subMeshCount - 1);
-
-            vertexOffsets[i]  = totalVerts;
-            indexOffsets[i]   = totalIndices;
-            subMeshIndices[i] = subIdx;
-
-            totalVerts   += srcData[i].vertexCount;
-            totalIndices += (int)srcData[i].GetSubMesh(subIdx).indexCount;
+            var mesh = instances[i].mesh;
+            subMeshIndices[i] = Mathf.Clamp(instances[i].subMeshIndex, 0, mesh.subMeshCount - 1);
+            totalVerts += mesh.vertexCount;
         }
 
-        var outputDataArray = Mesh.AllocateWritableMeshData(1);
-        var outputData      = outputDataArray[0];
+        var positions = new List<Vector3>(totalVerts);
+        var normals   = new List<Vector3>(totalVerts);
+        var tangents  = new List<Vector4>(totalVerts);
+        var uvs       = new List<Vector2>(totalVerts);
+        var indices   = new List<int>();
 
-        outputData.SetVertexBufferParams(totalVerts,
-            new VertexAttributeDescriptor(VertexAttribute.Position,  VertexAttributeFormat.Float32, 3, stream: 0),
-            new VertexAttributeDescriptor(VertexAttribute.Normal,    VertexAttributeFormat.Float32, 3, stream: 1),
-            new VertexAttributeDescriptor(VertexAttribute.Tangent,   VertexAttributeFormat.Float32, 4, stream: 2),
-            new VertexAttributeDescriptor(VertexAttribute.TexCoord0, VertexAttributeFormat.Float32, 2, stream: 3));
-        outputData.SetIndexBufferParams(totalIndices, IndexFormat.UInt32);
-
-        var dstPositions = outputData.GetVertexData<Vector3>(0);
-        var dstNormals   = outputData.GetVertexData<Vector3>(1);
-        var dstTangents  = outputData.GetVertexData<Vector4>(2);
-        var dstUVs       = outputData.GetVertexData<Vector2>(3);
-        var dstIndices   = outputData.GetIndexData<uint>();
-
-        var tempPositions = new List<Vector3>();
-        var tempNormals   = new List<Vector3>();
-        var tempTangents  = new List<Vector4>();
-        var tempUVs       = new List<Vector2>();
+        int vertOffset = 0;
 
         for (int i = 0; i < n; i++)
         {
-            var src       = srcData[i];
-            int vertCount = src.vertexCount;
-            int vertOff   = vertexOffsets[i];
-            var matrix    = instances[i].transform;
+            var inst      = instances[i];
+            var mesh      = inst.mesh;
+            var matrix    = inst.transform;
             var normalMat = matrix.inverse.transpose;
+            int subIdx    = subMeshIndices[i];
+            int vc        = mesh.vertexCount;
 
-            tempPositions.Clear();
-            src.GetVertices(tempPositions);
-            for (int v = 0; v < vertCount; v++)
-                dstPositions[vertOff + v] = matrix.MultiplyPoint3x4(tempPositions[v]);
+            var srcVerts = mesh.vertices;
+            for (int v = 0; v < vc; v++)
+                positions.Add(matrix.MultiplyPoint3x4(srcVerts[v]));
 
-            if (src.HasVertexAttribute(VertexAttribute.Normal))
+            var srcNorms = mesh.normals;
+            if (srcNorms.Length == vc)
             {
-                tempNormals.Clear();
-                src.GetNormals(tempNormals);
-                for (int v = 0; v < vertCount; v++)
-                    dstNormals[vertOff + v] = normalMat.MultiplyVector(tempNormals[v]).normalized;
+                for (int v = 0; v < vc; v++)
+                    normals.Add(normalMat.MultiplyVector(srcNorms[v]).normalized);
             }
             else
             {
-                for (int v = 0; v < vertCount; v++)
-                    dstNormals[vertOff + v] = Vector3.up;
+                for (int v = 0; v < vc; v++)
+                    normals.Add(Vector3.up);
             }
 
-            if (src.HasVertexAttribute(VertexAttribute.Tangent))
+            var srcTans = mesh.tangents;
+            if (srcTans.Length == vc)
             {
-                tempTangents.Clear();
-                src.GetTangents(tempTangents);
-                for (int v = 0; v < vertCount; v++)
+                for (int v = 0; v < vc; v++)
                 {
-                    var t  = tempTangents[v];
+                    var t  = srcTans[v];
                     var wt = matrix.MultiplyVector(new Vector3(t.x, t.y, t.z)).normalized;
-                    dstTangents[vertOff + v] = new Vector4(wt.x, wt.y, wt.z, t.w);
+                    tangents.Add(new Vector4(wt.x, wt.y, wt.z, t.w));
                 }
             }
             else
             {
-                for (int v = 0; v < vertCount; v++)
-                    dstTangents[vertOff + v] = new Vector4(1, 0, 0, 1);
+                for (int v = 0; v < vc; v++)
+                    tangents.Add(new Vector4(1, 0, 0, 1));
             }
 
-            if (src.HasVertexAttribute(VertexAttribute.TexCoord0))
+            var srcUVs = mesh.uv;
+            if (srcUVs.Length == vc)
             {
-                tempUVs.Clear();
-                src.GetUVs(0, tempUVs);
-                for (int v = 0; v < vertCount; v++)
-                    dstUVs[vertOff + v] = tempUVs[v];
-            }
-
-            var sub       = src.GetSubMesh(subMeshIndices[i]);
-            int baseVert  = sub.baseVertex + vertOff;
-            int idxWrite  = indexOffsets[i];
-            int end       = sub.indexStart + sub.indexCount;
-
-            if (src.indexFormat == IndexFormat.UInt16)
-            {
-                var srcIdx = src.GetIndexData<ushort>();
-                for (int idx = sub.indexStart; idx < end; idx++)
-                    dstIndices[idxWrite++] = (uint)(srcIdx[idx] + baseVert);
+                for (int v = 0; v < vc; v++)
+                    uvs.Add(srcUVs[v]);
             }
             else
             {
-                var srcIdx = src.GetIndexData<uint>();
-                for (int idx = sub.indexStart; idx < end; idx++)
-                    dstIndices[idxWrite++] = srcIdx[idx] + (uint)baseVert;
+                for (int v = 0; v < vc; v++)
+                    uvs.Add(Vector2.zero);
             }
+
+            var srcTris = mesh.GetTriangles(subIdx);
+            for (int t = 0; t < srcTris.Length; t++)
+                indices.Add(srcTris[t] + vertOffset);
+
+            vertOffset += vc;
         }
 
-        srcData.Dispose();
-
-        outputData.subMeshCount = 1;
-        outputData.SetSubMesh(0, new SubMeshDescriptor(0, totalIndices));
-
         var combined = new Mesh();
-        Mesh.ApplyAndDisposeWritableMeshData(outputDataArray, combined);
+        if (totalVerts > 65535) combined.indexFormat = IndexFormat.UInt32;
+        combined.SetVertices(positions);
+        combined.SetNormals(normals);
+        combined.SetTangents(tangents);
+        combined.SetUVs(0, uvs);
+        combined.SetTriangles(indices, 0);
         combined.RecalculateBounds();
-// #if CODE_METRICS
-//             CodeMetrics.Finish( CODE_TAG );
-// #endif
         return combined;
     }
 }
