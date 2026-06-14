@@ -313,6 +313,12 @@ public class UiTexturesReporter : EditorWindow
                         .Where(o => o != null)
                         .ToArray();
                     if (toAdd.Length == 0) return;
+                    foreach (var e in capturedCtx.Entries.Where(e => e.IsSelected && e.AtlasObject != null && e.AtlasObject != atlasAsset))
+                    {
+                        var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(AssetDatabase.GetAssetPath(e.Texture));
+                        if (obj != null) e.AtlasObject.Remove(new[] { obj });
+                        EditorUtility.SetDirty(e.AtlasObject);
+                    }
                     atlasAsset.Add(toAdd);
                     EditorUtility.SetDirty(atlasAsset);
                     AssetDatabase.SaveAssets();
@@ -352,6 +358,9 @@ public class UiTexturesReporter : EditorWindow
         GuiColorManager.New(new Color(1f, .8f, 0.55f));
         if (GUILayout.Button("V1", GUILayout.ExpandWidth(false))) CreateAtlas(ctx, effectiveFolder);
         GuiColorManager.Revert(2);
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("Select", GUILayout.ExpandWidth(false)))
+            Selection.objects = ctx.Entries.Where(e => e.IsSelected).Select(e => e.Texture).ToArray<UnityEngine.Object>();
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.EndHorizontal();
