@@ -27,9 +27,9 @@ public class TimeBudget : System.IDisposable
 #if COLORED
 				time.Colorfy( Colors.Console.Numbers );
 				var frame = Time.frameCount.ToStringColored( Colors.Console.Numbers );
-#else
+#else //!COLORED
 				var frame = Time.frameCount;
-#endif
+#endif //COLORED
 				
 #if WITH_EMOTICONS && !UNITY_ANDROID && !UNITY_IOS
 				NotificationConsole.Notify( $"😴 Sleep Requested after ⏰{time} at frame 🎞{frame}" );
