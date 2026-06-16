@@ -48,8 +48,10 @@ public class TextureAssetInspectorExtension : Editor
     {
         if (!_textureSearched) FindReferencingAtlases();
         DrawAtlasReferences();
+        serializedObject.Update();
         if (_nativeEditor != null) _nativeEditor.OnInspectorGUI();
         else DrawDefaultInspector();
+        serializedObject.ApplyModifiedProperties();
     }
 
     private static void BuildAtlasCache()
