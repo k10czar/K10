@@ -34,7 +34,7 @@ public static class StringExtensions
     }
 	[MethodImpl(Optimizations.INLINE_IF_CAN)] public static string WithoutColorTags( this string str ) => _colorTagRegex.Replace(str, string.Empty);
 
-    [MethodImpl(Optimizations.INLINE_IF_CAN)] public static string ElementsToString(this IEnumerable enumerable, string nullString = ConstsK10.NULL_STRING)
+    [MethodImpl(Optimizations.INLINE_IF_CAN)] public static string ElementsToString(this IEnumerable enumerable, string nullString = ConstsK10.NULL_STRING, string separator = ", ")
     {
 		if( enumerable == null ) return nullString;
 		if( enumerable is string str ) return str;
@@ -42,7 +42,7 @@ public static class StringExtensions
 		bool first = true;
 		foreach (var e in enumerable)
 		{
-			if( !first ) sb.Append(", ");
+			if( !first ) sb.Append( separator );
 			first = false;
 			if( e == null ) sb.Append( nullString );
 			else if( e is IEnumerable innerEnumerable ) sb.Append( innerEnumerable.ElementsToString() );
