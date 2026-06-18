@@ -40,7 +40,9 @@ public class LazyAddressableRef<T> : ILazyAddressableRef where T : Object
 
 	public async Awaitable PreloadAsync()
 	{
-		await LoadAsync();
+		var handle = LoadAsync();
+		while (!handle.GetAwaiter().IsCompleted)
+			await Awaitable.EndOfFrameAsync();
 	}
 
 	public async Awaitable<T> LoadAsync()
