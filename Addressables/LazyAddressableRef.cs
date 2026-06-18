@@ -6,7 +6,13 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
-public class LazyAddressableRef<T> where T : Object
+public interface ILazyAddressableRef
+{
+	bool IsLoaded { get; }
+	Awaitable PreloadAsync();
+}
+
+public class LazyAddressableRef<T> : ILazyAddressableRef where T : Object
 {
 	readonly string _address;
 	AsyncOperationHandle<T> _handle;
@@ -31,8 +37,13 @@ public class LazyAddressableRef<T> where T : Object
 		NotificationConsole.Notify( $"<color=#0080FF>LazyAddressableRef</color> Loading: \"{_address}\"" );
 #endif //DEBUG_NOTIFY
 	}
-	
-	public async Awaitable<T> PreloadAsync()
+
+	public async Awaitable PreloadAsync()
+	{
+		await LoadAsync();
+	}
+
+	public async Awaitable<T> LoadAsync()
 	{
 		if (_loaded)
 			return _asset;
