@@ -1,3 +1,7 @@
+#if CODE_METRICS
+#define DEBUG_VERBOSE
+#endif
+
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -142,9 +146,11 @@ public static class K10MeshCombiner
         combineGameObject.layer    = layer;
         combineGameObject.isStatic = true;
 
+#if DEBUG_VERBOSE
         var diff = verts - predictedVerts;
         if (diff != 0) Debug.Log( $"{combineGameObject.name}:: <color=magenta>diff({diff})</color> {SB.ReturnToPoolAndCast()}", combineGameObject );
         else           Debug.Log( $"{combineGameObject.name}:: diff({diff}) {SB.ReturnToPoolAndCast()}", combineGameObject );
+#endif
 
         if (Application.isPlaying)
         {
