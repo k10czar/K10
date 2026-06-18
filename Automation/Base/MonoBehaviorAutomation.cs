@@ -28,7 +28,7 @@ public abstract class MonoBehaviorAutomation<T> : BaseOperation where T : MonoBe
         if( WaitForActiveAndEnable ) 
         {
             if( log && mb.isActiveAndEnabled ) Debug.Log( $"Waiting for {mb.HierarchyNameOrNull()} be active" );
-            while( !mb.isActiveAndEnabled ) yield return wait;
+            while( mb != null && !mb.isActiveAndEnabled ) yield return wait;
             if( log ) Debug.Log( $"Waiting for {mb.HierarchyNameOrNull()} is active" );
         }
         yield return ExecuteOnMonoBehaviour( mb, log );
