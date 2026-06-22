@@ -24,7 +24,7 @@ namespace Rogue.REditor
         public static PropertyCollection Get(SerializedObject serializedObject) => Get(serializedObject, "");
         public static PropertyCollection Get(SerializedProperty property) => Get(property.serializedObject, property.propertyPath);
 
-        private static PropertyCollection Get(SerializedObject root, string path)
+        public static PropertyCollection Get(SerializedObject root, string path)
         {
             using var profilerMarker = getCollectionMarker.Auto();
 

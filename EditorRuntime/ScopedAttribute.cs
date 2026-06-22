@@ -36,8 +36,6 @@ namespace Skyx.RuntimeEditor
         public readonly string description;
         public readonly EColor color;
 
-        public readonly string[] targetChildren;
-
         public bool isDisabled;
         public List<SkopeButton> buttons;
 

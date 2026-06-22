@@ -76,6 +76,8 @@ namespace Rogue.REditor
                 else menu.AddDisabledItem(new GUIContent($"Paste | {copiedType}"));
             }
 
+            menu.AddItem(new GUIContent("Copy PropertyPath"), false, OnCopyPropertyPath);
+
             if (property.IsArrayEntry())
             {
                 menu.AddSeparator("");
@@ -126,6 +128,8 @@ namespace Rogue.REditor
             selectedDisplayInfo = $"{property.displayName} ({selectedType.Name})";
             selectedElementSetup = newElementSetup;
         }
+
+        private static void OnCopyPropertyPath() => EditorGUIUtility.systemCopyBuffer = selectedProperty.propertyPath;
 
         private static void OnCopy()
         {
