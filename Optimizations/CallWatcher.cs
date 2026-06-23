@@ -19,7 +19,9 @@ public class CallWatcher
 
     public CallWatcher()
     {
+#if DEBUG_NOTIFY
         calls = 0;
+#endif
         lastCall = -1;
     }
 
