@@ -4,12 +4,16 @@ using System.Collections.Generic;
 
 public static class K10Random
 {
+	private static Unity.Mathematics.Random? _random;
 	public static bool Bool { get { return ( Value < .5f ); } }
 
 	public static float Value
 	{
 		get
 		{
+			if (_random != null)
+				return _random.Value.NextFloat();
+
 			var val = Random.value;
 			Random.InitState( Random.Range( int.MinValue, int.MaxValue ) );
 			return val;
@@ -20,6 +24,9 @@ public static class K10Random
 	{
 		get
 		{
+			if (_random != null)
+				return _random.Value.NextInt(1, int.MaxValue);
+			
 			var val = Random.Range( 1, int.MaxValue );
 			Random.InitState( Random.Range( int.MinValue, int.MaxValue ) );
 			return val;
@@ -34,6 +41,9 @@ public static class K10Random
 
 	public static int Less( int max )
 	{
+		if (_random != null)
+			return _random.Value.NextInt(0, max);
+
 		var val = Random.Range( 0, max );
 		Random.InitState( Random.Range( int.MinValue, int.MaxValue ) );
 		return val;
@@ -44,6 +54,9 @@ public static class K10Random
 
 	public static int Exponential( int max, int power )
 	{
+		if (_random != null)
+			return _random.Value.NextInt(0, (int)Mathf.Pow(max, power));
+
 		var val = Random.Range( 0, (int)Mathf.Pow( max, power ) );
 		val = (int)Mathf.Pow( val, 1f / power );
 		Random.InitState( Random.Range( int.MinValue, int.MaxValue ) );
@@ -74,5 +87,15 @@ public static class K10Random
 		var element = list[id];
 		list.RemoveAt(id);
 		return element;
+	}
+
+	public static void SetRandomSeed(uint seed)
+	{
+		_random = new Unity.Mathematics.Random(seed);
+	}
+
+	public static void UnsetRandomSeed()
+	{
+		_random = null;
 	}
 }
