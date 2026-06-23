@@ -60,7 +60,7 @@ namespace Rogue.REditor
             return HeaderScope.Open(info);
         }
 
-        public static ILayoutScope Open(EScopeType scopeType, string title, ref bool isExpandedRef, EColor color, EElementSize size) => scopeType switch
+        public static ILayoutScope Open(EScopeType scopeType, string title, ref bool isExpandedRef, EColor color = EColor.Infer, EElementSize size = EElementSize.Infer) => scopeType switch
         {
             EScopeType.Header => HeaderScope.Open(title, ref isExpandedRef, color, size),
             EScopeType.Foldout => FoldoutScope.Open(title, ref isExpandedRef, color, size),
@@ -68,10 +68,10 @@ namespace Rogue.REditor
             _ => throw new ArgumentOutOfRangeException(nameof(scopeType), scopeType, null)
         };
 
-        public static ILayoutScope Open(EScopeType scopeType, ref Rect rect, SerializedProperty property, EColor color, EElementSize size)
+        public static ILayoutScope Open(EScopeType scopeType, ref Rect rect, SerializedProperty property, EColor color = EColor.Infer, EElementSize size = EElementSize.Infer)
             => Open(scopeType, ref rect, property, property.PrettyName(), color, size);
 
-        public static ILayoutScope Open(EScopeType scopeType, ref Rect rect, SerializedProperty property, string title, EColor color, EElementSize size) => scopeType switch
+        public static ILayoutScope Open(EScopeType scopeType, ref Rect rect, SerializedProperty property, string title, EColor color = EColor.Infer, EElementSize size = EElementSize.Infer) => scopeType switch
         {
             EScopeType.Header => HeaderScope.Open(ref rect, property, title, color, size),
             EScopeType.Foldout => FoldoutScope.Open(ref rect, property, title, color, size),
@@ -79,7 +79,7 @@ namespace Rogue.REditor
             _ => throw new ArgumentOutOfRangeException(nameof(scopeType), scopeType, null)
         };
 
-        public static ILayoutScope Open(EScopeType scopeType, ref Rect rect, string title, ref bool isExpandedRef, EColor color, EElementSize size) => scopeType switch
+        public static ILayoutScope Open(EScopeType scopeType, ref Rect rect, string title, ref bool isExpandedRef, EColor color = EColor.Infer, EElementSize size = EElementSize.Infer) => scopeType switch
         {
             EScopeType.Header => HeaderScope.Open(ref rect, title, ref isExpandedRef, color, size),
             EScopeType.Foldout => FoldoutScope.Open(ref rect, title, ref isExpandedRef, color, size),

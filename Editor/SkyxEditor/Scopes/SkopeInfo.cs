@@ -144,17 +144,16 @@ namespace Rogue.REditor
                 _ => throw new ArgumentOutOfRangeException()
             };
 
-            var color = scopedAtt.isDisabled
-                ? EColor.Disabled
-                : scopedAtt.colorSource switch
-                    {
-                        EEditorInfoSource.Nothing or
-                        EEditorInfoSource.Property or
-                        EEditorInfoSource.FieldValue => EColor.Infer,
-                        EEditorInfoSource.EditorContent => editorInfo?.ContentColor ?? EColor.Infer,
-                        EEditorInfoSource.Provided => scopedAtt.color,
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
+            var color = scopedAtt.colorSource switch
+            {
+                EEditorInfoSource.Provided => scopedAtt.color,
+                _ when scopedAtt.isDisabled => EColor.Disabled,
+                EEditorInfoSource.Nothing or
+                EEditorInfoSource.Property or
+                EEditorInfoSource.FieldValue => EColor.Infer,
+                EEditorInfoSource.EditorContent => editorInfo?.ContentColor ?? EColor.Infer,
+                _ => throw new ArgumentOutOfRangeException()
+            };
 
             if (color is EColor.Infer) color = scopedAtt.scopeType.InferColor();
 
