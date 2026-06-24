@@ -25,7 +25,7 @@ public static class DebugUtils
 			case EVisualDebugShape.Circle:
 				Circle(position, size, color, duration); break;
 			case EVisualDebugShape.Triangle:
-				Triangle(position, Vector3.forward, Vector3.up, 60, size, color, duration); break;
+				Triangle(position, Vector3.forward, Vector3.up, 30, size, color, duration); break;
 			case EVisualDebugShape.Arrow:
 				Arrow(position, Vector3.forward, Vector3.up, size, color, duration); break;
 			case EVisualDebugShape.WireBox:
