@@ -90,12 +90,12 @@ public class CallWatcher
 
         if( firstCall )
         {
-#if DEBUG_NOTIFY_CALLS
-            Debug.Log($"<color=#FFD700>[{debugName}]</color> first call <color=#7FFF7F>{timeRef:F3}s</color> — <color=#FF9944>{LocalState()}</color> on <color=#7FC8FF>{contextStr}</color>");
-            calls++;
-#endif
 #if DEBUG_NOTIFY_CALLS_GLOBAL
             globalCalls++;
+#endif
+#if DEBUG_NOTIFY_CALLS
+            calls++;
+            Debug.Log($"<color=#FFD700>[{debugName}]</color> first call <color=#7FFF7F>{timeRef:F3}s</color> — <color=#FF9944>{LocalState()}</color> on <color=#7FC8FF>{contextStr}</color>");
 #endif
             lastCall = timeRef;
             return true;
@@ -107,12 +107,12 @@ public class CallWatcher
 
         if( canCall )
         {
+#if DEBUG_NOTIFY_CALLS_GLOBAL
+            globalCalls++;
+#endif
 #if DEBUG_NOTIFY_CALLS
             calls++;
             Debug.Log($"<color=#FFD700>[{debugName}]</color> +<color=#7FFF7F>{deltaTime:F3}s</color> — <color=#FF9944>{LocalState()}</color> on <color=#7FC8FF>{contextStr}</color>");
-#endif
-#if DEBUG_NOTIFY_CALLS_GLOBAL
-            globalCalls++;
 #endif
             lastCall = timeRef;
         }
