@@ -77,7 +77,14 @@ namespace Rogue.REditor
         }
 
         public static T GetFromJson<T>(string json) where T : class
-            => GetFromJson(json) as T;
+        {
+            var obj = JsonConvert.DeserializeObject<T>(json, GetSerializationSettings());
+
+            if (obj is IPasteSerializationFix pasteFix)
+                pasteFix.FixSerializationPostPaste(null);
+
+            return obj;
+        }
 
         public static List<object> GetObjectListFromJson(string json)
         {

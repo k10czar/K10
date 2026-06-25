@@ -141,7 +141,7 @@ public static class ScriptableObjectUtils
 #if UNITY_EDITOR
 		if( !newPath.StartsWith( "Assets/" ) && !newPath.StartsWith( "Assets\\" ) ) newPath = "Assets/" + newPath;
 		newPath = newPath.SanitizePathName();
-		AssetDatabaseUtils.RequestPath( newPath );
+		AssetDatabaseUtils.EnsurePathIsValid( newPath );
 		string assetPathAndName = UnityEditor.AssetDatabase.GenerateUniqueAssetPath( newPath + ".asset" );
 		Debug.Log( $"{"Try".Colorfy( Verbs )} create({typeof(T).FullName.Colorfy( TypeName )}) asset at {assetPathAndName.Colorfy(Interfaces)} from {newPath.Colorfy(Names)}.asset" );
 		UnityEditor.AssetDatabase.CreateAsset( asset, assetPathAndName );

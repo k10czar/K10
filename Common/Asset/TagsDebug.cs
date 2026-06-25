@@ -55,7 +55,7 @@ public class TagsDebug : ScriptableObject
                 if( _instance == null )
                 {
                     _instance = CreateInstance<TagsDebug>();
-                    AssetDatabaseUtils.RequestPath( "Assets/Resources/TagsDebug" );
+                    AssetDatabaseUtils.EnsurePathIsValid( "Assets/Resources/TagsDebug" );
                     UnityEditor.AssetDatabase.CreateAsset( _instance, "Assets/Resources/TagsDebug.asset" );
                     UnityEditor.AssetDatabase.SaveAssets();
                 }
