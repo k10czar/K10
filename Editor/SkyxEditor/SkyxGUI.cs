@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using Skyx.RuntimeEditor;
+using Skyx.Trees;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -360,6 +361,7 @@ namespace Rogue.REditor
             SerializedTypeCache.Clear();
             CustomDrawersCache.ClearCache();
             ReorderableListCache.Clear();
+            ClassTreeNode.ClearCache();
         }
 
         public static void DrawLabel(ref Rect rect, string label, bool extractLabelRect = true, EColor color = EColor.Primary)
