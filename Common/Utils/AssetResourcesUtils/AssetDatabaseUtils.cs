@@ -126,5 +126,19 @@ public static class AssetDatabaseUtils
         if (debug) Debug.Log($"{"AssetDatabaseUtils".Colorfy(TypeName)}{DOT}{"GetAll".Colorfy(Verbs)}{OP} {type.Name.Colorfy(Keyword)} {CP} found {collection.Length.ToString().Colorfy(Numbers)}:\n   -{string.Join(",\n   -", collection.ToList().ConvertAll<string>((so) => so.NameOrNull()))}");
         return collection;
     }
+
+    public static T LoadOrCreateSO<T>(string path) where T : ScriptableObject
+    {
+        AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+        var config = AssetDatabase.LoadAssetAtPath<T>(path);
+
+        if (config == null)
+        {
+            config = ScriptableObject.CreateInstance<T>();
+            AssetDatabase.CreateAsset(config, path);
+        }
+
+        return config;
+    }
 }
 #endif

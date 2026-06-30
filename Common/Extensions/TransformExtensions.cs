@@ -84,5 +84,11 @@ namespace K10.Common
 
 			return builder.ReturnToPoolAndCast();
 		}
+
+		public static bool IsRotatedOnXZ(this Component component)
+		{
+			var angle = component.transform.eulerAngles;
+			return angle.x > 0 || angle.z > 0;
+		}
 	}
 }
