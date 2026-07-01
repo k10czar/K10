@@ -318,9 +318,9 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     {
         _userData = new GdkUserData();
 
-        Debug.LogError("[GDK] XUserAddAsync: AddDefaultUserSilently (request)");
+        Debug.LogError("[GDK] XUserAddAsync: AddDefaultUserAllowingUI  (request)");
 
-        SDK.XUserAddAsync(XUserAddOptions.AddDefaultUserSilently, (hresult, userHandle) =>
+        SDK.XUserAddAsync(XUserAddOptions.AddDefaultUserAllowingUI, (hresult, userHandle) =>
         {
             Debug.Log($"[GDK] XUserAddAsync (silent) callback HR=0x{hresult:X8} ({HR.NameOf(hresult)}), userHandleNull={userHandle == null}");
 
@@ -338,6 +338,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
             // Gamertag
             int hrGt = SDK.XUserGetGamertag(userHandle, XUserGamertagComponent.Classic, out string gt);
             Debug.LogError($"[GDK] XUserGetGamertag HR=0x{hrGt:X8} ({HR.NameOf(hrGt)}), Gamertag='{gt}'");
+            Debug.LogError($"[GDK][USER][SAVE-OWNER] Silent selected XUID={xuid}, Gamertag='{gt}', SaveScid={SaveScid}");
 
             _gdkFileAdapter.Initialize(userHandle, SaveScid);
             InitializeUser(userHandle);
@@ -358,6 +359,11 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
                 Debug.LogError($"[GDK] UI user add failed. HR=0x{hresult:X8} ({HR.NameOf(hresult)})");
                 return;
             }
+
+            SDK.XUserGetId(userHandle, out ulong xuid);
+            SDK.XUserGetGamertag(userHandle, XUserGamertagComponent.Classic, out string gt);
+
+            Debug.LogError($"[GDK][USER][SAVE-OWNER] UI selected XUID={xuid}, Gamertag='{gt}', SaveScid={SaveScid}");
 
             _gdkFileAdapter.Initialize(userHandle, SaveScid);
             InitializeUser(userHandle);
