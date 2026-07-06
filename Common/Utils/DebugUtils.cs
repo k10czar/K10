@@ -9,6 +9,7 @@ public enum EVisualDebugShape
 	Triangle,
 	Arrow,
 	WireBox,
+	Square,
 }
 
 public static class DebugUtils
@@ -30,10 +31,11 @@ public static class DebugUtils
 				Arrow(position, Vector3.forward, Vector3.up, size, color, duration); break;
 			case EVisualDebugShape.WireBox:
 				WireBox(position, size, color, duration); break;
+			case EVisualDebugShape.Square:
+				Square(position, size, color, duration); break;
 			default:
 				throw new ArgumentOutOfRangeException(nameof(shape), shape, null);
 		}
-
 	}
 
 	public static void Rect( RectTransform rect, Color color )
@@ -274,6 +276,33 @@ public static class DebugUtils
 		Debug.DrawLine( obf, otf, color, duration);
 		Debug.DrawLine( obfr, otfr, color, duration);
 		Debug.DrawLine( obr, otr, color, duration);
+    }
+
+    public static void Square(Vector3 center, float halfSize, Color color, float duration = 0f)
+		=> Square(center, Vector3.up, halfSize, color, duration);
+
+    private static void Square(Vector3 center, Vector3 forward, float halfSize, Color color, float duration = 0f)
+    {
+	    var forwardDir = forward.normalized;
+
+	    var right = Vector3.Cross(Vector3.up, forwardDir).normalized;
+	    var up = Vector3.Cross(forwardDir, right).normalized;
+
+	    if (right == Vector3.zero)
+	    {
+		    right = Vector3.Cross(Vector3.forward, forwardDir).normalized;
+		    up = Vector3.Cross(forwardDir, right).normalized;
+	    }
+
+	    var topLeft = center + (up * halfSize) - (right * halfSize);
+	    var topRight = center + (up * halfSize) + (right * halfSize);
+	    var bottomRight = center - (up * halfSize) + (right * halfSize);
+	    var bottomLeft = center - (up * halfSize) - (right * halfSize);
+
+	    Debug.DrawLine(topLeft, topRight, color, duration);
+	    Debug.DrawLine(topRight, bottomRight, color, duration);
+	    Debug.DrawLine(bottomRight, bottomLeft, color, duration);
+	    Debug.DrawLine(bottomLeft, topLeft, color, duration);
     }
 
     public static class Gizmos
