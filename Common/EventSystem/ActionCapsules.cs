@@ -18,7 +18,7 @@ public class ActionCapsule : ActionCapsuleBase, IEventTrigger
 
 	#region Constructors
 
-	[Obsolete("Use ActionCapsule(callback, observed) instead")]
+	// [Obsolete("Use ActionCapsule(callback, observed) instead")]
 	public ActionCapsule(Action callback) : base(callback)
 	{
 		this.callback = callback;
@@ -60,7 +60,7 @@ public class ActionCapsule<T> : ActionCapsuleBase, IEventTrigger<T>
 
 	#region Constructors
 
-	[Obsolete("Use ActionCapsule<T>(callback, observed) instead")]
+	// [Obsolete("Use ActionCapsule<T>(callback, observed) instead")]
 	public ActionCapsule(Action<T> callback) : base(callback)
 	{
 		this.callback = callback;
@@ -110,7 +110,7 @@ public class ActionCapsule<T,K> : ActionCapsuleBase, IEventTrigger<T,K>
 
 	#region Constructors
 
-	[Obsolete("Use ActionCapsule<T,K>(callback, observed) instead")]
+	// [Obsolete("Use ActionCapsule<T,K>(callback, observed) instead")]
 	public ActionCapsule(Action<T,K> callback) : base(callback)
 	{
 		this.callback = callback;
@@ -176,7 +176,7 @@ public class ActionCapsule<T,K,L> : ActionCapsuleBase, IEventTrigger<T,K,L>
 
 	#region Constructors
 
-	[Obsolete("Use ActionCapsule<T,K>(callback, observed) instead")]
+	// [Obsolete("Use ActionCapsule<T,K>(callback, observed) instead")]
 	public ActionCapsule(Action<T,K,L> callback) : base(callback)
 	{
 		this.callback = callback;

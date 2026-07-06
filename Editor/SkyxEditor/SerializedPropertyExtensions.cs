@@ -325,6 +325,7 @@ namespace Rogue.REditor
         {
             try
             {
+                _ = property.isExpanded; // Forces internal Verify call
                 return (property.serializedObject.GetMainCacheID(), property.propertyPath);
             }
             catch (Exception)

@@ -31,7 +31,12 @@ namespace Rogue.REditor
             return null;
         }
 
-        public static bool TryGet(SerializedProperty property, out ReorderableList list) => TryGet(property.GetCacheID(), out list);
+        public static bool TryGet(SerializedProperty property, out ReorderableList list)
+        {
+            if (!TryGet(property.GetCacheID(), out list)) return false;
+            return list.serializedProperty == property;
+        }
+
         public static bool TryGet((int, string) cacheID, out ReorderableList list) => cache.TryGetValue(cacheID, out list);
 
         public static ReorderableList GetOrCreate(SerializedProperty property, Func<SerializedProperty, ReorderableList> create)
