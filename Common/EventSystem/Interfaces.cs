@@ -1,38 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
+using K10.EventSystem;
 
 public interface IEventBinderReference : IEventRegister
 {
-	
+
 }
 
 public interface IEvent : IEventRegister, IEventTrigger { }
-public interface IEvent<T> : IEventRegister<T>, IEventRegister, IEventTrigger<T> { }
-public interface IEvent<T, K> : IEventRegister<T, K>, IEventRegister<T>, IEventRegister, IEventTrigger<T, K> { }
-public interface IEvent<T, K, L> : IEventRegister<T, K, L>, IEventRegister<T, K>, IEventRegister<T>, IEventRegister, IEventTrigger<T, K, L> { }
+public interface IEvent<T> : IEventRegister<T>, IEventTrigger<T> { }
+public interface IEvent<T, K> : IEventRegister<T, K>, IEventTrigger<T, K> { }
+public interface IEvent<T, K, L> : IEventRegister<T, K, L>, IEventTrigger<T, K, L> { }
 
 public interface IEventRegister
 {
-	void Register( IEventTrigger listener );
-	bool Unregister( IEventTrigger listener );
+	void Register(IEventTrigger listener);
+	bool Unregister(IEventTrigger listener);
+
+	IFilteredActionCapsule RegisterFiltered(Action act) => throw new NotSupportedException();
+
+	ActionCapsule Register(Action act) => new(act, this);
+	void Unregister(Action act) => Unregister(new ActionCapsule(act, true));
 }
 
 public interface IEventRegister<T> : IEventRegister
 {
-	void Register( IEventTrigger<T> listener );
-	bool Unregister( IEventTrigger<T> listener );
+	void Register(IEventTrigger<T> listener);
+	bool Unregister(IEventTrigger<T> listener);
+
+	ActionCapsule<T> Register(Action<T> act) => new(act, this);
+	void Unregister(Action<T> act) => Unregister(new ActionCapsule<T>(act, true));
 }
 
 public interface IEventRegister<T, K> : IEventRegister<T>
 {
-	void Register( IEventTrigger<T, K> listener );
-	bool Unregister( IEventTrigger<T, K> listener );
+	void Register(IEventTrigger<T, K> listener);
+	bool Unregister(IEventTrigger<T, K> listener);
 
+	ActionCapsule<T, K> Register(Action<T, K> act) => new(act, this);
+	void Unregister(Action<T, K> act) => Unregister(new ActionCapsule<T, K>(act, true));
 }
+
 public interface IEventRegister<T, K, J> : IEventRegister<T, K>
 {
-	void Register( IEventTrigger<T, K, J> listener );
-	bool Unregister( IEventTrigger<T, K, J> listener );
+	void Register(IEventTrigger<T, K, J> listener);
+	bool Unregister(IEventTrigger<T, K, J> listener);
+
+	ActionCapsule<T, K, J> Register(Action<T, K, J> act) => new(act, this);
+	void Unregister(Action<T, K, J> act) => Unregister(new ActionCapsule<T, K, J>(act, true));
 }
 
 public static class EventExtensions
@@ -42,15 +57,6 @@ public static class EventExtensions
 	public static void TriggerIfValid<T,K>( this IEventTrigger<T,K> trigger, T t, K k ) { if( trigger != null && trigger.IsValid ) trigger.Trigger( t, k ); }
 	public static void TriggerIfValid<T,K,J>( this IEventTrigger<T,K,J> trigger, T t, K k, J j ) { if( trigger != null && trigger.IsValid ) trigger.Trigger( t, k, j ); }
 	public static void TriggerIfValid<T,K,J,L>( this IEventTrigger<T,K,J,L> trigger, T t, K k, J j, L l ) { if( trigger != null && trigger.IsValid ) trigger.Trigger( t, k, j, l ); }
-
-	public static void Register( this IEventRegister register, Action act ) => _ = new ActionCapsule(act, register);
-	public static void Unregister( this IEventRegister register, Action act ) => register.Unregister( new ActionCapsule( act ) );
-	public static void Register<T>( this IEventRegister<T> register, Action<T> act ) => _ = new ActionCapsule<T>(act, register);
-	public static void Unregister<T>( this IEventRegister<T> register, Action<T> act ) => register.Unregister( new ActionCapsule<T>( act ) );
-	public static void Register<T,K>( this IEventRegister<T,K> register, Action<T,K> act ) => _ = new ActionCapsule<T,K>(act, register);
-	public static void Unregister<T,K>( this IEventRegister<T,K> register, Action<T,K> act ) => register.Unregister( new ActionCapsule<T,K>( act ) );
-	public static void Register<T,K,J>( this IEventRegister<T,K,J> register, Action<T,K,J> act ) => _ = new ActionCapsule<T,K,J>(act, register);
-	public static void Unregister<T,K,J>( this IEventRegister<T,K,J> register, Action<T,K,J> act ) => register.Unregister( new ActionCapsule<T,K,J>( act ) );
 
 	public static void RegisterValidated( this IEventRegister register, IEventValidator validator, Action act ) => register.Register( validator.Validated( act ) );
 	public static void RegisterValidated<T>( this IEventRegister<T> register, IEventValidator validator, Action<T> act ) => register.Register( validator.Validated( act ) );

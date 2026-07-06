@@ -8,7 +8,7 @@ namespace Rogue.REditor
     {
         #region Pickers
 
-        private static Action<Type> currentCallback;
+        public static Action<SerializedProperty> onPickedType;
 
         public static bool TryDrawMissingRef(ref Rect rect, SerializedProperty property, string label = null)
         {
@@ -38,6 +38,7 @@ namespace Rogue.REditor
             {
                 property.SetNewReferenceType(newSelection, true);
                 property.ResetDefaultValues(newElementSetup, true, true);
+                onPickedType?.Invoke(property);
             }
         }
 

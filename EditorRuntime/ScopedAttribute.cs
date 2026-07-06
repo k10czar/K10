@@ -7,6 +7,7 @@ namespace Skyx.RuntimeEditor
 {
     public enum EScopePreset
     {
+        NoPreset = -1,
         FoldoutNameOnly,
         FoldoutPropertySummary,
         FoldoutSummaryOnly,
@@ -17,25 +18,26 @@ namespace Skyx.RuntimeEditor
         HeaderNameOnly,
         HeaderPropertySummary,
         HeaderNameSummary,
+        InlineHeaderNameSummary,
     }
 
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Class)]
     public class ScopedAttribute : PropertyAttribute
     {
+        private readonly EScopePreset preset = EScopePreset.NoPreset;
+
         public readonly EScopeType scopeType = EScopeType.Foldout;
         public readonly EElementSize elementSize = EElementSize.SingleLine;
         public readonly EEditorInfoSource nameSource = EEditorInfoSource.EditorContent;
-        public readonly EEditorInfoSource appendSource = EEditorInfoSource.EditorContent;
+        public EEditorInfoSource appendSource = EEditorInfoSource.EditorContent;
         public readonly EEditorInfoSource descriptionSource = EEditorInfoSource.EditorContent;
-        public readonly EEditorInfoSource colorSource = EEditorInfoSource.EditorContent;
+        public EEditorInfoSource colorSource = EEditorInfoSource.EditorContent;
         public readonly bool indent;
 
         public readonly string name;
-        public readonly string append;
         public readonly string description;
-        public readonly EColor color;
-
-        public readonly string[] targetChildren;
+        public string append;
+        public EColor color;
 
         public bool isDisabled;
         public List<SkopeButton> buttons;
@@ -46,24 +48,10 @@ namespace Skyx.RuntimeEditor
         {
             var existing = presets[preset];
 
+            this.preset = preset;
             scopeType = existing.scopeType;
             elementSize = existing.elementSize;
             nameSource = existing.nameSource;
-            appendSource = existing.appendSource;
-            descriptionSource = existing.descriptionSource;
-            colorSource = existing.colorSource;
-            indent = existing.indent;
-        }
-
-        public ScopedAttribute(string name, EScopePreset preset)
-        {
-            var existing = presets[preset];
-
-            this.name = existing.name;
-            nameSource = EEditorInfoSource.Provided;
-
-            scopeType = existing.scopeType;
-            elementSize = existing.elementSize;
             appendSource = existing.appendSource;
             descriptionSource = existing.descriptionSource;
             colorSource = existing.colorSource;
@@ -82,6 +70,25 @@ namespace Skyx.RuntimeEditor
             this.indent = indent;
         }
 
+        public void ForceInfo(string forcedAppend, EColor forcedColor)
+        {
+            colorSource = EEditorInfoSource.Provided;
+            color = forcedColor;
+
+            appendSource = EEditorInfoSource.Provided;
+            append = forcedAppend;
+        }
+
+        public void ReleaseForcedInfo()
+        {
+            var existing = presets[preset];
+
+            appendSource = existing.appendSource;
+            colorSource = existing.colorSource;
+            color = EColor.Infer;
+            append = null;
+        }
+
         #region Presets
 
         private static readonly Dictionary<EScopePreset, ScopedAttribute> presets = new()
@@ -98,6 +105,8 @@ namespace Skyx.RuntimeEditor
             { EScopePreset.Inline, new ScopedAttribute(EScopeType.Inline, EEditorInfoSource.EditorContent, EEditorInfoSource.Nothing, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
             { EScopePreset.InlinePropertySummary, new ScopedAttribute(EScopeType.Inline, EEditorInfoSource.Property, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
             { EScopePreset.InlineFullContent, new ScopedAttribute(EScopeType.Inline, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
+
+            { EScopePreset.InlineHeaderNameSummary, new ScopedAttribute(EScopeType.InlineHeader, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
         };
 
         #endregion
@@ -107,7 +116,7 @@ namespace Skyx.RuntimeEditor
     {
         public readonly string label;
         public EColor color;
-        public Action<SerializedProperty> onClick;
+        public readonly Action<SerializedProperty> onClick;
 
         public SkopeButton(string label, EColor color, Action<SerializedProperty> onClick)
         {
@@ -124,7 +133,7 @@ namespace Skyx.RuntimeEditor
         }
 
         public override bool Equals(object obj) => obj is SkopeButton other && Equals(other);
-        protected bool Equals(SkopeButton other) => label == other.label;
+        private bool Equals(SkopeButton other) => label == other.label;
         public override int GetHashCode() => HashCode.Combine(label);
     }
 }

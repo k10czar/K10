@@ -13,6 +13,12 @@ namespace Rogue.REditor
         #if UNITY_EDITOR
         public static string Pretty(this Enum value) => UnityEditor.ObjectNames.NicifyVariableName(value.ToString());
         public static string Pretty(this string value) => UnityEditor.ObjectNames.NicifyVariableName(value);
+        #else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string Pretty(this Enum value) => value.ToString();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string Pretty(this string value) => value;
         #endif
     }
 }

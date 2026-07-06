@@ -4,10 +4,11 @@ namespace Skyx.RuntimeEditor
 {
     public enum EElementSize
     {
-        Primary,
-        Secondary,
-        SingleLine,
-        Mini,
+        Infer = -1,
+        Primary = 0,
+        Secondary = 1,
+        SingleLine = 2,
+        Mini = 3,
     }
 
     public enum EButtonType
@@ -56,9 +57,18 @@ namespace Skyx.RuntimeEditor
         {
             EScopeType.Header => EElementSize.Primary,
             EScopeType.Foldout => EElementSize.SingleLine,
-            EScopeType.InlineHeader => EElementSize.Primary,
+            EScopeType.InlineHeader => EElementSize.Secondary,
             EScopeType.Inline => EElementSize.SingleLine,
             _ => throw new ArgumentOutOfRangeException(nameof(scopeType), scopeType, null)
+        };
+
+        public static EColor InferColor(this EScopeType scopeType) => scopeType switch
+        {
+            EScopeType.Header => EColor.Primary,
+            EScopeType.Foldout => EColor.Secondary,
+            EScopeType.InlineHeader => EColor.Primary,
+            EScopeType.Inline => EColor.Clear,
+            _ => throw new ArgumentOutOfRangeException()
         };
     }
 }

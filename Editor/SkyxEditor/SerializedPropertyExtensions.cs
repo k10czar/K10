@@ -309,13 +309,43 @@ namespace Rogue.REditor
         #region Cache IDs
 
         public static int GetMainCacheID(this SerializedObject serializedObject)
-            => serializedObject.targetObject.GetInstanceID();
+        {
+            try
+            {
+                return serializedObject.targetObject.GetInstanceID();
+            }
+            catch (Exception)
+            {
+                SkyxGUI.ClearAllCaches();
+                throw;
+            }
+        }
 
         public static (int, string) GetCacheID(this SerializedProperty property)
-            => (property.serializedObject.GetMainCacheID(), property.propertyPath);
+        {
+            try
+            {
+                return (property.serializedObject.GetMainCacheID(), property.propertyPath);
+            }
+            catch (Exception)
+            {
+                SkyxGUI.ClearAllCaches();
+                throw;
+            }
+        }
 
         public static int GetMainCacheID(this SerializedProperty property)
-            => property.serializedObject.GetMainCacheID();
+        {
+            try
+            {
+                return property.serializedObject.GetMainCacheID();
+            }
+            catch (Exception)
+            {
+                SkyxGUI.ClearAllCaches();
+                throw;
+            }
+        }
 
         #endregion
 
@@ -339,6 +369,29 @@ namespace Rogue.REditor
 
         public static SerializedProperty FindBackingProperty(this SerializedObject serializedObject, string propertyName)
             => serializedObject.FindProperty(propertyName.ToBackingFieldName());
+
+        public static SerializedProperty FindParentProperty(this SerializedProperty property)
+        {
+            if (property == null) return null;
+
+            var path = property.propertyPath;
+
+            var lastDotIndex = path.LastIndexOf('.');
+            if (lastDotIndex < 0) return null;
+
+            var parentPath = path[..lastDotIndex];
+            var removedPath = path[(lastDotIndex + 1)..];
+
+            if (removedPath.StartsWith(".data[") && parentPath.EndsWith(".Array."))
+            {
+                lastDotIndex = path.LastIndexOf('.');
+                if (lastDotIndex < 0) throw new ArgumentException($"Strange property path '{property.propertyPath}'");
+
+                parentPath = path[..lastDotIndex];
+            }
+
+            return property.serializedObject.FindProperty(parentPath);
+        }
 
         public static string ToBackingFieldName(this string name) => $"<{name}>k__BackingField";
 
@@ -508,6 +561,21 @@ namespace Rogue.REditor
                 }
 
                 if (!iterator.NextVisible(false)) break;
+            }
+        }
+
+        public static void DrawAllInnerProperties(this SerializedProperty property, ref Rect rect, params string[] including)
+        {
+            foreach (var fieldName in including)
+            {
+                var targetProp =  property.FindPropertyRelative(fieldName);
+                rect.height = EditorGUI.GetPropertyHeight(targetProp, true);
+
+                EditorGUI.BeginChangeCheck();
+                EditorGUI.PropertyField(rect, targetProp, true);
+                if (EditorGUI.EndChangeCheck()) targetProp.Apply();
+
+                rect.y += rect.height + SkyxStyles.ElementsMargin;
             }
         }
 

@@ -1,215 +1,259 @@
 using System;
+using K10.EventSystem;
 using UnityEngine;
 
-public class ActionCapsule : IEventTrigger, IEquatable<ActionCapsule>, IVoidable
+public class ActionCapsule : ActionCapsuleBase, IEventTrigger
 {
-	public readonly Action callback;
+	private readonly Action callback;
 	private readonly IEventRegister observed;
-
-	public ActionCapsule(Action callback)
-	{
-		this.callback = callback;
-		this.observed = null;
-
-		IsValid = callback != null;
-	}
-
-	public ActionCapsule(Action callback, IEventRegister observed)
-	{
-		this.callback = callback;
-		this.observed = observed;
-
-		IsValid = callback != null;
-		if (IsValid) observed.Register(this);
-	}
 
 	[HideInCallstack]
 	public void Trigger() => callback();
-	public bool IsValid { get; private set; }
 
-	public void Void()
+	public override void Void()
 	{
 		if (IsValid) observed?.Unregister(this);
 		IsValid = false;
 	}
 
-	public override bool Equals(object other)
+	#region Constructors
+
+	[Obsolete("Use ActionCapsule(callback, observed) instead")]
+	public ActionCapsule(Action callback) : base(callback)
 	{
-		if (other == null) return false;
-		if (GetHashCode() != other.GetHashCode()) return false;
-
-		if (other is ActionCapsule cap)
-			return callback?.Equals(cap.callback) ?? cap.callback == null;
-
-		return false;
+		this.callback = callback;
+		this.observed = null;
 	}
 
-	public bool Equals(ActionCapsule other)
+	public ActionCapsule(Action callback, IEventRegister observed) : base(callback)
 	{
-		if (GetHashCode() != other?.GetHashCode()) return false;
-		return callback?.Equals(other.callback) ?? other.callback == null;
+		this.callback = callback;
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
 	}
 
-	public override int GetHashCode() => callback?.GetHashCode() ?? 0;
+	// Used only to unregister
+	internal ActionCapsule(object callback, bool killOnly) : base(callback)
+	{
+		this.callback = null;
+		this.observed = null;
+		IsValid = false;
+	}
+
+	#endregion
 }
 
-public class ActionCapsule<T> : IEventTrigger<T>, IEquatable<ActionCapsule<T>>, IVoidable
+public class ActionCapsule<T> : ActionCapsuleBase, IEventTrigger<T>
 {
-	public readonly Action<T> callback;
+	protected readonly Action<T> callback;
 	private readonly IEventRegister<T> observed;
 
-	public ActionCapsule(Action<T> callback)
-	{
-		this.callback = callback;
-		this.observed = null;
-
-		IsValid = callback != null;
-	}
-
-	public ActionCapsule(Action<T> callback, IEventRegister<T> observed)
-	{
-		this.callback = callback;
-		this.observed = observed;
-
-		IsValid = callback != null;
-		if (IsValid) observed.Register(this);
-	}
-
 	[HideInCallstack]
-	public void Trigger(T t) => callback(t);
-	public bool IsValid { get; private set; }
+	public virtual void Trigger(T t) => callback(t);
 
-	public void Void()
+	public override void Void()
 	{
 		if (IsValid) observed?.Unregister(this);
 		IsValid = false;
 	}
 
-	public override bool Equals(object other)
+	#region Constructors
+
+	[Obsolete("Use ActionCapsule<T>(callback, observed) instead")]
+	public ActionCapsule(Action<T> callback) : base(callback)
 	{
-		if (other == null) return false;
-		if (GetHashCode() != other.GetHashCode()) return false;
-
-		if (other is ActionCapsule<T> cap)
-			return callback?.Equals(cap.callback) ?? cap.callback == null;
-
-		return false;
+		this.callback = callback;
+		this.observed = null;
 	}
 
-	public bool Equals(ActionCapsule<T> other)
+	public ActionCapsule(Action<T> callback, IEventRegister<T> observed) : base(callback)
 	{
-		if (GetHashCode() != other?.GetHashCode()) return false;
-		return callback?.Equals(other.callback) ?? other.callback == null;
+		this.callback = callback;
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
 	}
 
-	public override int GetHashCode() => callback?.GetHashCode() ?? 0;
+	public ActionCapsule(Action callback, IEventRegister<T> observed) : base(callback)
+	{
+		this.callback = callback.Wrap<T>();
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
+	}
+
+	// Used only to unregister
+	internal ActionCapsule(object callback, bool killOnly) : base(callback)
+	{
+		this.callback = null;
+		this.observed = null;
+		IsValid = false;
+	}
+
+	#endregion
 }
 
-public class ActionCapsule<T, K> : IEventTrigger<T, K>, IEquatable<ActionCapsule<T, K>>, IVoidable
+public class ActionCapsule<T,K> : ActionCapsuleBase, IEventTrigger<T,K>
 {
-	public readonly Action<T, K> callback;
-	private readonly IEventRegister<T, K> observed;
-
-	public ActionCapsule(Action<T, K> callback)
-	{
-		this.callback = callback;
-		this.observed = null;
-
-		IsValid = callback != null;
-	}
-
-	public ActionCapsule(Action<T, K> callback, IEventRegister<T, K> observed)
-	{
-		this.callback = callback;
-		this.observed = observed;
-
-		IsValid = callback != null;
-		if (IsValid) observed.Register(this);
-	}
+	protected readonly Action<T,K> callback;
+	private readonly IEventRegister<T,K> observed;
 
 	[HideInCallstack]
-	public void Trigger(T t, K k) => callback(t, k);
-	public bool IsValid { get; private set; }
+	public virtual void Trigger(T t, K k) => callback(t, k);
 
-	public void Void()
+	public override void Void()
 	{
 		if (IsValid) observed?.Unregister(this);
 		IsValid = false;
 	}
 
-	public override bool Equals(object obj)
-	{
-		if (obj == null) return false;
-		if (GetHashCode() != obj.GetHashCode()) return false;
-		if (obj is ActionCapsule<T, K> cap)
-		{
-			if (callback != null) return callback.Equals(cap.callback);
-			return cap.callback.Equals(null);
-		}
+	#region Constructors
 
-		return false;
+	[Obsolete("Use ActionCapsule<T,K>(callback, observed) instead")]
+	public ActionCapsule(Action<T,K> callback) : base(callback)
+	{
+		this.callback = callback;
+		this.observed = null;
 	}
 
-	public bool Equals(ActionCapsule<T, K> other)
+	public ActionCapsule(Action<T,K> callback, IEventRegister<T,K> observed) : base(callback)
 	{
-		if (GetHashCode() != other?.GetHashCode()) return false;
-		return callback?.Equals(other.callback) ?? other.callback == null;
+		this.callback = callback;
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
 	}
 
-	public override int GetHashCode()
+	public ActionCapsule(Action<T> callback, IEventRegister<T,K> observed) : base(callback)
 	{
-		return callback?.GetHashCode() ?? 0;
+		this.callback = callback.Wrap<T,K>();
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
 	}
+
+	public ActionCapsule(Action<K> callback, IEventRegister<T,K> observed) : base(callback)
+	{
+		this.callback = callback.Wrap<T,K>();
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
+	}
+
+	public ActionCapsule(Action callback, IEventRegister<T,K> observed) : base(callback)
+	{
+		this.callback = callback.Wrap<T,K>();
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
+	}
+
+	// Used only to unregister
+	internal ActionCapsule(object callback, bool killOnly) : base(callback)
+	{
+		this.callback = null;
+		this.observed = null;
+		IsValid = false;
+	}
+
+	#endregion
 }
 
-public class ActionCapsule<T, K, L> : IEventTrigger<T, K, L>, IEquatable<ActionCapsule<T, K, L>>, IVoidable
+public class ActionCapsule<T,K,L> : ActionCapsuleBase, IEventTrigger<T,K,L>
 {
-	public readonly Action<T, K, L> callback;
-	private readonly IEventRegister<T, K, L> observed;
-
-	public ActionCapsule(Action<T, K, L> callback)
-	{
-		this.callback = callback;
-		this.observed = null;
-
-		IsValid = callback != null;
-	}
-
-	public ActionCapsule(Action<T, K, L> callback, IEventRegister<T, K, L> observed)
-	{
-		this.callback = callback;
-		this.observed = observed;
-
-		IsValid = callback != null;
-		if (IsValid) observed.Register(this);
-	}
+	protected readonly Action<T,K,L> callback;
+	private readonly IEventRegister<T,K,L> observed;
 
 	[HideInCallstack]
-	public void Trigger(T t, K k, L l) => callback(t, k, l);
-	public bool IsValid { get; private set; }
+	public virtual void Trigger(T t, K k, L l) => callback(t, k, l);
 
-	public void Void()
+	public override void Void()
 	{
 		if (IsValid) observed?.Unregister(this);
 		IsValid = false;
 	}
 
-	public override bool Equals(object other)
+	#region Constructors
+
+	[Obsolete("Use ActionCapsule<T,K>(callback, observed) instead")]
+	public ActionCapsule(Action<T,K,L> callback) : base(callback)
 	{
-		if (other == null) return false;
-		if (GetHashCode() != other.GetHashCode()) return false;
-
-		if (other is ActionCapsule<T, K, L> cap)
-			return callback?.Equals(cap.callback) ?? cap.callback == null;
-
-		return false;
+		this.callback = callback;
+		this.observed = null;
 	}
 
-	public bool Equals(ActionCapsule<T, K, L> other)
+	public ActionCapsule(Action<T,K,L> callback, IEventRegister<T,K,L> observed) : base(callback)
 	{
-		if (GetHashCode() != other?.GetHashCode()) return false;
-		return callback?.Equals(other.callback) ?? other.callback == null;
+		this.callback = callback;
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
 	}
 
-	public override int GetHashCode() => callback?.GetHashCode() ?? 0;
+	public ActionCapsule(Action<T> callback, IEventRegister<T,K,L> observed) : base(callback)
+	{
+		this.callback = callback.Wrap<T,K,L>();
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
+	}
+
+	public ActionCapsule(Action<K> callback, IEventRegister<T,K,L> observed) : base(callback)
+	{
+		this.callback = callback.Wrap<T,K,L>();
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
+	}
+
+	public ActionCapsule(Action<L> callback, IEventRegister<T,K,L> observed) : base(callback)
+	{
+		this.callback = callback.Wrap<T,K,L>();
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
+	}
+
+	public ActionCapsule(Action<T,K> callback, IEventRegister<T,K,L> observed) : base(callback)
+	{
+		this.callback = callback.Wrap<T,K,L>();
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
+	}
+
+	public ActionCapsule(Action<T,L> callback, IEventRegister<T,K,L> observed) : base(callback)
+	{
+		this.callback = callback.Wrap<T,K,L>();
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
+	}
+
+	public ActionCapsule(Action<K,L> callback, IEventRegister<T,K,L> observed) : base(callback)
+	{
+		this.callback = callback.Wrap<T,K,L>();
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
+	}
+
+	public ActionCapsule(Action callback, IEventRegister<T,K,L> observed) : base(callback)
+	{
+		this.callback = callback.Wrap<T,K,L>();
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
+	}
+
+	// Used only to unregister
+	internal ActionCapsule(object callback, bool killOnly) : base(callback)
+	{
+		this.callback = null;
+		this.observed = null;
+		IsValid = false;
+	}
+
+	#endregion
 }

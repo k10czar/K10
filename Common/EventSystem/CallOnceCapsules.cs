@@ -1,11 +1,12 @@
 ﻿using System;
+using K10.EventSystem;
 using UnityEngine;
 
-public struct CallOnceCapsule : IEventTrigger, IEquatable<CallOnceCapsule>, IVoidable
+public class CallOnceCapsule : ActionCapsuleBase, IEventTrigger
 {
 	private readonly Action callback;
 
-	public CallOnceCapsule(Action callback)
+	public CallOnceCapsule(Action callback) : base(callback)
 	{
 		this.callback = callback;
 		IsValid = callback != null;
@@ -14,40 +15,16 @@ public struct CallOnceCapsule : IEventTrigger, IEquatable<CallOnceCapsule>, IVoi
 	[HideInCallstack]
 	public void Trigger()
 	{
-		if (!IsValid) return;
-
 		IsValid = false;
 		callback();
 	}
-
-	public bool IsValid { get; private set; }
-	public void Void() => IsValid = false;
-
-	public override bool Equals(object other)
-	{
-		if (other == null) return false;
-		if (GetHashCode() != other.GetHashCode()) return false;
-
-		if (other is CallOnceCapsule cap)
-			return callback?.Equals(cap.callback) ?? cap.callback == null;
-
-		return base.Equals(other);
-	}
-
-	public bool Equals(CallOnceCapsule other)
-	{
-		if (GetHashCode() != other.GetHashCode()) return false;
-		return callback?.Equals(other.callback) ?? other.callback == null;
-	}
-
-	public override int GetHashCode() => callback?.GetHashCode() ?? 0;
 }
 
-public struct CallOnceCapsule<T> : IEventTrigger<T>, IEquatable<CallOnceCapsule<T>>, IVoidable
+public class CallOnceCapsule<T> : ActionCapsuleBase, IEventTrigger<T>
 {
 	private readonly Action<T> callback;
 
-	public CallOnceCapsule(Action<T> callback)
+	public CallOnceCapsule(Action<T> callback) : base(callback)
 	{
 		this.callback = callback;
 		IsValid = callback != null;
@@ -59,35 +36,13 @@ public struct CallOnceCapsule<T> : IEventTrigger<T>, IEquatable<CallOnceCapsule<
 		IsValid = false;
 		callback(t);
 	}
-
-	public bool IsValid { get; private set; }
-	public void Void() => IsValid = false;
-
-	public override bool Equals(object other)
-	{
-		if (other == null) return false;
-		if (GetHashCode() != other.GetHashCode()) return false;
-
-		if (other is CallOnceCapsule<T> cap)
-			return callback?.Equals(cap.callback) ?? cap.callback == null;
-
-		return base.Equals(other);
-	}
-
-	public bool Equals(CallOnceCapsule<T> other)
-	{
-		if (GetHashCode() != other.GetHashCode()) return false;
-		return callback?.Equals(other.callback) ?? other.callback == null;
-	}
-
-	public override int GetHashCode() => callback?.GetHashCode() ?? 0;
 }
 
-public struct CallOnceCapsule<T, K> : IEventTrigger<T, K>, IEquatable<CallOnceCapsule<T, K>>, IVoidable
+public class CallOnceCapsule<T, K> : ActionCapsuleBase, IEventTrigger<T, K>
 {
 	private readonly Action<T, K> callback;
 
-	public CallOnceCapsule(Action<T, K> callback)
+	public CallOnceCapsule(Action<T, K> callback) : base(callback)
 	{
 		this.callback = callback;
 		IsValid = callback != null;
@@ -99,40 +54,13 @@ public struct CallOnceCapsule<T, K> : IEventTrigger<T, K>, IEquatable<CallOnceCa
 		IsValid = false;
 		callback(t, k);
 	}
-
-	public bool IsValid { get; private set; }
-	public void Void() => IsValid = false;
-
-	public override bool Equals(object obj)
-	{
-		if (obj == null) return false;
-		if (GetHashCode() != obj.GetHashCode()) return false;
-		if (obj is CallOnceCapsule<T, K> cap)
-		{
-			if (callback != null) return callback.Equals(cap.callback);
-			return cap.callback.Equals(null);
-		}
-
-		return base.Equals(obj);
-	}
-
-	public bool Equals(CallOnceCapsule<T, K> other)
-	{
-		if (GetHashCode() != other.GetHashCode()) return false;
-		return callback?.Equals(other.callback) ?? other.callback == null;
-	}
-
-	public override int GetHashCode()
-	{
-		return callback?.GetHashCode() ?? 0;
-	}
 }
 
-public struct CallOnceCapsule<T, K, L> : IEventTrigger<T, K, L>, IEquatable<CallOnceCapsule<T, K, L>>, IVoidable
+public class CallOnceCapsule<T, K, L> : ActionCapsuleBase, IEventTrigger<T, K, L>
 {
 	private readonly Action<T, K, L> callback;
 
-	public CallOnceCapsule(Action<T, K, L> callback)
+	public CallOnceCapsule(Action<T, K, L> callback) : base(callback)
 	{
 		this.callback = callback;
 		IsValid = callback != null;
@@ -144,26 +72,4 @@ public struct CallOnceCapsule<T, K, L> : IEventTrigger<T, K, L>, IEquatable<Call
 		IsValid = false;
 		callback(t, k, l);
 	}
-
-	public bool IsValid { get; private set; }
-	public void Void() => IsValid = false;
-
-	public override bool Equals(object other)
-	{
-		if (other == null) return false;
-		if (GetHashCode() != other.GetHashCode()) return false;
-
-		if (other is CallOnceCapsule<T, K, L> cap)
-			return callback?.Equals(cap.callback) ?? cap.callback == null;
-
-		return base.Equals(other);
-	}
-
-	public bool Equals(CallOnceCapsule<T, K, L> other)
-	{
-		if (GetHashCode() != other.GetHashCode()) return false;
-		return callback?.Equals(other.callback) ?? other.callback == null;
-	}
-
-	public override int GetHashCode() => callback?.GetHashCode() ?? 0;
 }

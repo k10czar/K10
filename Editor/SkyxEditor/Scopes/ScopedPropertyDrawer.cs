@@ -59,7 +59,7 @@ namespace Rogue.REditor
         {
             if (property.hasVisibleChildren)
             {
-                EditorGUI.BeginDisabledGroup(info.isDisabled);
+                EditorGUI.BeginDisabledGroup(info.contentIsDisabled);
                 property.DrawAllInnerProperties(ref rect, true);
                 EditorGUI.EndDisabledGroup();
             }

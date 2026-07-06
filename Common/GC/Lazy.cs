@@ -7,15 +7,13 @@ public static class Lazy
 	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	public static T Request<T>( ref T field ) where T : class, new()
 	{
-		return field ?? ( field = new T() );
-		// if( field == null ) field = new T();
-		// return field;
+		return field ??= new T();
 	}
-	
+
 	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	public static T RequestPoolable<T>( ref T field ) where T : class, new()
 	{
-		return field ?? ( field = ObjectPool<T>.Request() );
+		return field ??= ObjectPool<T>.Request();
 	}
 
 	[MethodImpl(Optimizations.INLINE_IF_CAN)]
@@ -26,7 +24,7 @@ public static class Lazy
 		// if( field == null ) field = new T();
 		// return field;
 	}
-	
+
 	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	public static T RequestPoolable<T>( ref T field, bool alreadyKilled ) where T : class, new()
 	{

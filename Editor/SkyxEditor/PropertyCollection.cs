@@ -24,7 +24,7 @@ namespace Rogue.REditor
         public static PropertyCollection Get(SerializedObject serializedObject) => Get(serializedObject, "");
         public static PropertyCollection Get(SerializedProperty property) => Get(property.serializedObject, property.propertyPath);
 
-        private static PropertyCollection Get(SerializedObject root, string path)
+        public static PropertyCollection Get(SerializedObject root, string path)
         {
             using var profilerMarker = getCollectionMarker.Auto();
 
@@ -156,7 +156,6 @@ namespace Rogue.REditor
             Undo.undoRedoPerformed += OnUndoRedoPerformed;
         }
 
-        [MenuItem("Rogue/Editor/Clear PropertyCollections")]
         public static void ClearCollections()
         {
             collections.Clear();
@@ -204,7 +203,7 @@ namespace Rogue.REditor
         public void DrawList(string propertyName, bool displayHeader = true, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
-            var list = GetOrRegisterDefaultList(property, displayHeader);
+            var list = GetOrRegisterList(property, displayHeader);
             list.DoLayoutList();
         }
 
@@ -253,19 +252,24 @@ namespace Rogue.REditor
 
         #region Rect Draw
 
-        public void Draw(ref Rect rect, string propertyName, ERectSlideDir slideDir = ERectSlideDir.Vertical, bool isBacking = false)
+        public bool Draw(ref Rect rect, string propertyName, ERectSlideDir slideDir = ERectSlideDir.Vertical, bool drawLabel = true, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
-            SkyxGUI.Draw(rect, property, true);
+            var changed = SkyxGUI.Draw(rect, property, drawLabel);
             rect.Slide(slideDir);
+
+            return changed;
         }
 
-        public void Draw(ref Rect rect, string propertyName, bool slideRect = true, bool isBacking = false, bool drawLabel = false)
+        // [Obsolete("Use Draw(ref rect, propertyName, slideDir) instead.")]
+        public bool Draw(ref Rect rect, string propertyName, bool slideRect = true, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
-            SkyxGUI.Draw(rect, property, drawLabel);
 
+            var changed = SkyxGUI.Draw(rect, property);
             if (slideRect) rect.SlideSame();
+
+            return changed;
         }
 
         public void DrawFloat(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false, bool alwaysDrawInlaid = false)
@@ -370,7 +374,7 @@ namespace Rogue.REditor
         public void DrawList(Rect rect, string propertyName, bool displayHeader = true, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
-            var list = GetOrRegisterDefaultList(property, displayHeader);
+            var list = GetOrRegisterList(property, displayHeader);
             list.DoList(rect);
         }
 
@@ -419,8 +423,8 @@ namespace Rogue.REditor
         public bool HasList(string propertyName, bool isBacking = false) => ReorderableListCache.HasList(Get(propertyName, isBacking));
         public bool HasList(SerializedProperty property) => ReorderableListCache.HasList(property);
 
-        public ReorderableList GetOrRegisterDefaultList(
-            SerializedProperty property,
+        public ReorderableList GetOrRegisterList(
+            string propertyName,
             bool displayHeader = true,
             bool draggable = true,
             bool displayAddButton = true,
@@ -430,6 +434,20 @@ namespace Rogue.REditor
             ReorderableListCache.DrawListHeader customHeader = null,
             ReorderableListCache.IsElementHighlighted isElementHighlighted = null,
             bool isBacking = false)
+        {
+            return GetOrRegisterList(Get(propertyName, isBacking), displayHeader, draggable, displayAddButton, displayRemoveButton, customDrawElement, newElementSetup, customHeader, isElementHighlighted);
+        }
+
+        public ReorderableList GetOrRegisterList(
+            SerializedProperty property,
+            bool displayHeader = true,
+            bool draggable = true,
+            bool displayAddButton = true,
+            bool displayRemoveButton = true,
+            ReorderableListCache.DrawElement customDrawElement = null,
+            Action<SerializedProperty> newElementSetup = null,
+            ReorderableListCache.DrawListHeader customHeader = null,
+            ReorderableListCache.IsElementHighlighted isElementHighlighted = null)
         {
             if (ReorderableListCache.TryGet(property, out var list)) return list;
 

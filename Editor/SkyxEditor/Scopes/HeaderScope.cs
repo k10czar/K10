@@ -153,7 +153,7 @@ namespace Rogue.REditor
             Skope.DrawBox(ref boxRect, info);
 
             var prop = info.property;
-            DrawButtons(headerRect, info, false, ref isExpandedRef);
+            info.DrawButtons(headerRect, false);
 
             if (headerRect.TryUseClick(false))
                 isExpandedRef = !isExpandedRef;
@@ -164,31 +164,11 @@ namespace Rogue.REditor
             GUI.Button(headerRect, GUIContent.none); // This forces repaint on hover
             SkyxGUI.Button(headerRect, info.title, info.color, info.size, EButtonType.Plain);
 
-            DrawButtons(headerRect, info, true, ref isExpandedRef);
+            info.DrawButtons(headerRect, true);
 
             if (isExpandedRef && info.indent) EditorGUI.indentLevel++;
 
             return isExpandedRef;
-        }
-
-        private static void DrawButtons(Rect rect, SkopeInfo info, bool reallyDraw, ref bool isExpandedRef)
-        {
-            if (info.buttons == null) return;
-
-            rect.y += 5;
-            rect.x -= 4;
-            rect.height = SkyxStyles.LineHeight;
-
-            foreach (var (label, color, action) in info.buttons)
-            {
-                if (reallyDraw) SkyxGUI.MiniButton(ref rect, label, color, null, true);
-                else
-                {
-                    var buttonRect = rect.ExtractMiniButton(true);
-                    if (buttonRect.TryUseClick(false))
-                        action(info.property);
-                }
-            }
         }
 
         #endregion

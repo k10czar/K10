@@ -105,7 +105,6 @@ namespace Rogue.REditor
             return typeField?.GetValue(drawerAttribute) as Type;
         }
 
-        [MenuItem("Rogue/Editor/Clear CustomDrawersCache")]
         public static void ClearCache() => cache.Clear();
     }
 }

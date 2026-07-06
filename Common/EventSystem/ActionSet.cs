@@ -10,11 +10,19 @@ public class ActionSet
 
     #region Register Interface
 
+    public void Track(IVoidable capsule) => registeredActions.Add(capsule);
+
     public IVoidable Register(IEventRegister target, Action action)
     {
         var capsule = new ActionCapsule(action, target);
         registeredActions.Add(capsule);
         return capsule;
+    }
+
+    public void Register(Action action, IEnumerable<IEventRegister> targets)
+    {
+        foreach (var target in targets)
+            registeredActions.Add(new ActionCapsule(action, target));
     }
 
     public IVoidable Register<T>(IEventRegister<T> target, Action<T> action)

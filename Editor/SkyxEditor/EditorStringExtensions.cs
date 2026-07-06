@@ -3,7 +3,7 @@ using Skyx.RuntimeEditor;
 
 namespace Rogue.REditor
 {
-    public static class StringExtensions
+    public static class EditorStringExtensions
     {
         public static string TryAppendInfo(this string baseString, object info, EElementSize size = EElementSize.Primary, EColor color = EColor.Support)
             => info == null ? baseString : AppendInfo(baseString, info, size, color);

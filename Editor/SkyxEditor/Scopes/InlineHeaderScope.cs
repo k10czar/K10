@@ -150,17 +150,18 @@ namespace Rogue.REditor
             var current = Event.current;
             var isHovered = headerRect.Contains(current.mousePosition);
 
+            info.DrawButtons(headerRect, false);
+
             if (headerRect.TryUseClick(false))
                 isExpandedRef = !isExpandedRef;
 
             if (info.property != null)
                 PropertyContextMenu.ContextGUI(ref headerRect, info.property);
 
-            using (AllColorsScope.Set(Color.clear))
-                GUI.Button(headerRect, GUIContent.none); // This forces repaint on hover
+            GUI.Button(headerRect, GUIContent.none); // This forces repaint on hover
+            SkyxGUI.Button(headerRect, info.title, info.color, info.size, EButtonType.Plain);
 
-            var headerColor = isHovered || !isExpandedRef ? info.color : EColor.Backdrop;
-            SkyxGUI.Button(headerRect, info.title, headerColor, info.size, EButtonType.Plain);
+            info.DrawButtons(headerRect, true);
 
             SkyxGUI.Separator(ref boxRect, 0);
             boxRect.ExtractVertical(headerRect.height, -2);

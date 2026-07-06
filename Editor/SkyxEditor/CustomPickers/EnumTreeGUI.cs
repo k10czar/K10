@@ -13,7 +13,7 @@ namespace Rogue.REditor
         public static void DrawSupport<T>(Rect rect, SerializedProperty property, string hint = null) => DrawEnum(rect, property, typeof(T), EColor.Support, hint);
         public static void DrawSecondary(Rect rect, SerializedProperty property, Type enumType, string hint = null) => DrawEnum(rect, property, enumType, EColor.Secondary, hint);
 
-        public static void DrawEnum<T>(Rect rect, SerializedProperty property, EColor color, string hint, T[] validList, bool isIncludeList = true)
+        public static void DrawEnum<T>(Rect rect, SerializedProperty property, EColor color, string hint, IEnumerable<T> validList, bool isIncludeList = true)
             => DrawEnum(rect, property, typeof(T), color, hint, validList?.Cast<object>(), isIncludeList);
 
         public static void DrawEnum<T>(Rect rect, SerializedProperty property, EColor color, string hint = "")

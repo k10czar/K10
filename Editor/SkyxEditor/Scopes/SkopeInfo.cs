@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Skyx.RuntimeEditor;
 using UnityEditor;
+using UnityEngine;
 
 namespace Rogue.REditor
 {
@@ -19,12 +20,15 @@ namespace Rogue.REditor
         public readonly bool hasCustomExpand;
 
         public readonly bool indent = false;
-        public readonly bool isDisabled = false;
-
-        public List<SkopeButton> buttons = new();
+        public readonly bool contentIsDisabled = false;
 
         public bool HasDescription => !string.IsNullOrEmpty(description);
         public bool CanExpand() => hasCustomExpand || HasDescription || property.CanExpand();
+
+        #region Buttons
+
+        public bool buttonsAreDisabled;
+        public List<SkopeButton> buttons = new();
 
         public void AddUniqueButton(SkopeButton entry)
         {
@@ -32,59 +36,71 @@ namespace Rogue.REditor
             buttons.Add(entry);
         }
 
-        public SkopeInfo(EScopeType scopeType, SerializedProperty property, string title, EColor color, EElementSize size)
+        public void DrawButtons(Rect rect, bool reallyDraw)
+        {
+            if (buttons == null) return;
+
+            EditorGUI.BeginDisabledGroup(buttonsAreDisabled);
+
+            rect.y += 5;
+            rect.x -= 4;
+            rect.height = SkyxStyles.LineHeight;
+
+            foreach (var (label, buttonColor, action) in buttons)
+            {
+                if (reallyDraw) SkyxGUI.MiniButton(ref rect, label, buttonColor, null, true);
+                else
+                {
+                    var buttonRect = rect.ExtractMiniButton(true);
+                    if (buttonRect.TryUseClick(false))
+                        action(property);
+                }
+            }
+
+            EditorGUI.EndDisabledGroup();
+        }
+
+        #endregion
+
+        #region Constructors
+
+        public SkopeInfo(EScopeType scopeType, SerializedProperty property, string title, EColor color = EColor.Infer, EElementSize size = EElementSize.Infer)
         {
             this.scopeType = scopeType;
             this.property = property;
             this.title = title;
-            this.color = color;
-            this.size = size;
+            this.color = color is EColor.Infer ? scopeType.InferColor() : color;
+            this.size = size is EElementSize.Infer ? scopeType.PreferredSize() : size;
         }
 
-        public SkopeInfo(EScopeType scopeType, SerializedProperty property, EColor color, EElementSize size)
-        {
-            this.scopeType = scopeType;
-            this.property = property;
-            this.title = property.displayName;
-            this.color = color;
-            this.size = size;
-        }
+        public SkopeInfo(EScopeType scopeType, SerializedProperty property, EColor color = EColor.Infer, EElementSize size = EElementSize.Infer)
+            : this(scopeType, property, property.displayName, color, size) {}
 
-        public SkopeInfo(EScopeType scopeType, SerializedProperty property, string title, EColor color, EElementSize size, bool indent, bool isDisabled = false, bool hasCustomExpand = false)
+        public SkopeInfo(EScopeType scopeType, SerializedProperty property, string title, EColor color, EElementSize size, bool indent, bool contentIsDisabled = false, bool hasCustomExpand = false)
+            : this(scopeType, property, title, color, size)
         {
-            this.scopeType = scopeType;
-            this.property = property;
             this.name = title;
-            this.title = title;
-            this.color = color;
-            this.size = size;
-            this.isDisabled = isDisabled;
+            this.contentIsDisabled = contentIsDisabled;
             this.indent = indent;
             this.hasCustomExpand = hasCustomExpand;
         }
 
-        public SkopeInfo(EScopeType scopeType, SerializedProperty property, string name, string title, string description, EColor color, EElementSize size, bool indent, bool isDisabled)
+        public SkopeInfo(EScopeType scopeType, SerializedProperty property, string name, string title, string description, EColor color, EElementSize size, bool indent, bool contentIsDisabled)
+            : this(scopeType, property, title, color, size)
         {
-            this.scopeType = scopeType;
-            this.property = property;
             this.name = name;
-            this.title = title;
             this.description = description;
-            this.color = color;
-            this.size = size;
             this.indent = indent;
-            this.isDisabled = isDisabled;
+            this.contentIsDisabled = contentIsDisabled;
         }
 
         public SkopeInfo(EScopeType scopeType, SerializedProperty property, EColor color, EElementSize size, bool indent)
+            : this(scopeType, property, property.displayName, color, size)
         {
-            this.scopeType = scopeType;
-            this.property = property;
-            this.title = property.displayName;
-            this.color = color;
-            this.size = size;
             this.indent = indent;
         }
+
+        #endregion
     }
 
     public static class SkopeInfoExtensions
@@ -128,26 +144,18 @@ namespace Rogue.REditor
                 _ => throw new ArgumentOutOfRangeException()
             };
 
-            var color = scopedAtt.isDisabled
-                ? EColor.Disabled
-                : scopedAtt.colorSource switch
-                    {
-                        EEditorInfoSource.Nothing or
-                        EEditorInfoSource.Property or
-                        EEditorInfoSource.FieldValue => EColor.Infer,
-                        EEditorInfoSource.EditorContent => editorInfo?.ContentColor ?? EColor.Infer,
-                        EEditorInfoSource.Provided => scopedAtt.color,
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
-
-            if (color is EColor.Infer) color = scopedAtt.scopeType switch
+            var color = scopedAtt.colorSource switch
             {
-                EScopeType.Header => EColor.Primary,
-                EScopeType.Foldout => EColor.Secondary,
-                EScopeType.InlineHeader => EColor.Primary,
-                EScopeType.Inline => EColor.Clear,
+                EEditorInfoSource.Provided => scopedAtt.color,
+                _ when scopedAtt.isDisabled => EColor.Disabled,
+                EEditorInfoSource.Nothing or
+                EEditorInfoSource.Property or
+                EEditorInfoSource.FieldValue => EColor.Infer,
+                EEditorInfoSource.EditorContent => editorInfo?.ContentColor ?? EColor.Infer,
                 _ => throw new ArgumentOutOfRangeException()
             };
+
+            if (color is EColor.Infer) color = scopedAtt.scopeType.InferColor();
 
             var hasName = !string.IsNullOrEmpty(name);
             var hasAppend = !string.IsNullOrEmpty(append);
@@ -157,7 +165,9 @@ namespace Rogue.REditor
                 : hasAppend ? append : "Missing Name!";
 
             var info = new SkopeInfo(scopedAtt.scopeType, property, name, title, description, color, scopedAtt.elementSize, scopedAtt.indent, scopedAtt.isDisabled);
+
             if (scopedAtt.buttons != null) info.buttons.InsertRange(0, scopedAtt.buttons);
+            else if (scopedAtt.isDisabled) info.buttonsAreDisabled = true;
 
             return info;
         }
