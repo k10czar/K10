@@ -37,31 +37,31 @@ public class Privileges
         public bool isEnabled;
     }
 
-    public void ReadUserPrivileges( XUserHandle userHandle )
+    public void ReadUserPrivileges(XUserHandle userHandle)
     {
-        ReadPrivilege( userHandle, XUserPrivilege.CrossPlay, Crossplay );
-        ReadPrivilege( userHandle, XUserPrivilege.Multiplayer, Multiplayer );
-        ReadPrivilege( userHandle, XUserPrivilege.UserGeneratedContent, UserGeneratedContent );
-        ReadPrivilege( userHandle, XUserPrivilege.Communications, Communications );
+        ReadPrivilege(userHandle, XUserPrivilege.CrossPlay, Crossplay);
+        ReadPrivilege(userHandle, XUserPrivilege.Multiplayer, Multiplayer);
+        ReadPrivilege(userHandle, XUserPrivilege.UserGeneratedContent, UserGeneratedContent);
+        ReadPrivilege(userHandle, XUserPrivilege.Communications, Communications);
 
         AlreadyRead = true;
     }
 
-    public static int ReadPrivilege( XUserHandle userHandle, XUserPrivilege privilegeType, Privilege privilege )
+    public static int ReadPrivilege(XUserHandle userHandle, XUserPrivilege privilegeType, Privilege privilege)
     {
         var hr = SDK.XUserCheckPrivilege(userHandle, XUserPrivilegeOptions.None, privilegeType, out privilege.isEnabled, out privilege.denyReason);
-        
-        var failed = HR.FAILED( hr );
+
+        var failed = HR.FAILED(hr);
         privilege.readed = !failed;
         privilege.hr = hr;
         privilege.xUserPrivilege = privilegeType;
 
-        if( failed )
+        if (failed)
         {
             Debug.LogError($"Failed to check Privilege {privilegeType} reason {privilege.denyReason}. HR {hr} - {HR.NameOf(hr)}");
             return hr;
         }
-            
+
         Debug.Log($"Check Privilege <color=magenta>{privilegeType}</color>:<color=cyan>{privilege.isEnabled}</color>. HR {hr} - {HR.NameOf(hr)}");
         return hr;
     }
@@ -105,29 +105,29 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
     // Initialization
     public static GdkGameRuntimeService Instance => ServiceLocator.Get<GdkGameRuntimeService>();
-    private BoolState _isInitialized = new BoolState( false );
+    private BoolState _isInitialized = new BoolState(false);
     public IBoolStateObserver IsInitialized => _isInitialized;
-    
-    private BoolState _isLogged = new BoolState( false );
+
+    private BoolState _isLogged = new BoolState(false);
     public IBoolStateObserver IsLogged => _isLogged;
-    
-    private BoolState _isReady = new BoolState( false );
+
+    private BoolState _isReady = new BoolState(false);
     public IBoolStateObserver IsReady => _isReady;
 
     IBoolStateObserver _isReadyToUse = null;
-    public IBoolStateObserver IsFullyInitialized 
-    { 
+    public IBoolStateObserver IsFullyInitialized
+    {
         get
         {
-            if( _isReadyToUse == null ) _isReadyToUse = new BoolStateOperations.And( _isInitialized, _isLogged, _isReady );
+            if (_isReadyToUse == null) _isReadyToUse = new BoolStateOperations.And(_isInitialized, _isLogged, _isReady);
             return _isReadyToUse;
-        } 
+        }
     }
     public IEventRegister OnStartedCleanUp => _onStartedCleanUp;
     private EventSlot _onStartedCleanUp = new();
 
     private bool _hasCreatedDispatchTask;
-    
+
     private XGameSaveFilesFileAdapter _gdkFileAdapter;
     private GdkUserData _userData;
     public GdkUserData UserData => _userData;
@@ -152,22 +152,29 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     private EventSlot<GXDKAppLocalDeviceId> _onUpdatedActiveController = new();
     public IEventRegister<GXDKAppLocalDeviceId> OnUpdatedActiveController => _onUpdatedActiveController;
     private bool _showingPairControllerUI;
+
+#if !UNITY_EDITOR
+    private bool _accountSwitchRestartArmed;
+    private bool _accountSwitchRestartQueued;
+    private bool _accountSwitchRestartStarted;
+    private float _accountSwitchRestartArmTime = float.PositiveInfinity;
+#endif
 #endif
 
     public void ShowFriendData(ulong friendID)
     {
         SDK.XGameUiShowPlayerProfileCardAsync(_userData.userHandle, friendID, (result) => Debug.Log($"{result}"));
     }
- 
-#region Initialization
-    public GdkGameRuntimeService( string scid, string saveScid = "", string titleId = "", string sandbox = "" )
+
+    #region Initialization
+    public GdkGameRuntimeService(string scid, string saveScid = "", string titleId = "", string sandbox = "")
     {
         if (saveScid.IsNullOrEmpty())
             saveScid = scid;
 
         TitleIdNumeric = uint.Parse(titleId, System.Globalization.NumberStyles.HexNumber);
-		Debug.Log( $"<color=Crimson>GdkGameRuntimeService</color>( {titleId}({TitleIdNumeric}), {scid} (sav: {saveScid}), {sandbox} )" );
-        if( !string.IsNullOrEmpty(sandbox) ) Sandbox = sandbox;
+        Debug.Log($"<color=Crimson>GdkGameRuntimeService</color>( {titleId}({TitleIdNumeric}), {scid} (sav: {saveScid}), {sandbox} )");
+        if (!string.IsNullOrEmpty(sandbox)) Sandbox = sandbox;
         TitleId = titleId;
         Scid = scid;
         SaveScid = saveScid;
@@ -178,8 +185,8 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         InitializeRuntime();
 
         _gdkFileAdapter = new();
-        FileAdapter.SetImplementation(_gdkFileAdapter); 
-        _gdkFileAdapter.IsInitilized.Synchronize( _isReady );
+        FileAdapter.SetImplementation(_gdkFileAdapter);
+        _gdkFileAdapter.IsInitilized.Synchronize(_isReady);
 
         AddDefaultUser();
 
@@ -190,14 +197,18 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
             IntPtr.Zero,
             HandleDeviceAssociationChange,
             out _deviceAssociationChangedRegistrationToken
-        );	
+        );
+
+#if !UNITY_EDITOR
+        UnityEngine.WindowsGames.WindowsGamesPLM.OnResourceAvailabilityChangedEvent += HandleResourceAvailabilityChangedEvent;
+#endif
 #endif
 
 #if UNITY_EDITOR
         EditorApplication.playModeStateChanged += EDITOR_CleanUp;
 #endif
     }
-   
+
     private bool InitializeRuntime()
     {
         if (HR.FAILED(InitializeGamingRuntime()) || !InitializeXboxLive(Scid))
@@ -288,21 +299,25 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
         _hasCreatedDispatchTask = true;
     }
-#endregion
-    
-#region Update
+    #endregion
+
+    #region Update
     private IEnumerator UpdateCoroutine()
     {
         while (true)
         {
-            Update();
+            Tick();
             yield return null;
         }
     }
 
-    private void Update()
+    public void Tick()
     {
         DispatchGDKEvents();
+
+#if UNITY_GAMECORE && !UNITY_EDITOR
+        UpdateAccountSwitchRestartState();
+#endif
     }
 
     private void DispatchGDKEvents()
@@ -343,6 +358,10 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
             _gdkFileAdapter.Initialize(userHandle, SaveScid);
             InitializeUser(userHandle);
             _isLogged.SetTrue();
+
+#if UNITY_GAMECORE && !UNITY_EDITOR
+            ArmAccountSwitchRestartAfterStartupGrace();
+#endif
 
             Debug.LogError("[GDK] Silent add SUCCESS (got valid user handle).");
         });
@@ -396,7 +415,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         GetGamertag();
         GetStoreContext();
 
-        _userData.Privileges.ReadUserPrivileges( _userData.userHandle );
+        _userData.Privileges.ReadUserPrivileges(_userData.userHandle);
         // GetUserPrivileges(); 
     }
 
@@ -453,7 +472,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
             return;
         }
 
-        SDK.XUserResolvePrivilegeWithUiAsync(UserData.userHandle, XUserPrivilegeOptions.None, privilege.xUserPrivilege, 
+        SDK.XUserResolvePrivilegeWithUiAsync(UserData.userHandle, XUserPrivilegeOptions.None, privilege.xUserPrivilege,
             (Int32 hresult) => {
                 if (HR.SUCCEEDED(hresult))
                 {
@@ -466,7 +485,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         );
     }
 
-    public void Dispose() 
+    public void Dispose()
     {
         CleanUp();
     }
@@ -501,9 +520,9 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
     {
         return _dlcsWithValidLicense.Contains(storeId);
     }
-#endregion
+    #endregion
 
-#region Invites
+    #region Invites
     private void HandleReceivedInvite(IntPtr context, string inviteUri)
     {
         if (_earlyInviteHandlingCoroutine != null)
@@ -536,15 +555,99 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         Debug.Log($"Triggering invite event: {inviteUri}");
         _onReceivedInvite.Trigger(inviteUri);
     }
-#endregion
+    #endregion
 
-#region Input
+    #region Input
 #if UNITY_GAMECORE
     private void HandleDeviceAssociationChange(IntPtr context, ref XUserDeviceAssociationChange change)
     {
+#if !UNITY_EDITOR
+        TryArmAccountSwitchRestart();
+
+        Debug.LogError($"[GDK][USER][DEVICE] Association changed. armed={_accountSwitchRestartArmed}, queued={_accountSwitchRestartQueued}, started={_accountSwitchRestartStarted}");
+
+        if (ShouldRestartForDeviceAssociationChange())
+        {
+            _accountSwitchRestartQueued = true;
+            Debug.LogError("[GDK][USER] Device/user association changed after startup. Restart queued.");
+        }
+#endif
+
         _onDeviceAssiociationChanged.Trigger(change);
     }
-    
+
+#if !UNITY_EDITOR
+    private void ArmAccountSwitchRestartAfterStartupGrace()
+    {
+        _accountSwitchRestartArmTime = Time.realtimeSinceStartup + 10f;
+        _accountSwitchRestartArmed = false;
+        _accountSwitchRestartQueued = false;
+        _accountSwitchRestartStarted = false;
+
+        Debug.LogError($"[GDK][USER] Account-switch restart will arm at t={_accountSwitchRestartArmTime:0.00}. V10 waits for XUserDeviceAssociationChange, not PLM.");
+    }
+
+    private void HandleResourceAvailabilityChangedEvent(bool amConstrained)
+    {
+        TryArmAccountSwitchRestart();
+        Debug.LogError($"[GDK][USER][PLM] Resource availability changed: {(amConstrained ? "CONSTRAINED" : "FULL")}. armed={_accountSwitchRestartArmed}, queued={_accountSwitchRestartQueued}, started={_accountSwitchRestartStarted}. PLM does not restart title.");
+    }
+
+    private void TryArmAccountSwitchRestart()
+    {
+        if (_accountSwitchRestartStarted || _accountSwitchRestartArmed)
+            return;
+
+        if (!IsFullyInitialized.Value)
+            return;
+
+        if (Time.realtimeSinceStartup < _accountSwitchRestartArmTime)
+            return;
+
+        _accountSwitchRestartArmed = true;
+        _accountSwitchRestartQueued = false;
+        Debug.LogError("[GDK][USER] Account-switch restart armed. Waiting for device association change from Xbox account picker.");
+    }
+
+    private bool ShouldRestartForDeviceAssociationChange()
+    {
+        if (!_accountSwitchRestartArmed || _accountSwitchRestartStarted || _accountSwitchRestartQueued)
+            return false;
+
+        if (_userData == null || _userData.userHandle == null)
+            return false;
+
+        return true;
+    }
+
+    private void UpdateAccountSwitchRestartState()
+    {
+        if (_accountSwitchRestartStarted)
+            return;
+
+        TryArmAccountSwitchRestart();
+
+        if (!_accountSwitchRestartQueued)
+            return;
+
+        RestartTitleAfterAccountSwitchSignal();
+    }
+
+    private void RestartTitleAfterAccountSwitchSignal()
+    {
+        if (_accountSwitchRestartStarted)
+            return;
+
+        _accountSwitchRestartStarted = true;
+
+        ulong originalXuid = _userData != null ? _userData.userXUID : 0;
+        Debug.LogError($"[GDK][USER] Restarting title after current user's controller/account association changed. Current session XUID={originalXuid}");
+
+        // Same restart call that worked in V6. Do not pass the old XUserHandle.
+        SDK.XLaunchNewGame("HellClock.exe", null, null);
+    }
+#endif
+
     public void PairControllerToUser()
     {
         if (_showingPairControllerUI)
@@ -574,7 +677,7 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
 
     public void OpenVirtualKeyboard(Action<string> onSuccess, Action onFail = null, string title = "", string description = "", string defaultText = "", XGameUiTextEntryInputScope inputScope = XGameUiTextEntryInputScope.Default, uint maxTextLength = 0)
     {
-        SDK.XGameUiShowTextEntryAsync(title, description, defaultText,  inputScope, maxTextLength, 
+        SDK.XGameUiShowTextEntryAsync(title, description, defaultText, inputScope, maxTextLength,
             (int hresult, string resultText) =>
             {
                 if (HR.FAILED(hresult))
@@ -582,30 +685,37 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
                     onFail?.Invoke();
                     return;
                 }
-                
+
                 onSuccess?.Invoke(resultText);
             }
         );
     }
 
 #endif
-#endregion
+    #endregion
 
-#region CleanUp
-    ~GdkGameRuntimeService()
-    {
-        CleanUp();
-    }
+    #region CleanUp
+    private bool _cleanedUp;
 
     private void CleanUp()
     {
+        if (_cleanedUp)
+            return;
+
+        _cleanedUp = true;
+
         Debug.Log($"GDK CleanUp starting...");
         _onStartedCleanUp.Trigger();
+
+#if UNITY_GAMECORE && !UNITY_EDITOR
+        UnityEngine.WindowsGames.WindowsGamesPLM.OnResourceAvailabilityChangedEvent -= HandleResourceAvailabilityChangedEvent;
+#endif
 
 #if UNITY_GAMECORE
         if (_deviceAssociationChangedRegistrationToken != default)
         {
-            SDK.XUserUnregisterForDeviceAssociationChanged(_deviceAssociationChangedRegistrationToken, true);
+            SDK.XUserUnregisterForDeviceAssociationChanged(_deviceAssociationChangedRegistrationToken, false);
+            _deviceAssociationChangedRegistrationToken = default;
         }
 #endif
 
@@ -639,6 +749,6 @@ public class GdkGameRuntimeService : IGdkRuntimeService, ILoggable<GdkLogCategor
         EditorApplication.playModeStateChanged -= EDITOR_CleanUp;
     }
 #endif
-#endregion
+    #endregion
 }
 #endif

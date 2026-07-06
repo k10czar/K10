@@ -47,6 +47,13 @@ public class GdkGameRuntimeServiceConfigurator : MonoBehaviour, IService, IStart
         Debug.Log("[GDK] Service registered OK");
     }
 
+
+    private void Update()
+    {
+        if (gdkRuntimeManager != null)
+            gdkRuntimeManager.Tick();
+    }
+
     private void OnDestroy()
     {
         Debug.Log("[GDK] Configurator OnDestroy");
