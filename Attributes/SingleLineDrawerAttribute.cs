@@ -3,11 +3,11 @@ using System.Linq;
 using Skyx.RuntimeEditor;
 using UnityEngine;
 
-public class SingleLineDrawer : PropertyAttribute
+public class SingleLineDrawerAttribute : PropertyAttribute
 {
     public readonly FieldDrawInfo[] drawInfos;
 
-    public SingleLineDrawer(int infoCount, params object[] infos)
+    public SingleLineDrawerAttribute(int infoCount, params object[] infos)
     {
         var totalInfo = infos.Length / infoCount;
         drawInfos = new FieldDrawInfo[totalInfo];
@@ -45,10 +45,10 @@ public class SingleLineDrawer : PropertyAttribute
         }
     }
 
-    public SingleLineDrawer(params string[] fieldNames)
+    public SingleLineDrawerAttribute(params string[] fieldNames)
     {
         drawInfos = fieldNames.Select((entry, index) => new FieldDrawInfo(entry, index)).ToArray();
     }
 
-    public SingleLineDrawer() : this("key", "value") {}
+    public SingleLineDrawerAttribute() : this("key", "value") {}
 }
