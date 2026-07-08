@@ -4,15 +4,17 @@ using System.Collections.Generic;
 
 public static class K10Random
 {
-	private static Unity.Mathematics.Random? _random;
+	private static Unity.Mathematics.Random _random = new(1);
+	private static bool _useSeed;
+
 	public static bool Bool { get { return ( Value < .5f ); } }
 
 	public static float Value
 	{
 		get
 		{
-			if (_random != null)
-				return _random.Value.NextFloat();
+			if (_useSeed)
+				return _random.NextFloat();
 
 			var val = Random.value;
 			Random.InitState( Random.Range( int.MinValue, int.MaxValue ) );
@@ -24,8 +26,8 @@ public static class K10Random
 	{
 		get
 		{
-			if (_random != null)
-				return _random.Value.NextInt(1, int.MaxValue);
+			if (_useSeed)
+				return _random.NextInt(1, int.MaxValue);
 			
 			var val = Random.Range( 1, int.MaxValue );
 			Random.InitState( Random.Range( int.MinValue, int.MaxValue ) );
@@ -41,8 +43,8 @@ public static class K10Random
 
 	public static int Less( int max )
 	{
-		if (_random != null)
-			return _random.Value.NextInt(0, max);
+		if (_useSeed)
+			return _random.NextInt(0, max);
 
 		var val = Random.Range( 0, max );
 		Random.InitState( Random.Range( int.MinValue, int.MaxValue ) );
@@ -54,8 +56,8 @@ public static class K10Random
 
 	public static int Exponential( int max, int power )
 	{
-		if (_random != null)
-			return _random.Value.NextInt(0, (int)Mathf.Pow(max, power));
+		if (_useSeed)
+			return _random.NextInt(0, (int)Mathf.Pow(max, power));
 
 		var val = Random.Range( 0, (int)Mathf.Pow( max, power ) );
 		val = (int)Mathf.Pow( val, 1f / power );
@@ -91,11 +93,13 @@ public static class K10Random
 
 	public static void SetRandomSeed(uint seed)
 	{
-		_random = new Unity.Mathematics.Random(seed);
+		_random.InitState(seed);
+		_useSeed = true;
 	}
 
 	public static void UnsetRandomSeed()
 	{
-		_random = null;
+		_random.state = 1;
+		_useSeed = false;
 	}
 }
