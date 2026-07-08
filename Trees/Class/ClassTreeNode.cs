@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using UnityEditor;
 
 namespace Skyx.Trees
 {
@@ -62,13 +61,16 @@ namespace Skyx.Trees
         private ClassTreeNode(Type parentType)
         {
             this.parentType = parentType;
-            var allTypes = TypeCache.GetTypesDerivedFrom(parentType);
+            #if UNITY_EDITOR
+            var allTypes = UnityEditor.TypeCache.GetTypesDerivedFrom(parentType);
+            // var allTypes = TypeListDataCache.GetFrom(parentType).GetTypes();
 
             foreach (var nodeValue in allTypes)
             {
                 if (nodeValue.IsGenericType) continue;
                 CreateNode(nodeValue);
             }
+            #endif
         }
 
         private static ClassTreeAttribute GetClassTreeAttribute(Type target)

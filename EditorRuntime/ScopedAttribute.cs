@@ -114,6 +114,7 @@ namespace Skyx.RuntimeEditor
 
     public class SkopeButton
     {
+        #if UNITY_EDITOR
         public readonly string label;
         public EColor color;
         public readonly Action<SerializedProperty> onClick;
@@ -135,5 +136,6 @@ namespace Skyx.RuntimeEditor
         public override bool Equals(object obj) => obj is SkopeButton other && Equals(other);
         private bool Equals(SkopeButton other) => label == other.label;
         public override int GetHashCode() => HashCode.Combine(label);
+        #endif
     }
 }
