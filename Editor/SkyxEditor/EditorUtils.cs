@@ -9,8 +9,7 @@ namespace Rogue.REditor
 {
     public static class EditorUtils
     {
-        public static bool IsEditingData
-            => EditorGUIUtility.editingTextField && EditorWindow.focusedWindow?.GetType().Name == "InspectorWindow";
+        public static bool IsEditingData => EditorGUIUtility.editingTextField;
 
         public static void RunDelayedOnce(Action action)
         {
