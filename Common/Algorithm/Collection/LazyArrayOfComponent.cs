@@ -67,11 +67,20 @@ public class LazyArrayOfComponent<T> where T : UnityEngine.Component
 	public bool Contains( T newElement )
 	{
 		if( newElement == null ) return false;
-		var instanceId = newElement.GetInstanceID();
+#if UNITY_6000_4_OR_NEWER
+		var id = newElement.GetEntityId();
+#else
+		var id = newElement.GetInstanceID();
+#endif
 		for( int i = 0; i < _elementsCount; i++ ) 
 		{
 			var element = _elements[i];
-			if( element != null && element.GetInstanceID() == instanceId ) return true;
+#if UNITY_6000_4_OR_NEWER
+			var elementId = element.GetEntityId();
+#else
+			var elementId = element.GetInstanceID();
+#endif
+			if( element != null && elementId == id ) return true;
 		}
 		return false;
 	}
@@ -100,12 +109,21 @@ public class LazyArrayOfComponent<T> where T : UnityEngine.Component
 	public bool LazyRemove( T newElement )
 	{
 		if( newElement == null ) return false;
-		var instanceId = newElement.GetInstanceID();
+#if UNITY_6000_4_OR_NEWER
+		var id = newElement.GetEntityId();
+#else
+		var id = newElement.GetInstanceID();
+#endif
 		for( int i = 0; i < _elementsCount; i++ )
 		{
 			var element = _elements[i];
 			if( element == null ) continue;
-			if( element.GetInstanceID() != instanceId ) continue;
+#if UNITY_6000_4_OR_NEWER
+			var elementId = element.GetEntityId();
+#else
+			var elementId = element.GetInstanceID();
+#endif
+			if( elementId != id ) continue;
 			_elements[i] = null;
 			_isDirty = true;
 			_dirtyElementsPrediction++;
