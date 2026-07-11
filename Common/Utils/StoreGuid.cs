@@ -31,8 +31,13 @@ public static class StoreFileID
     public static void At( UnityEditor.SerializedProperty property )
     {
         var rootObject = property.serializedObject.targetObject;
-        var id = rootObject.GetInstanceID();
-        if( property.longValue != id ) property.intValue = id;
+#if UNITY_6000_4_OR_NEWER
+		var id = UnityEngine.EntityId.ToULong(rootObject.GetEntityId());
+        if( property.ulongValue != id ) property.ulongValue = id;
+#else
+            var id = rootObject.GetInstanceID();
+        if( property.intValue != id ) property.intValue = id;
+#endif
     }
 #endif //UNITY_EDITOR
 

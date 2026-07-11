@@ -5,7 +5,11 @@ using UnityEngine;
 
 public static class Cache
 {
-	private static readonly Dictionary<int, List<GameObject>> _cache = new Dictionary<int, List<GameObject>>();
+#if UNITY_6000_4_OR_NEWER
+	private static readonly Dictionary<EntityId, List<GameObject>> _cache = new();
+#else
+	private static readonly Dictionary<int, List<GameObject>> _cache = new();
+#endif
 
 	private static Transform _parent = null;
 	public static Transform CacheParent
@@ -38,7 +42,11 @@ public static class Cache
 
 	static List<GameObject> RequestCacheList( GameObject listReference )
 	{
+#if UNITY_6000_4_OR_NEWER
+		var id = listReference.GetEntityId();
+#else
 		var id = listReference.GetInstanceID();
+#endif
 		if( !_cache.TryGetValue( id, out var cacheList ) ) { _cache[id] = cacheList = new List<GameObject>(); }
 		return cacheList;
 	}
@@ -87,7 +95,11 @@ public static class Cache
 	public static GameObject RequestObject( GameObject reference, Transform transform = null, bool logErrorOnCacheMiss = true )
 	{
 		GameObject go;
+#if UNITY_6000_4_OR_NEWER
+		var id = reference.GetEntityId();
+#else
 		var id = reference.GetInstanceID();
+#endif
 		if( _cache.TryGetValue( id, out var list ) && list.Count > 0 )
 		{
 			go = list[list.Count - 1];
@@ -111,7 +123,11 @@ public static class Cache
 	public static GameObject RequestObject( GameObject reference, Vector3 position, Quaternion rotation, bool logErrorOnCacheMiss = true )
 	{
 		GameObject go;
+#if UNITY_6000_4_OR_NEWER
+		var id = reference.GetEntityId();
+#else
 		var id = reference.GetInstanceID();
+#endif
 		if( _cache.TryGetValue( id, out var list ) && list.Count > 0 )
 		{
 			go = list[list.Count - 1];

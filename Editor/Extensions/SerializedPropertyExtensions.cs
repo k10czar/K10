@@ -195,7 +195,12 @@ public static class SerializedPropertyExtensions
 
 	private static string CompletePath( this SerializedProperty sp )
 	{
-		return $"{{{string.Join(",",sp.serializedObject.targetObjects.Select( o => o.GetInstanceID()))}}}.{sp.propertyPath}";
+#if UNITY_6000_4_OR_NEWER
+		System.Func<UnityEngine.Object,EntityId> selector = o => o.GetEntityId();
+#else
+		System.Func<UnityEngine.Object,int> selector = o => o.GetInstanceID();
+#endif
+		return $"{{{string.Join(",",sp.serializedObject.targetObjects.Select(selector))}}}.{sp.propertyPath}";
 	}
 
 	private static float GetCalculatedElementHeightCached( SerializedProperty sp, bool includeChildren = true )
