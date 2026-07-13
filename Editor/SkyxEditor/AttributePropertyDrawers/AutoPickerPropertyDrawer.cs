@@ -12,7 +12,7 @@ namespace Rogue.REditor
             var color = property.propertyType is SerializedPropertyType.ObjectReference && property.objectReferenceValue != null
                 ? EColor.Support : EColor.Special;
 
-            if (SkyxGUI.MiniButton(ref rect, "⚙️", color, "Auto Pick", true))
+            if (SkyxGUI.MiniButton(ref rect, "👆", color, "Auto Pick", true))
             {
                 var pickerAtt = (AutoPickerAttribute) attribute;
                 var targetType = property.GetObjectReferenceType();

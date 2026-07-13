@@ -38,6 +38,7 @@ namespace Rogue.REditor
         public const int SmallFontSize = 10;
         public const int MiniFontSize = 12;
         public const int DefaultFontSize = 13;
+        public const int MediumFontSize = 14;
         public const int BigFontSize = 16;
         public const int HugeFontSize = 18;
 
@@ -70,7 +71,8 @@ namespace Rogue.REditor
         public static GUIStyle Header => Style("header", CenterBoldStyle, BigFontSize, padding: bigPadding);
         public static GUIStyle HugeHeader => Style("hugeHeader", Header, HugeFontSize, padding: hugePadding);
         public static GUIStyle PlainBGLabel => Style("plainBGLabel", CenterBoldStyle, padding: bigPadding, background: EditorGUIUtility.whiteTexture, hoverBackground: CreateTexture(Colors.AlmostWhite));
-        public static GUIStyle PlainBGHeader => Style("plainBGHeader", Header, background: EditorGUIUtility.whiteTexture);
+        public static GUIStyle PlainBGHeader => Style("plainBGHeader", Header, fontSize: MediumFontSize, background: EditorGUIUtility.whiteTexture);
+        public static GUIStyle PlainBGSecondary => Style("plainBGSecondary", PlainBGHeader, padding: defaultPadding);
         public static GUIStyle InlaidHintLabel => Style("InlaidHint", DefaultLabel, TextAnchor.MiddleRight);
 
         public static GUIStyle FoldStyle => Style("fold", EditorStyles.foldout, FontStyle.Bold);
@@ -93,7 +95,7 @@ namespace Rogue.REditor
         public static GUIStyle GetPlainBG(this EElementSize size) => size switch
         {
             EElementSize.Primary => PlainBGHeader,
-            EElementSize.Secondary => PlainBGHeader,
+            EElementSize.Secondary => PlainBGSecondary,
             EElementSize.SingleLine => PlainBGLabel,
             _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
         };
