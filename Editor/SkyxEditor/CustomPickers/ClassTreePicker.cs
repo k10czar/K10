@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Skyx.Trees;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
@@ -7,11 +8,11 @@ namespace Rogue.REditor
 {
     public static class ClassTreePicker
     {
-        public static void Draw(Rect position, Type parentType, Type currentSelection, Action<Type> callback)
+        public static void Draw(Rect position, Type parentType, Type currentSelection, Action<Type> callback, IEnumerable<Type> validTypes = null)
         {
             var state = new AdvancedDropdownState();
 
-            var tree = ClassTreeNode.Get(parentType);
+            var tree = ClassTreeNode.Get(parentType, validTypes);
             var dropdown = new ClassTreeAdvancedDropdown(state, tree, currentSelection, callback);
             dropdown.Show(position);
         }

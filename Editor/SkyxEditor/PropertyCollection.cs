@@ -381,39 +381,25 @@ namespace Rogue.REditor
         public void DrawIncluding(ref Rect rect, params string[] including)
         {
             foreach (var key in including)
-            {
-                var target = properties[key];
-
-                rect.height = EditorGUI.GetPropertyHeight(target, true);
-                SkyxGUI.Draw(rect, target, true);
-                rect.y += rect.height + SkyxStyles.ElementsMargin;
-            }
+                SkyxGUI.ResetHeightAndDraw(ref rect, properties[key]);
         }
 
-        public void DrawIncluding(ref Rect rect, params (string, bool)[] including)
+        public void DrawIncludingB(ref Rect rect, params (string, bool)[] including)
         {
             foreach (var (key, isBacking) in including)
-            {
-                var target = Get(key, isBacking);
-
-                rect.height = EditorGUI.GetPropertyHeight(target, true);
-                SkyxGUI.Draw(rect, target, true);
-                rect.y += rect.height + SkyxStyles.ElementsMargin;
-            }
+                SkyxGUI.ResetHeightAndDraw(ref rect, Get(key, isBacking));
         }
 
         public void DrawExcept(ref Rect rect, params string[] except)
         {
-            foreach (var key in properties.Keys)
-            {
-                if (except.Contains(key)) continue;
+            foreach (var property in IterateExcluding(except))
+                SkyxGUI.ResetHeightAndDraw(ref rect, property);
+        }
 
-                var target = properties[key];
-
-                rect.height = EditorGUI.GetPropertyHeight(target, true);
-                SkyxGUI.Draw(rect, target, true);
-                rect.y += rect.height + SkyxStyles.ElementsMargin;
-            }
+        public void DrawExceptB(ref Rect rect, params (string, bool)[] except)
+        {
+            foreach (var property in IterateExcludingB(except))
+                SkyxGUI.ResetHeightAndDraw(ref rect, property);
         }
 
         #endregion
@@ -517,6 +503,26 @@ namespace Rogue.REditor
         }
 
         public int PropertyCountExcluding(params string[] excludeFields) => properties.Keys.Except(excludeFields).Count();
+
+        public IEnumerable<SerializedProperty> IterateExcluding(params string[] except)
+        {
+            foreach (var key in properties.Keys)
+            {
+                if (except.Contains(key)) continue;
+                yield return properties[key];
+            }
+        }
+
+        public IEnumerable<SerializedProperty> IterateExcludingB(params (string, bool)[] except)
+        {
+            var parsedKeys = except.Select(entry => entry.Item2 ? entry.Item1.ToBackingFieldName() : entry.Item1);
+
+            foreach (var key in properties.Keys)
+            {
+                if (parsedKeys.Contains(key)) continue;
+                yield return properties[key];
+            }
+        }
 
         #endregion
 

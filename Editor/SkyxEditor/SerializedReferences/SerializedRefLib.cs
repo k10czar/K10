@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -22,17 +23,19 @@ namespace Rogue.REditor
             return true;
         }
 
-        public static void DrawTypePickerMenu(SerializedProperty property, Action<SerializedProperty> newElementSetup = null)
+        public static void DelayedDrawTypePickerMenu(SerializedProperty property, Action<SerializedProperty> newElementSetup = null, IEnumerable<Type> validTypes = null)
         {
-            var mousePos = Event.current.mousePosition;
-            var rect = new Rect(mousePos.x, mousePos.y, 1, 1);
-
-            DrawTypePickerMenu(rect, property, newElementSetup);
+            EditorUtils.RunDelayedOnce(() => DrawTypePickerMenu(property, newElementSetup, validTypes));
         }
 
-        public static void DrawTypePickerMenu(Rect rect, SerializedProperty property, Action<SerializedProperty> newElementSetup = null)
+        public static void DrawTypePickerMenu(SerializedProperty property) => DrawTypePickerMenu(property, null, null);
+
+        public static void DrawTypePickerMenu(SerializedProperty property, Action<SerializedProperty> newElementSetup, IEnumerable<Type> validTypes = null)
+            => DrawTypePickerMenu(EditorUtils.GetRectAtMouse(), property, newElementSetup, validTypes);
+
+        public static void DrawTypePickerMenu(Rect rect, SerializedProperty property, Action<SerializedProperty> newElementSetup = null, IEnumerable<Type> validTypes = null)
         {
-            ClassTreePicker.Draw(rect, property.GetManagedType(), property.managedReferenceValue?.GetType(), OnTypeSelected);
+            ClassTreePicker.Draw(rect, property.GetManagedType(), property.managedReferenceValue?.GetType(), OnTypeSelected, validTypes);
 
             void OnTypeSelected(Type newSelection)
             {

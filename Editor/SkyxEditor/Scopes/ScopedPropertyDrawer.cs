@@ -11,8 +11,8 @@ namespace Rogue.REditor
         #region Default Header Buttons
 
         public static readonly SkopeButton descriptionToggleSkopeButton = new("?", EColor.Info, _ => isShowingDescriptions = !isShowingDescriptions);
-        public static readonly SkopeButton managedPickerSkopeButton = new("⚙️", EColor.Support, property => SerializedRefLib.DrawTypePickerMenu(property));
-        public static readonly SkopeButton arrayRemovalSkopeButton = new("X", EColor.Warning, property => property.RemoveSelfFromArrayDelayed());
+        public static readonly SkopeButton managedPickerSkopeButton = new("⚙️", EColor.Support, SerializedRefLib.DrawTypePickerMenu);
+        public static readonly SkopeButton arrayRemovalSkopeButton = new("X", EColor.Warning, SerializedPropertyExtension.RemoveSelfFromArrayDelayed);
 
         #endregion
 

@@ -103,23 +103,7 @@ namespace Rogue.REditor
             var drawingRect = headerRect;
             drawingRect.ApplyStartMargin(10);
 
-            if (info.buttons != null)
-            {
-                var buttonsRect = headerRect;
-                buttonsRect.y += 2;
-                buttonsRect.x -= 4;
-                buttonsRect.height = SkyxStyles.LineHeight;
-
-                EditorGUI.BeginDisabledGroup(info.buttonsAreDisabled);
-
-                foreach (var (label, color, action) in info.buttons)
-                {
-                    if (SkyxGUI.MiniButton(ref buttonsRect, label, color, null, true))
-                        action(info.property);
-                }
-
-                EditorGUI.EndDisabledGroup();
-            }
+            info.DrawButtons(headerRect, false);
 
             if (canExpand && headerRect.TryUseClick(false))
                 isExpandedRef = !isExpandedRef;
@@ -131,6 +115,8 @@ namespace Rogue.REditor
             if (canExpand) GUI.Toggle(toggleRect, isExpandedRef, GUIContent.none, EditorStyles.foldout);
 
             EditorGUI.LabelField(drawingRect, info.title, SkyxStyles.DefaultLabel);
+
+            info.DrawButtons(headerRect, true);
 
             if (isExpandedRef)
             {

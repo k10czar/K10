@@ -100,14 +100,7 @@ namespace Rogue.REditor
             var canExpand = info.property.CanExpand();
             if (!canExpand) isExpandedRef = false;
 
-            if (info.buttons != null)
-            {
-                foreach (var (label, color, action) in info.buttons)
-                {
-                    if (SkyxGUI.MiniButton(ref headerRect, label, color, null, true))
-                        action(info.property);
-                }
-            }
+            info.DrawButtons(headerRect, false);
 
             var extractedSize = 0;
             var clickRect = headerRect;
@@ -141,6 +134,8 @@ namespace Rogue.REditor
 
             if (info.property != null)
                 PropertyContextMenu.ContextGUI(ref clickRect, info.property);
+
+            info.DrawButtons(headerRect, true);
 
             if (isExpandedRef && indent) EditorGUI.indentLevel++;
 

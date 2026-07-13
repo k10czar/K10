@@ -116,21 +116,15 @@ namespace Skyx.RuntimeEditor
     {
         #if UNITY_EDITOR
         public readonly string label;
-        public EColor color;
         public readonly Action<SerializedProperty> onClick;
+        public EColor color;
+        public bool isDisabled;
 
         public SkopeButton(string label, EColor color, Action<SerializedProperty> onClick)
         {
             this.label = label;
             this.color = color;
             this.onClick = onClick;
-        }
-
-        public void Deconstruct(out string dLabel, out EColor dColor, out Action<SerializedProperty> dOnClick)
-        {
-            dLabel = label;
-            dColor = color;
-            dOnClick = onClick;
         }
 
         public override bool Equals(object obj) => obj is SkopeButton other && Equals(other);

@@ -236,6 +236,13 @@ namespace Rogue.REditor
             return changed;
         }
 
+        public static void ResetHeightAndDraw(ref Rect rect, SerializedProperty target)
+        {
+            rect.height = EditorGUI.GetPropertyHeight(target, true);
+            Draw(rect, target, true);
+            rect.y += rect.height + SkyxStyles.ElementsMargin;
+        }
+
         #endregion
 
         #region Toggles
@@ -391,7 +398,7 @@ namespace Rogue.REditor
         {
             var hintRect = rect.ExtractHint(fromEnd);
 
-            EditorGUI.LabelField(hintRect, $"<b>{icon}</b>", SkyxStyles.HintIconStyle);
+            EditorGUI.LabelField(hintRect, icon, SkyxStyles.HintIconStyle);
             DrawHintOverlay(ref hintRect, hint);
         }
 

@@ -42,18 +42,28 @@ namespace Rogue.REditor
 
             EditorGUI.BeginDisabledGroup(buttonsAreDisabled);
 
-            rect.y += 5;
-            rect.x -= 4;
+            var (deltaX, deltaY) = size switch
+            {
+                EElementSize.Primary => (-4, 5),
+                EElementSize.Secondary => (-4, 4),
+                EElementSize.SingleLine => (-4, 1),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            rect.x += deltaX;
+            rect.y += deltaY;
             rect.height = SkyxStyles.LineHeight;
 
-            foreach (var (label, buttonColor, action) in buttons)
+            foreach (var button in buttons)
             {
-                if (reallyDraw) SkyxGUI.MiniButton(ref rect, label, buttonColor, null, true);
+                if (button.isDisabled) continue;
+
+                if (reallyDraw) SkyxGUI.MiniButton(ref rect, button.label, button.color, null, true);
                 else
                 {
                     var buttonRect = rect.ExtractMiniButton(true);
                     if (buttonRect.TryUseClick(false))
-                        action(property);
+                        button.onClick(property);
                 }
             }
 

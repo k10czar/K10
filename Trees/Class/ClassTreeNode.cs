@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Skyx.Trees
@@ -10,8 +11,11 @@ namespace Skyx.Trees
 
         private static readonly Dictionary<Type, ClassTreeNode> cache = new();
 
-        public static ClassTreeNode Get(Type target)
+        public static ClassTreeNode Get(Type target, IEnumerable<Type> validTypes)
         {
+            if (validTypes != null)
+                return new ClassTreeNode(target, validTypes.ToHashSet());
+
             if (cache.TryGetValue(target, out var result)) return result;
 
             var newEntry = new ClassTreeNode(target);
@@ -58,7 +62,7 @@ namespace Skyx.Trees
         protected override TreeNode<Type> InstantiateNode(object key, string path) => new ClassTreeNode(key, path);
         private ClassTreeNode(object key, string path) : base(key, path) {}
 
-        private ClassTreeNode(Type parentType)
+        private ClassTreeNode(Type parentType, HashSet<Type> validTypes = null)
         {
             this.parentType = parentType;
             #if UNITY_EDITOR
@@ -68,6 +72,8 @@ namespace Skyx.Trees
             foreach (var nodeValue in allTypes)
             {
                 if (nodeValue.IsGenericType) continue;
+                if (!validTypes?.Contains(nodeValue) ?? false) continue;
+
                 CreateNode(nodeValue);
             }
             #endif

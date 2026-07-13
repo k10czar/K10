@@ -11,6 +11,27 @@ namespace Rogue.REditor
     {
         public static bool IsEditingData => EditorGUIUtility.editingTextField;
 
+        private static Vector2 lastMousePos;
+
+        public static void CacheMousePos()
+        {
+            if (Event.current == null)
+            {
+                Debug.LogError("Calling cache mouse pos on wrong timing!");
+                return;
+            }
+
+            lastMousePos = Event.current.mousePosition;
+        }
+
+        public static Rect GetRectAtMouse()
+        {
+            if (Event.current != null)
+                lastMousePos = Event.current.mousePosition;
+
+            return new Rect(lastMousePos.x, lastMousePos.y, 1, 1);
+        }
+
         public static void RunDelayedOnce(Action action)
         {
             EditorApplication.CallbackFunction wrapper = null;
