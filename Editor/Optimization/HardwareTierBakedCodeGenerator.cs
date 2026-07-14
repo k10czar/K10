@@ -82,13 +82,18 @@ namespace K10.Optimization.Editor
             return sb.ToString ();
         }
 
-        static string ToCall (int[] tiers)
+        static string ToCall (float[] tiers)
         {
-            int low = tiers != null && tiers.Length > 0 ? tiers[0] : 0;
-            int mid = tiers != null && tiers.Length > 1 ? tiers[1] : 0;
-            int high = tiers != null && tiers.Length > 2 ? tiers[2] : 0;
-            return $"HardwareTier.SetMemoryTiers ({low}, {mid}, {high});";
+            float low = tiers != null && tiers.Length > 0 ? tiers[0] : 0f;
+            float mid = tiers != null && tiers.Length > 1 ? tiers[1] : 0f;
+            float high = tiers != null && tiers.Length > 2 ? tiers[2] : 0f;
+            return $"HardwareTier.SetMemoryTiers ({Literal (low)}, {Literal (mid)}, {Literal (high)});";
         }
+
+        // Culture-invariant float literal with an 'f' suffix (e.g. 6.5 => "6.5f"), so the generated code
+        // compiles regardless of the machine's locale decimal separator.
+        static string Literal (float value) =>
+            value.ToString (System.Globalization.CultureInfo.InvariantCulture) + "f";
     }
 
     // Safety net: make sure the committed generated file matches the current settings before a build.

@@ -1,109 +1,155 @@
 using System;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
 namespace K10.Optimization.Editor
 {
-    // The three memory (MB) upper bounds that drive HardwareTier: mem <= low => Low, <= mid => Mid,
+    // The three memory (GB) upper bounds that drive HardwareTier: mem <= low => Low, <= mid => Mid,
     // <= high => High, otherwise Extreme. A bound that is not greater than the running maximum simply
-    // skips that tier (e.g. { 6000, 0, 0 } yields only Low and Extreme).
+    // skips that tier (e.g. { 6, 0, 0 } yields only Low and Extreme).
     [Serializable]
     public class MemoryTierThresholds
     {
-        [Tooltip ("Upper bound (MB) for the Low tier.")] public int low = 6000;
-        [Tooltip ("Upper bound (MB) for the Mid tier. Set it above Low to enable Mid.")] public int mid = 0;
-        [Tooltip ("Upper bound (MB) for the High tier. Set it above Mid to enable High.")] public int high = 0;
+        [Tooltip ("Upper bound (GB) for the Low tier.")] public float low = 6f;
+        [Tooltip ("Upper bound (GB) for the Mid tier. Set it above Low to enable Mid.")] public float mid = 0f;
+        [Tooltip ("Upper bound (GB) for the High tier. Set it above Mid to enable High.")] public float high = 0f;
 
-        public int[] ToArray () => new[] { low, mid, high };
+        public float[] ToArray () => new[] { low, mid, high };
     }
 
     [CustomPropertyDrawer (typeof (MemoryTierThresholds))]
     public class MemoryTierThresholdsDrawer : PropertyDrawer
     {
-        static readonly GUIContent[] SubLabels = { new GUIContent ("Low"), new GUIContent ("Mid"), new GUIContent ("High") };
-        const float Spacing = 2f;
+        static readonly GUIContent[] FieldLabels =
+        {
+            new GUIContent ("Low", "Upper bound (GB) for the Low tier."),
+            new GUIContent ("Mid", "Upper bound (GB) for the Mid tier."),
+            new GUIContent ("High", "Upper bound (GB) for the High tier."),
+        };
+
+        const float Spacing = 4f;
+        const float ColumnSpacing = 4f;
+        const float SubLabelWidth = 30f;
         const float PreviewIndent = 12f;
+        const float OneLineFieldsWidth = 500f;
+        const float PreviewGap = 12f;
+        const float LayoutMargin = 30f; // slack for list handles / scrollbar so narrow rows don't overflow
 
         public override float GetPropertyHeight (SerializedProperty property, GUIContent label)
         {
-            int previewLines = Predict (Read (property)).Count;
-            int rows = 1 + previewLines; // the fields row + one row per predicted tier
-            return rows * EditorGUIUtility.singleLineHeight + (rows - 1) * Spacing;
+            bool oneLine = FitsOneLine (property, out _, out _);
+            return oneLine
+                ? EditorGUIUtility.singleLineHeight
+                : 2 * EditorGUIUtility.singleLineHeight + Spacing;
         }
 
-        public override void OnGUI (Rect position, SerializedProperty property, GUIContent label)
+        public override void OnGUI (Rect area, SerializedProperty property, GUIContent label)
         {
             SerializedProperty low = property.FindPropertyRelative ("low");
             SerializedProperty mid = property.FindPropertyRelative ("mid");
             SerializedProperty high = property.FindPropertyRelative ("high");
 
             float h = EditorGUIUtility.singleLineHeight;
+            bool oneLine = FitsOneLine (property, out string preview, out float previewWidth);
 
-            // Row 1: prefix label + the three bounds as a compact multi-int field.
-            Rect fieldsRow = new Rect (position.x, position.y, position.width, h);
-            Rect fields = EditorGUI.PrefixLabel (fieldsRow, label);
+            // First row: prefix label + the three bounds as separate float fields.
+            Rect firstRow = new Rect (area.x, area.y, area.width, h);
+            Rect fields = EditorGUI.PrefixLabel (firstRow, label);
 
-            int[] values = { low.intValue, mid.intValue, high.intValue };
-            EditorGUI.BeginChangeCheck ();
-            EditorGUI.MultiIntField (fields, SubLabels, values);
-            if (EditorGUI.EndChangeCheck ())
+            Rect fieldsArea, previewRect;
+            if (oneLine)
             {
-                low.intValue = values[0];
-                mid.intValue = values[1];
-                high.intValue = values[2];
+                // Shrink the fields to a fixed block and put the preview to their right, all on one line.
+                float fw = Mathf.Max (60f, Mathf.Min (OneLineFieldsWidth, fields.width - previewWidth - PreviewGap));
+                float px = fields.x + fw + PreviewGap;
+                var pw = Mathf.Min (previewWidth, Mathf.Max (0f, fields.xMax - px));
+                var pwSp = pw + Spacing;
+                previewRect = new Rect (fields.xMax - pwSp, fields.y, pw, fields.height);
+                fieldsArea = new Rect (fields.x, fields.y, fields.width - ( pwSp + PreviewGap ), fields.height);
+            }
+            else
+            {
+                // Fields take the full width; the preview drops to a second row.
+                fieldsArea = fields;
+                float px = area.x + PreviewIndent;
+                previewRect = new Rect (px, area.y + h + Spacing, Mathf.Min (previewWidth, area.xMax - px), h);
             }
 
-            // Following rows: predicted reachable tiers and their memory ranges.
-            float y = position.y + h + Spacing;
-            foreach (string line in Predict (values))
-            {
-                Rect r = new Rect (position.x + PreviewIndent, y, position.width - PreviewIndent, h);
-                EditorGUI.LabelField (r, line, EditorStyles.miniLabel);
-                y += h + Spacing;
-            }
+            DrawBounds (fieldsArea, low, mid, high, h);
+            EditorGUI.LabelField (previewRect, preview, EditorStyles.miniLabel);
         }
 
-        static int[] Read (SerializedProperty property) => new[]
+        static void DrawBounds (Rect area, SerializedProperty low, SerializedProperty mid, SerializedProperty high, float h)
         {
-            property.FindPropertyRelative ("low").intValue,
-            property.FindPropertyRelative ("mid").intValue,
-            property.FindPropertyRelative ("high").intValue,
-        };
+            int prevIndent = EditorGUI.indentLevel;
+            float prevLabelWidth = EditorGUIUtility.labelWidth;
+            EditorGUI.indentLevel = 0;
+            EditorGUIUtility.labelWidth = SubLabelWidth;
+
+            SerializedProperty[] bounds = { low, mid, high };
+            float colWidth = (area.width - ColumnSpacing * 2f) / 3f;
+            for (int i = 0; i < 3; i++)
+            {
+                Rect col = new Rect (area.x + i * (colWidth + ColumnSpacing), area.y, colWidth, h);
+                EditorGUI.PropertyField (col, bounds[i], FieldLabels[i]);
+                EditorGUI.LabelField (col, "GB", K10GuiStyles.unitStyle);
+            }
+
+            EditorGUIUtility.labelWidth = prevLabelWidth;
+            EditorGUI.indentLevel = prevIndent;
+        }
+
+        // Decides whether the fields and the whole preview fit on a single line. Uses currentViewWidth so
+        // GetPropertyHeight and OnGUI always agree on the row count.
+        static bool FitsOneLine (SerializedProperty property, out string preview, out float previewWidth)
+        {
+            float[] values =
+            {
+                property.FindPropertyRelative ("low").floatValue,
+                property.FindPropertyRelative ("mid").floatValue,
+                property.FindPropertyRelative ("high").floatValue,
+            };
+            preview = Predict (values);
+            previewWidth = EditorStyles.miniLabel.CalcSize (new GUIContent (preview)).x;
+
+            float content = EditorGUIUtility.currentViewWidth - EditorGUIUtility.labelWidth - LayoutMargin - previewWidth - PreviewGap;
+            return content >= OneLineFieldsWidth;
+        }
 
         // Mirrors HardwareTier.Get: sequential mem <= bound checks, skipping any bound that is not above
         // the highest bound seen so far. Produces one "- Tier: range" line per reachable tier.
-        static List<string> Predict (int[] tiers)
+        static string Predict (float[] tiers)
         {
             string[] names = { "Low", "Mid", "High" };
-            List<string> lines = new List<string> ();
+            var sb = StringBuilderPool.RequestEmpty();
 
-            long maxSeen = 0;
+            float maxSeen = 0f;
             bool anyReached = false;
+
+            sb.Append($"- ");
 
             for (int i = 0; i < 3; i++)
             {
-                int upper = tiers[i];
+                float upper = tiers[i];
                 if (upper <= maxSeen) continue; // this tier is unreachable, skip it
 
+                if( anyReached ) sb.Append($"   |   ");
                 string range = anyReached
-                    ? $"{FormatGB ((int) maxSeen)} to {FormatGB (upper)}"
+                    ? $"{FormatGB (maxSeen)} to {FormatGB (upper)}"
                     : $"{FormatGB (upper)} or lower";
-                lines.Add ($"- {names[i]}: {range}");
+                sb.Append($"{names[i]}: {range}");
 
                 maxSeen = upper;
                 anyReached = true;
             }
 
-            lines.Add ($"- Extreme: {(anyReached ? $"{FormatGB ((int) maxSeen)}+" : "any amount")}");
-            return lines;
+            if( anyReached ) sb.Append($"   |   ");
+
+            sb.Append($"Extreme: {(anyReached ? $"{FormatGB (maxSeen)}+" : "any amount")}");
+
+            return sb.ReturnToPoolAndCast();
         }
 
-        static string FormatGB (int megabytes)
-        {
-            return megabytes % 1000 == 0
-                ? $"{megabytes / 1000}GB"
-                : $"{megabytes / 1000f:0.#}GB";
-        }
+        static string FormatGB (float gigabytes) => $"{gigabytes:0.#}GB";
     }
 }

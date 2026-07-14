@@ -27,7 +27,7 @@ namespace K10.Optimization.Editor
             "instead of the default.")]
         [SerializeField] internal List<PlatformOverride> _platformOverrides = new List<PlatformOverride> ();
 
-        public int[] DefaultMemoryTiers => _defaultMemoryTiers.ToArray ();
+        public float[] DefaultMemoryTiers => _defaultMemoryTiers.ToArray ();
         public List<PlatformOverride> PlatformOverrides => _platformOverrides;
 
         public void Persist () => Save (true);

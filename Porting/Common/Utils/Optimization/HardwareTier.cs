@@ -5,8 +5,8 @@ using UnityEngine;
 
 public static class HardwareTier
 {
-    // Default bounds; overridden at runtime by the baked project settings via SetMemoryTiers.
-    static int[] _memoryTiers = { 6000, 0, 0, };
+    // Default bounds in GB; overridden at runtime by the baked project settings via SetMemoryTiers.
+    static float[] _memoryTiers = { 6f, 0f, 0f, };
 
     static bool _cached = false;
     static Tier _cachedTier;
@@ -25,12 +25,12 @@ public static class HardwareTier
         if( _cached ) return _cachedTier;
         _cached = true;
 
-        int mem = SystemInfo.systemMemorySize;
+        float memGB = SystemInfo.systemMemorySize / 1000f; // systemMemorySize is in MB
         int cores = SystemInfo.processorCount;
 
-        if (mem <= _memoryTiers[0] ) _cachedTier = Tier.Low;
-        else if (mem <= _memoryTiers[1] ) _cachedTier = Tier.Mid;
-        else if (mem <= _memoryTiers[2]) _cachedTier = Tier.High;
+        if (memGB <= _memoryTiers[0] ) _cachedTier = Tier.Low;
+        else if (memGB <= _memoryTiers[1] ) _cachedTier = Tier.Mid;
+        else if (memGB <= _memoryTiers[2]) _cachedTier = Tier.High;
         else _cachedTier = Tier.Extreme;
 
         DebugTier();
@@ -38,7 +38,7 @@ public static class HardwareTier
         return _cachedTier;
     }
 
-    public static void SetMemoryTiers( int low, int mid = 0, int high = 0 )
+    public static void SetMemoryTiers( float low, float mid = 0, float high = 0 )
     {
         _memoryTiers[0] = low;
         _memoryTiers[1] = mid;
