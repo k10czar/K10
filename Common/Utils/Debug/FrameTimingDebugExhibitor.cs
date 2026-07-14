@@ -15,6 +15,14 @@ public abstract class FrameTimingDebugExhibitor : MonoBehaviour
 	[ExtendedDrawer(true),SerializeReference] IEventBinderReference _deepToogle;
     FpsCounter _fps;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+	long _batchesSum;
+	int _batchesSamples;
+#endif
+#if !UNITY_EDITOR && DEVELOPMENT_BUILD
+	Unity.Profiling.ProfilerRecorder _batchesRecorder;
+#endif
+
 	protected abstract void SetLog( string log );
 	protected abstract void OnEnableChange( bool enabled );
 
@@ -23,12 +31,22 @@ public abstract class FrameTimingDebugExhibitor : MonoBehaviour
 		FrameTimingDebug.Enable();
 		_deepToogle?.Register( TryToggleDeep );
         _fps = new FpsCounter( .3333f );
+#if !UNITY_EDITOR && DEVELOPMENT_BUILD
+		_batchesRecorder = Unity.Profiling.ProfilerRecorder.StartNew( Unity.Profiling.ProfilerCategory.Render, "Batches Count" );
+#endif
 	}
 
 	void OnDisable()
 	{
 		FrameTimingDebug.Disable();
 		_deepToogle?.Unregister( TryToggleDeep );
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+		_batchesSum = 0;
+		_batchesSamples = 0;
+#endif
+#if !UNITY_EDITOR && DEVELOPMENT_BUILD
+		_batchesRecorder.Dispose();
+#endif
 	}
 
 	public static string FillString( string text, int totalLength )
@@ -44,6 +62,19 @@ public abstract class FrameTimingDebugExhibitor : MonoBehaviour
 	{
 		FrameTimingDebug.ToogleDeep();
 	}
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+	// Editor uses the exact Stats-window value; development builds read the profiler counter (stripped from
+	// release builds, hence the guard).
+	long GetCurrentBatches()
+	{
+#if UNITY_EDITOR
+		return UnityEditor.UnityStats.batches;
+#else
+		return _batchesRecorder.Valid ? _batchesRecorder.LastValue : 0;
+#endif
+	}
+#endif
 	
 	public static string ToMemoryString(long bytes,string colorHex)
 	{
@@ -79,6 +110,9 @@ public abstract class FrameTimingDebugExhibitor : MonoBehaviour
 #if !IGNORE_GFX_DEBUG
 		$"       <color=#{Colors.SpringGreen.ToHex()}>API</color>\t\t<color=#{Colors.HotPink.ToHex()}>RESOLUTION</color>\t<color=#{Colors.MediumPurple.ToHex()}>SCALE</color>\t" +
 #endif
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+		$"<color=#{Colors.Gold.ToHex()}>BATCHES</color>\t" +
+#endif
 		$"<color=#{Colors.PowderBlue.ToHex()}>FRAME TIME</color>";
 
 	static readonly string HEADERS_WITH_SCALE = $"<color=#{Colors.BrightLime.ToHex()}>FPS</color>\t" +
@@ -88,6 +122,9 @@ public abstract class FrameTimingDebugExhibitor : MonoBehaviour
 #if !IGNORE_GFX_DEBUG
 		$"       <color=#{Colors.SpringGreen.ToHex()}>API</color>\t\t<color=#{Colors.HotPink.ToHex()}>RESOLUTION</color>\t" +
 #endif
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+		$"<color=#{Colors.Gold.ToHex()}>BATCHES</color>\t" +
+#endif
 		$"<color=#{Colors.PowderBlue.ToHex()}>FRAME TIME</color>";
 
 	static readonly string DEFAULT_FIRSTLINE_NUMBERS_COLOR = Colors.Khaki.ToHex();
@@ -95,6 +132,10 @@ public abstract class FrameTimingDebugExhibitor : MonoBehaviour
 	void LateUpdate()
 	{
 		_fps.Update();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+		_batchesSum += GetCurrentBatches(); // sample every frame so the tick shows the period average
+		_batchesSamples++;
+#endif
 		var log = FrameTimingDebug.GetLog();
 
 		if (tickInterval > Mathf.Epsilon)
@@ -132,8 +173,17 @@ public abstract class FrameTimingDebugExhibitor : MonoBehaviour
 		var headers = HEADERS;
 #endif
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+		var batchesAvg = _batchesSamples > 0 ? _batchesSum / _batchesSamples : 0;
+		var batchesStr = batchesAvg.ToString().FillSides(6) + "\t";
+		_batchesSum = 0;
+		_batchesSamples = 0;
+#else
+		var batchesStr = string.Empty;
+#endif
+
 #if IGNORE_MEMORY_DEBUG
-		SetLog($"{headers}\n<color=#{DEFAULT_FIRSTLINE_NUMBERS_COLOR}> {fpsValue.ToString().FillSides(4).Colorfy( fpsColor )}\t   {gfxStr}   {log}");
+		SetLog($"{headers}\n<color=#{DEFAULT_FIRSTLINE_NUMBERS_COLOR}> {fpsValue.ToString().FillSides(4).Colorfy( fpsColor )}\t   {gfxStr}   {batchesStr}{log}");
 #else
 		long memMono = Profiler.GetMonoUsedSizeLong();
 		long memUsed = Profiler.GetTotalAllocatedMemoryLong();
@@ -148,7 +198,7 @@ public abstract class FrameTimingDebugExhibitor : MonoBehaviour
 		var coloredMonPtg = monoPctg.ToString().Colorfy(monoColor);
 		var coloredUsedPtg = usedPctg.ToString().Colorfy(usedColor);
 
-		SetLog($"{headers}\n<color=#{DEFAULT_FIRSTLINE_NUMBERS_COLOR}>{fpsValue.ToString().FillSides(4).Colorfy( fpsColor )}\t {ToMemoryString(memMono,monoColor)}({coloredMonPtg}%)\t{ToMemoryString(memUsed,usedColor)}({coloredUsedPtg}%)\t {ToMemoryString(memReserved)}</color>\t{gfxStr}   {log}");
+		SetLog($"{headers}\n<color=#{DEFAULT_FIRSTLINE_NUMBERS_COLOR}>{fpsValue.ToString().FillSides(4).Colorfy( fpsColor )}\t {ToMemoryString(memMono,monoColor)}({coloredMonPtg}%)\t{ToMemoryString(memUsed,usedColor)}({coloredUsedPtg}%)\t {ToMemoryString(memReserved)}</color>\t{gfxStr}   {batchesStr}{log}");
 #endif
 		FrameTimingDebug.ClearUnusedData();
 	}
