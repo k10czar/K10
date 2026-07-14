@@ -1,6 +1,7 @@
 #if CODE_METRICS
 #define DEBUG_NOTIFY
 #endif
+using System;
 using UnityEngine;
 
 public static class HardwareTier
@@ -22,6 +23,11 @@ public static class HardwareTier
     public static bool IsHighOrLower => Get() <= Tier.High;
     public static bool IsMidOrLower => Get() <= Tier.Mid;
     public static bool IsLow => Get() <= Tier.Low;
+
+    static EventSlot _onHardwareTierChanged;
+
+    /// <summary> Fires when the hardware tier changes, only on forced change via <see cref="Force(Tier)"/>. </summary>
+    public static IEventRegister OnHardwareTierChanged => _onHardwareTierChanged ??= new EventSlot();
 
     public static Tier Get()
     {
@@ -54,6 +60,7 @@ public static class HardwareTier
         _cachedTier = tierToForce;
         _cached = true;
         DebugTier();
+        _onHardwareTierChanged?.Trigger();
     }
 
     public static void Reset()
