@@ -5,23 +5,20 @@ using UnityEngine;
 
 public static class HardwareTier
 {
-#if UNITY_ANDROID || UNITY_IOS
-    static int[] _memoryTiers = { 6000, 8000, 12000, };
-#else
+    // Default bounds; overridden at runtime by the baked project settings via SetMemoryTiers.
     static int[] _memoryTiers = { 6000, 0, 0, };
-#endif
 
     static bool _cached = false;
     static Tier _cachedTier;
 
     public enum Tier { Low, Mid, High, Extreme }
 
-    public static bool IsExtremeOrAbove => Get() >= Tier.Extreme;
+    public static bool IsExtreme => Get() == Tier.Extreme;
     public static bool IsHighOrAbove => Get() >= Tier.High;
-    public static bool IsMidOrAbove => Get() >= Tier.Mid;
     public static bool IsHighOrLower => Get() <= Tier.High;
+    public static bool IsMidOrAbove => Get() >= Tier.Mid;
     public static bool IsMidOrLower => Get() <= Tier.Mid;
-    public static bool IsLow => Get() <= Tier.Low;
+    public static bool IsLow => Get() == Tier.Low;
 
     public static Tier Get()
     {
