@@ -126,7 +126,7 @@ namespace Rogue.REditor
                     : (info.title, EColor.Support);
 
                 if (SkyxGUI.Button(headerRect, text, color))
-                    SerializedRefLib.DrawTypePickerMenu(headerRect, prop);
+                    SerializedRefLib.ShowTypePicker(headerRect, prop);
             }
 
             if (canExpand && clickRect.TryUseClick(false))

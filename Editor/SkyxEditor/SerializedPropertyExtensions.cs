@@ -67,8 +67,8 @@ namespace Rogue.REditor
                 newElement.managedReferenceValue = null;
                 newElement.Apply();
 
-                if (isDuringGui) SerializedRefLib.DrawTypePickerMenu(newElement, customReset);
-                else EditorUtils.RunOnSceneOnce(() => SerializedRefLib.DrawTypePickerMenu(newElement, customReset));
+                if (isDuringGui) SerializedRefLib.ShowTypePicker(newElement, customReset);
+                else EditorUtils.RunOnSceneOnce(() => SerializedRefLib.ShowTypePicker(newElement, customReset));
                 return;
             }
 

@@ -13,27 +13,27 @@ namespace Rogue.REditor
 
         public static bool TryDrawMissingRef(ref Rect rect, SerializedProperty property, string label = null)
         {
-            if (property.managedReferenceValue != null) return false;
+            if (!property.IsManagedRef() || property.managedReferenceValue != null) return false;
 
             var text = label != null ? $"{label} | MISSING REFERENCE!" : "MISSING REFERENCE!";
 
             if (SkyxGUI.Button(rect, text, EColor.Danger))
-                DrawTypePickerMenu(rect, property);
+                ShowTypePicker(rect, property);
 
             return true;
         }
 
-        public static void DelayedDrawTypePickerMenu(SerializedProperty property, Action<SerializedProperty> newElementSetup = null, IEnumerable<Type> validTypes = null)
+        public static void DelayedTypePicker(SerializedProperty property, Action<SerializedProperty> newElementSetup = null, IEnumerable<Type> validTypes = null)
         {
-            EditorUtils.RunDelayedOnce(() => DrawTypePickerMenu(property, newElementSetup, validTypes));
+            EditorUtils.RunDelayedOnce(() => ShowTypePicker(property, newElementSetup, validTypes));
         }
 
-        public static void DrawTypePickerMenu(SerializedProperty property) => DrawTypePickerMenu(property, null, null);
+        public static void ShowTypePicker(SerializedProperty property) => ShowTypePicker(property, null, null);
 
-        public static void DrawTypePickerMenu(SerializedProperty property, Action<SerializedProperty> newElementSetup, IEnumerable<Type> validTypes = null)
-            => DrawTypePickerMenu(EditorUtils.GetRectAtMouse(), property, newElementSetup, validTypes);
+        public static void ShowTypePicker(SerializedProperty property, Action<SerializedProperty> newElementSetup, IEnumerable<Type> validTypes = null)
+            => ShowTypePicker(EditorUtils.GetRectAtMouse(), property, newElementSetup, validTypes);
 
-        public static void DrawTypePickerMenu(Rect rect, SerializedProperty property, Action<SerializedProperty> newElementSetup = null, IEnumerable<Type> validTypes = null)
+        public static void ShowTypePicker(Rect rect, SerializedProperty property, Action<SerializedProperty> newElementSetup = null, IEnumerable<Type> validTypes = null)
         {
             ClassTreePicker.Draw(rect, property.GetManagedType(), property.managedReferenceValue?.GetType(), OnTypeSelected, validTypes);
 
