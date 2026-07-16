@@ -281,6 +281,23 @@ namespace Rogue.REditor
             return (EditorWindow) genericMethod.Invoke(null, new object[] { Type.EmptyTypes });
         }
 
+        public static void OpenOrFocusInspectorOn(Object target)
+        {
+            if (IsFocusedInspectorLocked())
+            {
+                var existingInspector = GetInspectorTargeting(target);
+                if (existingInspector != null)
+                {
+                    existingInspector.Focus();
+                    return;
+                }
+
+                OpenNewInspectorWindow();
+            }
+
+            Selection.activeObject = target;
+        }
+
         #endregion
 
         #region Console Reflections
