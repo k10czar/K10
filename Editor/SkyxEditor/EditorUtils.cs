@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Rogue.REditor
 {
@@ -149,7 +151,7 @@ namespace Rogue.REditor
                 SceneView.duringSceneGui -= wrapper;
             };
 
-            if (lockInspector) SetInspectorLock(true);
+            if (lockInspector) SetFocusedInspectorLock(true);
 
             Debug.Log("Waiting for Scene click!");
 
@@ -180,7 +182,7 @@ namespace Rogue.REditor
                 SceneView.duringSceneGui -= wrapper;
             };
 
-            if (lockInspector) SetInspectorLock(true);
+            if (lockInspector) SetFocusedInspectorLock(true);
 
             Debug.Log("Waiting for Scene click!");
 
@@ -195,9 +197,9 @@ namespace Rogue.REditor
             view.size = hardFocus ? .7f : 5;
         }
 
-        #region Reflections
+        #region Inspector Reflections
 
-        public static void SetInspectorLock(bool shouldLock)
+        public static void SetFocusedInspectorLock(bool shouldLock)
         {
             var focused = EditorWindow.focusedWindow;
             if (focused == null) return;
@@ -218,9 +220,70 @@ namespace Rogue.REditor
             }
             else
             {
-                Debug.LogWarning("Couldn't access isLocked property.");
+                Debug.LogError("Couldn't access isLocked property.");
             }
         }
+
+        public static bool IsFocusedInspectorLocked()
+        {
+            var focused = EditorWindow.focusedWindow;
+            if (focused == null) return false;
+
+            var inspectorType = typeof(Editor).Assembly.GetType("UnityEditor.InspectorWindow");
+            if (focused.GetType() != inspectorType)
+            {
+                Debug.Log("Focused window is not an Inspector.");
+                return false;
+            }
+
+            var isLockedProperty = inspectorType.GetProperty("isLocked", BindingFlags.Instance | BindingFlags.Public);
+            if (isLockedProperty == null)
+            {
+                Debug.LogError("Couldn't access isLocked property.");
+                return false;
+            }
+
+            return (bool) isLockedProperty.GetValue(focused);
+        }
+
+        public static EditorWindow GetInspectorTargeting(Object target)
+        {
+            var inspectorType = typeof(Editor).Assembly.GetType("UnityEditor.InspectorWindow");
+            var trackerField = inspectorType.GetField("m_Tracker", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (trackerField == null)
+            {
+                Debug.LogError("GetTracker method type could not be found.");
+                return null;
+            }
+
+            var allInspectors = Resources.FindObjectsOfTypeAll(inspectorType);
+            foreach (var inspectorWindow in allInspectors.Cast<EditorWindow>())
+            {
+                if (trackerField.GetValue(inspectorWindow) is not ActiveEditorTracker tracker) continue;
+
+                foreach (var editor in tracker.activeEditors)
+                {
+                    if (editor.targets.Contains(target))
+                        return inspectorWindow;
+                }
+            }
+
+            return null;
+        }
+
+        public static EditorWindow OpenNewInspectorWindow()
+        {
+            var inspectorType = typeof(Editor).Assembly.GetType("UnityEditor.InspectorWindow");
+
+            var createWindowMethod = typeof(EditorWindow).GetMethod("CreateWindow", new[] { typeof(Type[]) });
+            var genericMethod = createWindowMethod!.MakeGenericMethod(inspectorType);
+
+            return (EditorWindow) genericMethod.Invoke(null, new object[] { Type.EmptyTypes });
+        }
+
+        #endregion
+
+        #region Console Reflections
 
         public static void ClearConsole()
         {
