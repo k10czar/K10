@@ -68,6 +68,7 @@ public class BatchesStatistics : MonoBehaviour
         _counting = false;
     }
 
+#if !UNITY_EDITOR && DEVELOPMENT_BUILD
     void OnEnable()
     {
         _batchesRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Render, "Batches Count");
@@ -77,6 +78,7 @@ public class BatchesStatistics : MonoBehaviour
     {
         _batchesRecorder.Dispose();
     }
+#endif
 
     bool IsValid()
     {
@@ -96,9 +98,8 @@ public class BatchesStatistics : MonoBehaviour
 		return UnityEditor.UnityStats.batches;
 #else
 		return _batchesRecorder.Valid ? _batchesRecorder.LastValue : 0;
-#endif
+#endif // UNITY_EDITOR
 	}
-#endif
 
     void Update()
     {
@@ -130,4 +131,5 @@ public class BatchesStatistics : MonoBehaviour
         GUI.Label(_rect, text, Style);
         GuiColorManager.Revert(2);
     }
+#endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 }
