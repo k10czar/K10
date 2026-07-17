@@ -66,9 +66,10 @@ public static class K10MeshCombiner
         IList<MeshFilter> filters,
         Material material,
         Transform parent,
-        int predictedVerts, 
+        int predictedVerts,
         ECombineType combineType = ECombineType.UnityMeshCombine,
-        List<GameObject> objectsExecuted = null )
+        List<GameObject> objectsExecuted = null,
+        ShadowCastingMode? shadowCasting = null )
     {
 #if UNITY_EDITOR
         bool hasStaticBatching = UnityEditor.PlayerSettings.GetStaticBatchingForPlatform( UnityEditor.EditorUserBuildSettings.activeBuildTarget );
@@ -141,7 +142,9 @@ public static class K10MeshCombiner
         combineGameObject.AddComponent<MeshFilter>().sharedMesh = combinedMesh;
         var combinedMeshRenderer = combineGameObject.AddComponent<MeshRenderer>();
         combinedMeshRenderer.sharedMaterial    = material;
-        combinedMeshRenderer.shadowCastingMode = castShadows ? ShadowCastingMode.On : ShadowCastingMode.Off;
+        // Use the caller-supplied mode when the group is homogeneous by shadow casting; otherwise fall
+        // back to the auto rule (cast if any source mesh casts).
+        combinedMeshRenderer.shadowCastingMode = shadowCasting ?? (castShadows ? ShadowCastingMode.On : ShadowCastingMode.Off);
 
         combineGameObject.layer    = layer;
         combineGameObject.isStatic = true;
