@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BatchesStatistics : MonoBehaviour
 {
-    [SerializeField] Rect _rect = new Rect(10, 10, 320, 70);
+    [SerializeField] Rect _rect = new Rect(10, 10, 500, 70);
     [SerializeField] Color _color = Colors.KeyLime;
     [SerializeField] int _fontSize = 22;
 
