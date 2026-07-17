@@ -69,7 +69,8 @@ public static class K10MeshCombiner
         int predictedVerts,
         ECombineType combineType = ECombineType.UnityMeshCombine,
         List<GameObject> objectsExecuted = null,
-        ShadowCastingMode? shadowCasting = null )
+        ShadowCastingMode? shadowCasting = null,
+        bool? receiveShadows = null )
     {
 #if UNITY_EDITOR
         bool hasStaticBatching = UnityEditor.PlayerSettings.GetStaticBatchingForPlatform( UnityEditor.EditorUserBuildSettings.activeBuildTarget );
@@ -145,6 +146,8 @@ public static class K10MeshCombiner
         // Use the caller-supplied mode when the group is homogeneous by shadow casting; otherwise fall
         // back to the auto rule (cast if any source mesh casts).
         combinedMeshRenderer.shadowCastingMode = shadowCasting ?? (castShadows ? ShadowCastingMode.On : ShadowCastingMode.Off);
+        if (receiveShadows.HasValue)
+            combinedMeshRenderer.receiveShadows = receiveShadows.Value;
 
         combineGameObject.layer    = layer;
         combineGameObject.isStatic = true;
