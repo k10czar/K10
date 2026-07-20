@@ -79,7 +79,8 @@ public static class K10MeshCombiner
         int verts = 0;
         int layer = 0;
         var matWorldToLocal = parent.worldToLocalMatrix;
-        var SB = StringBuilderPool.RequestWith( $"MergeGroup: {predictedVerts}v {material}\n" );
+        var SB = StringBuilderPool.RequestEmpty();
+        SB.Append( $"MergeGroup: {predictedVerts}v {material}\n" );
 
         for (int j = 0; j < count; j++)
         {
@@ -98,14 +99,14 @@ public static class K10MeshCombiner
             if (instMesh == null)
             {
                 SB.AppendLine( $"{filter.HierarchyNameOrNull()} with null sharedMesh" );
-                Debug.LogError( $"filter {filter.HierarchyNameOrNull()} does not has sharedMesh", filter );
+                // Debug.LogError( $"filter {filter.HierarchyNameOrNull()} does not has sharedMesh", filter );
                 continue;
             }
 
             if (!instMesh.isReadable)
             {
                 SB.AppendLine( $"{filter.HierarchyNameOrNull()} with not readable sharedMesh" );
-                Debug.LogError( $"filter {filter.HierarchyNameOrNull()} has not readable sharedMesh", filter );
+                // Debug.LogError( $"filter {filter.HierarchyNameOrNull()} has not readable sharedMesh", filter );
                 continue;
             }
 
