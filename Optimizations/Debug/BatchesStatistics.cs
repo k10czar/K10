@@ -95,7 +95,11 @@ public class BatchesStatistics : MonoBehaviour
 	long GetCurrentBatches()
 	{
 #if UNITY_EDITOR
+#if UNITY_6000_4_OR_NEWER
+		return UnityEditor.UnityStats.drawCalls;   // renamed from `drawCalls` in Unity 6.4
+#else
 		return UnityEditor.UnityStats.batches;
+#endif
 #else
 		return _batchesRecorder.Valid ? _batchesRecorder.LastValue : 0;
 #endif // UNITY_EDITOR
