@@ -5,6 +5,12 @@ namespace K10.EventSystem
 {
     public interface IFilteredActionCapsule
     {
+        public void SetKeys(params object[] newKeys)
+        {
+            for (var index = 0; index < newKeys.Length; index++)
+                SetKey(newKeys[index], index);
+        }
+
         public void SetKey(object newKey, int index);
         public void RemoveKey(int index);
     }

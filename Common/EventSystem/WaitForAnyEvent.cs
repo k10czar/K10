@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using K10.EventSystem;
 using UnityEngine;
 
 public class WaitForAnyEvent : CustomYieldInstruction
@@ -30,6 +31,13 @@ public class WaitForAnyEvent : CustomYieldInstruction
     {
         foreach (var targetEvent in events)
             listeners.Register(targetEvent, Triggered);
+    }
+
+    public WaitForAnyEvent(IEventRegister targetEvent, params object[] keys)
+    {
+        var filterCapsule = targetEvent.RegisterFiltered(Triggered);
+        filterCapsule.SetKeys(keys);
+        listeners.Track((ActionCapsuleBase)filterCapsule);
     }
 
     public WaitForAnyEvent(Func<bool> validator, params IEventRegister[] events)
