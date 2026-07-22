@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace K10.DebugSystem
@@ -20,7 +22,7 @@ namespace K10.DebugSystem
         private static bool ShouldAlwaysDebug(LogSeverity severity)
             => severity is LogSeverity.Error || typeof(T) == typeof(TempDebug);
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [HideInCallstack, Conditional(K10Log.ConditionalDirective)]
         public static void Log(LogSeverity severity, string log, bool verbose, Object consoleTarget, IEnumerable<Object> owners)
         {
             try
@@ -33,7 +35,7 @@ namespace K10.DebugSystem
             catch(Exception exception) { Debug.LogException(exception); }
         }
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [HideInCallstack, Conditional(K10Log.ConditionalDirective)]
         public static void ReallyLog(LogSeverity severity, string log, Object consoleTarget, IEnumerable<Object> owners)
         {
             try
@@ -54,16 +56,16 @@ namespace K10.DebugSystem
             catch(Exception exception) { Debug.LogException(exception); }
         }
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [HideInCallstack, Conditional(K10Log.ConditionalDirective)]
         public static void Log(LogSeverity severity, string log) => Log(severity, log, severity is LogSeverity.Warning, null, LoggableDefaults.nullOwners);
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [HideInCallstack, Conditional(K10Log.ConditionalDirective)]
         public static void Log(LogSeverity severity, string log, Object consoleTarget) => Log(severity, log, severity is LogSeverity.Warning, consoleTarget, new[] { consoleTarget });
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [HideInCallstack, Conditional(K10Log.ConditionalDirective)]
         public static void Log(string log, Object consoleTarget = null) => Log(LogSeverity.Info, log, false, consoleTarget, new[] { consoleTarget });
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [HideInCallstack, Conditional(K10Log.ConditionalDirective)]
         public static void LogVerbose(string log, Object consoleTarget = null) => Log(LogSeverity.Warning, log, true, consoleTarget, new[] { consoleTarget });
 
         private static string GetOwnersDebugStr(IEnumerable<Object> owners)

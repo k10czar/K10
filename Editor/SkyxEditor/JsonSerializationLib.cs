@@ -48,7 +48,7 @@ namespace Rogue.REditor
 
         #region Direct Object Manipulation
 
-        public static void CopyValues<T>(T source, T target) where T : class
+        public static void CopyValues(object source, object target)
         {
             var json = GetJson(source);
             SetValueFromJson(target, json);

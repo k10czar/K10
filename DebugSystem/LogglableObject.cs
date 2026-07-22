@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace K10.DebugSystem
 {
@@ -7,59 +9,63 @@ namespace K10.DebugSystem
     {
         public static readonly Object[] nullOwners = { null };
     }
-    public interface ILoggable<T> where T : DebugCategory, new()
+
+    public interface ILoggableBase
     {
         Object[] LogOwners => LoggableDefaults.nullOwners;
         Object MainLogOwner => LogOwners[0];
     }
 
+    public interface ILoggable<T> : ILoggableBase
+        where T : DebugCategory, new() {}
+
     public static class LoggableTargetExtensions
     {
         #region Logs
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [HideInCallstack, Conditional(K10Log.ConditionalDirective)]
         public static void Log<T>(this ILoggable<T> obj, string message) where T : DebugCategory, new()
         {
             K10Log<T>.Log(LogSeverity.Info, message, false, obj.MainLogOwner, obj.LogOwners);
         }
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [HideInCallstack, Conditional(K10Log.ConditionalDirective)]
         public static void Log<T>(this ILoggable<T> obj, string message, Object consoleTarget) where T : DebugCategory, new()
         {
             K10Log<T>.Log(LogSeverity.Info, message, false, consoleTarget, obj.LogOwners.Append(consoleTarget));
         }
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [HideInCallstack, Conditional(K10Log.ConditionalDirective)]
         public static void LogVerbose<T>(this ILoggable<T> obj, string message, bool isVerbose = true) where T : DebugCategory, new()
         {
             K10Log<T>.Log(LogSeverity.Warning, message, isVerbose, obj.MainLogOwner, obj.LogOwners);
         }
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [HideInCallstack, Conditional(K10Log.ConditionalDirective)]
         public static void LogVerbose<T>(this ILoggable<T> obj, string message, Object consoleTarget, bool isVerbose = true) where T : DebugCategory, new()
         {
             K10Log<T>.Log(LogSeverity.Warning, message, isVerbose, consoleTarget, obj.LogOwners.Append(consoleTarget));
         }
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [HideInCallstack, Conditional(K10Log.ConditionalDirective)]
         public static void LogError<T>(this ILoggable<T> obj, string message) where T : DebugCategory, new()
         {
             K10Log<T>.Log(LogSeverity.Error, message, false, obj.MainLogOwner, obj.LogOwners);
         }
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [HideInCallstack, Conditional(K10Log.ConditionalDirective)]
         public static void LogError<T>(this ILoggable<T> obj, string message, Object consoleTarget) where T : DebugCategory, new()
         {
             K10Log<T>.Log(LogSeverity.Error, message, false, consoleTarget, obj.LogOwners.Append(consoleTarget));
         }
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [HideInCallstack, Conditional(K10Log.ConditionalDirective)]
         public static void LogException<T>(this ILoggable<T> obj, System.Exception exception) where T : DebugCategory, new()
         {
             Debug.LogException(exception, obj.MainLogOwner);
         }
 
-        [HideInCallstack, System.Diagnostics.Conditional(K10Log.ConditionalDirective)]
+        [HideInCallstack, Conditional(K10Log.ConditionalDirective)]
         public static void AlwaysLog<T>(this ILoggable<T> obj, string message, LogSeverity severity = LogSeverity.Info) where T : DebugCategory, new()
         {
             K10Log<T>.ReallyLog(severity, message, obj.MainLogOwner, obj.LogOwners);
