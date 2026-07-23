@@ -233,7 +233,7 @@ namespace Rogue.REditor
             if (focused.GetType() != inspectorType)
             {
                 Debug.Log("Focused window is not an Inspector.");
-                return false;
+                return true;
             }
 
             var isLockedProperty = inspectorType.GetProperty("isLocked", BindingFlags.Instance | BindingFlags.Public);

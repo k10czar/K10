@@ -40,7 +40,10 @@ namespace Skyx.RuntimeEditor
         public EColor color;
 
         public bool isDisabled;
+
+        #if UNITY_EDITOR
         public List<SkopeButton> buttons;
+        #endif
 
         public ScopedAttribute() {}
 
@@ -110,26 +113,5 @@ namespace Skyx.RuntimeEditor
         };
 
         #endregion
-    }
-
-    public class SkopeButton
-    {
-        #if UNITY_EDITOR
-        public readonly string label;
-        public readonly Action<SerializedProperty> onClick;
-        public EColor color;
-        public bool isDisabled;
-
-        public SkopeButton(string label, EColor color, Action<SerializedProperty> onClick)
-        {
-            this.label = label;
-            this.color = color;
-            this.onClick = onClick;
-        }
-
-        public override bool Equals(object obj) => obj is SkopeButton other && Equals(other);
-        private bool Equals(SkopeButton other) => label == other.label;
-        public override int GetHashCode() => HashCode.Combine(label);
-        #endif
     }
 }

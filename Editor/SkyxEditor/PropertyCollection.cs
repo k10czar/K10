@@ -67,6 +67,12 @@ namespace Rogue.REditor
                 listener.OnPropertyChanged();
         }
 
+        public static void ApplyDirectChanges(Object target)
+        {
+            EditorUtility.SetDirty(target);
+            ScheduleReset(new SerializedObject(target));
+        }
+
         public static void ScheduleReset(SerializedObject serializedObject)
         {
             scheduledResets.Add(serializedObject);
