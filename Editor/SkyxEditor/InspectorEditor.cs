@@ -19,7 +19,7 @@ namespace Rogue.REditor
         private bool willMakeDirectChanges;
 
         protected virtual bool ShouldDrawScript => false;
-        protected virtual bool ShouldDrawTitle => false;
+        protected virtual bool ShouldDrawTitle => true;
         protected virtual bool ShouldDrawSaveFile => false;
         protected virtual bool ShouldDrawReserialize => false;
         protected virtual bool HasRuntimeVisualization => false;

@@ -28,13 +28,13 @@ namespace Rogue.REditor
                 return;
             }
 
-            EditorUtils.SetInspectorLock(true);
+            EditorUtils.SetFocusedInspectorLock(true);
             Selection.activeObject = anchor;
         }
 
         private static void CreateSelectingAnchor(Transform sourceTransform, Vector3 localPosition)
         {
-            EditorUtils.SetInspectorLock(true);
+            EditorUtils.SetFocusedInspectorLock(true);
 
             var anchor = new GameObject("[HelpingAnchor]")
             {

@@ -51,6 +51,9 @@ public static class Colors
     [LazyConst] private static Color[] eColorSequence;
     public static Color[] EColorSequence => eColorSequence ??= new [] { Console.Primary, Console.Secondary, Console.Info, Console.Success, Console.Warning, Console.Danger, Console.Support, Console.Special, Console.Disabled, Color.clear, Transparent02, Console.Dark };
 
+    [LazyConst] private static string[] eColorsUSSClass;
+    public static string[] EColorsUSSClass => eColorsUSSClass ??= new [] { "primary-style", "secondary-style", "info-style", "success-style", "warning-style", "danger-style", "support-style", "special-style", "disabled-style", string.Empty, "backdrop-style", "dark-style" };
+
     public static Color FromSequence<T>(T value) where T : Enum => FromSequence((int)(object)value);
     public static Color FromSequence(int index)
     {
@@ -59,6 +62,13 @@ public static class Colors
     }
 
     public static Color Get(this EColor color) => FromSequence(color);
+
+    public static string GetUSSStyle(this EColor color)
+    {
+        var index = Convert.ToInt32(color);
+        index %= EColorsUSSClass.Length;
+        return EColorsUSSClass[index];
+    }
 
     public static string ToHexRGB(this EColor color) => $"#{ColorUtility.ToHtmlStringRGB(color.Get())}";
 
