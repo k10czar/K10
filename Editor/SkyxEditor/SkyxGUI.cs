@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using K10.Common;
 using Skyx.RuntimeEditor;
 using Skyx.Trees;
 using UnityEditor;
@@ -361,6 +362,8 @@ namespace Rogue.REditor
 
         #endregion
 
+        #region Caches
+
         [MenuItem("Rogue/Editor/Clear All Caches")]
         public static void ClearAllCaches()
         {
@@ -369,7 +372,10 @@ namespace Rogue.REditor
             CustomDrawersCache.ClearCache();
             ReorderableListCache.Clear();
             ClassTreeNode.ClearCache();
+            EditorDataCache.Clear();
         }
+
+        #endregion
 
         public static void DrawLabel(ref Rect rect, string label, bool extractLabelRect = true, EColor color = EColor.Primary)
         {
@@ -444,29 +450,6 @@ namespace Rogue.REditor
         {
             using var backgroundScope = BackgroundColorScope.Set(SkyxStyles.HeaderColor(color));
             EditorGUI.LabelField(rect, label, SkyxStyles.HeaderStyle(size, color));
-        }
-
-        public static void Foldout(ref Rect rect, SerializedProperty property, string label, EElementSize size)
-        {
-            rect.height = SkyxStyles.HeaderHeight(size);
-
-            if (rect.TryUseClick(false))
-                property.isExpanded = !property.isExpanded;
-
-            var style = size switch
-            {
-                EElementSize.Primary => SkyxStyles.HugeBoldStyle,
-                EElementSize.Secondary => SkyxStyles.BigBoldStyle,
-                EElementSize.SingleLine => SkyxStyles.BoldStyle,
-                _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
-            };
-
-            var foldRect = rect;
-            GUI.Toggle(foldRect.ExtractMiniButton(), property.isExpanded, GUIContent.none, EditorStyles.foldout);
-            EditorGUI.LabelField(foldRect, label, style);
-
-            rect.y += rect.height;
-            if (property.isExpanded) Separator(ref rect);
         }
     }
 }

@@ -257,6 +257,15 @@ namespace Rogue.REditor
         public static Rect ExtractHint(this ref Rect rect, bool fromEnd = false)
             => ExtractRect(ref rect, SkyxStyles.HintIconWidth, fromEnd);
 
+        public static Rect ExtractSkopeRect(this ref Rect rect, float skopeHeight, float margin = SkyxStyles.ElementsMargin)
+        {
+            var skopeRect = rect;
+            skopeRect.height = skopeHeight;
+            rect.y += skopeHeight + margin;
+
+            return skopeRect;
+        }
+
         #endregion
     }
 }
