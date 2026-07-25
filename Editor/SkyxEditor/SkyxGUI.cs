@@ -364,6 +364,8 @@ namespace Rogue.REditor
 
         #region Caches
 
+        public static Action cachesCleared;
+
         [MenuItem("Rogue/Editor/Clear All Caches")]
         public static void ClearAllCaches()
         {
@@ -373,6 +375,8 @@ namespace Rogue.REditor
             ReorderableListCache.Clear();
             ClassTreeNode.ClearCache();
             EditorDataCache.Clear();
+
+            cachesCleared?.Invoke();
         }
 
         #endregion

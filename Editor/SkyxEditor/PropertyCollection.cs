@@ -193,6 +193,8 @@ namespace Rogue.REditor
         private readonly Dictionary<string, SerializedProperty> properties = new();
         public int PropertiesCount => properties.Count;
 
+        public void Apply(string reason) => Apply(root, reason);
+
         #region Layout Draw
 
         public void Draw(string propertyName, bool isBacking = false, bool indent = false)

@@ -48,6 +48,13 @@ namespace Rogue.REditor
 
         #region Direct Object Manipulation
 
+        public static T CreateCopy<T>(T source)
+        {
+            var newObj = (T) Activator.CreateInstance(source.GetType());
+            CopyValues(source, newObj);
+            return newObj;
+        }
+
         public static void CopyValues(object source, object target)
         {
             var json = GetJson(source);
