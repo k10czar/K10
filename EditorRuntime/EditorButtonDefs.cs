@@ -6,8 +6,9 @@ namespace Skyx.RuntimeEditor
     public class EditorButtonDef<T>
     {
         public readonly string label;
-        public readonly string tooltip;
         public readonly Action<T> onClick;
+
+        public string tooltip;
         public EColor color;
         public bool isDisabled;
 

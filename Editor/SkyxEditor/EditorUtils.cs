@@ -246,17 +246,61 @@ namespace Rogue.REditor
             return (bool) isLockedProperty.GetValue(focused);
         }
 
+        public static EditorWindow OpenNewInspectorWindow()
+        {
+            var inspectorType = typeof(Editor).Assembly.GetType("UnityEditor.InspectorWindow");
+
+            var createWindowMethod = typeof(EditorWindow).GetMethod("CreateWindow", new[] { typeof(Type[]) });
+            var genericMethod = createWindowMethod!.MakeGenericMethod(inspectorType);
+
+            return (EditorWindow) genericMethod.Invoke(null, new object[] { Type.EmptyTypes });
+        }
+
+        public static void OpenOrFocusInspectorOn(Object target, bool openAsPropertyEditor = true)
+        {
+            var existingInspector = GetAnyInspectorTypeTargeting(target);
+            if (existingInspector != null)
+            {
+                existingInspector.Focus();
+                return;
+            }
+
+            if (openAsPropertyEditor)
+                EditorUtility.OpenPropertyEditor(target);
+            else
+            {
+                if (IsFocusedInspectorLocked())
+                    OpenNewInspectorWindow();
+
+                Selection.activeObject = target;
+            }
+        }
+
+        public static EditorWindow GetAnyInspectorTypeTargeting(Object target)
+            => GetInspectorTargeting(target) ?? GetPropertyEditorTargeting(target);
+
+        public static EditorWindow GetPropertyEditorTargeting(Object target)
+        {
+            var propertyEditorType = typeof(EditorApplication).Assembly.GetType("UnityEditor.PropertyEditor");
+            return GetWindowsTargeting(propertyEditorType, target);
+        }
+
         public static EditorWindow GetInspectorTargeting(Object target)
         {
             var inspectorType = typeof(Editor).Assembly.GetType("UnityEditor.InspectorWindow");
-            var trackerField = inspectorType.GetField("m_Tracker", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            return GetWindowsTargeting(inspectorType, target);
+        }
+
+        private static EditorWindow GetWindowsTargeting(Type windowType, Object target)
+        {
+            var trackerField = windowType.GetField("m_Tracker", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             if (trackerField == null)
             {
                 Debug.LogError("GetTracker method type could not be found.");
                 return null;
             }
 
-            var allInspectors = Resources.FindObjectsOfTypeAll(inspectorType);
+            var allInspectors = Resources.FindObjectsOfTypeAll(windowType);
             foreach (var inspectorWindow in allInspectors.Cast<EditorWindow>())
             {
                 if (trackerField.GetValue(inspectorWindow) is not ActiveEditorTracker tracker) continue;
@@ -269,33 +313,6 @@ namespace Rogue.REditor
             }
 
             return null;
-        }
-
-        public static EditorWindow OpenNewInspectorWindow()
-        {
-            var inspectorType = typeof(Editor).Assembly.GetType("UnityEditor.InspectorWindow");
-
-            var createWindowMethod = typeof(EditorWindow).GetMethod("CreateWindow", new[] { typeof(Type[]) });
-            var genericMethod = createWindowMethod!.MakeGenericMethod(inspectorType);
-
-            return (EditorWindow) genericMethod.Invoke(null, new object[] { Type.EmptyTypes });
-        }
-
-        public static void OpenOrFocusInspectorOn(Object target)
-        {
-            if (IsFocusedInspectorLocked())
-            {
-                var existingInspector = GetInspectorTargeting(target);
-                if (existingInspector != null)
-                {
-                    existingInspector.Focus();
-                    return;
-                }
-
-                OpenNewInspectorWindow();
-            }
-
-            Selection.activeObject = target;
         }
 
         #endregion
