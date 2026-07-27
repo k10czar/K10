@@ -272,7 +272,7 @@ namespace Rogue.REditor
             Colors.Console.Special, // Special
             Colors.Console.Dark.AddLight(-.08f), // Disabled
             Color.clear, // Clear
-            Colors.Transparent02, // Backdrop
+            Colors.Transparent20, // Backdrop
         };
 
         private static readonly Color[] boxColors =

@@ -375,8 +375,19 @@ namespace Rogue.REditor
             ReorderableListCache.Clear();
             ClassTreeNode.ClearCache();
             EditorDataCache.Clear();
+            SkopeOverride.Clear();
 
             cachesCleared?.Invoke();
+        }
+
+        public static void ClearMyCaches(SerializedProperty property)
+        {
+            var cacheID = property.GetCacheID();
+            PropertyCollection.Release(property.serializedObject);
+            SerializedTypeCache.Release(cacheID);
+            ReorderableListCache.Release(cacheID);
+            EditorDataCache.Release(cacheID);
+            SkopeOverride.Release(cacheID);
         }
 
         #endregion
@@ -432,7 +443,7 @@ namespace Rogue.REditor
         public static void Separator(ref Rect rect, float margin = SkyxStyles.ElementsMargin, EColor color = EColor.Clear, float size = SkyxStyles.DefaultSeparatorSize)
         {
             var separator = new Rect(rect.x, rect.y, rect.width, size);
-            EditorGUI.DrawRect(separator, color is EColor.Clear ? Colors.Transparent02 : color.Get());
+            EditorGUI.DrawRect(separator, color is EColor.Clear ? Colors.Transparent20 : color.Get());
 
             rect.y += size + margin;
         }

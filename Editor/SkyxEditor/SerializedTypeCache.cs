@@ -60,13 +60,15 @@ namespace Rogue.REditor
             return null;
         }
 
-        public static void InvalidateCacheFromTarget(int mainCacheID)
+        public static void Release(int mainCacheID)
         {
             var keysToRemove = cache.Keys.Where(k => k.Item1 == mainCacheID).ToList();
 
             foreach (var key in keysToRemove)
                 cache.Remove(key);
         }
+
+        public static void Release((int, string) cacheID) => cache.Remove(cacheID);
 
         public static void Clear() => cache.Clear();
 

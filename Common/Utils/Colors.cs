@@ -49,7 +49,7 @@ public static class Colors
     #region EColor Usages
 
     [LazyConst] private static Color[] eColorSequence;
-    public static Color[] EColorSequence => eColorSequence ??= new [] { Console.Primary, Console.Secondary, Console.Info, Console.Success, Console.Warning, Console.Danger, Console.Support, Console.Special, Console.Disabled, Color.clear, Transparent02, Console.Dark };
+    public static Color[] EColorSequence => eColorSequence ??= new [] { Console.Primary, Console.Secondary, Console.Info, Console.Success, Console.Warning, Console.Danger, Console.Support, Console.Special, Console.Disabled, Color.clear, Transparent20, Console.Dark };
 
     [LazyConst] private static string[] eColorsUSSClass;
     public static string[] EColorsUSSClass => eColorsUSSClass ??= new [] { "primary-style", "secondary-style", "info-style", "success-style", "warning-style", "danger-style", "support-style", "special-style", "disabled-style", string.Empty, "backdrop-style", "dark-style" };
@@ -390,8 +390,8 @@ public static class Colors
     [ConstLike] public static readonly Color BlackOlive = From( 59, 60, 54 );
 
     // Transparencies
-    [ConstLike] public static readonly Color Transparent01 = new(0f, 0f, 0f, 0.1f);
-    [ConstLike] public static readonly Color Transparent02 = new(0f, 0f, 0f, 0.2f);
+    [ConstLike] public static readonly Color Transparent08 = new(0f, 0f, 0f, 0.08f);
+    [ConstLike] public static readonly Color Transparent20 = new(0f, 0f, 0f, 0.2f);
 
 
     #endregion

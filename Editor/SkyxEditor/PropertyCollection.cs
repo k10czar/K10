@@ -85,7 +85,7 @@ namespace Rogue.REditor
         {
             foreach (var serializedObject in scheduledResets)
             {
-                SerializedTypeCache.InvalidateCacheFromTarget(serializedObject.GetMainCacheID());
+                SerializedTypeCache.Release(serializedObject.GetMainCacheID());
                 ResetCollections(serializedObject);
             }
 
@@ -564,7 +564,7 @@ namespace Rogue.REditor
         private void Reset(SerializedObject newRoot)
         {
             properties.Clear();
-            ReorderableListCache.InvalidateCacheFromTarget(newRoot.GetMainCacheID());
+            ReorderableListCache.Release(newRoot.GetMainCacheID());
 
             root = newRoot;
             owner = root.targetObject;

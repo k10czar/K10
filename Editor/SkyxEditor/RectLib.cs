@@ -82,6 +82,9 @@ namespace Rogue.REditor
             rect.height = height;
         }
 
+        public static void SlideToNewLine(this ref Rect rect, float margin = SkyxStyles.ElementsMargin)
+            => SlideVertically(ref rect, SkyxStyles.LineHeight, margin);
+
         public static void Slide(this ref Rect rect, ERectSlideDir dir)
         {
             if (dir is ERectSlideDir.Vertical) rect.SlideSameVertically();
@@ -216,7 +219,7 @@ namespace Rogue.REditor
             return (rect, rect.TryUseClick(false));
         }
 
-        public static void Trim(this ref Rect rect, float max, bool horizontal = true)
+        public static void TrimBorders(this ref Rect rect, float max, bool horizontal = true)
         {
             if (horizontal)
             {
@@ -233,7 +236,7 @@ namespace Rogue.REditor
                 if (excess > 0)
                 {
                     rect.height = max;
-                    rect.x += excess / 2;
+                    rect.y += excess / 2;
                 }
             }
         }

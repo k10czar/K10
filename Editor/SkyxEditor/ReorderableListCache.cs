@@ -34,7 +34,7 @@ namespace Rogue.REditor
         public static bool TryGet(SerializedProperty property, out ReorderableList list)
         {
             if (!TryGet(property.GetCacheID(), out list)) return false;
-            return list.serializedProperty == property;
+            return list.serializedProperty == null || list.serializedProperty == property;
         }
 
         public static bool TryGet((int, string) cacheID, out ReorderableList list) => cache.TryGetValue(cacheID, out list);
@@ -64,13 +64,15 @@ namespace Rogue.REditor
             return list;
         }
 
-        public static void InvalidateCacheFromTarget(int mainCacheID)
+        public static void Release(int mainCacheID)
         {
             var keysToRemove = cache.Keys.Where(k => k.Item1 == mainCacheID).ToList();
 
             foreach (var key in keysToRemove)
                 cache.Remove(key);
         }
+
+        public static void Release((int, string) cacheID) => cache.Remove(cacheID);
 
         public static void Clear() => cache.Clear();
 
@@ -121,7 +123,7 @@ namespace Rogue.REditor
                 {
                     var color = isElementHighlighted?.Invoke(property.GetArrayElementAtIndex(index)) ?? false
                         ? (isActive ? Colors.Console.SpecialBackgroundVar : Colors.Console.SpecialBackground)
-                        : (isFocused ? Colors.CeruleanBlue : (index % 2 == 0 ? Colors.Console.Dark: Colors.Console.DarkerDark));
+                        : (isFocused ? Colors.CeruleanBlue : (index % 2 == 0 ? Color.clear: Colors.Transparent08));
 
                     EditorGUI.DrawRect(rect, color);
                 }

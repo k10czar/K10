@@ -61,6 +61,9 @@ namespace Rogue.REditor
                 }
             }
 
+            if (member.GetCustomAttribute<SerializeReference>() != null)
+                property.ObjectCreationHandling = ObjectCreationHandling.Replace;
+
             return property;
         }
 

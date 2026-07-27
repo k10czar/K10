@@ -69,9 +69,12 @@ namespace Skyx.Trees
             var allTypes = UnityEditor.TypeCache.GetTypesDerivedFrom(parentType);
             // var allTypes = TypeListDataCache.GetFrom(parentType).GetTypes();
 
+            if (!parentType.IsAbstract && !parentType.IsGenericType && (validTypes?.Contains(parentType) ?? true))
+                CreateNode(parentType);
+
             foreach (var nodeValue in allTypes)
             {
-                if (nodeValue.IsGenericType) continue;
+                if (nodeValue.IsGenericType || nodeValue.IsAbstract) continue;
                 if (!validTypes?.Contains(nodeValue) ?? false) continue;
 
                 CreateNode(nodeValue);

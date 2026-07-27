@@ -69,25 +69,25 @@ namespace Rogue.REditor
             for (int i = 0; i < property.arraySize; i++)
             {
                 var element = property.GetArrayElementAtIndex(i);
-
-                var elementRect = rect;
-                elementRect.height = EditorGUI.GetPropertyHeight(element, true);
-
-                var isHorizontalControl = canMoveElements && elementRect.height < HorizontalThreshold;
-                var controlSize = (isHorizontalControl ? GetControlButtonCount(property, i, true) : 1) * SkyxStyles.ListControlButtonSize;
-                var buttonsRect = elementRect.ExtractRect(controlSize);
-
-                if (DrawElementControlButtons(buttonsRect, property, i, isHorizontalControl, canMoveElements)) return;
-
-                EditorGUI.PropertyField(elementRect, element, GUIContent.none);
-
-                rect.y += elementRect.height + 2;
-                var separator = rect;
-                separator.height = 1;
-                EditorGUI.DrawRect(separator, Colors.Transparent02);
-
-                rect.y += SkyxStyles.ElementsMargin;
+                DrawElement(ref rect, element, canMoveElements, property, i);
             }
+        }
+
+        public static void DrawElement(ref Rect rect, SerializedProperty elementProperty, bool canMoveElements, SerializedProperty arrayProperty, int index)
+        {
+            var elementRect = rect;
+            elementRect.height = EditorGUI.GetPropertyHeight(elementProperty, true);
+
+            var isHorizontalControl = canMoveElements && elementRect.height < HorizontalThreshold;
+            var controlSize = (isHorizontalControl ? GetControlButtonCount(arrayProperty, index, true) : 1) * SkyxStyles.ListControlButtonSize;
+            var buttonsRect = elementRect.ExtractRect(controlSize);
+
+            if (DrawElementControlButtons(buttonsRect, arrayProperty, index, isHorizontalControl, canMoveElements)) return;
+
+            EditorGUI.PropertyField(elementRect, elementProperty, GUIContent.none);
+
+            rect.y += elementRect.height;
+            SkyxGUI.Separator(ref rect);
         }
 
         private static int GetControlButtonCount(SerializedProperty property, int index, bool isHorizontal)

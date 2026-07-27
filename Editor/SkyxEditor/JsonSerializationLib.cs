@@ -50,26 +50,25 @@ namespace Rogue.REditor
 
         public static T CreateCopy<T>(T source)
         {
-            var newObj = (T) Activator.CreateInstance(source.GetType());
-            CopyValues(source, newObj);
-            return newObj;
+            var json = GetJson(source);
+            return (T) JsonConvert.DeserializeObject(json, source.GetType(), GetSerializationSettings());
         }
 
-        public static void CopyValues(object source, object target)
+        public static void CopyValues(object source, object target, bool fixPasting)
         {
             var json = GetJson(source);
-            SetValueFromJson(target, json);
+            SetValueFromJson(target, json, fixPasting);
         }
 
         public static string GetJson(object target) => JsonConvert.SerializeObject(target, GetSerializationSettings());
 
-        public static void SetValueFromJson(object target, string json)
+        public static void SetValueFromJson(object target, string json, bool fixPasting = true)
         {
-            var prePasteData = target is IPasteSerializationFix prePasteFix ? prePasteFix.GetPrePasteData() : null;
+            var prePasteData = fixPasting && target is IPasteSerializationFix prePasteFix ? prePasteFix.GetPrePasteData() : null;
 
             JsonConvert.PopulateObject(json, target, GetSerializationSettings());
 
-            if (target is IPasteSerializationFix pasteFix)
+            if (fixPasting && target is IPasteSerializationFix pasteFix)
                 pasteFix.FixSerializationPostPaste(prePasteData);
         }
 
@@ -112,7 +111,7 @@ namespace Rogue.REditor
         {
             NullValueHandling = NullValueHandling.Ignore,
             MissingMemberHandling = MissingMemberHandling.Ignore,
-            TypeNameHandling = TypeNameHandling.Auto,
+            TypeNameHandling = TypeNameHandling.Objects,
 
             ContractResolver = new SerializeFieldContractResolver(),
             Converters = { new UnityObjectConverter() },

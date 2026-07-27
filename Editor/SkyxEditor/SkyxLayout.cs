@@ -107,9 +107,9 @@ namespace Rogue.REditor
             GUILayout.Space(margin.y);
         }
 
-        public static void Separator() => Separator(Colors.Transparent02, SkyxStyles.DefaultSeparatorSize, SkyxStyles.defaultSeparatorMargin);
-        public static void SmallSeparator() => Separator(Colors.Transparent02, SkyxStyles.DefaultSeparatorSize, SkyxStyles.smallSeparatorMargin);
-        public static void NoMarginSeparator() => Separator(Colors.Transparent02, SkyxStyles.DefaultSeparatorSize, SkyxStyles.noSeparatorMargin);
+        public static void Separator() => Separator(Colors.Transparent20, SkyxStyles.DefaultSeparatorSize, SkyxStyles.defaultSeparatorMargin);
+        public static void SmallSeparator() => Separator(Colors.Transparent20, SkyxStyles.DefaultSeparatorSize, SkyxStyles.smallSeparatorMargin);
+        public static void NoMarginSeparator() => Separator(Colors.Transparent20, SkyxStyles.DefaultSeparatorSize, SkyxStyles.noSeparatorMargin);
 
         public static void GroupSeparator(Rect start, Rect end, Color color, float yOffset = -1, float size = SkyxStyles.DefaultSeparatorSize)
         {
