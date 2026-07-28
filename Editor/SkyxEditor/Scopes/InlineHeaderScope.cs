@@ -147,9 +147,6 @@ namespace Rogue.REditor
 
         private static bool ReallyDraw(ref Rect headerRect, ref Rect boxRect, ref bool isExpandedRef, SkopeInfo info)
         {
-            var current = Event.current;
-            var isHovered = headerRect.Contains(current.mousePosition);
-
             info.DrawButtons(headerRect, false);
 
             if (headerRect.TryUseClick(false))
@@ -164,13 +161,22 @@ namespace Rogue.REditor
             info.DrawButtons(headerRect, true);
 
             SkyxGUI.Separator(ref boxRect, 0);
-            boxRect.ExtractVertical(headerRect.height, -2);
-            SkyxGUI.Separator(ref boxRect, 0, size: 2);
 
             if (isExpandedRef)
             {
-                boxRect.SlideVertically(1, -2);
+                boxRect.height -= 2;
+
+                var contentRect = boxRect;
+                contentRect.width = 1;
+                EditorGUI.DrawRect(contentRect, Colors.Transparent20);
+
+                boxRect.SlideVertically(1, 0);
                 SkyxGUI.Separator(ref boxRect, 0, info.color);
+            }
+            else
+            {
+                boxRect.ExtractVertical(headerRect.height, -2);
+                SkyxGUI.Separator(ref boxRect, 0, size: 2);
             }
 
             return isExpandedRef;

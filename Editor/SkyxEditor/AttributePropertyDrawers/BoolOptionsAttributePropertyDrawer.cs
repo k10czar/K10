@@ -11,7 +11,8 @@ namespace Rogue.REditor
             var optionsAtt = (BoolOptionsAttribute) attribute;
             var (text, color) = optionsAtt.Get(property.boolValue);
 
-            EditorGUI.LabelField(rect.ExtractLabelRect(), optionsAtt.GetLabel(label.text));
+            if (optionsAtt.drawLabel)
+                EditorGUI.LabelField(rect.ExtractLabelRect(), optionsAtt.GetLabel(label.text));
 
             if (SkyxGUI.Button(rect, text, color))
             {

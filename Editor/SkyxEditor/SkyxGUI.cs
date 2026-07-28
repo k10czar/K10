@@ -217,7 +217,10 @@ namespace Rogue.REditor
                 DrawObjectField(rect, property, targetType, drawInfo.hint, true);
 
             else if (targetType == typeof(bool))
-                DrawEnableToggle(rect, "Enabled", "Disabled", property, drawInfo.hint);
+            {
+                if (drawInfo.requestedType != null) DrawEnableToggle(rect, "Enabled", "Disabled", property, drawInfo.hint);
+                else EditorGUI.PropertyField(rect, property, GUIContent.none);
+            }
 
             else EditorGUI.PropertyField(rect, property, GUIContent.none);
 
