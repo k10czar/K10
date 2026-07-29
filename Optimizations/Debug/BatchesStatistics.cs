@@ -80,6 +80,21 @@ public class BatchesStatistics : MonoBehaviour
     }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+	// Editor uses the exact Stats-window value; development builds read the profiler counter (stripped from
+	// release builds, hence the guard).
+	long GetCurrentBatches()
+	{
+#if UNITY_EDITOR
+#if UNITY_6000_4_OR_NEWER
+		return UnityEditor.UnityStats.drawCalls;   // renamed from `drawCalls` in Unity 6.4
+#else
+		return UnityEditor.UnityStats.batches;
+#endif
+#else
+		return _batchesRecorder.Valid ? _batchesRecorder.LastValue : 0;
+#endif // UNITY_EDITOR
+	}
+
     void Update()
     {
         if (!_counting)

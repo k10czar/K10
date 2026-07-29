@@ -39,7 +39,7 @@ public class ApplicationEventsRelay : MonoBehaviour
 #if MICROSOFT_GDK && UNITY_GAMECORE
         UnityEngine.WindowsGames.WindowsGamesPLM.OnApplicationSuspendingEvent += OnApplicationSuspendingEvent;
 #if LOG_EVENTS
-        UnityEngine.GameCore.GameCorePLM.OnSuspendingEvent += () => Debug.Log( $"<color=magenta>GameCorePLM</color>.<color=cyan>OnSuspendingEvent</color>()" );
+        UnityEngine.WindowsGames.WindowsGamesPLM.OnApplicationSuspendingEvent += () => Debug.Log( $"<color=magenta>GameCorePLM</color>.<color=cyan>OnSuspendingEvent</color>()" );
 #endif //LOG_EVENTS
         UnityEngine.WindowsGames.WindowsGamesPLM.OnResumingEvent += OnResumingEvent;
         UnityEngine.WindowsGames.WindowsGamesPLM.OnResourceAvailabilityChangedEvent += OnResourceAvailabilityChangedEvent;
