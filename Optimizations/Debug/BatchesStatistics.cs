@@ -1,10 +1,10 @@
 
-using Unity.Profiling;
+using System;
 using UnityEngine;
 
 public class BatchesStatistics : MonoBehaviour
 {
-    [SerializeField] Rect _rect = new Rect(10, 10, 500, 70);
+    [SerializeField] Rect _rect = new Rect(10, 10, 800, 150);
     [SerializeField] Color _color = Colors.KeyLime;
     [SerializeField] int _fontSize = 22;
 
@@ -26,16 +26,13 @@ public class BatchesStatistics : MonoBehaviour
         }
     }
 
-    public int _current;
-    public int _average;
-    public int _min;
-    public int _max;
+    public SampledStatistics Batches { get; } = new SampledStatistics(new BatchesSampler());
+    public SampledStatistics Fps { get; } = new SampledStatistics(new FpsSampler());
 
-    bool _counting;
-    long _sum;
-    int _samples;
+    SampledStatistics[] _tracked;
+    SampledStatistics[] Tracked => _tracked ??= new[] { Batches, Fps };
 
-    ProfilerRecorder _batchesRecorder;
+    bool _counting = true;
 
     private static BatchesStatistics _instance;
     public static BatchesStatistics Instance
@@ -52,14 +49,18 @@ public class BatchesStatistics : MonoBehaviour
         }
     }
 
+    public static void DestroyInstance()
+    {
+        if( _instance == null )
+            return;
+
+        GameObject.Destroy( _instance.gameObject );
+        _instance = null;
+    }
+
     public void Reset()
     {
-        _current = 0;
-        _average = 0;
-        _min = 0;
-        _max = 0;
-        _sum = 0;
-        _samples = 0;
+        foreach (var tracked in Tracked) tracked.Reset();
         _counting = true;
     }
 
@@ -68,62 +69,28 @@ public class BatchesStatistics : MonoBehaviour
         _counting = false;
     }
 
-#if !UNITY_EDITOR && DEVELOPMENT_BUILD
     void OnEnable()
     {
-        _batchesRecorder = ProfilerRecorder.StartNew(ProfilerCategory.Render, "Batches Count");
+        foreach (var tracked in Tracked) tracked.Start();
     }
 
     void OnDisable()
     {
-        _batchesRecorder.Dispose();
-    }
-#endif
-
-    bool IsValid()
-    {
-#if UNITY_EDITOR
-		return true;
-#else
-		return _batchesRecorder.Valid;
-#endif
+        foreach (var tracked in Tracked) tracked.Stop();
     }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-	// Editor uses the exact Stats-window value; development builds read the profiler counter (stripped from
-	// release builds, hence the guard).
-	long GetCurrentBatches()
-	{
-#if UNITY_EDITOR
-		return UnityEditor.UnityStats.batches;
-#else
-		return _batchesRecorder.Valid ? _batchesRecorder.LastValue : 0;
-#endif // UNITY_EDITOR
-	}
-
     void Update()
     {
-        if (!_counting || !IsValid())
+        if (!_counting)
             return;
 
-        var batches = (int)GetCurrentBatches();
-        if (batches <= 0)
-            return;
-
-        _current = batches;
-        if (_samples == 0 || batches < _min) _min = batches;
-        if (batches > _max) _max = batches;
-
-        _sum += batches;
-        _samples++;
-        _average = (int)(_sum / _samples);
+        foreach (var tracked in Tracked) tracked.Update();
     }
 
     void OnGUI()
     {
-        var text = IsValid()
-            ? $"Batches: {_current}\nAvg: {_average}  Min: {_min}  Max: {_max}"
-            : "Batches unavailable";
+        var text = string.Join("\n", System.Array.ConvertAll(Tracked, t => t.ToReport()));
 
         GuiColorManager.New(Color.black);
         GUI.Label(_rect.Move( -2, -2 ), text, Style );
