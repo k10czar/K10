@@ -79,22 +79,7 @@ public class BatchesStatistics : MonoBehaviour
         foreach (var tracked in Tracked) tracked.Stop();
     }
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-	// Editor uses the exact Stats-window value; development builds read the profiler counter (stripped from
-	// release builds, hence the guard).
-	long GetCurrentBatches()
-	{
-#if UNITY_EDITOR
-#if UNITY_6000_4_OR_NEWER
-		return UnityEditor.UnityStats.drawCalls;   // renamed from `drawCalls` in Unity 6.4
-#else
-		return UnityEditor.UnityStats.batches;
-#endif
-#else
-		return _batchesRecorder.Valid ? _batchesRecorder.LastValue : 0;
-#endif // UNITY_EDITOR
-	}
-
+// #if UNITY_EDITOR || DEVELOPMENT_BUILD
     void Update()
     {
         if (!_counting)
@@ -113,5 +98,5 @@ public class BatchesStatistics : MonoBehaviour
         GUI.Label(_rect, text, Style);
         GuiColorManager.Revert(2);
     }
-#endif // UNITY_EDITOR || DEVELOPMENT_BUILD
+// #endif // UNITY_EDITOR || DEVELOPMENT_BUILD
 }
