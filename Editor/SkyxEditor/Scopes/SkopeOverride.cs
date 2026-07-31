@@ -9,6 +9,9 @@ namespace Rogue.REditor
     {
         #region Static Interface
 
+        public const string RemovedMsg = "OVERRIDE REMOVED";
+        public const string ReplacedMsg = "OVERRIDE REPLACED";
+
         private static readonly Dictionary<(int, string), SkopeOverride> overrides = new();
 
         public static bool TryGetOverride(SerializedProperty target, out SkopeOverride skopeOverride)
@@ -18,8 +21,8 @@ namespace Rogue.REditor
         {
             var appendOverride = color switch
             {
-                EColor.Danger => "OVERRIDE REMOVED",
-                EColor.Warning => "OVERRIDE REPLACED",
+                EColor.Danger => RemovedMsg,
+                EColor.Warning => ReplacedMsg,
                 _ => string.Empty
             };
 

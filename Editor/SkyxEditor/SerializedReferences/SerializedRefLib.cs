@@ -11,23 +11,30 @@ namespace Rogue.REditor
 
         public static Action<SerializedProperty> onPickedType;
 
-        public static bool TryDrawMissingRef(ref Rect rect, SerializedProperty property, string label = null)
+        public static bool TryDrawMissingRef(ref Rect rect, SerializedProperty property, string label = null, bool drawSeparateLabel = true)
         {
             if (!property.IsManagedRef() || property.managedReferenceValue != null) return false;
 
             var myRect = rect;
             rect.NextSameLine();
 
+            var isArrayEntry = property.isArray;
+
             string text;
-            if (!property.isArray)
+            if (drawSeparateLabel && !isArrayEntry)
             {
                 SkyxGUI.DrawLabel(ref myRect, label ?? property.displayName);
                 text = "MISSING REFERENCE!";
             }
-            else text = label != null ? $"{label} | MISSING REFERENCE!" : "MISSING REFERENCE!";
+            else
+            {
+                text = label != null
+                    ? $"{label} | MISSING REFERENCE!"
+                    : isArrayEntry ? "MISSING REFERENCE!" : $"{property.displayName} | MISSING REFERENCE!";
+            }
 
-            if (SkyxGUI.Button(rect, text, EColor.Danger))
-                ShowTypePicker(rect, property);
+            if (SkyxGUI.Button(myRect, text, EColor.Danger))
+                ShowTypePicker(myRect, property);
 
             return true;
         }

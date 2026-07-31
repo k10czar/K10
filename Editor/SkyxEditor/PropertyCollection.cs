@@ -152,8 +152,7 @@ namespace Rogue.REditor
         private static void OnUndoRedoPerformed()
         {
             LogVerbose("Undo performed!");
-            collections.Clear();
-            scheduledResets.Clear();
+            ClearCollections();
         }
 
         static PropertyCollection()
@@ -194,6 +193,12 @@ namespace Rogue.REditor
         public int PropertiesCount => properties.Count;
 
         public void Apply(string reason) => Apply(root, reason);
+
+        public void ResyncProperties()
+        {
+            root.Update();
+            ScheduleReset(root);
+        }
 
         #region Layout Draw
 
