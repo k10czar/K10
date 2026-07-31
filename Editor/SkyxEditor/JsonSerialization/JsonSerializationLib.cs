@@ -16,14 +16,14 @@ namespace Rogue.REditor
 
         public static void CopyValue<T>(this SerializedProperty property, T value, string reason) where T : class
         {
-            var json = JsonConvert.SerializeObject(value, GetSerializationSettings());
+            var json = JsonConvert.SerializeObject(value, GetSerializationSettings(value));
             SetValueFromJson(property, json, typeof(T), reason);
         }
 
         public static string GetJson(this SerializedProperty property)
         {
             var value = property.GetValue();
-            return JsonConvert.SerializeObject(value, GetSerializationSettings());
+            return JsonConvert.SerializeObject(value, GetSerializationSettings(value));
         }
 
         public static void SetValueFromJson(this SerializedProperty property, string json, Type valueType, string reason)
@@ -33,7 +33,7 @@ namespace Rogue.REditor
             var currentValue = property.GetValue();
             var prePasteData = currentValue is IPasteSerializationFix prePasteFix ? prePasteFix.GetPrePasteData() : null;
 
-            var deserializedObject = JsonConvert.DeserializeObject(json, valueType, GetSerializationSettings());
+            var deserializedObject = JsonConvert.DeserializeObject(json, valueType, GetSerializationSettings(null));
 
             if (deserializedObject is IPasteSerializationFix pasteFix)
                 pasteFix.FixSerializationPostPaste(prePasteData);
@@ -51,7 +51,8 @@ namespace Rogue.REditor
         public static T CreateCopy<T>(T source)
         {
             var json = GetJson(source);
-            return (T) JsonConvert.DeserializeObject(json, source.GetType(), GetSerializationSettings());
+            var targetType = source.GetType();
+            return (T) JsonConvert.DeserializeObject(json, targetType, GetSerializationSettings(null));
         }
 
         public static void CopyValues(object source, object target, bool fixPasting)
@@ -60,21 +61,22 @@ namespace Rogue.REditor
             SetValueFromJson(target, json, fixPasting);
         }
 
-        public static string GetJson(object target) => JsonConvert.SerializeObject(target, GetSerializationSettings());
+        public static string GetJson(object target) => JsonConvert.SerializeObject(target, GetSerializationSettings(target));
 
         public static void SetValueFromJson(object target, string json, bool fixPasting = true)
         {
             var prePasteData = fixPasting && target is IPasteSerializationFix prePasteFix ? prePasteFix.GetPrePasteData() : null;
 
-            JsonConvert.PopulateObject(json, target, GetSerializationSettings());
+            JsonConvert.PopulateObject(json, target, GetSerializationSettings(null));
 
             if (fixPasting && target is IPasteSerializationFix pasteFix)
                 pasteFix.FixSerializationPostPaste(prePasteData);
         }
 
+        // DO NOT USE WITH UNITY.OBJECT!
         public static object GetFromJson(string json)
         {
-            var obj = JsonConvert.DeserializeObject(json, GetSerializationSettings());
+            var obj = JsonConvert.DeserializeObject(json, GetSerializationSettings(null));
 
             if (obj is IPasteSerializationFix pasteFix)
                 pasteFix.FixSerializationPostPaste(null);
@@ -84,7 +86,7 @@ namespace Rogue.REditor
 
         public static T GetFromJson<T>(string json) where T : class
         {
-            var obj = JsonConvert.DeserializeObject<T>(json, GetSerializationSettings());
+            var obj = JsonConvert.DeserializeObject<T>(json, GetSerializationSettings(null));
 
             if (obj is IPasteSerializationFix pasteFix)
                 pasteFix.FixSerializationPostPaste(null);
@@ -92,9 +94,10 @@ namespace Rogue.REditor
             return obj;
         }
 
+        // DO NOT USE WITH UNITY.OBJECTS!
         public static List<object> GetObjectListFromJson(string json)
         {
-            var settings = GetSerializationSettings();
+            var settings = GetSerializationSettings(null);
 
             var jArray = JsonConvert.DeserializeObject(json, settings) as JArray;
             if (jArray == null) return null;
@@ -107,14 +110,17 @@ namespace Rogue.REditor
 
         #endregion
 
-        private static JsonSerializerSettings GetSerializationSettings() => new()
+        private static JsonSerializerSettings GetSerializationSettings(object rootObj)
+            => GetSerializationSettings(rootObj.GetType());
+
+        private static JsonSerializerSettings GetSerializationSettings(Type rootType) => new()
         {
             NullValueHandling = NullValueHandling.Ignore,
             MissingMemberHandling = MissingMemberHandling.Ignore,
             TypeNameHandling = TypeNameHandling.Objects,
 
             ContractResolver = new SerializeFieldContractResolver(),
-            Converters = { new UnityObjectConverter() },
+            Converters = { new UnityObjectConverter(rootType) },
         };
     }
 

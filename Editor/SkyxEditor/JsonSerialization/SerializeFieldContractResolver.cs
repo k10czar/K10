@@ -3,17 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Unity.Plastic.Newtonsoft.Json;
-using Unity.Plastic.Newtonsoft.Json.Linq;
 using Unity.Plastic.Newtonsoft.Json.Serialization;
 using UnityEngine;
-using UnityEditor;
-using Object = UnityEngine.Object;
 
 namespace Rogue.REditor
 {
     public class SerializeFieldContractResolver : DefaultContractResolver
     {
-        private FieldInfo GetBackingField(PropertyInfo propertyInfo)
+        private static FieldInfo GetBackingField(PropertyInfo propertyInfo)
         {
             const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
             var currentType = propertyInfo.DeclaringType;
@@ -90,30 +87,6 @@ namespace Rogue.REditor
             }
 
             return properties;
-        }
-    }
-
-    public class UnityObjectConverter : JsonConverter
-    {
-        public override bool CanConvert(Type objectType) => typeof(Object).IsAssignableFrom(objectType);
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            var jsonObject = new JObject { { "instanceID", ((Object) value)!.GetInstanceID() } };
-            jsonObject.WriteTo(writer);
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            var jsonObject = JObject.Load(reader);
-            var instanceID = jsonObject["instanceID"]!.ToObject<int>();
-
-            var unityObject = EditorUtility.EntityIdToObject(instanceID);
-            if (unityObject != null) return unityObject;
-
-            if (instanceID != 0) Debug.LogError($"Unity object with instanceID {instanceID} not found.");
-
-            return null;
         }
     }
 }
