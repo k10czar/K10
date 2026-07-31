@@ -395,14 +395,19 @@ namespace Rogue.REditor
 
         #endregion
 
-        public static void DrawLabel(ref Rect rect, string label, bool extractLabelRect = true, EColor color = EColor.Primary)
+        public static void DrawLabel(ref Rect rect, string label, bool extractLabelRect = true, EColor color = EColor.Primary, bool ignoreIndent = false)
         {
             var drawRect = extractLabelRect ? rect.ExtractLabelRect() : rect;
 
             var style = SkyxStyles.DefaultLabel;
             if (color is not EColor.Primary) style = style.With(color);
 
-            EditorGUI.LabelField(drawRect, label, style);
+            if (ignoreIndent)
+            {
+                using var _ = EditorIndentScope.Set(0);
+                EditorGUI.LabelField(drawRect, new GUIContent(label), style);
+            }
+            else EditorGUI.LabelField(drawRect, label, style);
         }
 
         public static string DrawTextFieldWithSuggestions(Rect rect, string currentValue, string[] suggestions)

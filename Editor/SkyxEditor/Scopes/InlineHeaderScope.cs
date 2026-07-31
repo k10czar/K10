@@ -9,10 +9,10 @@ namespace Rogue.REditor
     {
         #region Interface
 
-        public static InlineHeaderScope Open(SerializedProperty property,  EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+        public static InlineHeaderScope Open(SerializedProperty property,  EColor color = EColor.Primary, EElementSize size = EElementSize.Secondary)
             => Open(new SkopeInfo(EScopeType.InlineHeader, property, color, size));
 
-        public static InlineHeaderScope Open(SerializedProperty property, string title,  EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+        public static InlineHeaderScope Open(SerializedProperty property, string title,  EColor color = EColor.Primary, EElementSize size = EElementSize.Secondary)
             => Open(new SkopeInfo(EScopeType.InlineHeader, property, title, color, size));
 
         public static InlineHeaderScope Open(SkopeInfo info)
@@ -25,7 +25,7 @@ namespace Rogue.REditor
             return scope;
         }
 
-        public static InlineHeaderScope Open(string title, ref bool isExpandedRef,  EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+        public static InlineHeaderScope Open(string title, ref bool isExpandedRef,  EColor color = EColor.Primary, EElementSize size = EElementSize.Secondary)
             => Open(ref isExpandedRef, new SkopeInfo(EScopeType.InlineHeader, null, title, color, size));
 
         public static InlineHeaderScope Open(ref bool isExpandedRef, SkopeInfo info)
@@ -40,10 +40,10 @@ namespace Rogue.REditor
             return scope;
         }
 
-        public static InlineHeaderScope Open(ref Rect rect, SerializedProperty property,  EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+        public static InlineHeaderScope Open(ref Rect rect, SerializedProperty property,  EColor color = EColor.Primary, EElementSize size = EElementSize.Secondary)
             => Open(ref rect, new SkopeInfo(EScopeType.InlineHeader, property, color, size));
 
-        public static InlineHeaderScope Open(ref Rect rect, SerializedProperty property, string title,  EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+        public static InlineHeaderScope Open(ref Rect rect, SerializedProperty property, string title,  EColor color = EColor.Primary, EElementSize size = EElementSize.Secondary)
             => Open(ref rect, new SkopeInfo(EScopeType.InlineHeader, property, title, color, size));
 
         public static InlineHeaderScope Open(ref Rect rect, SkopeInfo info)
@@ -56,7 +56,7 @@ namespace Rogue.REditor
             return scope;
         }
 
-        public static InlineHeaderScope Open(ref Rect rect, string title, ref bool isExpandedRef,  EColor color = EColor.Primary, EElementSize size = EElementSize.Primary)
+        public static InlineHeaderScope Open(ref Rect rect, string title, ref bool isExpandedRef,  EColor color = EColor.Primary, EElementSize size = EElementSize.Secondary)
             => Open(ref rect, ref isExpandedRef, new SkopeInfo(EScopeType.InlineHeader, null, title, color, size));
 
         public static InlineHeaderScope Open(ref Rect rect, ref bool isExpandedRef, SkopeInfo info)

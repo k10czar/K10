@@ -19,8 +19,8 @@ namespace Rogue.REditor
         public readonly string description;
         public readonly bool hasCustomExpand;
 
-        public readonly bool indent = false;
-        public readonly bool contentIsDisabled = false;
+        public readonly bool indent;
+        public readonly bool contentIsDisabled;
 
         public bool HasDescription => !string.IsNullOrEmpty(description);
         public bool CanExpand() => hasCustomExpand || HasDescription || property.CanExpand();
@@ -115,10 +115,11 @@ namespace Rogue.REditor
 
     public static class SkopeInfoExtensions
     {
-        public static SkopeInfo GetInfo(this ScopedAttribute scopedAtt, SerializedProperty property)
+        public static SkopeInfo GetInfo(this ScopedAttribute scopedAtt, SerializedProperty property, SkopeOverride skopeOverride = null)
         {
             var currentValue = property.GetValue();
             var editorInfo = currentValue as IContentEditorInfo;
+            var hasOverrides = skopeOverride != null;
 
             var name = scopedAtt.nameSource switch
             {
@@ -134,6 +135,7 @@ namespace Rogue.REditor
 
             var append = scopedAtt.appendSource switch
             {
+                _ when hasOverrides => skopeOverride.appendTitle,
                 EEditorInfoSource.Nothing => string.Empty,
                 EEditorInfoSource.Property => currentValue?.GetType().Name ?? string.Empty,
                 EEditorInfoSource.FieldValue => currentValue?.ToString() ?? property.displayName,
@@ -156,6 +158,7 @@ namespace Rogue.REditor
 
             var color = scopedAtt.colorSource switch
             {
+                _ when hasOverrides => skopeOverride.color,
                 EEditorInfoSource.Provided => scopedAtt.color,
                 _ when scopedAtt.isDisabled => EColor.Disabled,
                 EEditorInfoSource.Nothing or
@@ -172,11 +175,14 @@ namespace Rogue.REditor
 
             var title = hasName
                 ? hasAppend ? name.AppendInfo(append, scopedAtt.elementSize) : name
-                : hasAppend ? append : "Missing Name!";
+                : "Missing Name!";
 
-            var info = new SkopeInfo(scopedAtt.scopeType, property, name, title, description, color, scopedAtt.elementSize, scopedAtt.indent, scopedAtt.isDisabled);
+            var contentIsDisabled = hasOverrides ? skopeOverride.disableInput : scopedAtt.isDisabled;
 
-            if (scopedAtt.buttons != null) info.buttons.InsertRange(0, scopedAtt.buttons);
+            var info = new SkopeInfo(scopedAtt.scopeType, property, name, title, description, color, scopedAtt.elementSize, scopedAtt.indent, contentIsDisabled);
+
+            if (hasOverrides && skopeOverride.ForcesButtons) info.buttons = skopeOverride.buttons;
+            else if (scopedAtt.buttons != null) info.buttons.InsertRange(0, scopedAtt.buttons);
             else if (scopedAtt.isDisabled) info.buttonsAreDisabled = true;
 
             return info;

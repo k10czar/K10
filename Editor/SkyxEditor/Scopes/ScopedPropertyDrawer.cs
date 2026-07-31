@@ -1,5 +1,4 @@
-﻿using System;
-using Skyx.RuntimeEditor;
+﻿using Skyx.RuntimeEditor;
 using UnityEditor;
 using UnityEngine;
 
@@ -24,7 +23,8 @@ namespace Rogue.REditor
         protected void OnGUI(Rect rect, SerializedProperty property, ScopedAttribute scopedAtt)
         {
             var isSerialized = property.IsManagedRef();
-            var info = scopedAtt.GetInfo(property);
+            SkopeOverride.TryGetOverride(property, out var overrideData);
+            var info = scopedAtt.GetInfo(property, overrideData);
 
             if (isSerialized)
             {
@@ -75,7 +75,8 @@ namespace Rogue.REditor
             var isSerialized = property.IsManagedRef();
             if (isSerialized && property.managedReferenceValue == null) return SkyxStyles.FullLineHeight;
 
-            var info = scopedAtt.GetInfo(property);
+            SkopeOverride.TryGetOverride(property, out var overrideData);
+            var info = scopedAtt.GetInfo(property, overrideData);
             var height = Skope.ScopeHeight(info, property.isExpanded);
 
             if (property.isExpanded)

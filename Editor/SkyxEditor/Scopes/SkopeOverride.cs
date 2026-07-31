@@ -14,7 +14,7 @@ namespace Rogue.REditor
         public static bool TryGetOverride(SerializedProperty target, out SkopeOverride skopeOverride)
             => overrides.TryGetValue(target.GetCacheID(), out skopeOverride);
 
-        public static void SetOverrideData(SerializedProperty target, EColor color, params SkopeButton[] buttons)
+        public static void SetOverrideData(SerializedProperty target, EColor color, bool disableInput, params SkopeButton[] buttons)
         {
             var appendOverride = color switch
             {
@@ -23,8 +23,7 @@ namespace Rogue.REditor
                 _ => string.Empty
             };
 
-            var disableOverrideInput = color is not EColor.Warning;
-            overrides[target.GetCacheID()] = new SkopeOverride(color, appendOverride, disableOverrideInput, buttons.ToList());
+            overrides[target.GetCacheID()] = new SkopeOverride(color, appendOverride, disableInput, buttons.ToList());
         }
 
         public static void Release(SerializedProperty target) => overrides.Remove(target.GetCacheID());

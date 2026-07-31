@@ -15,7 +15,16 @@ namespace Rogue.REditor
         {
             if (!property.IsManagedRef() || property.managedReferenceValue != null) return false;
 
-            var text = label != null ? $"{label} | MISSING REFERENCE!" : "MISSING REFERENCE!";
+            var myRect = rect;
+            rect.NextSameLine();
+
+            string text;
+            if (!property.isArray)
+            {
+                SkyxGUI.DrawLabel(ref myRect, label ?? property.displayName);
+                text = "MISSING REFERENCE!";
+            }
+            else text = label != null ? $"{label} | MISSING REFERENCE!" : "MISSING REFERENCE!";
 
             if (SkyxGUI.Button(rect, text, EColor.Danger))
                 ShowTypePicker(rect, property);
