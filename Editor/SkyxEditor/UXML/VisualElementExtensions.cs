@@ -6,5 +6,11 @@ namespace Rogue.REditor
     {
         public static void SetVisible(this VisualElement element, bool isVisible)
             => element.style.display = isVisible ? DisplayStyle.Flex : DisplayStyle.None;
+
+        public static void ToggleInClassList(this VisualElement element, string className, bool shouldAdd)
+        {
+            if (shouldAdd) element.AddToClassList(className);
+            else element.RemoveFromClassList(className);
+        }
     }
 }
