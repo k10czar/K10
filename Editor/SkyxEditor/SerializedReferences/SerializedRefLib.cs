@@ -18,7 +18,7 @@ namespace Rogue.REditor
             var myRect = rect;
             rect.NextSameLine();
 
-            var isArrayEntry = property.isArray;
+            var isArrayEntry = property.IsArrayEntry();
 
             string text;
             if (drawSeparateLabel && !isArrayEntry)

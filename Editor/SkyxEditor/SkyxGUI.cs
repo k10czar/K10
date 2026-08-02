@@ -240,11 +240,11 @@ namespace Rogue.REditor
             return changed;
         }
 
-        public static void ResetHeightAndDraw(ref Rect rect, SerializedProperty target)
+        public static void ResetHeightAndDraw(ref Rect rect, SerializedProperty target, float margin = SkyxStyles.ElementsMargin)
         {
             rect.height = EditorGUI.GetPropertyHeight(target, true);
             Draw(rect, target, true);
-            rect.y += rect.height + SkyxStyles.ElementsMargin;
+            rect.y += rect.height + margin;
         }
 
         #endregion

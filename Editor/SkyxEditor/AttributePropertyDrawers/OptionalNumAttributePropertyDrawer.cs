@@ -15,7 +15,7 @@ namespace Rogue.REditor
 
             var isFloat = property.propertyType is SerializedPropertyType.Float;
             var isSetToOptional = isFloat
-                ? (optionalAtt.useInfinite ? float.IsInfinity(property.floatValue) : property.floatValue < 0)
+                ? (optionalAtt.useInfinite ? Mathf.Approximately(property.floatValue, float.MaxValue) : property.floatValue < 0)
                 : (optionalAtt.useInfinite ? property.intValue == int.MaxValue : property.intValue < 0);
 
             if (isSetToOptional)
