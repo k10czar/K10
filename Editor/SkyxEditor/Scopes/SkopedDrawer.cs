@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Rogue.REditor
 {
     [CustomPropertyDrawer(typeof(ScopedAttribute))]
-    public class ScopedPropertyDrawer : PropertyDrawer
+    public class SkopedDrawer : PropertyDrawer
     {
         #region Default Skope Buttons
 
@@ -34,8 +34,7 @@ namespace Rogue.REditor
                     info.buttons.Add(ManagedPickerSkopeButton);
             }
 
-            var hasDescription = info.HasDescription;
-            if (hasDescription)
+            if (!info.hideDescriptionSkopeButton && info.HasDescription)
             {
                 DescriptionToggleSkopeButton.color = isShowingDescriptions ? EColor.Info : EColor.Support;
                 info.AddUniqueButton(DescriptionToggleSkopeButton);
@@ -44,7 +43,7 @@ namespace Rogue.REditor
             using var scope = Skope.Open(ref rect, info);
             if (!scope.IsExpanded) return;
 
-            if (isShowingDescriptions && hasDescription)
+            if (isShowingDescriptions && info.HasDescription)
             {
                 rect.height = SkyxStyles.GetHelpBoxHeight(info.description.LineCount(), false);
                 EditorGUI.HelpBox(rect, info.description, MessageType.Info);

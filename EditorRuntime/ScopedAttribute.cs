@@ -41,6 +41,7 @@ namespace Skyx.RuntimeEditor
         public EColor color;
 
         public bool isDisabled;
+        public bool hideDescriptionSkopeButton;
 
         #if UNITY_EDITOR
         public List<SkopeButton> buttons;

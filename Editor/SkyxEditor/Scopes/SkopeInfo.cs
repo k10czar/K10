@@ -21,6 +21,7 @@ namespace Rogue.REditor
 
         public readonly bool indent;
         public readonly bool contentIsDisabled;
+        public bool hideDescriptionSkopeButton;
 
         public bool HasDescription => !string.IsNullOrEmpty(description);
         public bool CanExpand() => hasCustomExpand || HasDescription || property.CanExpand();
@@ -179,7 +180,10 @@ namespace Rogue.REditor
 
             var contentIsDisabled = hasOverrides ? skopeOverride.disableInput : scopedAtt.isDisabled;
 
-            var info = new SkopeInfo(scopedAtt.scopeType, property, name, title, description, color, scopedAtt.elementSize, scopedAtt.indent, contentIsDisabled);
+            var info = new SkopeInfo(scopedAtt.scopeType, property, name, title, description, color, scopedAtt.elementSize, scopedAtt.indent, contentIsDisabled)
+            {
+                hideDescriptionSkopeButton = scopedAtt.hideDescriptionSkopeButton,
+            };
 
             if (hasOverrides && skopeOverride.ForcesButtons) info.buttons = skopeOverride.buttons;
             else if (scopedAtt.buttons != null) info.buttons.InsertRange(0, scopedAtt.buttons);
