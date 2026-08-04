@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Skyx.RuntimeEditor;
+using Rogue.RuntimeEditor;
 using Skyx.Trees;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
@@ -26,41 +26,33 @@ namespace Rogue.REditor
                 : fieldInfo.FieldType;
 
             var isFlag = fieldType!.IsDefined(typeof(FlagsAttribute), false);
-            var filters = fieldInfo.GetCustomAttributes(typeof(EnumFilterAttribute), false);
-
             if (isFlag) EnumTreeGUI.DrawEnumMask(position, property, fieldType, EColor.Support);
             else
             {
                 IEnumerable<object> validList = null;
-                var isValidList = false;
+                if (fieldInfo.TryGetAttribute(out EnumFilterAttribute filter))
+                    validList = filter.GetValidList();
 
-                if (filters.Length > 0)
-                {
-                    var filter = (EnumFilterAttribute)filters[0];
-                    validList = filter.list;
-                    isValidList = filter.listIsValid;
-                }
-
-                DrawEnumDropdown(position, property, fieldType, validList, isValidList);
+                DrawEnumDropdown(position, property, fieldType, validList);
             }
 
             EditorGUI.EndProperty();
         }
 
-        public static void DrawEnumDropdown(Rect position, SerializedProperty property, EColor color, Type fieldType, IEnumerable<object> validList = null, bool isIncludeList = false)
+        public static void DrawEnumDropdown(Rect position, SerializedProperty property, EColor color, Type fieldType, IEnumerable<object> validList = null)
         {
             using var backgroundScope = BackgroundColorScope.Set(color);
-            DrawEnumDropdown(position, property, fieldType, validList, isIncludeList);
+            DrawEnumDropdown(position, property, fieldType, validList);
         }
 
-        public static void DrawEnumDropdown<T>(Rect position, T value, Action<object> callback, EColor color = EColor.Primary, IEnumerable<object> validList = null, bool isIncludeList = false) where T: Enum
+        public static void DrawEnumDropdown<T>(Rect position, T value, Action<object> callback, EColor color = EColor.Primary, IEnumerable<object> validList = null) where T: Enum
         {
             using var backgroundScope = BackgroundColorScope.Set(color);
             position.y += 1;
-            DrawEnumDropdown(position, typeof(T), value, null, callback, validList, isIncludeList);
+            DrawEnumDropdown(position, typeof(T), value, null, callback, validList);
         }
 
-        private static void DrawEnumDropdown(Rect position, SerializedProperty property, Type fieldType, IEnumerable<object> validList, bool isIncludeList)
+        private static void DrawEnumDropdown(Rect position, SerializedProperty property, Type fieldType, IEnumerable<object> validList)
         {
             var enumType = fieldType;
             if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(List<>))
@@ -75,10 +67,10 @@ namespace Rogue.REditor
 
             var enumObj = Enum.ToObject(enumType, property.intValue);
 
-            DrawEnumDropdown(position, enumType, enumObj, property, null, validList, isIncludeList);
+            DrawEnumDropdown(position, enumType, enumObj, property, null, validList);
         }
 
-        public static void DrawEnumDropdown(Rect position, Type enumType, object enumObj, SerializedProperty property, Action<object> callback, IEnumerable<object> validList, bool isIncludeList)
+        public static void DrawEnumDropdown(Rect position, Type enumType, object enumObj, SerializedProperty property, Action<object> callback, IEnumerable<object> validList)
         {
             var name = new GUIContent(ObjectNames.NicifyVariableName(enumObj.ToString()));
 
@@ -91,7 +83,7 @@ namespace Rogue.REditor
 
             var genericDropdownType = typeof(EnumTreeAdvancedDropdown<>);
             var specificDropdownType = genericDropdownType.MakeGenericType(enumType);
-            var dropdown = (AdvancedDropdown) Activator.CreateInstance(specificDropdownType, state, tree, property, callback, validList, isIncludeList);
+            var dropdown = (AdvancedDropdown) Activator.CreateInstance(specificDropdownType, state, tree, property, callback, validList);
 
             var dropdownRect = new Rect(position);
             dropdown.Show(dropdownRect);
@@ -108,15 +100,13 @@ namespace Rogue.REditor
         private readonly string enumDeclarationFilePath;
 
         private readonly IEnumerable<object> validList;
-        private readonly bool listIsInclude; // or exclude
 
-        public EnumTreeAdvancedDropdown(AdvancedDropdownState state, EnumTreeNode<T> treeNode, SerializedProperty property, Action<object> callback, IEnumerable<object> validList, bool isIncludeList) : base(state)
+        public EnumTreeAdvancedDropdown(AdvancedDropdownState state, EnumTreeNode<T> treeNode, SerializedProperty property, Action<object> callback, IEnumerable<object> validList) : base(state)
         {
             this.treeNode = treeNode;
             this.property = property;
             this.callback = callback;
             this.validList = validList;
-            this.listIsInclude = isIncludeList;
 
             var definitionAttributes = typeof(T).GetCustomAttributes(typeof(ExpandableEnumTreeAttribute), true);
             canCreateNodes = definitionAttributes.Length > 0;
@@ -125,14 +115,14 @@ namespace Rogue.REditor
             minimumSize = new Vector2(300, 300);
         }
 
-        protected override AdvancedDropdownItem BuildRoot() => BuildNodeDropdown(treeNode);
+        protected override AdvancedDropdownItem BuildRoot() => BuildNodeDropdown(treeNode, true);
 
         private bool IsNodeIncluded(TreeNode<T> node)
         {
             if (validList == null) return true;
 
             var contains = validList.Contains(node.Value);
-            if (listIsInclude && contains) return true;
+            if (contains) return true;
 
             if (node.HasChildren)
             {
@@ -144,16 +134,16 @@ namespace Rogue.REditor
                 }
             }
 
-            return listIsInclude == contains;
+            return false;
         }
 
-        private AdvancedDropdownItem BuildNodeDropdown(TreeNode<T> currentTreeNode)
+        private AdvancedDropdownItem BuildNodeDropdown(TreeNode<T> currentTreeNode, bool isRoot)
         {
             var dropdown = new AdvancedDropdownItem(currentTreeNode.TreeDisplayName);
             var children = currentTreeNode.GetChildren();
 
-            var hasValidChildren = false;
-            var hasNodesWithChildren = false;
+            var validChildren = 0;
+            var nodesWithChildren = 0;
 
             foreach (var node in children)
             {
@@ -163,18 +153,23 @@ namespace Rogue.REditor
                 {
                     var isSelected = property?.intValue == node.GetIntValue();
                     dropdown.AddChild(new EnumTreeAdvancedDropdownItem<T>(node, isSelected));
-                    hasValidChildren = true;
+                    validChildren++;
                 }
 
-                if (node.HasChildren) hasNodesWithChildren = true;
+                if (node.HasChildren) nodesWithChildren++;
             }
 
-            if (hasValidChildren && hasNodesWithChildren) dropdown.AddSeparator();
+            if (validChildren > 0 && nodesWithChildren > 0) dropdown.AddSeparator();
+
 
             foreach (var node in children)
             {
-                if (node.HasChildren && IsNodeIncluded(node))
-                    dropdown.AddChild(BuildNodeDropdown(node));
+                if (!node.HasChildren || !IsNodeIncluded(node)) continue;
+
+                if (isRoot && validChildren == 0 && nodesWithChildren == 1)
+                    return BuildNodeDropdown(node, false);
+
+                dropdown.AddChild(BuildNodeDropdown(node, false));
             }
 
             if (canCreateNodes)

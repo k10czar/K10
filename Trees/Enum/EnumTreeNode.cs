@@ -6,9 +6,9 @@ namespace Skyx.Trees
     public class EnumTreeNode<T> : TreeNode<T> where T: Enum
     {
         public static EnumTreeNode<T> Instance { get; } = new();
+        private static bool useEnumAsKey;
 
-        public List<T> GetNodesInPath(T value, bool filterValid = true) => GetNodesInPath(GetNodeInfo(value).path, filterValid);
-
+        public static IEnumerable<T> GetChildrenValues(T value) => Instance.GetChildrenValues(Instance.GetNodeInfo(value).path);
         private static IEnumerable<T> GetEnumValues() => (T[]) Enum.GetValues(typeof(T));
 
         protected override TreeNodeInfo<T> GetNodeInfo(T value)
@@ -33,19 +33,12 @@ namespace Skyx.Trees
             if (attribute != null)
             {
                 nodeInfo.path = new Queue<object>(attribute.path);
-
-                if (value.GetType().GetEnumUnderlyingType() == typeof(byte))
-                    nodeInfo.order = attribute.order == int.MinValue ? (byte)(object) value : attribute.order;
-                else nodeInfo.order = attribute.order == int.MinValue ? (int)(object) value : attribute.order;
-
+                nodeInfo.order = attribute.order == int.MinValue ? Convert.ToInt32(value) : attribute.order;
                 nodeInfo.hide = attribute.hide;
 
                 if (!string.IsNullOrEmpty(attribute.valueDisplayName)) nodeInfo.valueName = attribute.valueDisplayName;
                 if (!string.IsNullOrEmpty(attribute.treeDisplayName)) nodeInfo.treeName = attribute.treeDisplayName;
             }
-
-            var definitionAttributes = value.GetType().GetCustomAttributes(typeof(ExpandableEnumTreeAttribute), true);
-            var useEnumAsKey = definitionAttributes.Length > 0;
 
             nodeInfo.path.Enqueue(useEnumAsKey ? value : value.ToString());
 
@@ -60,7 +53,17 @@ namespace Skyx.Trees
         {
             var enumValues = GetEnumValues();
 
-            foreach (var nodeValue in enumValues) CreateNode(nodeValue);
+            foreach (var nodeValue in enumValues)
+            {
+                var attribute = GetEnumTreeAttribute(nodeValue);
+                if (attribute == null || attribute.path == null || attribute.path.Length == 0) continue;
+
+                useEnumAsKey = attribute.path[0] is not string;
+                break;
+            }
+
+            foreach (var nodeValue in enumValues)
+                CreateNode(nodeValue);
         }
 
         private static EnumTreeAttribute GetEnumTreeAttribute(T value)

@@ -36,26 +36,24 @@ namespace Skyx.Trees
             return values;
         }
 
-        private string SerializePath(IEnumerable<object> path) => string.Join("/", path);
+        protected IEnumerable<T> GetChildrenValues(Queue<object> keyOrder)
+            => GetChildren(keyOrder)?.Select(node => node.Value);
 
-        protected List<T> GetNodesInPath(Queue<object> keyOrder, bool filterValid = true)
+        protected List<TreeNode<T>> GetChildren(Queue<object> keyOrder)
         {
             Debug.Assert(isRoot, "This method only works when called from root nodes");
-
-            var nodesInPath = new List<T>();
             var currentNode = this;
 
             while (keyOrder.Count > 0)
             {
                 var key = keyOrder.Dequeue();
-                if (!currentNode.HasChildNode(key)) return nodesInPath;
-
                 currentNode = currentNode.GetChildNode(key);
-                if (!filterValid || currentNode.IsValid) nodesInPath.Add(currentNode.Value);
             }
 
-            return nodesInPath;
+            return currentNode.GetChildren();
         }
+
+        private static string SerializePath(IEnumerable<object> path) => string.Join("/", path);
 
         protected abstract TreeNodeInfo<T> GetNodeInfo(T value);
 

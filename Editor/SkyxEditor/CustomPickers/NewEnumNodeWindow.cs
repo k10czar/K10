@@ -40,11 +40,11 @@ namespace Rogue.REditor
         private void OnGUI()
         {
             newNodeName = EditorGUILayout.TextField($"{newNodePath}/", newNodeName);
-            EditorGUILayout.LabelField($"Target Enum Value:", SkyxStyles.BoldStyle);
+            EditorGUILayout.LabelField("Target Enum Value:", SkyxStyles.BoldStyle);
 
             EditorGUI.BeginDisabledGroup(true);
             var enumValue = Enum.ToObject(enumType, targetIntValue);
-            EnumTreeDrawer.DrawEnumDropdown(EditorGUILayout.GetControlRect(), enumType, enumValue, null, null, null, true);
+            EnumTreeDrawer.DrawEnumDropdown(EditorGUILayout.GetControlRect(), enumType, enumValue, null, null, null);
             EditorGUI.EndDisabledGroup();
 
             EnsurePascalCase();

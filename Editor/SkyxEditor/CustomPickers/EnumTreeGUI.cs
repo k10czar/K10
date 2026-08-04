@@ -9,19 +9,15 @@ namespace Rogue.REditor
 {
     public static class EnumTreeGUI
     {
-        public static void DrawSecondary<T>(Rect rect, SerializedProperty property, string hint = null) => DrawEnum(rect, property, typeof(T), EColor.Secondary, hint);
-        public static void DrawSupport<T>(Rect rect, SerializedProperty property, string hint = null) => DrawEnum(rect, property, typeof(T), EColor.Support, hint);
-        public static void DrawSecondary(Rect rect, SerializedProperty property, Type enumType, string hint = null) => DrawEnum(rect, property, enumType, EColor.Secondary, hint);
-
-        public static void DrawEnum<T>(Rect rect, SerializedProperty property, EColor color, string hint, IEnumerable<T> validList, bool isIncludeList = true)
-            => DrawEnum(rect, property, typeof(T), color, hint, validList?.Cast<object>(), isIncludeList);
+        public static void DrawEnum<T>(Rect rect, SerializedProperty property, EColor color, string hint, IEnumerable<T> validList)
+            => DrawEnum(rect, property, typeof(T), color, hint, validList?.Cast<object>());
 
         public static void DrawEnum<T>(Rect rect, SerializedProperty property, EColor color, string hint = "")
             => DrawEnum(rect, property, typeof(T), color, hint);
 
-        public static void DrawEnum(Rect rect, SerializedProperty property, Type enumType, EColor color, string hint = "", IEnumerable<object> validList = null, bool isIncludeList = true)
+        public static void DrawEnum(Rect rect, SerializedProperty property, Type enumType, EColor color, string hint = "", IEnumerable<object> validList = null)
         {
-            EnumTreeDrawer.DrawEnumDropdown(rect, property, color, enumType, validList, isIncludeList);
+            EnumTreeDrawer.DrawEnumDropdown(rect, property, color, enumType, validList);
 
             var value = Enum.ToObject(enumType, property.intValue);
             var fullHint = $"[{enumType.Name}.{value}] {hint}";
