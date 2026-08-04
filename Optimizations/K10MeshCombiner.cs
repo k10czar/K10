@@ -77,7 +77,8 @@ public static class K10MeshCombiner
 #endif
         var count = filters.Count;
         var combine = new List<CombineInstance>();
-        bool castShadows = false;
+        bool origCastShadows = false;
+        bool origReceiveShadows = false;
         int verts = 0;
         int layer = 0;
         var matWorldToLocal = parent.worldToLocalMatrix;
@@ -121,7 +122,10 @@ public static class K10MeshCombiner
             verts += instMesh.vertexCount;
 
             if (meshRenderer.shadowCastingMode.Equals( ShadowCastingMode.On ))
-                castShadows = true;
+                origCastShadows = true;
+    
+            if (meshRenderer.receiveShadows)
+                origReceiveShadows = true;
 
             meshRenderer.enabled = false;
             objectsExecuted?.Add( filter.gameObject );
@@ -146,9 +150,8 @@ public static class K10MeshCombiner
         combinedMeshRenderer.sharedMaterial    = material;
         // Use the caller-supplied mode when the group is homogeneous by shadow casting; otherwise fall
         // back to the auto rule (cast if any source mesh casts).
-        combinedMeshRenderer.shadowCastingMode = shadowCasting ?? (castShadows ? ShadowCastingMode.On : ShadowCastingMode.Off);
-        if (receiveShadows.HasValue)
-            combinedMeshRenderer.receiveShadows = receiveShadows.Value;
+        combinedMeshRenderer.shadowCastingMode = shadowCasting ?? (origCastShadows ? ShadowCastingMode.On : ShadowCastingMode.Off);
+        combinedMeshRenderer.receiveShadows = receiveShadows ?? origReceiveShadows;
 
         combineGameObject.layer    = layer;
         combineGameObject.isStatic = true;
