@@ -4,13 +4,20 @@ namespace Rogue.RuntimeEditor
 {
     public class SerializedRefOptionsAttribute : PropertyAttribute
     {
-        public bool forceCompact;
-        public bool canBeNull;
+        public readonly bool forceCompact;
 
-        public SerializedRefOptionsAttribute(bool forceCompact = false, bool canBeNull = false)
+        public readonly bool canBeNull;
+        public readonly string nullLabel;
+
+        public SerializedRefOptionsAttribute(bool forceCompact)
         {
             this.forceCompact = forceCompact;
-            this.canBeNull = canBeNull;
+        }
+
+        public SerializedRefOptionsAttribute(string nullLabel)
+        {
+            this.canBeNull = true;
+            this.nullLabel = nullLabel;
         }
     }
 }

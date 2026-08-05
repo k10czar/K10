@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Rogue.RuntimeEditor;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,29 +12,37 @@ namespace Rogue.REditor
 
         public static Action<SerializedProperty> onPickedType;
 
-        public static bool TryDrawMissingRef(ref Rect rect, SerializedProperty property, string label = null, bool drawSeparateLabel = true)
+        public static bool TryDrawMissingRef(ref Rect rect, SerializedProperty property, string label = null)
+            => TryDrawMissingRef(ref rect, property, label ?? property.displayName, !property.IsArrayEntry());
+
+        public static bool TryDrawMissingRef(ref Rect rect, SerializedProperty property, SerializedRefOptionsAttribute optionsAtt)
+            => TryDrawMissingRef(ref rect, property, property.displayName, !property.IsArrayEntry(), optionsAtt);
+
+        public static bool TryDrawMissingRef(ref Rect rect, SerializedProperty property, string label, bool drawSeparateLabel, SerializedRefOptionsAttribute optionsAtt = null)
         {
             if (!property.IsManagedRef() || property.managedReferenceValue != null) return false;
 
             var myRect = rect;
             rect.NextSameLine();
-
-            var isArrayEntry = property.IsArrayEntry();
+            myRect.AdjustToLine(false);
 
             string text;
-            if (drawSeparateLabel && !isArrayEntry)
+            var color = EColor.Danger;
+
+            if (drawSeparateLabel)
             {
-                SkyxGUI.DrawLabel(ref myRect, label ?? property.displayName);
+                SkyxGUI.DrawLabel(ref myRect, label);
                 text = "MISSING REFERENCE!";
             }
-            else
+            else text = label != null ? $"{label} | MISSING REFERENCE!" : "MISSING REFERENCE!";
+
+            if (optionsAtt is { canBeNull: true })
             {
-                text = label != null
-                    ? $"{label} | MISSING REFERENCE!"
-                    : isArrayEntry ? "MISSING REFERENCE!" : $"{property.displayName} | MISSING REFERENCE!";
+                color = EColor.Support;
+                text = optionsAtt.nullLabel;
             }
 
-            if (SkyxGUI.Button(myRect, text, EColor.Danger))
+            if (SkyxGUI.Button(myRect, text, color))
                 ShowTypePicker(myRect, property);
 
             return true;

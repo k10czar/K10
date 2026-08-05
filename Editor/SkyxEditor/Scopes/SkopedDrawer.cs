@@ -1,4 +1,5 @@
-﻿using Skyx.RuntimeEditor;
+﻿using Rogue.RuntimeEditor;
+using Skyx.RuntimeEditor;
 using UnityEditor;
 using UnityEngine;
 
@@ -22,13 +23,14 @@ namespace Rogue.REditor
 
         protected void OnGUI(Rect rect, SerializedProperty property, ScopedAttribute scopedAtt)
         {
-            var isSerialized = property.IsManagedRef();
             SkopeOverride.TryGetOverride(property, out var overrideData);
+            fieldInfo.TryGetAttribute(out SerializedRefOptionsAttribute optionsAtt);
+
             var info = scopedAtt.GetInfo(property, overrideData);
 
-            if (isSerialized)
+            if (property.IsManagedRef())
             {
-                if (SerializedRefLib.TryDrawMissingRef(ref rect, property, info.name)) return;
+                if (SerializedRefLib.TryDrawMissingRef(ref rect, property, info.name, property.IsArrayEntry(), optionsAtt)) return;
 
                 if (info.buttons.Count == 0 && info.scopeType is not EScopeType.Inline)
                     info.buttons.Add(ManagedPickerSkopeButton);
