@@ -32,6 +32,13 @@ namespace Rogue.REditor
         public static void Release(SerializedProperty target) => overrides.Remove(target.GetCacheID());
         public static void Release((int, string) cacheID) => overrides.Remove(cacheID);
 
+        public static void Release(int mainCacheID)
+        {
+            var keysToRemove = overrides.Keys.Where(k => k.Item1 == mainCacheID).ToList();
+            foreach (var key in keysToRemove)
+                overrides.Remove(key);
+        }
+
         public static void Clear() => overrides.Clear();
 
         #endregion

@@ -21,9 +21,11 @@ namespace Rogue.REditor
 
         public static void ApplyDirectChanges(this SerializedProperty property)
         {
-            EditorUtility.SetDirty(property.serializedObject.targetObject);
-            property.serializedObject.Update();
-            PropertyCollection.ScheduleReset(property.serializedObject);
+            var serializedObj = property.serializedObject;
+
+            EditorUtility.SetDirty(serializedObj.targetObject);
+            serializedObj.Update();
+            PropertyCollection.ScheduleReset(serializedObj);
         }
 
         public static object GenerateDefaultValue(this SerializedProperty property)

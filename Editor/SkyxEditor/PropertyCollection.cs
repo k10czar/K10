@@ -19,7 +19,8 @@ namespace Rogue.REditor
         private static readonly ProfilerMarker applyCollectionMarker = new("PropertyCollection.Apply");
 
         [ResetedOnLoad] private static readonly Dictionary<int, Dictionary<string, PropertyCollection>> collections = new();
-        [ResetedOnLoad] private static readonly HashSet<SerializedObject> scheduledResets = new();
+        [ResetedOnLoad] private static readonly HashSet<int> scheduledResets = new();
+        [ResetedOnLoad] private static readonly Dictionary<int, Action> changedCallbacks = new();
 
         public static PropertyCollection Get(SerializedObject serializedObject) => Get(serializedObject, "");
         public static PropertyCollection Get(SerializedProperty property) => Get(property.serializedObject, property.propertyPath);
@@ -70,12 +71,15 @@ namespace Rogue.REditor
         public static void ApplyDirectChanges(Object target)
         {
             EditorUtility.SetDirty(target);
-            ScheduleReset(new SerializedObject(target));
+            ScheduleReset(target.GetInstanceID());
         }
 
         public static void ScheduleReset(SerializedObject serializedObject)
+            => ScheduleReset(serializedObject.GetMainCacheID());
+
+        private static void ScheduleReset(int mainCacheID)
         {
-            scheduledResets.Add(serializedObject);
+            scheduledResets.Add(mainCacheID);
 
             if (scheduledResets.Count == 1)
                 EditorUtils.RunDelayedOnce(ResetCollections);
@@ -83,29 +87,49 @@ namespace Rogue.REditor
 
         private static void ResetCollections()
         {
-            foreach (var serializedObject in scheduledResets)
-            {
-                SerializedTypeCache.Release(serializedObject.GetMainCacheID());
-                ResetCollections(serializedObject);
-            }
-
+            var resets = scheduledResets.ToList();
             scheduledResets.Clear();
+
+            foreach (var mainCacheID in resets)
+            {
+                SkyxGUI.ClearMyCaches(mainCacheID, true);
+                ResetCollections(mainCacheID);
+
+                if (changedCallbacks.TryGetValue(mainCacheID, out var callbacks))
+                {
+                    try { callbacks(); }
+                    catch (Exception exception) { Debug.LogException(exception); }
+                }
+            }
         }
 
-        private static void ResetCollections(SerializedObject serializedObject)
+        private static void ResetCollections(int mainCacheID)
         {
-            var id = serializedObject.GetMainCacheID();
-            if (!collections.TryGetValue(id, out var objectCollections)) return;
+            if (!collections.TryGetValue(mainCacheID, out var objectCollections)) return;
 
-            serializedObject.Update();
+            if (objectCollections.Count == 0)
+            {
+                collections.Remove(mainCacheID);
+                return;
+            }
+
+            var first = objectCollections.First().Value;
+            if (first.root == null || first.root.targetObject == null)
+            {
+                collections.Remove(mainCacheID);
+                return;
+            }
+
+            first.root.Update();
 
             foreach (var (path, collection) in objectCollections.ToList())
             {
                 try
                 {
+
                     // if (collection.IsValid(serializedObject)) continue;
 
-                    collection.Reset(serializedObject);
+                    collection.Reset();
                     LogVerbose($"Collection {PropertyName(path)} was reset.");
 
                     continue;
@@ -115,44 +139,56 @@ namespace Rogue.REditor
                     // ignored
                 }
 
-                LogVerbose($"Collection for {serializedObject.targetObject} @ {PropertyName(path)} was corrupted! Deleting...");
+                LogVerbose($"Collection for {first.root.targetObject} @ {PropertyName(path)} was corrupted! Deleting...");
                 objectCollections.Remove(path);
             }
         }
 
-        public static void Release(SerializedObject root)
+        public static void Release(SerializedObject root) => Release(root.GetMainCacheID());
+        public static void Release(int mainCacheID) => collections.Remove(mainCacheID);
+
+        public static void ClearCollections()
         {
-            var id = root.GetMainCacheID();
-            if (!collections.ContainsKey(id)) return;
-
-            Log($"Releasing PropertyCollections for {root.targetObject.name}");
-
-            collections.Remove(id);
+            collections.Clear();
+            scheduledResets.Clear();
         }
 
-        private static bool expectingChange;
-
-        public static void SaveAsset(Object target)
+        public static void RegisterChanged(int mainCacheID, Action callback)
         {
-            expectingChange = true;
-            AssetDatabase.SaveAssetIfDirty(target);
+            if (changedCallbacks.TryGetValue(mainCacheID, out var existingCallbacks))
+            {
+                existingCallbacks -= callback;
+                existingCallbacks += callback;
+
+                changedCallbacks[mainCacheID] = existingCallbacks;
+            }
+            else changedCallbacks[mainCacheID] = callback;
         }
+
+        public static void DeregisterChanged(int mainCacheID, Action callback)
+        {
+            if (!changedCallbacks.TryGetValue(mainCacheID, out var existingCallbacks)) return;
+
+            existingCallbacks -= callback;
+
+            if (existingCallbacks == null) changedCallbacks.Remove(mainCacheID);
+            else changedCallbacks[mainCacheID] = existingCallbacks;
+        }
+
+        private static string PropertyName(string path) => string.IsNullOrEmpty(path) ? "_ROOT_" : path;
+
+        #region ExternalChanges
 
         public static void AssetsChanged()
         {
-            if (!expectingChange)
-            {
-                Log("Assets changed! Releasing all collections.");
-                collections.Clear();
-            }
-
-            expectingChange = false;
+            Log("Assets changed! Releasing all collections.");
+            SkyxGUI.ClearAllCaches();
         }
 
         private static void OnUndoRedoPerformed()
         {
             LogVerbose("Undo performed!");
-            ClearCollections();
+            SkyxGUI.ClearAllCaches();
         }
 
         static PropertyCollection()
@@ -161,11 +197,9 @@ namespace Rogue.REditor
             Undo.undoRedoPerformed += OnUndoRedoPerformed;
         }
 
-        public static void ClearCollections()
-        {
-            collections.Clear();
-            scheduledResets.Clear();
-        }
+        #endregion
+
+        #region Debug
 
         [MenuItem("Rogue/Editor/Log PropertyCollections")]
         private static void LogPropertyCollections()
@@ -173,8 +207,6 @@ namespace Rogue.REditor
             var total = collections.Sum(entry => entry.Value.Count);
             Log($"{collections.Count} serializedObjects tracked, with a total of {total} collections.");
         }
-
-        private static string PropertyName(string path) => string.IsNullOrEmpty(path) ? "_ROOT_" : path;
 
         [HideInCallstack]
         private static void Log(string log, LogSeverity severity = LogSeverity.Info) => K10Log<EditorDebug>.Log(severity, log);
@@ -184,21 +216,20 @@ namespace Rogue.REditor
 
         #endregion
 
-        private SerializedObject root;
-        public SerializedProperty MainProperty { get; private set; }
-        private Object owner;
+        #endregion
+
+        private readonly SerializedObject root;
+        private readonly Object owner;
         private readonly string propertyPath;
+
+        public SerializedProperty MainProperty { get; private set; }
 
         private readonly Dictionary<string, SerializedProperty> properties = new();
         public int PropertiesCount => properties.Count;
 
         public void Apply(string reason) => Apply(root, reason);
 
-        public void ResyncProperties()
-        {
-            root.Update();
-            ScheduleReset(root);
-        }
+        public void ResyncProperties() => root.Update();
 
         #region Layout Draw
 
@@ -268,21 +299,10 @@ namespace Rogue.REditor
         public bool Draw(ref Rect rect, string propertyName, ERectSlideDir slideDir = ERectSlideDir.Vertical, bool drawLabel = true, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
-            var changed = SkyxGUI.Draw(rect, property, drawLabel);
+            var hasChanged = SkyxGUI.Draw(rect, property, drawLabel);
             rect.Slide(slideDir);
 
-            return changed;
-        }
-
-        // [Obsolete("Use Draw(ref rect, propertyName, slideDir) instead.")]
-        public bool Draw(ref Rect rect, string propertyName, bool slideRect = true, bool isBacking = false)
-        {
-            var property = Get(propertyName, isBacking);
-
-            var changed = SkyxGUI.Draw(rect, property);
-            if (slideRect) rect.SlideSame();
-
-            return changed;
+            return hasChanged;
         }
 
         public void DrawFloat(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false, bool alwaysDrawInlaid = false)
@@ -418,9 +438,6 @@ namespace Rogue.REditor
         #endregion
 
         #region Lists
-
-        public bool HasList(string propertyName, bool isBacking = false) => ReorderableListCache.HasList(Get(propertyName, isBacking));
-        public bool HasList(SerializedProperty property) => ReorderableListCache.HasList(property);
 
         public ReorderableList GetOrRegisterList(
             string propertyName,
@@ -566,14 +583,9 @@ namespace Rogue.REditor
             while (iterator.NextVisible(false));
         }
 
-        private void Reset(SerializedObject newRoot)
+        private void Reset()
         {
             properties.Clear();
-            ReorderableListCache.Release(newRoot.GetMainCacheID());
-
-            root = newRoot;
-            owner = root.targetObject;
-
             Setup();
         }
 

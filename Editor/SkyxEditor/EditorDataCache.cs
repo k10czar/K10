@@ -1,4 +1,5 @@
-﻿using K10.Common;
+﻿using System.Linq;
+using K10.Common;
 using UnityEditor;
 using UnityEngine;
 
@@ -23,6 +24,13 @@ namespace Rogue.REditor
         public static void Release(Object root, string path) => cache.Release((root.GetInstanceID(), path));
         public static void Release((int, string) cacheKey) => cache.Release(cacheKey);
         public static void Release(SerializedProperty property) => cache.Release(property.GetCacheID());
+
+        public static void Release(int mainCacheID)
+        {
+            var keysToRemove = cache.Keys.Where(k => k.Item1 == mainCacheID).ToList();
+            foreach (var key in keysToRemove)
+                cache.Release(key);
+        }
 
         public static void Clear() => cache?.Clear();
     }

@@ -48,7 +48,6 @@ namespace Rogue.REditor
 
             DrawScriptFile();
             DrawTitle();
-            DrawSaveFile();
             DrawConfigs();
         }
 
@@ -166,37 +165,6 @@ namespace Rogue.REditor
         #region Save Changes
 
         private bool showModifications;
-
-        protected void DrawSaveFile()
-        {
-            if (!ShouldDrawSaveFile) return;
-
-            if (EditorUtility.IsDirty(target))
-            {
-                if (SkyxLayout.Button("Save Changes!", EColor.Warning))
-                    PropertyCollection.SaveAsset(target);
-            }
-            else if (ShouldDrawReserialize)
-            {
-                if (SkyxLayout.Button("Reserialize", EColor.Special))
-                {
-                    if (EditorUtility.DisplayDialog("Are you sure?", $"Reserialize {target.name} entries?", "Yes", "No"))
-                    {
-                        var path = AssetDatabase.GetAssetPath(target);
-                        AssetDatabase.ForceReserializeAssets(new [] { path });
-                        PropertyCollection.SaveAsset(target);
-                    }
-                }
-            }
-            else
-            {
-                EditorGUI.BeginDisabledGroup(true);
-                GUILayout.Button("No Changes");
-                EditorGUI.EndDisabledGroup();
-            }
-
-            SkyxLayout.Space();
-        }
 
         protected bool DrawPrefabModifications(params string[] ignoredFields)
         {

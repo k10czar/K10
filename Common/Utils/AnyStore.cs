@@ -8,6 +8,8 @@ namespace K10.Common
     {
         private readonly Dictionary<T, object> dict = new();
 
+        public IEnumerable<T> Keys => dict.Keys;
+
         public U Get<U>(T id)
         {
             Debug.Assert(dict.ContainsKey(id), $"Trying to get nonexistent stored data for {typeof(U)} ({id})!");

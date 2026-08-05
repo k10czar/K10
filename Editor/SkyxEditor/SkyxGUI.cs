@@ -393,6 +393,15 @@ namespace Rogue.REditor
             SkopeOverride.Release(cacheID);
         }
 
+        public static void ClearMyCaches(int mainCacheID, bool ignorePropertyCollections = false)
+        {
+            if (!ignorePropertyCollections) PropertyCollection.Release(mainCacheID);
+            SerializedTypeCache.Release(mainCacheID);
+            ReorderableListCache.Release(mainCacheID);
+            EditorDataCache.Release(mainCacheID);
+            SkopeOverride.Release(mainCacheID);
+        }
+
         #endregion
 
         public static void DrawLabel(ref Rect rect, string label, bool extractLabelRect = true, EColor color = EColor.Primary, bool ignoreIndent = false)
