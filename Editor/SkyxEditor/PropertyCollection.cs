@@ -22,6 +22,18 @@ namespace Rogue.REditor
         [ResetedOnLoad] private static readonly HashSet<int> scheduledResets = new();
         [ResetedOnLoad] private static readonly Dictionary<int, Action> changedCallbacks = new();
 
+        public static SerializedObject GetSerializedObject(Object target)
+        {
+            var mainCacheID = target.GetInstanceID();
+            if (collections.TryGetValue(mainCacheID, out var objectCollections))
+            {
+                if (objectCollections.Count > 0)
+                    return objectCollections.First().Value.root;
+            }
+
+            return new SerializedObject(target);
+        }
+
         public static PropertyCollection Get(SerializedObject serializedObject) => Get(serializedObject, "");
         public static PropertyCollection Get(SerializedProperty property) => Get(property.serializedObject, property.propertyPath);
 

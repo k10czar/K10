@@ -10,18 +10,18 @@ namespace Rogue.Explorer
     [Serializable]
     public abstract class ExplorerBatchExecute<T> where T : Object
     {
-        protected abstract bool Run(T skillDataSource, ref string log);
+        protected abstract bool Run(T skillDataSource, Dictionary<string, object> innerProperties, ref string log);
 
-        protected virtual int ReallyRun(IEnumerable<T> targets)
+        protected virtual int ReallyRun(Dictionary<T, Dictionary<string, object>> targets)
         {
             var changes = 0;
 
-            foreach (var entry in targets)
+            foreach (var (entry, innerProperties) in targets)
             {
                 try
                 {
                     string log = null;
-                    if (!Run(entry, ref log)) continue;
+                    if (!Run(entry, innerProperties, ref log)) continue;
 
                     EditorUtility.SetDirty(entry);
                     Debug.LogWarning(log ?? $"Fixed {entry}", entry);

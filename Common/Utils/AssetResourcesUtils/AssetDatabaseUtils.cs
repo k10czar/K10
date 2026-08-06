@@ -61,7 +61,7 @@ public static class AssetDatabaseUtils
         return null;
     }
 
-    public static T GetFirst<T>(string name, bool debug = true) where T : ScriptableObject
+    public static T GetFirst<T>(string name, bool debug = false) where T : ScriptableObject
     {
         string[] assetNames = AssetDatabase.FindAssets($"{name} t:{typeof(T).Name}");
         for (int i = 0; i < assetNames.Length; i++)
@@ -78,7 +78,7 @@ public static class AssetDatabaseUtils
         return null;
     }
 
-    public static T[] GetAll<T>(string name, bool debug = true) where T : ScriptableObject
+    public static T[] GetAll<T>(string name, bool debug = false) where T : ScriptableObject
     {
         string[] assetNames = AssetDatabase.FindAssets($"{name} t:{typeof(T).Name}");
         var collection = new List<T>();
@@ -95,7 +95,7 @@ public static class AssetDatabaseUtils
         return collection.ToArray();
     }
 
-    public static T[] GetAll<T>(bool debug = true) where T : ScriptableObject
+    public static T[] GetAll<T>(bool debug = false) where T : ScriptableObject
     {
         string[] assetNames = AssetDatabase.FindAssets($"t:{typeof(T).Name}");
         var collection = new T[assetNames.Length];
@@ -111,7 +111,7 @@ public static class AssetDatabaseUtils
         return collection;
     }
 
-    public static ScriptableObject[] GetAll(System.Type type, bool debug = true)
+    public static ScriptableObject[] GetAll(System.Type type, bool debug = false)
     {
         string[] assetNames = AssetDatabase.FindAssets($"t:{type.Name}");
         var collection = new ScriptableObject[assetNames.Length];

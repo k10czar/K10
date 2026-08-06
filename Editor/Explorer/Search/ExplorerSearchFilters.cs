@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Skyx.RuntimeEditor;
 using Skyx.Trees;
@@ -10,13 +11,13 @@ namespace Rogue.Explorer
     {
         public bool Invert { get; }
 
-        public bool FitsFilter(T candidate)
+        public bool FitsFilter(T candidate, Dictionary<string, object> matchingProperties)
         {
-            var result = IsValid(candidate);
+            var result = IsValid(candidate, matchingProperties);
             return Invert ? !result : result;
         }
 
-        public bool IsValid(T candidate);
+        public bool IsValid(T candidate, Dictionary<string, object> matchingProperties);
     }
 
     [Serializable]

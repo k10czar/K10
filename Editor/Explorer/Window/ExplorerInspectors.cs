@@ -158,7 +158,13 @@ namespace Rogue.Explorer
         {
             if (info.objectEditor != null)
                 info.objectEditor.OnInspectorGUI();
-            else EditorGUILayout.PropertyField(info.property, GUIContent.none, true);
+            else
+            {
+                if (SkyxLayout.DrawTitle(info.target))
+                    EditorGUIUtility.PingObject(info.target);
+
+                EditorGUILayout.PropertyField(info.property, GUIContent.none, true);
+            }
         }
 
         private void OpenEnoughInspectorHolders()

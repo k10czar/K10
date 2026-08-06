@@ -13,7 +13,17 @@ namespace Rogue.Explorer
             var properties = GetProperties(property);
 
             properties.DrawIncluding(ref rect, "name", "sourcesProvider");
-            HeaderList.Draw(ref rect, properties["filters"], "Filters", size: EElementSize.SingleLine, newText: "Add Filter", canMoveElements: false);
+
+            var modeRect = rect;
+            modeRect.AdjustToLine();
+            modeRect = modeRect.ExtractSmallButton(true);
+            modeRect.x -= 3;
+            EnumTreeGUI.DrawEnum<EExplorerSearchMode>(modeRect, properties["searchMode"], EColor.Secondary, "How should we deal when multiple child properties are found?");
+
+            HeaderList.Draw(ref rect, properties["filters"], "Filters", EColor.Secondary, EElementSize.SingleLine, EScopeType.Foldout, newText: "Add Filter", canMoveElements: false);
+
+            EnumTreeGUI.DrawEnum<EExplorerSearchMode>(modeRect, properties["searchMode"], EColor.Secondary, "How should we deal when multiple child properties are found?");
+
             properties.DrawIncluding(ref rect, "batchExecute");
         }
 
@@ -22,7 +32,7 @@ namespace Rogue.Explorer
             var properties = GetProperties(property);
 
             return properties.GetTotalHeightIncluding("name", "sourcesProvider", "batchExecute") +
-                   HeaderList.GetPropertyHeight(properties["filters"], EScopeType.Header, EElementSize.SingleLine);
+                   HeaderList.GetPropertyHeight(properties["filters"], EScopeType.Foldout, EElementSize.SingleLine);
         }
     }
 }

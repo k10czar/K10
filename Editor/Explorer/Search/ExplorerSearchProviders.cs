@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using K10.Common;
+using Rogue.Helpers;
 using Rogue.REditor;
 using UnityEditor.Search;
 using UnityEngine;
@@ -11,38 +12,58 @@ using Object = UnityEngine.Object;
 
 namespace Rogue.Explorer
 {
-    public interface IExplorerSearchSourcesProvider<T> : IContentEditorInfo where T : Object
+    public abstract class ExplorerSearchSourcesProvider<T> : IContentEditorInfo where T : Object
     {
-        public UniTask<IEnumerable<T>> Fetch(CancellationToken token);
+        public abstract string ContentName { get; }
+        public abstract UniTask<IEnumerable<T>> Fetch(CancellationToken token);
+
+        protected virtual IEnumerator<object> GetEqualityComponents() { yield break; }
+
+        public int GetFetchHash()
+        {
+            var list = new List<object>() { GetType().GetHashCode() };
+
+            var components = GetEqualityComponents();
+            while (components.MoveNext())
+                list.Add(components.Current);
+
+            return NumbersLib.GenerateStableHash(list);
+        }
     }
 
     [Serializable]
-    public class TargetExplorerSourcesProvider<T> : IExplorerSearchSourcesProvider<T> where T : Object
+    public class TargetExplorerSourcesProvider<T> : ExplorerSearchSourcesProvider<T> where T : Object
     {
-        public string ContentName => $"Search {sources.ToInspectorName("targets")}";
+        public override string ContentName => $"Search {sources.ToInspectorName("targets")}";
 
         [SerializeField] private List<T> sources = new();
 
-        public UniTask<IEnumerable<T>> Fetch(CancellationToken token) => UniTask.FromResult<IEnumerable<T>>(sources.ToList());
+        public override UniTask<IEnumerable<T>> Fetch(CancellationToken token) => UniTask.FromResult<IEnumerable<T>>(sources.ToList());
+
+        protected override IEnumerator<object> GetEqualityComponents()
+        {
+            foreach (var source in sources)
+                yield return source.GetInstanceID();
+        }
     }
 
     [Serializable]
-    public class AssetDatabaseExplorerSourcesProvider<T> : IExplorerSearchSourcesProvider<T> where T : ScriptableObject
+    public class AssetDatabaseExplorerSourcesProvider<T> : ExplorerSearchSourcesProvider<T> where T : ScriptableObject
     {
-        public string ContentName => $"Search all from AssetDatabase";
+        public override string ContentName => $"Search all from AssetDatabase";
 
-        public UniTask<IEnumerable<T>> Fetch(CancellationToken token) => UniTask.FromResult<IEnumerable<T>>(AssetDatabaseUtils.GetAll<T>());
+        public override UniTask<IEnumerable<T>> Fetch(CancellationToken token) => UniTask.FromResult<IEnumerable<T>>(AssetDatabaseUtils.GetAll<T>());
     }
 
     [Serializable]
-    public class UnitySearchExplorerSourcesProvider<T> : IExplorerSearchSourcesProvider<T> where T : Object
+    public class UnitySearchExplorerSourcesProvider<T> : ExplorerSearchSourcesProvider<T> where T : Object
     {
-        public string ContentName => $"Search {(searchScene ? "Scene" : "Project")} using UnitySearch";
+        public override string ContentName => $"Search {(searchScene ? "Scene" : "Project")} using UnitySearch";
 
         [SerializeField, BoolOptions("Where to Search", "Search Scene", "Search Project")]
         private bool searchScene;
 
-        public async UniTask<IEnumerable<T>> Fetch(CancellationToken token)
+        public override async UniTask<IEnumerable<T>> Fetch(CancellationToken token)
         {
             var set = new HashSet<T>();
 
@@ -72,5 +93,7 @@ namespace Rogue.Explorer
 
             return set.ToList();
         }
+
+        protected override IEnumerator<object> GetEqualityComponents() { yield return searchScene; }
     }
 }

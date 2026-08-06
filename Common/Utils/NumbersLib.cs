@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -39,18 +41,6 @@ namespace Rogue.Helpers
         {
             var normalized = (value - min) / (max - min);
             return clamp ? Mathf.Clamp01(normalized) : normalized;
-        }
-
-        public static int Hash(params int[] numbers)
-        {
-            const int magicNumber = -1640531527; // 0x9e3779b9 as signed int
-
-            var hash = magicNumber;
-
-            foreach (var number in numbers)
-                hash ^= number + magicNumber + (hash << 6) + (hash >> 2);
-
-            return hash;
         }
 
         public static float FixPrecision(this float value, int precision) => Mathf.Round(value * precision) / precision;
@@ -127,6 +117,59 @@ namespace Rogue.Helpers
 
         public static bool IsAngleInRange(this float angle, float targetAngle, float maxAngleDiff)
             => Mathf.Abs(Mathf.DeltaAngle(angle, targetAngle)) <= maxAngleDiff;
+
+        #endregion
+
+        #region Hashing
+
+        private const uint MagicNumber = 0x9e3779b9; // Golden ratio constant
+
+        public static int StableHash(params object[] values) => GenerateStableHash(values);
+
+        public static int GenerateStableHash(IReadOnlyList<object> values)
+        {
+            if (values == null || values.Count == 0)
+                return 0;
+
+            uint hash = MagicNumber;
+
+            foreach (var value in values)
+            {
+                uint stableInt = GetStableInt(value);
+                hash ^= stableInt + MagicNumber + (hash << 6) + (hash >> 2);
+            }
+
+            unchecked
+            {
+                return (int)hash;
+            }
+        }
+
+        private static uint GetStableInt(object value)
+        {
+            if (value == null) return 0;
+
+            return value switch
+            {
+                int i => (uint)i,
+                bool b => b ? 1u : 0u,
+                string s => StableStringHash(s),
+                Enum e => unchecked((uint)Convert.ToInt64(e)),
+                _ => throw new ArgumentException($"Unsupported type: {value.GetType().Name}. Only int, string, and bool are supported.")
+            };
+        }
+
+        private static uint StableStringHash(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return 0;
+
+            var hash = MagicNumber;
+            foreach (var c in input)
+                hash ^= c + MagicNumber + (hash << 6) + (hash >> 2);
+
+            return hash;
+        }
 
         #endregion
     }

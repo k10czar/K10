@@ -10,6 +10,13 @@ using Object = UnityEngine.Object;
 
 namespace Rogue.Explorer
 {
+    public enum EExplorerSearchMode
+    {
+        Union,
+        Intersect,
+        MustIntersect,
+    }
+
     [Serializable]
     public abstract class ExplorerSearchConfigBase
     {
@@ -23,6 +30,7 @@ namespace Rogue.Explorer
         public abstract int FiltersCount { get; }
 
         public abstract IEnumerable<Object> Results { get; }
+        public abstract Dictionary<string, object> GetInternalResults(Object key);
 
         public abstract void RunFilters();
         public abstract UniTask FetchSources(CancellationToken token);
@@ -33,49 +41,117 @@ namespace Rogue.Explorer
     [Serializable]
     public abstract class ExplorerSearchConfig<T> : ExplorerSearchConfigBase where T : Object
     {
-        [SerializeField, SerializeReference, Scoped(EScopePreset.HeaderNameSummary, EElementSize.SingleLine)]
-        private IExplorerSearchSourcesProvider<T> sourcesProvider;
+        [SerializeField, SerializeReference, Scoped(EScopePreset.FoldoutNameSummary)]
+        private ExplorerSearchSourcesProvider<T> sourcesProvider;
 
         [SerializeField, SerializeReference]
         private List<IExplorerSearchFilter<T>> filters = new();
 
-        [SerializeField, SerializeReference, Scoped(EScopePreset.HeaderNameSummary, EElementSize.SingleLine), SerializedRefOptions("No Batch Execute")]
+        [SerializeField] private EExplorerSearchMode searchMode = EExplorerSearchMode.Union;
+
+        [SerializeField, SerializeReference, Scoped(EScopePreset.FoldoutNameSummary), SerializedRefOptions("No Batch Execute")]
         private ExplorerBatchExecute<T> batchExecute;
 
         public IEnumerable<T> Sources { get; private set; }
-        public List<T> TResults { get; private set; } = new();
-        public override IEnumerable<Object> Results => TResults;
+
+        public Dictionary<T, Dictionary<string, object>> TResults { get; private set; } = new();
+
+        public override IEnumerable<Object> Results => TResults.Keys;
+        public override Dictionary<string, object> GetInternalResults(Object key) => TResults[(T)key];
 
         public override bool HasSources => Sources != null && SourcesCount > 0;
         public override int FiltersCount => filters.Count;
         public override int ResultsCount => TResults?.Count ?? 0;
 
+        private int lastProviderHash;
+
         public override void RunFilters()
         {
-            TResults.Clear();
+            if (TResults == null) TResults = new Dictionary<T, Dictionary<string, object>>();
+            else TResults.Clear();
 
             if (!HasSources) return;
 
-            foreach (var candidate in Sources!)
+            var filterProperties = new Dictionary<string, object>();
+
+            foreach (var candidate in Sources)
             {
+                var selectedProperties = new Dictionary<string, object>();
                 var valid = true;
+                var isFirst = true;
 
                 foreach (var filter in filters)
                 {
                     if (filter == null) continue;
-                    if (filter.FitsFilter(candidate)) continue;
 
-                    valid = false;
-                    break;
+                    filterProperties.Clear();
+                    if (!filter.FitsFilter(candidate, filterProperties))
+                    {
+                        valid = false;
+                        break;
+                    }
+
+                    if (isFirst)
+                    {
+                        MergeDictionaries(filterProperties, selectedProperties);
+                        isFirst = false;
+
+                        if (searchMode is EExplorerSearchMode.MustIntersect && selectedProperties.Count == 0)
+                        {
+                            valid = false;
+                            break;
+                        }
+
+                        continue;
+                    }
+
+                    if (searchMode is EExplorerSearchMode.Union)
+                        MergeDictionaries(filterProperties, selectedProperties);
+                    else
+                    {
+                        IntersectDictionaries(filterProperties, selectedProperties);
+
+                        if (searchMode is EExplorerSearchMode.MustIntersect && selectedProperties.Count == 0)
+                        {
+                            valid = false;
+                            break;
+                        }
+                    }
                 }
 
-                if (valid) TResults.Add(candidate);
+                if (valid) TResults.Add(candidate, selectedProperties);
+            }
+        }
+
+        private void MergeDictionaries(Dictionary<string, object> source, Dictionary<string, object> target)
+        {
+            foreach (var (key, value) in source)
+                target[key] = value;
+        }
+
+        private void IntersectDictionaries(Dictionary<string, object> source, Dictionary<string, object> target)
+        {
+            foreach (var key in target.Keys.ToList())
+            {
+                if (source.ContainsKey(key)) continue;
+                target.Remove(key);
             }
         }
 
         public override async UniTask FetchSources(CancellationToken token)
         {
-            SourcesCount = 0;
+            if (sourcesProvider == null)
+            {
+                SourcesCount = 0;
+                Sources = null;
+
+                return;
+            }
+
+            var providerHash = sourcesProvider.GetFetchHash();
+            if (Sources != null && SourcesCount > 0 && providerHash == lastProviderHash) return;
+            lastProviderHash = providerHash;
+
             Sources = await sourcesProvider.Fetch(token);
             SourcesCount = Sources?.Count() ?? 0;
         }
@@ -85,7 +161,7 @@ namespace Rogue.Explorer
             name = $"{typeof(T).Name} Search";
         }
 
-        protected ExplorerSearchConfig(string tabID, IExplorerSearchSourcesProvider<T> sourcesProvider) : this(tabID)
+        protected ExplorerSearchConfig(string tabID, ExplorerSearchSourcesProvider<T> sourcesProvider) : this(tabID)
         {
             this.sourcesProvider = sourcesProvider;
         }

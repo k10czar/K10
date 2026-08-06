@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Rogue.Explorer
 {
-    [CustomPropertyDrawer(typeof(ExplorerFilter), true)]
+    [CustomPropertyDrawer(typeof(IExplorerSearchFilter<>), true)]
     public class ExplorerFilterPropertyDrawer : PropertyEditor
     {
         protected override void Draw(Rect rect, SerializedProperty property, GUIContent label)

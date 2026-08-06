@@ -1,16 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using Rogue.REditor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
 
 namespace Rogue.Explorer
 {
     public class ExplorerSearchTabBuilder : IExplorerTabBuilder
     {
-        private readonly ExplorerSearchConfigBase searchConfig;
         private readonly IExplorerWindow window;
+        private ExplorerSearchConfigBase searchConfig;
 
         private SerializedProperty searchProperty;
         private CancellationTokenSource cancellationToken;
@@ -49,24 +51,39 @@ namespace Rogue.Explorer
             if (searching) EditorGUILayout.HelpBox("Refreshing Search!", MessageType.Info);
         }
 
-        private void ReRunFilters()
+        private async void ReRunFilters()
         {
             try
             {
-                if (searchProperty == null) ResetSerializedProperty();
+                if (searchProperty == null && !ResetSerializedProperty()) return;
+
+                var serializedObject = ExplorerEditorConfig.SerializedObjInstance;
+                serializedObject.SetIsDifferentCacheDirty();
+                serializedObject.Update();
 
                 searching = true;
                 cancellationToken = new CancellationTokenSource();
 
                 resultsHolder.Clear();
 
-                if (!searchConfig.HasSources) searchConfig.FetchSources(cancellationToken.Token);
+                await searchConfig.FetchSources(cancellationToken.Token);
                 searchConfig.RunFilters();
+
+                ExplorerEntryView.isOddEntry = false;
 
                 foreach (var result in searchConfig.Results)
                 {
                     var newEntry = ExplorerEntryView.Create(window, result, string.Empty, null);
                     resultsHolder.Add(newEntry);
+
+                    var innerProps = searchConfig.GetInternalResults(result);
+                    var breadcrumbs = new List<Object> { result };
+
+                    foreach (var path in innerProps.Keys)
+                    {
+                        var innerEntry = ExplorerEntryView.Create(window, result, path, breadcrumbs);
+                        newEntry.AddInternalContent(innerEntry);
+                    }
                 }
 
                 resultsFoldout.text = $"Results {searchConfig.ResultsCount}/{searchConfig.SourcesCount}";
@@ -88,19 +105,20 @@ namespace Rogue.Explorer
             }
         }
 
-        private void ResetSerializedProperty()
+        private bool ResetSerializedProperty()
         {
             var (saveIndex, saveData) = ExplorerEditorConfig.GetExplorerSaveInfo(window.ExplorerOwner);
             var index = saveData.searches.FindIndex(search => search == searchConfig);
             if (index == -1)
             {
-                Debug.LogError("Could not find search config!");
                 searchProperty = null;
-                return;
+                return false;
             }
 
             ExplorerEditorConfig.SerializedObjInstance.Update();
             searchProperty = ExplorerEditorConfig.SerializedObjInstance.FindProperty($"explorerSaves.Array.data[{saveIndex}].searches.Array.data[{index}]");
+
+            return true;
         }
 
         public void TabClosed()
@@ -111,6 +129,7 @@ namespace Rogue.Explorer
             window.ExplorerOwnerSaveData.searches.Remove(searchConfig);
             PropertyCollection.ApplyDirectChanges(config);
 
+            searchConfig = null;
             searchProperty = null;
 
             WindowClosed();

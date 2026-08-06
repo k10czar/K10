@@ -53,13 +53,23 @@ namespace Rogue.Explorer
 
         public static string GetDisplayName(Object target, string propertyPath)
         {
+            if (target == null) return "Missing Reference!";
+
             if (!string.IsNullOrEmpty(propertyPath))
+            {
+                var serializedObj = PropertyCollection.GetSerializedObject(target);
+                var property = serializedObj.FindProperty(propertyPath);
+
+                if (property.GetValue() is IContentEditorInfo propertyInfo)
+                    return propertyInfo.ContentName;
+
                 return $"{target.name}:{propertyPath}";
+            }
 
             if (target is IContentEditorInfo contentInfo && !string.IsNullOrEmpty(contentInfo.ContentName))
                 return contentInfo.ContentName;
 
-            return target?.GetType().Name.Pretty() ?? "Missing Reference!";
+            return target.name;
         }
 
         public static ExplorerEntryDef CreateExplorerEntry(ExplorerInspectorInfo info, bool isInternal)

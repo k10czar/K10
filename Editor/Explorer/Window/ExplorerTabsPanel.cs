@@ -78,7 +78,7 @@ namespace Rogue.Explorer
             (oldTab?.dataSource as IExplorerTabBuilder)?.Minimized();
 
             selectedTab = newTab;
-            RebuildContent();
+            RebuildContent(false);
         }
 
         private static void OnTabClosed(Tab closedTab, int closedIndex)
@@ -134,13 +134,21 @@ namespace Rogue.Explorer
             }
         }
 
-        public void RebuildContent()
+        public void RebuildContent(bool isRebuildingAll)
         {
             ExplorerEntryView.isOddEntry = false;
 
             SetRefs();
             RebuildFavorites();
-            OpenSearches();
+
+            if (isRebuildingAll)
+            {
+                var allTabs = tabView.Query<Tab>().ToList();
+                for (var i = allTabs.Count - 1; i >= 0; i--)
+                    tabView.RemoveAt(i);
+
+                OpenSearches();
+            }
 
             explorerContent.Clear();
             (selectedTab?.dataSource as IExplorerTabBuilder)?.Rebuild(Window, explorerContent);

@@ -140,21 +140,21 @@ ExplorerTabsPanel #TabView .unity-tab-view__content-viewport {
     flex-grow: 1;
 }
 
-.explorer-entry-1 #ExplorerEntryHeader {
+.explorer-entry-1 > #ExplorerEntryHeader {
     height: 35px;
 }
 
-.explorer-entry-2 #ExplorerEntryHeader {
+.explorer-entry-2 > #ExplorerEntryHeader {
     height: 32px;
     padding-left: 12px;
 }
 
-.explorer-entry-3 #ExplorerEntryHeader {
+.explorer-entry-3 > #ExplorerEntryHeader {
     height: 28px;
     padding-left: 22px;
 }
 
-.explorer-entry-4 #ExplorerEntryHeader {
+.explorer-entry-4 > #ExplorerEntryHeader {
     height: 25px;
     padding-left: 30px;
 }
@@ -163,7 +163,7 @@ ExplorerTabsPanel #TabView .unity-tab-view__content-viewport {
     background-color: rgb(56, 56, 56);
 }
 
-.odd-entry #ExplorerEntryHeader {
+.odd-entry > #ExplorerEntryHeader {
     background-color: rgb(52, 52, 52);
 }
 

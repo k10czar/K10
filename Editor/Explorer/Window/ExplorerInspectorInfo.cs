@@ -22,7 +22,7 @@ namespace Rogue.Explorer
             this.window = window;
             this.target = target;
             this.propertyPath = propertyPath;
-            this.breadcrumbs = breadcrumbs;
+            this.breadcrumbs = breadcrumbs ?? (string.IsNullOrEmpty(propertyPath) ? null : new List<Object> { target });
             this.isPinned = isPinned;
 
             if (string.IsNullOrEmpty(propertyPath))
