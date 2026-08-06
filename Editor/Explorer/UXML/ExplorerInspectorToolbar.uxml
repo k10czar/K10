@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:Template name="ExplorerEntryOptions" src="project://database/Assets/Plugins/K10/Core/Editor/Explorer/Window/ExplorerEntryOptions.uxml?fileID=9197481963319205126&amp;guid=264b343ff0f11164a903d7dd6472bf9a&amp;type=3#ExplorerEntryOptions"/>
+    <Rogue.Explorer.ExplorerInspectorToolbar name="">
+        <uie:ToolbarBreadcrumbs name="Breadcrumbs"/>
+        <ui:Instance template="ExplorerEntryOptions" name="ExplorerToolbarOptions"/>
+    </Rogue.Explorer.ExplorerInspectorToolbar>
+</ui:UXML>

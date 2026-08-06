@@ -63,9 +63,6 @@ namespace Rogue.REditor
             EditorUtility.SetDirty(serializedObject.targetObject);
 
             ScheduleReset(serializedObject);
-
-            if (target is IPropertyChangedListener listener)
-                listener.OnPropertyChanged();
         }
 
         public static void ApplyDirectChanges(Object target)

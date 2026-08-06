@@ -63,6 +63,11 @@ namespace Skyx.RuntimeEditor
             indent = existing.indent;
         }
 
+        public ScopedAttribute(EScopePreset preset, EElementSize size) : this(preset)
+        {
+            elementSize = size;
+        }
+
         private ScopedAttribute(EScopeType scopeType, EEditorInfoSource name, EEditorInfoSource append, EEditorInfoSource description, EEditorInfoSource color, bool indent = false)
         {
             this.scopeType = scopeType;

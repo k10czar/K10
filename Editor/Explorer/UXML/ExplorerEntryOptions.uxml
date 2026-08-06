@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <Rogue.Explorer.ExplorerEntryOptions name="EntryOptions">
+        <ui:VisualElement name="holder"/>
+        <ui:Button label="⚙️" name="compact-button" text="⚙️"/>
+    </Rogue.Explorer.ExplorerEntryOptions>
+</ui:UXML>

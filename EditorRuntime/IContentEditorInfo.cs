@@ -5,7 +5,7 @@ namespace Rogue.REditor
     public interface IContentEditorInfo
     {
         public string ContentName { get; }
-        public string ContentSummary { get; }
+        public string ContentSummary => null;
         public string ContentDescription => null;
         public EColor ContentColor => EColor.Infer;
     }

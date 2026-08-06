@@ -1,0 +1,322 @@
+#ErrorLabel {
+    position: absolute;
+    font-size: 25px;
+    -unity-font-style: bold;
+    color: red;
+    right: 50%;
+    top: 50%;
+    text-shadow: black 2px 2px;
+}
+
+ExplorerTabsPanel .unity-tab-view__header-container,
+ExplorerTabsPanel .unity-tab__header {
+    flex-grow: 1;
+    height: 30px;
+    background-color: rgb(45, 45, 45);
+}
+
+ExplorerTabsPanel .unity-tab__header:checked {
+    background-color: #383838;
+}
+
+ExplorerTabsPanel .unity-tab__header Label {
+    -unity-text-align: middle-center;
+    flex-grow: 1;
+}
+
+ExplorerTabsPanel #TabView {
+    margin-bottom: 5px;
+    flex-grow: 0;
+}
+
+ExplorerTabsPanel #TabView .unity-tab-view__content-viewport {
+    background-color: rgba(255, 255, 255, 0);
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(10, 10, 10, 0.33);
+}
+
+#ProfileHeader {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-size: 14px;
+    -unity-text-align: middle-center;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(10, 10, 10, 0.33);
+    flex-direction: row-reverse;
+}
+
+#ProfilePicker .unity-object-field-display {
+    display: none;
+    flex-shrink: 1;
+}
+
+#ProfilePicker .unity-object-field__input {
+    background-color: #fff0;
+    /*border-width: 0;*/
+}
+
+#ProfilePicker {
+    width: 20px;
+    height: 20px;
+}
+
+#LockedToggle {
+    border-width: 1px;
+    width: 19px;
+    height: 20px;
+    padding: 1px;
+    border-color: #202020;
+    border-radius: 3px;
+}
+
+#LockedToggle .unity-toggle__input .unity-toggle__checkmark {
+    width: 100%;
+    height: 100%;
+    background-image: url("project://database/Packages/com.unity.timeline/Editor/StyleSheets/Images/Icons/d_TrackLockButtonDisabled@2x.png?fileID=2800000&guid=6f0b77e050cdb12478ed9514b3a0e40e&type=3#d_TrackLockButtonDisabled@2x");
+}
+
+#LockedToggle .unity-toggle__input:checked .unity-toggle__checkmark {
+    background-image: url("project://database/Packages/com.unity.timeline/Editor/StyleSheets/Images/Icons/d_TrackLockButtonEnabled@2x.png?fileID=2800000&guid=2c85066ea99cfbe4f90294bf295ce543&type=3#d_TrackLockButtonEnabled@2x");
+}
+
+#explorer-tabsPanel Foldout {
+    margin-bottom: 10px;
+}
+
+#explorer-tabsPanel Foldout Toggle {
+    background-color: #2D2D2D;
+    padding: 8px;
+    margin: 0;
+    font-size: 14px;
+}
+
+#explorer-tabsPanel Foldout #unity-content {
+    margin: 0;
+}
+
+#ExplorerEntryHeader {
+    flex-direction: row;
+    width: 100%;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(10, 10, 10, 0.33);
+}
+
+#LevelGenExplorerEntryView Button {
+    background-color: rgba(255, 255, 255, 0);
+    margin: 0;
+    border-radius: 0;
+    border-width: 0;
+}
+
+#LevelGenExplorerEntryView Button:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+#LevelGenExplorerEntryView Button:active {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#LevelGenExplorerEntryView #FoldoutOffset,
+#LevelGenExplorerEntryView #FoldoutButton {
+    width: 20px;
+    padding: 5px;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+#LevelGenExplorerEntryView #FoldoutButton #arrow {
+    padding: 3px;
+    background-image: url("project://database/Packages/com.unity.collab-proxy/Editor/Assets/Images/ArrowCaretRight@2x.png?fileID=21300000&guid=be2e0deab40f1478a99038fcbc19219d&type=3#ArrowCaretRight@2x");
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+#LevelGenExplorerEntryView #FoldoutButton.expanded #arrow {
+    background-image: url("project://database/Packages/com.unity.render-pipelines.core/Runtime/Debugging/Prefabs/Textures/UIArrowDown.png?fileID=21300000&guid=f224bfd122877a34aa49c63693fc317b&type=3#UIArrowDown");
+}
+
+#LevelGenExplorerEntryView #EntryContent {
+    padding-left: 5px;
+    -unity-text-align: middle-left;
+    flex-grow: 1;
+}
+
+.explorer-entry-1 #ExplorerEntryHeader {
+    height: 35px;
+}
+
+.explorer-entry-2 #ExplorerEntryHeader {
+    height: 32px;
+    padding-left: 12px;
+}
+
+.explorer-entry-3 #ExplorerEntryHeader {
+    height: 28px;
+    padding-left: 22px;
+}
+
+.explorer-entry-4 #ExplorerEntryHeader {
+    height: 25px;
+    padding-left: 30px;
+}
+
+#ExplorerEntryHeader {
+    background-color: rgb(56, 56, 56);
+}
+
+.odd-entry #ExplorerEntryHeader {
+    background-color: rgb(52, 52, 52);
+}
+
+.success-style > #ExplorerEntryHeader {
+    background-color: rgb(51, 64, 48);
+}
+
+.odd-entry.success-style > #ExplorerEntryHeader {
+    background-color: rgb(45, 56, 42);
+}
+
+.warning-style > #ExplorerEntryHeader {
+    background-color: rgb(59, 59, 29);
+}
+
+.odd-entry.warning-style > #ExplorerEntryHeader {
+    background-color: rgb(59, 59, 36);
+}
+
+.danger-style > #ExplorerEntryHeader {
+    background-color: rgb(59, 34, 32);
+}
+
+.odd-entry.danger-style > #ExplorerEntryHeader {
+    background-color: rgb(51, 31, 29);
+}
+
+#ExplorerEntryOptions {
+    height: 100%;
+}
+
+#ExplorerToolbarOptions {
+    height: 100%;
+    position: absolute;
+    right: 0;
+}
+
+#EntryOptions {
+    height: 100%;
+}
+
+#EntryOptions #holder {
+    flex-direction: row-reverse;
+    height: 100%;
+}
+
+#EntryOptions .unity-button {
+    margin: 0;
+    padding-left: 4px;
+    padding-right: 4px;
+    border-left-width: 1px;
+    border-left-color: rgb(35, 35, 35);
+    border-radius: 0;
+}
+
+#ExplorerEntryOptions #EntryOptions .unity-button {
+    background-color: rgb(56, 56, 56);
+    width: 24px;
+}
+
+.odd-entry #ExplorerEntryOptions #EntryOptions .unity-button {
+    background-color: rgb(52, 52, 52);
+}
+
+#ExplorerToolbarOptions #EntryOptions .unity-button {
+    background-color: rgba(255, 255, 255, 0);
+    width: 22px;
+}
+
+.odd-entry #ExplorerEntryOptions #EntryOptions .unity-button.warning-style,
+#ExplorerEntryOptions #EntryOptions .unity-button.warning-style {
+    background-color: rgb(57, 54, 37);
+    color: rgb(201, 139, 27);
+}
+
+.odd-entry #ExplorerEntryOptions #EntryOptions .unity-button.success-style,
+#ExplorerEntryOptions #EntryOptions .unity-button.success-style {
+    background-color: rgb(47, 56, 40);
+    color: rgb(44, 211, 25);
+}
+
+.odd-entry #ExplorerEntryOptions #EntryOptions .unity-button.danger-style,
+#ExplorerEntryOptions #EntryOptions .unity-button.danger-style {
+    background-color: rgb(64, 43, 42);
+    color: rgb(255, 83, 94);
+}
+
+.odd-entry #ExplorerEntryOptions #EntryOptions .unity-button.info-style,
+#ExplorerEntryOptions #EntryOptions .unity-button.info-style {
+    background-color: rgb(42, 64, 64);
+    color: rgb(83, 255, 235);
+}
+
+#explorer-inspectors {
+    height: 100%;
+}
+
+#inspectors-holder {
+    padding-left: 5px;
+    background-color: rgb(32, 32, 32);
+    height: 100%;
+}
+
+#inspectors-holder #inspector-holder {
+    margin-right: 5px;
+    background-color: rgb(56, 56, 56);
+    height: 100%;
+}
+
+#inspectors-holder #inspector-holder ScrollView {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+#inspectors-holder #inspector-holder ExplorerInspectorToolbar {
+    background-color: rgb(42, 42, 42);
+}
+
+#inspectors-holder #inspector-holder ExplorerInspectorToolbar.highlighted {
+    background-color: rgb(82, 24, 67);
+}
+
+#ExplorerToolbarOptions #EntryOptions .unity-button.warning-style {
+    color: rgb(201, 139, 27);
+}
+
+#ExplorerToolbarOptions #EntryOptions .unity-button.success-style {
+    color: rgb(44, 211, 25);
+}
+
+#ExplorerToolbarOptions #EntryOptions .unity-button.danger-style {
+    color: rgb(255, 83, 94);
+}
+
+#ExplorerToolbarOptions #EntryOptions .unity-button.info-style {
+    color: rgb(83, 255, 235);
+}
+
+#DuplicateProfile > Label {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-size: 14px;
+    -unity-text-align: middle-center;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(10, 10, 10, 0.33);
+    margin-bottom: 10px;
+}
+
+#DuplicateProfile > Button {
+    margin: 10px;
+    background-color: rgb(94, 84, 20);
+}
+
+#search-property-drawer {
+    padding: 8px;
+}

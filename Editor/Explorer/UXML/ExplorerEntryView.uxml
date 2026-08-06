@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:Template name="ExplorerEntryOptions" src="project://database/Assets/Plugins/K10/Core/Editor/Explorer/UXML/ExplorerEntryOptions.uxml?fileID=9197481963319205126&amp;guid=264b343ff0f11164a903d7dd6472bf9a&amp;type=3#ExplorerEntryOptions"/>
+    <Style src="project://database/Assets/Plugins/K10/Core/Editor/Explorer/UXML/ExplorerEditor.uss?fileID=7433441132597879392&amp;guid=b73a0438e545b294aa78f0e60b6d1cf2&amp;type=3#ExplorerEditor"/>
+    <Rogue.Explorer.ExplorerEntryView text="Foldout" value="true" toggle-on-label-click="false" name="LevelGenExplorerEntryView">
+        <ui:VisualElement name="ExplorerEntryHeader" style="flex-grow: 1;">
+            <ui:Button text="" name="FoldoutButton">
+                <ui:VisualElement name="arrow" style="flex-grow: 1;"/>
+            </ui:Button>
+            <ui:VisualElement name="FoldoutOffset"/>
+            <ui:Button text="Button" name="EntryContent"/>
+            <ui:Instance template="ExplorerEntryOptions" name="ExplorerEntryOptions"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="ExpandableContent" style="flex-grow: 1;"/>
+    </Rogue.Explorer.ExplorerEntryView>
+</ui:UXML>

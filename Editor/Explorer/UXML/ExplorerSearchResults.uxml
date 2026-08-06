@@ -1,0 +1,4 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/Plugins/K10/Core/Editor/Explorer/UXML/ExplorerEditor.uss?fileID=7433441132597879392&amp;guid=b73a0438e545b294aa78f0e60b6d1cf2&amp;type=3#ExplorerEditor"/>
+    <ui:Foldout text="Foldout" name="ExplorerSearchResults"/>
+</ui:UXML>
