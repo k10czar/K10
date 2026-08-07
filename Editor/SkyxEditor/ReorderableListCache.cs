@@ -123,7 +123,7 @@ namespace Rogue.REditor
                 {
                     var color = isElementHighlighted?.Invoke(property.GetArrayElementAtIndex(index)) ?? false
                         ? (isActive ? Colors.Console.SpecialBackgroundVar : Colors.Console.SpecialBackground)
-                        : (isFocused ? Colors.CeruleanBlue : (index % 2 == 0 ? Color.clear: Colors.Transparent08));
+                        : (isFocused ? Colors.SelectionBackground : (index % 2 == 0 ? Color.clear: Colors.Transparent08));
 
                     EditorGUI.DrawRect(rect, color);
                 }

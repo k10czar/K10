@@ -392,6 +392,7 @@ public static class Colors
     // Transparencies
     [ConstLike] public static readonly Color Transparent08 = new(0f, 0f, 0f, 0.08f);
     [ConstLike] public static readonly Color Transparent20 = new(0f, 0f, 0f, 0.2f);
+    [ConstLike] public static readonly Color SelectionBackground = CeruleanBlue.WithAlpha(.2f);
 
 
     #endregion

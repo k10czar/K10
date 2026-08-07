@@ -1,11 +1,10 @@
 ﻿using System;
-using SharpVoronoiLib;
 using Random = Unity.Mathematics.Random;
 
 namespace Rogue.RNG
 {
     [Serializable]
-    public class RandomSource : IRandomNumberGenerator
+    public class RandomSource
     {
         private Random rng;
 
