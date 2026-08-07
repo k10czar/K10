@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Rogue.REditor;
 using UnityEditor;
 using UnityEngine;
 
@@ -29,7 +30,7 @@ namespace Rogue.Explorer
                 objectEditor = Editor.CreateEditor(target);
             else
             {
-                serializedObject = new SerializedObject(target);
+                serializedObject = PropertyCollection.GetSerializedObject(target);
                 property = serializedObject.FindProperty(propertyPath);
             }
         }

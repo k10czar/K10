@@ -37,16 +37,25 @@ namespace Rogue.Explorer
             return newEntry;
         }
 
-        private static VisualTreeAsset searchResultsTreeAsset;
-        public static VisualElement InstantiateSearchResults()
+        private static VisualTreeAsset searchTabTreeAsset;
+        public static VisualElement InstantiateSearchTab()
         {
-            if (searchResultsTreeAsset == null)
-                searchResultsTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{FolderPath}/ExplorerSearchResults.uxml");
+            if (searchTabTreeAsset == null)
+                searchTabTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{FolderPath}/ExplorerSearchTab.uxml");
 
             var newEntry = new VisualElement();
-            searchResultsTreeAsset.CloneTree(newEntry);
+            searchTabTreeAsset.CloneTree(newEntry);
 
             return newEntry;
+        }
+
+        private static VisualTreeAsset searchWindowTreeAsset;
+        public static void InstantiateSearchWindow(VisualElement root)
+        {
+            if (searchWindowTreeAsset == null)
+                searchWindowTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{FolderPath}/ExplorerSearchEditorWindow.uxml");
+
+            searchWindowTreeAsset.CloneTree(root);
         }
 
         #endregion

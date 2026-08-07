@@ -379,6 +379,7 @@ namespace Rogue.REditor
             ClassTreeNode.ClearCache();
             EditorDataCache.Clear();
             SkopeOverride.Clear();
+            EditorPropertyHighlights.Clear();
 
             cachesCleared?.Invoke();
         }
@@ -391,6 +392,7 @@ namespace Rogue.REditor
             ReorderableListCache.Release(cacheID);
             EditorDataCache.Release(cacheID);
             SkopeOverride.Release(cacheID);
+            EditorPropertyHighlights.Release(cacheID);
         }
 
         public static void ClearMyCaches(int mainCacheID, bool ignorePropertyCollections = false)
@@ -400,6 +402,7 @@ namespace Rogue.REditor
             ReorderableListCache.Release(mainCacheID);
             EditorDataCache.Release(mainCacheID);
             SkopeOverride.Release(mainCacheID);
+            EditorPropertyHighlights.Release(mainCacheID);
         }
 
         #endregion

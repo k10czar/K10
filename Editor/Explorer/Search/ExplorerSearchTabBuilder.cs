@@ -24,15 +24,17 @@ namespace Rogue.Explorer
         {
             PropertyCollection.RegisterChanged(ExplorerEditorConfig.Instance.GetInstanceID(), ReRunFilters);
 
-            var drawerHolder = new VisualElement()  { name = "search-property-drawer" };
-            root.Add(drawerHolder);
+            var newElement = ExplorerEditorLib.InstantiateSearchTab();
+            root.Add(newElement);
+
+            var configFoldout = newElement.Q<Foldout>("ExplorerSearchConfigs");
+            var drawerHolder = configFoldout.Q<VisualElement>("unity-content");
+            drawerHolder.AddToClassList("search-property-drawer");
+
             var drawer = new IMGUIContainer(DrawInspector);
             drawerHolder.Add(drawer);
 
-            var newElement = ExplorerEditorLib.InstantiateSearchResults();
             resultsFoldout = newElement.Q<Foldout>("ExplorerSearchResults");
-            root.Add(resultsFoldout);
-
             resultsHolder = resultsFoldout.Q<VisualElement>("unity-content");
 
             ReRunFilters();
@@ -51,15 +53,28 @@ namespace Rogue.Explorer
             if (searching) EditorGUILayout.HelpBox("Refreshing Search!", MessageType.Info);
         }
 
+        private void ReleasePropertyHighlights()
+        {
+            if (searchConfig == null) return;
+            if (!searchConfig.HasResults) return;
+
+            foreach (var result in searchConfig!.Results)
+            {
+                var innerProps = searchConfig.GetInternalResults(result);
+                var mainCacheID = result.GetInstanceID();
+
+                foreach (var path in innerProps.Keys)
+                    EditorPropertyHighlights.Release((mainCacheID, path));
+            }
+        }
+
         private async void ReRunFilters()
         {
             try
             {
-                if (searchProperty == null && !ResetSerializedProperty()) return;
+                ReleasePropertyHighlights();
 
-                var serializedObject = ExplorerEditorConfig.SerializedObjInstance;
-                serializedObject.SetIsDifferentCacheDirty();
-                serializedObject.Update();
+                if (searchProperty == null && !ResetSerializedProperty()) return;
 
                 searching = true;
                 cancellationToken = new CancellationTokenSource();
@@ -77,10 +92,12 @@ namespace Rogue.Explorer
                     resultsHolder.Add(newEntry);
 
                     var innerProps = searchConfig.GetInternalResults(result);
+                    var mainCacheID = result.GetInstanceID();
                     var breadcrumbs = new List<Object> { result };
 
                     foreach (var path in innerProps.Keys)
                     {
+                        EditorPropertyHighlights.Add((mainCacheID, path));
                         var innerEntry = ExplorerEntryView.Create(window, result, path, breadcrumbs);
                         newEntry.AddInternalContent(innerEntry);
                     }
@@ -123,6 +140,8 @@ namespace Rogue.Explorer
 
         public void TabClosed()
         {
+            WindowClosed();
+
             var config = ExplorerEditorConfig.Instance;
 
             Undo.RecordObject(config, "Remove favorite");
@@ -131,19 +150,19 @@ namespace Rogue.Explorer
 
             searchConfig = null;
             searchProperty = null;
-
-            WindowClosed();
         }
 
         public void Minimized() => WindowClosed();
 
         public void WindowClosed()
         {
+            ReleasePropertyHighlights();
+
             cancellationToken?.Cancel();
             cancellationToken?.Dispose();
             cancellationToken = null;
 
-            PropertyCollection.RegisterChanged(ExplorerEditorConfig.Instance.GetInstanceID(), ReRunFilters);
+            PropertyCollection.DeregisterChanged(ExplorerEditorConfig.Instance.GetInstanceID(), ReRunFilters);
         }
 
         public ExplorerSearchTabBuilder(IExplorerWindow window, ExplorerSearchConfigBase searchConfig, bool isNewConfig)

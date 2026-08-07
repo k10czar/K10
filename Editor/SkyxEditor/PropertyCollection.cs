@@ -160,6 +160,7 @@ namespace Rogue.REditor
         {
             collections.Clear();
             scheduledResets.Clear();
+            changedCallbacks.Clear();
         }
 
         public static void RegisterChanged(int mainCacheID, Action callback)

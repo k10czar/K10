@@ -21,11 +21,13 @@ namespace Rogue.Explorer
     public abstract class ExplorerSearchConfigBase
     {
         public readonly string tabID;
-        public string name;
+        public string name = "New Search";
 
         public int SourcesCount { get; protected set; }
 
         public abstract bool HasSources { get; }
+
+        public bool HasResults => ResultsCount > 0;
         public abstract int ResultsCount { get; }
         public abstract int FiltersCount { get; }
 
@@ -156,12 +158,9 @@ namespace Rogue.Explorer
             SourcesCount = Sources?.Count() ?? 0;
         }
 
-        protected ExplorerSearchConfig(string tabID) : base(tabID)
-        {
-            name = $"{typeof(T).Name} Search";
-        }
+        protected ExplorerSearchConfig(string tabID) : base(tabID) {}
 
-        protected ExplorerSearchConfig(string tabID, ExplorerSearchSourcesProvider<T> sourcesProvider) : this(tabID)
+        protected ExplorerSearchConfig(string tabID, ExplorerSearchSourcesProvider<T> sourcesProvider) : base(tabID)
         {
             this.sourcesProvider = sourcesProvider;
         }

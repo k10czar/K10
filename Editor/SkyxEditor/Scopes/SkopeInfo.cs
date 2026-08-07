@@ -159,6 +159,7 @@ namespace Rogue.REditor
 
             var color = scopedAtt.colorSource switch
             {
+                _ when EditorPropertyHighlights.IsLit(property) => EColor.Special,
                 _ when hasOverrides => skopeOverride.color,
                 EEditorInfoSource.Provided => scopedAtt.color,
                 _ when scopedAtt.isDisabled => EColor.Disabled,

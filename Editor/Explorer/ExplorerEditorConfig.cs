@@ -51,7 +51,7 @@ namespace Rogue.Explorer
                 if (instance == null)
                 {
                     instance = AssetDatabaseUtils.LoadOrCreateSO<ExplorerEditorConfig>(ConfigPath);
-                    serializedObjInstance = new SerializedObject(instance);
+                    serializedObjInstance = PropertyCollection.GetSerializedObject(instance);
                 }
 
                 return instance;

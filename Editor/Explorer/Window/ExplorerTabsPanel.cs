@@ -86,7 +86,7 @@ namespace Rogue.Explorer
 
         #endregion
 
-        #region Build
+        #region Build / Dispose
 
         public void SetWindow(IExplorerWindow windowRef) => Window = windowRef;
 
@@ -130,7 +130,7 @@ namespace Rogue.Explorer
                 if (HasTab(entry.tabID)) continue;
 
                 var tabBuilder = new ExplorerSearchTabBuilder(Window, entry, false);
-                CreateOrSelectTab(entry.tabID, "Search", tabBuilder);
+                CreateOrSelectTab(entry.tabID, entry.name, tabBuilder);
             }
         }
 
@@ -152,6 +152,13 @@ namespace Rogue.Explorer
 
             explorerContent.Clear();
             (selectedTab?.dataSource as IExplorerTabBuilder)?.Rebuild(Window, explorerContent);
+        }
+
+        public void WindowClosed()
+        {
+            var allTabs = tabView.Query<Tab>().ToList();
+            foreach (var tab in allTabs)
+                (tab.dataSource as IExplorerTabBuilder)?.WindowClosed();
         }
 
         #endregion

@@ -1,0 +1,32 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <Style src="project://database/Assets/Plugins/K10/Core/Editor/Explorer/UXML/ExplorerEditor.uss?fileID=7433441132597879392&amp;guid=b73a0438e545b294aa78f0e60b6d1cf2&amp;type=3#ExplorerEditor"/>
+    <ui:TwoPaneSplitView fixed-pane-initial-dimension="310" name="MainSplitView">
+        <ui:VisualElement name="left-panel">
+            <Rogue.Explorer.ExplorerTabsPanel view-data-key="" name="explorer-tabsPanel">
+                <ui:ScrollView horizontal-scroller-visibility="Hidden" name="ScrollView">
+                    <ui:Label text="Explorer Search" name="ExplorerTitle"/>
+                    <ui:Foldout text="Favorites" name="Favorites"/>
+                    <ui:TabView name="TabView" usage-hints="None"/>
+                    <ui:VisualElement name="explorer-content" style="flex-grow: 1;"/>
+                </ui:ScrollView>
+            </Rogue.Explorer.ExplorerTabsPanel>
+        </ui:VisualElement>
+        <ui:VisualElement name="right-panel">
+            <Rogue.Explorer.ExplorerInspectors name="explorer-inspectors">
+                <uie:Toolbar name="Toolbar">
+                    <ui:VisualElement name="LeftToolbar" style="flex-direction: row; height: 100%;">
+                        <uie:ToolbarButton text="→←" name="CollapseButton" focusable="false"/>
+                        <uie:ToolbarButton text="↻" name="RefreshButton" tooltip="Refresh editor (F5)" focusable="false"/>
+                        <ui:VisualElement name="Space" style="flex-grow: 1; width: 30px;"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="RightToolbar" style="flex-grow: 1; position: absolute; right: 0; flex-direction: row-reverse; height: 100%;">
+                        <uie:ToolbarButton text="Favorites" name="FavoritesButton" focusable="false"/>
+                        <uie:ToolbarButton text="New Search" name="SearchButton" focusable="false" tooltip="ctrl+f"/>
+                    </ui:VisualElement>
+                </uie:Toolbar>
+                <ui:VisualElement name="inspectors-holder" style="flex-grow: 1;"/>
+            </Rogue.Explorer.ExplorerInspectors>
+        </ui:VisualElement>
+    </ui:TwoPaneSplitView>
+    <ui:Label text="" name="ErrorLabel"/>
+</ui:UXML>
