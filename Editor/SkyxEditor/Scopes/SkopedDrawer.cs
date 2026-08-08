@@ -36,10 +36,15 @@ namespace Rogue.REditor
                     info.buttons.Add(ManagedPickerSkopeButton);
             }
 
-            if (!info.hideDescriptionSkopeButton && info.HasDescription)
+            if (info.autoAddSkopeButtons)
             {
-                DescriptionToggleSkopeButton.color = isShowingDescriptions ? EColor.Info : EColor.Support;
-                info.AddUniqueButton(DescriptionToggleSkopeButton);
+                if (info.HasDescription)
+                {
+                    DescriptionToggleSkopeButton.color = isShowingDescriptions ? EColor.Info : EColor.Support;
+                    info.AddUniqueButton(DescriptionToggleSkopeButton);
+                }
+
+                if (property.IsArrayEntry()) info.AddUniqueButton(ArrayRemovalSkopeButton);
             }
 
             using var scope = Skope.Open(ref rect, info);

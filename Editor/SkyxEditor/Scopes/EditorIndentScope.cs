@@ -18,7 +18,7 @@ namespace Rogue.REditor
             return scope;
         }
 
-        public static EditorIndentScope Increment(int delta)
+        public static EditorIndentScope Increment(int delta = 1)
         {
             var scope = pool.Get();
 

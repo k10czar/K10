@@ -209,6 +209,7 @@ namespace Rogue.REditor
             var textColor = color switch
             {
                 EColor.Disabled => Colors.DimGray,
+                EColor.Dark => Colors.Black,
                 _ => Colors.LightGray,
             };
 
@@ -310,8 +311,8 @@ namespace Rogue.REditor
         public static Color HeaderColor(EColor color) => headerColors[(int)color];
         public static Color BoxColor(EColor color) => boxColors[(int)color];
 
-        private const float HelpBoxLineHeight = 12;
-        public static float GetHelpBoxHeight(int lineCount, bool addMargin) => (HelpBoxLineHeight * lineCount) + (addMargin ? 3 : 2) * ElementsMargin;
+        private const float HelpBoxLineHeight = 13;
+        public static float GetHelpBoxHeight(int lineCount, bool addMargin) => (HelpBoxLineHeight * lineCount) + (addMargin ? 4 : 3) * ElementsMargin;
 
         public static float HeaderHeight(EElementSize size) => headerHeights[(int)size];
         public static float ScopeTotalExtraHeight(EElementSize size) => headerHeights[(int)size] + (3 * ElementsMargin);

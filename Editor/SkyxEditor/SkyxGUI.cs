@@ -302,21 +302,6 @@ namespace Rogue.REditor
             return clicked;
         }
 
-        public static bool ExpandButton(ref Rect rect, SerializedProperty isExpandedProp)
-        {
-            var extracted = rect.ExtractMiniButton();
-
-            var label = isExpandedProp.isExpanded ? "⇓" : ">";
-            var backgroundColor = isExpandedProp.isExpanded ? Colors.Console.GrayOut : Colors.Console.DarkerGrayOut;
-
-            using var backgroundScope = BackgroundColorScope.Set(backgroundColor);
-            EditorGUI.LabelField(extracted, label, SkyxStyles.ButtonStyle);
-
-            var clicked = extracted.TryUseClick(false);
-            if (clicked) isExpandedProp.isExpanded = !isExpandedProp.isExpanded;
-            return clicked;
-        }
-
         #endregion
 
         #region Buttons
@@ -362,6 +347,46 @@ namespace Rogue.REditor
 
         public static bool MiniButton(ref Rect rect, string label, EColor color, string hint = null, bool fromEnd = false)
             => Button(rect.ExtractMiniButton(fromEnd), label, color, EElementSize.Mini, EButtonType.Default, hint);
+
+        public static bool ExpandFeature(ref Rect rect, SerializedProperty property, string label, string hint = null)
+        {
+            rect.ApplyStartMargin(-5);
+            var buttonRect = rect.ExtractRect(20, false, 0);
+
+            using var backgroundScope = BackgroundColorScope.Set(EColor.Clear);
+
+            var content = new GUIContent(label, hint);
+
+            buttonRect.x += 1.5f; buttonRect.y += 1.5f;
+            var style = EButtonType.Inlaid.GetButton(EElementSize.Mini, EColor.Dark);
+            style.hover.background = style.normal.background;
+            style.hover.textColor = style.normal.textColor;
+
+            var result = GUI.Button(buttonRect, content, style);
+
+            buttonRect.x -= 1.5f; buttonRect.y -= 1.5f;
+            using var _ = EditorIndentScope.Set(0);
+            EditorGUI.LabelField(buttonRect, content, style.With(EColor.Info));
+
+            if (result) property.isExpanded = !property.isExpanded;
+
+            return result;
+        }
+
+        public static bool ExpandButton(ref Rect rect, SerializedProperty isExpandedProp)
+        {
+            var extracted = rect.ExtractMiniButton();
+
+            var label = isExpandedProp.isExpanded ? "⇓" : ">";
+            var backgroundColor = isExpandedProp.isExpanded ? Colors.Console.GrayOut : Colors.Console.DarkerGrayOut;
+
+            using var backgroundScope = BackgroundColorScope.Set(backgroundColor);
+            EditorGUI.LabelField(extracted, label, SkyxStyles.ButtonStyle);
+
+            var clicked = extracted.TryUseClick(false);
+            if (clicked) isExpandedProp.isExpanded = !isExpandedProp.isExpanded;
+            return clicked;
+        }
 
         #endregion
 
