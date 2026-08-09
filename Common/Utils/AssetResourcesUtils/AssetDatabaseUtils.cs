@@ -97,13 +97,13 @@ public static class AssetDatabaseUtils
 
     public static T[] GetAll<T>(bool debug = false) where T : ScriptableObject
     {
-        string[] assetNames = AssetDatabase.FindAssets($"t:{typeof(T).Name}");
+        var assetNames = AssetDatabase.FindAssets($"t:{typeof(T).Name}");
         var collection = new T[assetNames.Length];
 
-        for (int i = 0; i < assetNames.Length; i++)
+        for (var i = 0; i < assetNames.Length; i++)
         {
-            var SOpath = AssetDatabase.GUIDToAssetPath(assetNames[i]);
-            var element = AssetDatabase.LoadAssetAtPath<T>(SOpath);
+            var soPath = AssetDatabase.GUIDToAssetPath(assetNames[i]);
+            var element = AssetDatabase.LoadAssetAtPath<T>(soPath);
             collection[i] = element;
         }
 

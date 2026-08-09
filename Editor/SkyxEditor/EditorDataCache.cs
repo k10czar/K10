@@ -25,6 +25,11 @@ namespace Rogue.REditor
         public static void Release((int, string) cacheKey) => cache.Release(cacheKey);
         public static void Release(SerializedProperty property) => cache.Release(property.GetCacheID());
 
+        // Global Keys
+        public static bool TryGet<T>(string globalKey, out T value) => cache.TryGet((0, globalKey), out value);
+        public static void Cache(string globalKey, object value) => cache.Store((0, globalKey), value, true);
+        public static void Release(string globalKey) => cache.Release((0, globalKey));
+
         public static void Release(int mainCacheID)
         {
             var keysToRemove = cache.Keys.Where(k => k.Item1 == mainCacheID).ToList();
