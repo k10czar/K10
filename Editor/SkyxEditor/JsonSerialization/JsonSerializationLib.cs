@@ -120,7 +120,7 @@ namespace Rogue.REditor
             TypeNameHandling = TypeNameHandling.Objects,
 
             ContractResolver = new SerializeFieldContractResolver(),
-            Converters = { new UnityObjectConverter(rootType) },
+            Converters = { new UnityObjectConverter(rootType), new AnimationCurveConverter() },
         };
     }
 
