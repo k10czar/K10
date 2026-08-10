@@ -75,6 +75,9 @@ namespace Rogue.REditor
         public static GUIStyle PlainBGSecondary => Style("plainBGSecondary", PlainBGHeader, padding: defaultPadding);
         public static GUIStyle InlaidHintLabel => Style("InlaidHint", DefaultLabel, TextAnchor.MiddleRight);
 
+        public static GUIStyle ExpandPrefixStyle => Style("ExpandPrefix", BoldStyle, textColor: Colors.Console.Info);
+        public static GUIStyle ExpandShadowStyle => Style("fold", ExpandPrefixStyle, textColor: Colors.Black);
+
         public static GUIStyle FoldStyle => Style("fold", EditorStyles.foldout, FontStyle.Bold);
         public static GUIStyle BigFoldStyle => Style("bigFold", FoldStyle, BigFontSize);
 

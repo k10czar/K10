@@ -196,6 +196,12 @@ namespace Rogue.REditor
             return false;
         }
 
+        public static bool IsMouseHovering(this ref Rect rect)
+        {
+            var current = Event.current;
+            return rect.Contains(current.mousePosition);
+        }
+
         public static (Rect, bool) ExtractOverHeaderButton(EElementSize headerSize)
             => ExtractOverHeaderButton(EditorGUILayout.GetControlRect(false, 1), headerSize);
 

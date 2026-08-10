@@ -306,7 +306,7 @@ namespace Rogue.REditor
 
         #region Rect Draw
 
-        public bool Draw(ref Rect rect, string propertyName, ERectSlideDir slideDir = ERectSlideDir.Vertical, bool drawLabel = true, bool isBacking = false)
+        public bool Draw(ref Rect rect, string propertyName, ERectSlideDir slideDir, bool drawLabel = true, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
             var hasChanged = SkyxGUI.Draw(rect, property, drawLabel);

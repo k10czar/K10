@@ -348,29 +348,41 @@ namespace Rogue.REditor
         public static bool MiniButton(ref Rect rect, string label, EColor color, string hint = null, bool fromEnd = false)
             => Button(rect.ExtractMiniButton(fromEnd), label, color, EElementSize.Mini, EButtonType.Default, hint);
 
-        public static bool ExpandFeature(ref Rect rect, SerializedProperty property, string label, string hint = null)
+        public static void ExpandableLabel(ref Rect rect, SerializedProperty property, string prefix, string label = null, string hint = null, bool extractLabelRect = true)
         {
-            rect.ApplyStartMargin(-5);
-            var buttonRect = rect.ExtractRect(20, false, 0);
-
-            using var backgroundScope = BackgroundColorScope.Set(EColor.Clear);
-
-            var content = new GUIContent(label, hint);
-
-            buttonRect.x += 1.5f; buttonRect.y += 1.5f;
-            var style = EButtonType.Inlaid.GetButton(EElementSize.Mini, EColor.Dark);
-            style.hover.background = style.normal.background;
-            style.hover.textColor = style.normal.textColor;
-
-            var result = GUI.Button(buttonRect, content, style);
-
-            buttonRect.x -= 1.5f; buttonRect.y -= 1.5f;
             using var _ = EditorIndentScope.Set(0);
-            EditorGUI.LabelField(buttonRect, content, style.With(EColor.Info));
 
-            if (result) property.isExpanded = !property.isExpanded;
+            Rect buttonRect;
+            bool isHovering;
 
-            return result;
+            if (!string.IsNullOrEmpty(label))
+            {
+                var drawRect = extractLabelRect ? rect.ExtractLabelRect() : rect;
+
+                isHovering = drawRect.IsMouseHovering();
+                if (isHovering && drawRect.TryUseClick(false))
+                    property.isExpanded = !property.isExpanded;
+
+                buttonRect = drawRect.ExtractRect(15, false, 0);
+
+                EditorGUI.LabelField(drawRect, label, SkyxStyles.DefaultLabel);
+            }
+            else
+            {
+                buttonRect = rect.ExtractRect(20, false, 0);
+
+                isHovering = buttonRect.IsMouseHovering();
+                if (isHovering && buttonRect.TryUseClick(false))
+                    property.isExpanded = !property.isExpanded;
+            }
+
+            var style = isHovering ? SkyxStyles.ExpandPrefixStyle.Darker() : SkyxStyles.ExpandPrefixStyle;
+
+            var content = new GUIContent(prefix, hint);
+            buttonRect.x += 1.5f; buttonRect.y += 1.5f;
+            EditorGUI.LabelField(buttonRect, content, SkyxStyles.ExpandShadowStyle);
+            buttonRect.x -= 1.5f; buttonRect.y -= 1.5f;
+            EditorGUI.LabelField(buttonRect, content, style);
         }
 
         public static bool ExpandButton(ref Rect rect, SerializedProperty isExpandedProp)
