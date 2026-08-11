@@ -17,6 +17,7 @@ public interface IEventRegister
 	void Register(IEventTrigger listener);
 	bool Unregister(IEventTrigger listener);
 
+	IFilteredActionCapsule RegisterFiltered(Action<object[]> act) => throw new NotSupportedException();
 	IFilteredActionCapsule RegisterFiltered(Action act) => throw new NotSupportedException();
 
 	ActionCapsule Register(Action act) => new(act, this);

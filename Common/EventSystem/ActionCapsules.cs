@@ -33,6 +33,14 @@ public class ActionCapsule : ActionCapsuleBase, IEventTrigger
 		if (IsValid) observed.Register(this);
 	}
 
+	public ActionCapsule(Action<object[]> callback, IEventRegister observed) : base(callback)
+	{
+		this.callback = callback.Wrap();
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
+	}
+
 	// Used only to unregister
 	internal ActionCapsule(object callback, bool killOnly) : base(callback)
 	{
@@ -76,6 +84,14 @@ public class ActionCapsule<T> : ActionCapsuleBase, IEventTrigger<T>
 	}
 
 	public ActionCapsule(Action callback, IEventRegister<T> observed) : base(callback)
+	{
+		this.callback = callback.Wrap<T>();
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
+	}
+
+	public ActionCapsule(Action<object[]> callback, IEventRegister<T> observed) : base(callback)
 	{
 		this.callback = callback.Wrap<T>();
 		this.observed = observed;
@@ -142,6 +158,14 @@ public class ActionCapsule<T,K> : ActionCapsuleBase, IEventTrigger<T,K>
 	}
 
 	public ActionCapsule(Action callback, IEventRegister<T,K> observed) : base(callback)
+	{
+		this.callback = callback.Wrap<T,K>();
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
+	}
+
+	public ActionCapsule(Action<object[]> callback, IEventRegister<T,K> observed) : base(callback)
 	{
 		this.callback = callback.Wrap<T,K>();
 		this.observed = observed;
@@ -240,6 +264,14 @@ public class ActionCapsule<T,K,L> : ActionCapsuleBase, IEventTrigger<T,K,L>
 	}
 
 	public ActionCapsule(Action callback, IEventRegister<T,K,L> observed) : base(callback)
+	{
+		this.callback = callback.Wrap<T,K,L>();
+		this.observed = observed;
+
+		if (IsValid) observed.Register(this);
+	}
+
+	public ActionCapsule(Action<object[]> callback, IEventRegister<T,K,L> observed) : base(callback)
 	{
 		this.callback = callback.Wrap<T,K,L>();
 		this.observed = observed;

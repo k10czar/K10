@@ -56,6 +56,7 @@ namespace K10.EventSystem
 
         #region Constructors
 
+        public FilteredActionCapsule(Action<object[]> callback, IEventRegister<T> observed) : base(callback, observed) {}
         public FilteredActionCapsule(Action<T> callback, IEventRegister<T> observed) : base(callback, observed) {}
         public FilteredActionCapsule(Action callback, IEventRegister<T> observed) : base(callback, observed) {}
 
@@ -108,6 +109,7 @@ namespace K10.EventSystem
 
         #region Constructors
 
+        public FilteredActionCapsule(Action<object[]> callback, IEventRegister<T,K> observed) : base(callback, observed) {}
         public FilteredActionCapsule(Action<T,K> callback, IEventRegister<T,K> observed) : base(callback, observed) {}
         public FilteredActionCapsule(Action<T> callback, IEventRegister<T,K> observed) : base(callback, observed) {}
         public FilteredActionCapsule(Action<K> callback, IEventRegister<T,K> observed) : base(callback, observed) {}
@@ -165,6 +167,7 @@ namespace K10.EventSystem
 
         #region Constructors
 
+        public FilteredActionCapsule(Action<object[]> callback, IEventRegister<T,K,L> observed) : base(callback, observed) {}
         public FilteredActionCapsule(Action<T,K,L> callback, IEventRegister<T,K,L> observed) : base(callback, observed) {}
         public FilteredActionCapsule(Action<T,K> callback, IEventRegister<T,K,L> observed) : base(callback, observed) {}
         public FilteredActionCapsule(Action<T,L> callback, IEventRegister<T,K,L> observed) : base(callback, observed) {}

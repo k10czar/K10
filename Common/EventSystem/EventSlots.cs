@@ -6,7 +6,7 @@ using UnityEngine.Pool;
 
 public class EventSlot : IEvent, ICustomDisposableKill
 {
-	private bool killed = false;
+	private bool killed;
 	private List<IEventTrigger> listeners;
 
 	public bool IsValid => !killed;
@@ -194,6 +194,7 @@ public class EventSlot<T> : IEvent<T>, ICustomDisposableKill
 	public ActionCapsule<T> Register(Action act) => new(act, this);
 	public ActionCapsule<T> Register(Action<T> act) => new(act, this);
 
+	public IFilteredActionCapsule RegisterFiltered(Action<object[]> act) => new FilteredActionCapsule<T>(act, this);
 	public IFilteredActionCapsule RegisterFiltered(Action act) => new FilteredActionCapsule<T>(act, this);
 	public IFilteredActionCapsule RegisterFiltered(Action<T> act) => new FilteredActionCapsule<T>(act, this);
 
@@ -311,6 +312,7 @@ public class EventSlot<T,K> : IEvent<T,K>, ICustomDisposableKill
 	public ActionCapsule<T,K> Register(Action<K> act) => new(act, this);
 	public ActionCapsule<T,K> Register(Action<T,K> act) => new(act, this);
 
+	public IFilteredActionCapsule RegisterFiltered(Action<object[]> act) => new FilteredActionCapsule<T,K>(act, this);
 	public IFilteredActionCapsule RegisterFiltered(Action act) => new FilteredActionCapsule<T,K>(act, this);
 	public IFilteredActionCapsule RegisterFiltered(Action<T> act) => new FilteredActionCapsule<T,K>(act, this);
 	public IFilteredActionCapsule RegisterFiltered(Action<K> act) => new FilteredActionCapsule<T,K>(act, this);
@@ -443,6 +445,7 @@ public class EventSlot<T, K, L> : IEvent<T, K, L>, ICustomDisposableKill
 	public ActionCapsule<T,K,L> Register(Action<K,L> act) => new(act, this);
 	public ActionCapsule<T,K,L> Register(Action<T,K,L> act) => new(act, this);
 
+	public IFilteredActionCapsule RegisterFiltered(Action<object[]> act) => new FilteredActionCapsule<T,K,L>(act, this);
 	public IFilteredActionCapsule RegisterFiltered(Action act) => new FilteredActionCapsule<T,K,L>(act, this);
 	public IFilteredActionCapsule RegisterFiltered(Action<T> act) => new FilteredActionCapsule<T,K,L>(act, this);
 	public IFilteredActionCapsule RegisterFiltered(Action<K> act) => new FilteredActionCapsule<T,K,L>(act, this);
