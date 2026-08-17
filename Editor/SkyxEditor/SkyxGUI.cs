@@ -4,6 +4,7 @@ using K10.Common;
 using Skyx.RuntimeEditor;
 using Skyx.Trees;
 using UnityEditor;
+using UnityEditor.ShortcutManagement;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -350,6 +351,9 @@ namespace Rogue.REditor
 
         public static void ExpandableLabel(ref Rect rect, SerializedProperty property, string prefix, string label = null, string hint = null, bool extractLabelRect = true)
         {
+            var indentedRect = EditorGUI.IndentedRect(rect);
+            rect = indentedRect;
+
             using var _ = EditorIndentScope.Set(0);
 
             Rect buttonRect;
@@ -406,7 +410,7 @@ namespace Rogue.REditor
 
         public static Action cachesCleared;
 
-        [MenuItem("Rogue/Editor/Clear All Caches")]
+        [MenuItem("Rogue/Editor/Clear All Caches (Ctrl+Alt+Q)"), Shortcut("Clear Editor Caches", KeyCode.Q, ShortcutModifiers.Control | ShortcutModifiers.Alt)]
         public static void ClearAllCaches()
         {
             PropertyCollection.ClearCollections();

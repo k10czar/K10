@@ -147,7 +147,7 @@ namespace Rogue.REditor
 
         private static bool ReallyDraw(ref Rect headerRect, ref Rect boxRect, ref bool isExpandedRef, SkopeInfo info)
         {
-            info.DrawButtons(headerRect, false);
+            info.DrawButtons(headerRect, false, true);
 
             if (headerRect.TryUseClick(false))
                 isExpandedRef = !isExpandedRef;
@@ -158,7 +158,7 @@ namespace Rogue.REditor
             GUI.Button(headerRect, GUIContent.none); // This forces repaint on hover
             SkyxGUI.Button(headerRect, info.title, info.color, info.size, EButtonType.Plain);
 
-            info.DrawButtons(headerRect, true);
+            info.DrawButtons(headerRect, true, false);
 
             SkyxGUI.Separator(ref boxRect, 0);
 

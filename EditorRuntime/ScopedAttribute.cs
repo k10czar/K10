@@ -9,11 +9,11 @@ namespace Skyx.RuntimeEditor
     {
         NoPreset = -1,
         FoldoutNameOnly,
-        FoldoutPropertySummary,
+        FoldoutPropertyAndName,
         FoldoutSummaryOnly,
         FoldoutNameSummary,
         Inline,
-        InlinePropertySummary,
+        InlinePropertyAndName,
         InlineFullContent,
         HeaderNameOnly,
         HeaderPropertySummary,
@@ -104,7 +104,7 @@ namespace Skyx.RuntimeEditor
         private static readonly Dictionary<EScopePreset, ScopedAttribute> presets = new()
         {
             { EScopePreset.FoldoutNameOnly, new ScopedAttribute(EScopeType.Foldout, EEditorInfoSource.EditorContent, EEditorInfoSource.Nothing, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
-            { EScopePreset.FoldoutPropertySummary, new ScopedAttribute(EScopeType.Foldout, EEditorInfoSource.Property, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
+            { EScopePreset.FoldoutPropertyAndName, new ScopedAttribute(EScopeType.Foldout, EEditorInfoSource.Property, EEditorInfoSource.EditorAltContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
             { EScopePreset.FoldoutSummaryOnly, new ScopedAttribute(EScopeType.Foldout, EEditorInfoSource.EditorAltContent, EEditorInfoSource.Nothing, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
             { EScopePreset.FoldoutNameSummary, new ScopedAttribute(EScopeType.Foldout, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
 
@@ -113,7 +113,7 @@ namespace Skyx.RuntimeEditor
             { EScopePreset.HeaderNameSummary, new ScopedAttribute(EScopeType.Header, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
 
             { EScopePreset.Inline, new ScopedAttribute(EScopeType.Inline, EEditorInfoSource.EditorContent, EEditorInfoSource.Nothing, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
-            { EScopePreset.InlinePropertySummary, new ScopedAttribute(EScopeType.Inline, EEditorInfoSource.Property, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
+            { EScopePreset.InlinePropertyAndName, new ScopedAttribute(EScopeType.Inline, EEditorInfoSource.Property, EEditorInfoSource.EditorAltContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
             { EScopePreset.InlineFullContent, new ScopedAttribute(EScopeType.Inline, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },
 
             { EScopePreset.InlineHeaderNameSummary, new ScopedAttribute(EScopeType.InlineHeader, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, EEditorInfoSource.EditorContent, true) },

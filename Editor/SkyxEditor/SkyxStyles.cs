@@ -261,7 +261,7 @@ namespace Rogue.REditor
             32, // Primary
             28, // Secondary
             24, // SingleLine
-            24, // SingleLine
+            24, // Mini
         };
 
         private static readonly Color[] headerColors =

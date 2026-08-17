@@ -97,31 +97,21 @@ namespace Rogue.REditor
         {
             Skope.DrawBox(ref boxRect, info);
 
-            var canExpand = info.property.CanExpand();
-            if (!canExpand) isExpandedRef = false;
-
-            info.DrawButtons(headerRect, false);
-
-            var extractedSize = 0;
             var clickRect = headerRect;
+            info.DrawButtons(headerRect, true, true);
 
-            if (canExpand)
-            {
-                extractedSize = 15;
-                var toggleRect = headerRect.ExtractRect(extractedSize, false, 0);
-                GUI.Toggle(toggleRect, isExpandedRef, GUIContent.none, EditorStyles.foldout);
-            }
+            var canExpand = info.property.CanExpand();
 
             var prop = info.property;
+            var (label, isManaged) = prop == null ? (info.title, false) : (prop.displayName, prop.IsManagedRef());
+            var labelRect = isManaged ? headerRect.ExtractLabelRect() : headerRect;
 
-            if (prop == null || !prop.IsManagedRef())
-                EditorGUI.LabelField(headerRect, info.title, SkyxStyles.DefaultLabel);
-            else
+            if (canExpand) isExpandedRef = EditorGUI.Foldout(labelRect, isExpandedRef, label, true);
+            else EditorGUI.LabelField(labelRect, label);
+
+            if (isManaged)
             {
-                var labelRect = headerRect.ExtractRect(EditorGUIUtility.labelWidth - extractedSize, false, 0);
-                EditorGUI.LabelField(labelRect, prop.displayName, SkyxStyles.DefaultLabel);
-
-                var (text, color) = prop.managedReferenceValue == null
+                var (text, color) = prop!.managedReferenceValue == null
                     ? ("MISSING REFERENCE!", EColor.Danger)
                     : (info.title, EColor.Support);
 
@@ -129,13 +119,10 @@ namespace Rogue.REditor
                     SerializedRefLib.ShowTypePicker(headerRect, prop);
             }
 
-            if (canExpand && clickRect.TryUseClick(false))
-                isExpandedRef = !isExpandedRef;
+            if (!canExpand) isExpandedRef = false;
 
             if (info.property != null)
                 PropertyContextMenu.ContextGUI(ref clickRect, info.property);
-
-            info.DrawButtons(headerRect, true);
 
             if (isExpandedRef && indent) EditorGUI.indentLevel++;
 
@@ -144,7 +131,7 @@ namespace Rogue.REditor
 
         private bool GetDrawingRects(ref bool isExpandedRef, SkopeInfo info)
         {
-            var headerHeight = Skope.HeaderHeight(info.size);
+            var headerHeight = SkyxStyles.FullLineHeight;
             var headerRect = EditorGUILayout.GetControlRect(false, headerHeight);
             var boxRect = headerRect;
 
@@ -167,7 +154,7 @@ namespace Rogue.REditor
         {
             initialRect.height -= SkyxStyles.ElementsMargin;
 
-            var headerHeight = Skope.HeaderHeight(info.size);
+            var headerHeight = SkyxStyles.FullLineHeight;
             var headerRect = initialRect;
             BoxGUI.ShrinkHeaderRect(ref headerRect, headerHeight);
 

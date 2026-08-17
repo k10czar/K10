@@ -203,6 +203,8 @@ namespace Rogue.REditor
 
         public static float ScopeHeight(EScopeType scopeType, EElementSize size, bool isExpanded)
         {
+            if (scopeType is EScopeType.Inline) return SkyxStyles.FullLineHeight;
+
             var baseHeight = HeaderHeight(size);
 
             var margin = !isExpanded ? 1 : scopeType switch
@@ -210,7 +212,6 @@ namespace Rogue.REditor
                 EScopeType.Header => 3,
                 EScopeType.Foldout => 3,
                 EScopeType.InlineHeader => 2,
-                EScopeType.Inline => 1,
                 _ => throw new ArgumentOutOfRangeException(nameof(scopeType), scopeType, null)
             };
 

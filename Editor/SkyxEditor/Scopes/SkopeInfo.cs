@@ -37,7 +37,7 @@ namespace Rogue.REditor
             buttons.Add(entry);
         }
 
-        public void DrawButtons(Rect rect, bool reallyDraw)
+        public void DrawButtons(Rect rect, bool draw, bool getClicks)
         {
             if (buttons == null) return;
 
@@ -59,13 +59,12 @@ namespace Rogue.REditor
             {
                 if (button.isDisabled) continue;
 
-                if (reallyDraw) SkyxGUI.MiniButton(ref rect, button.label, button.color, null, true);
-                else
-                {
-                    var buttonRect = rect.ExtractMiniButton(true);
-                    if (buttonRect.TryUseClick(false))
-                        button.onClick(property);
-                }
+                var buttonRect = rect.ExtractMiniButton(true);
+
+                if (draw) SkyxGUI.Button(buttonRect, button.label, button.color, EElementSize.Mini, EButtonType.Default);
+
+                if (getClicks && buttonRect.TryUseClick(false))
+                    button.onClick(property);
             }
 
             EditorGUI.EndDisabledGroup();
@@ -136,7 +135,7 @@ namespace Rogue.REditor
 
             var append = scopedAtt.appendSource switch
             {
-                _ when hasOverrides => skopeOverride.appendTitle,
+                _ when hasOverrides && !string.IsNullOrEmpty(skopeOverride.appendTitle) => skopeOverride.appendTitle,
                 EEditorInfoSource.Nothing => string.Empty,
                 EEditorInfoSource.Property => currentValue?.GetType().Name ?? string.Empty,
                 EEditorInfoSource.FieldValue => currentValue?.ToString() ?? property.displayName,

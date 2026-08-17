@@ -103,7 +103,7 @@ namespace Rogue.REditor
             var drawingRect = headerRect;
             drawingRect.ApplyStartMargin(10);
 
-            info.DrawButtons(headerRect, false);
+            info.DrawButtons(headerRect, false, true);
 
             if (canExpand && headerRect.TryUseClick(false))
                 isExpandedRef = !isExpandedRef;
@@ -116,7 +116,7 @@ namespace Rogue.REditor
 
             EditorGUI.LabelField(drawingRect, info.title, SkyxStyles.DefaultLabel);
 
-            info.DrawButtons(headerRect, true);
+            info.DrawButtons(headerRect, true, false);
 
             if (isExpandedRef)
             {

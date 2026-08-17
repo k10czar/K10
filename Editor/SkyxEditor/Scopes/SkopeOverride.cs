@@ -10,7 +10,7 @@ namespace Rogue.REditor
         #region Static Interface
 
         public const string RemovedMsg = "OVERRIDE REMOVED";
-        public const string ReplacedMsg = "OVERRIDE REPLACED";
+        // public const string ReplacedMsg = "OVERRIDE REPLACED";
 
         private static readonly Dictionary<(int, string), SkopeOverride> overrides = new();
 
@@ -22,7 +22,7 @@ namespace Rogue.REditor
             var appendOverride = color switch
             {
                 EColor.Danger => RemovedMsg,
-                EColor.Warning => ReplacedMsg,
+                // EColor.Warning => ReplacedMsg,
                 _ => string.Empty
             };
 
@@ -50,7 +50,7 @@ namespace Rogue.REditor
         public readonly bool disableInput;
         public readonly List<SkopeButton> buttons;
 
-        public bool ForcesInfo => !string.IsNullOrEmpty(appendTitle) || color is not EColor.Infer;
+        public bool ForcesInfo => !string.IsNullOrEmpty(appendTitle) && color is not EColor.Infer;
         public bool ForcesButtons => buttons != null;
 
         public SkopeOverride(EColor color, string appendTitle, bool disableInput, List<SkopeButton> buttons)
