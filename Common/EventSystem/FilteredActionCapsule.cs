@@ -15,6 +15,16 @@ namespace K10.EventSystem
         public void RemoveKey(int index);
     }
 
+    public class FilteredActionCapsule : ActionCapsule, IFilteredActionCapsule
+    {
+        public void SetKeys(params object[] newKeys)  => throw new NotSupportedException();
+        public void SetKey(object newKey, int index) => throw new NotSupportedException();
+        public void RemoveKey(int index) => throw new NotSupportedException();
+
+        public FilteredActionCapsule(Action callback, IEventRegister observed) : base(callback, observed) {}
+        public FilteredActionCapsule(Action<object[]> callback, IEventRegister observed) : base(callback, observed) {}
+    }
+
     public class FilteredActionCapsule<T> : ActionCapsule<T>, IFilteredActionCapsule
     {
         [HideInCallstack]

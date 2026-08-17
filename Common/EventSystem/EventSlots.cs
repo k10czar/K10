@@ -89,6 +89,7 @@ public class EventSlot : IEvent, ICustomDisposableKill
 		return removed;
 	}
 
+	public IFilteredActionCapsule RegisterFiltered(Action<object[]> act) => new FilteredActionCapsule(act, this);
 	public ActionCapsule Register(Action act) => new(act, this);
 	public bool Unregister(Action act) => Unregister(new ActionCapsule(act, true));
 

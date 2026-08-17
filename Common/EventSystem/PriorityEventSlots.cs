@@ -246,6 +246,7 @@ namespace K10.EventSystem
         public ActionCapsule<PriorityEventSlot<T>,T> Register(Action<PriorityEventSlot<T>> act) => _ = new ActionCapsule<PriorityEventSlot<T>,T>(act, this);
         public ActionCapsule<PriorityEventSlot<T>,T> Register(Action<PriorityEventSlot<T>,T> act) => _ = new ActionCapsule<PriorityEventSlot<T>,T>(act, this);
 
+        public IFilteredActionCapsule RegisterFiltered(Action<object[]> act) => new FilteredActionCapsule<PriorityEventSlot<T>,T>(act, this);
         public IFilteredActionCapsule RegisterFiltered(Action act) => new FilteredActionCapsule<PriorityEventSlot<T>,T>(act, this);
         public IFilteredActionCapsule RegisterFiltered(Action<T> act) => new FilteredActionCapsule<PriorityEventSlot<T>,T>(act, this);
         public IFilteredActionCapsule RegisterFiltered(Action<PriorityEventSlot<T>> act) => new FilteredActionCapsule<PriorityEventSlot<T>,T>(act, this);
