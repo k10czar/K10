@@ -58,12 +58,18 @@ namespace Rogue.REditor
 
         public static void ShowTypePicker(Rect rect, SerializedProperty property, Action<SerializedProperty> newElementSetup = null, IEnumerable<Type> validTypes = null)
         {
-            ClassTreePicker.Draw(rect, property.GetManagedType(), property.managedReferenceValue?.GetType(), OnTypeSelected, validTypes);
+            var fieldInfo = property.GetFieldInfo();
+            fieldInfo.TryGetAttribute(out SerializedRefOptionsAttribute optionsAtt);
+            var nullLabel = optionsAtt == null ? null : (optionsAtt.canBeNull ? optionsAtt.nullLabel : null);
+
+            ClassTreePicker.Draw(rect, property.GetManagedType(), property.managedReferenceValue?.GetType(), OnTypeSelected, validTypes, nullLabel);
 
             void OnTypeSelected(Type newSelection)
             {
                 property.SetNewReferenceType(newSelection, true);
-                property.ResetDefaultValues(newElementSetup, true, true);
+
+                if (newSelection != null)
+                    property.ResetDefaultValues(newElementSetup, true, true);
             }
         }
 

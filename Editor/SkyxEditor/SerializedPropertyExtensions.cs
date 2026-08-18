@@ -62,31 +62,36 @@ namespace Rogue.REditor
                 throw new ArgumentException($"Property is not an array element! {path}");
         }
 
-        public static void ResetDefaultValues(this SerializedProperty newElement, Action<SerializedProperty> customReset, bool keepManagedRef, bool isDuringGui)
+        public static void ResetDefaultValues(this SerializedProperty targetProperty, Action<SerializedProperty> customReset, bool keepManagedRef, bool isDuringGui)
         {
-            if (!keepManagedRef && newElement.IsManagedRef())
+            if (customReset != null)
             {
-                newElement.managedReferenceValue = null;
-                newElement.Apply();
-
-                if (isDuringGui) SerializedRefLib.ShowTypePicker(newElement, customReset);
-                else EditorUtils.RunOnSceneOnce(() => SerializedRefLib.ShowTypePicker(newElement, customReset));
+                customReset(targetProperty);
                 return;
             }
 
-            if (customReset != null) customReset(newElement);
-            else if (!CustomDrawersCache.TryResetNewElement(newElement))
+            if (!keepManagedRef && targetProperty.IsManagedRef())
             {
-                if (newElement.propertyType is SerializedPropertyType.ObjectReference)
+                targetProperty.managedReferenceValue = null;
+                targetProperty.Apply();
+
+                if (isDuringGui) SerializedRefLib.ShowTypePicker(targetProperty, customReset);
+                else EditorUtils.RunOnSceneOnce(() => SerializedRefLib.ShowTypePicker(targetProperty, customReset));
+                return;
+            }
+
+            if (!CustomDrawersCache.TryResetNewElement(targetProperty))
+            {
+                if (targetProperty.propertyType is SerializedPropertyType.ObjectReference)
                 {
-                    newElement.objectReferenceValue = null;
-                    newElement.Apply();
+                    targetProperty.objectReferenceValue = null;
+                    targetProperty.Apply();
                 }
                 else
                 {
-                    newElement.PrepareForChanges("Resetting new element!");
-                    newElement.SetValue(newElement.GenerateDefaultValue());
-                    newElement.ApplyDirectChanges();
+                    targetProperty.PrepareForChanges("Resetting new element!");
+                    targetProperty.SetValue(targetProperty.GenerateDefaultValue());
+                    targetProperty.ApplyDirectChanges();
                 }
             }
         }
@@ -171,6 +176,11 @@ namespace Rogue.REditor
             }
 
             var lastField = fieldStructure[^1];
+
+            var arrayIndex = lastField.LastIndexOf('[');
+            if (arrayIndex != -1)
+                lastField = lastField[..arrayIndex];
+
             return GetField(lastField, obj);
         }
 
