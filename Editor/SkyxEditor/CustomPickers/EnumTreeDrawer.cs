@@ -75,6 +75,12 @@ namespace Rogue.REditor
             var name = new GUIContent(ObjectNames.NicifyVariableName(enumObj.ToString()));
 
             if (!EditorGUI.DropdownButton(position, name, FocusType.Passive, EditorStyles.popup)) return;
+
+            ShowEnumDropdown(position, enumType, property, callback, validList);
+        }
+
+        public static void ShowEnumDropdown(Rect position, Type enumType, SerializedProperty property, Action<object> callback, IEnumerable<object> validList = null)
+        {
             var state = new AdvancedDropdownState();
 
             var enumTreeType = typeof(EnumTreeNode<>).MakeGenericType(enumType);

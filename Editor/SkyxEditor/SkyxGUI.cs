@@ -411,6 +411,12 @@ namespace Rogue.REditor
         public static Action cachesCleared;
 
         [MenuItem("Rogue/Editor/Clear All Caches (Ctrl+Alt+Q)"), Shortcut("Clear Editor Caches", KeyCode.Q, ShortcutModifiers.Control | ShortcutModifiers.Alt)]
+        private static void ClearAllCachesHotkey()
+        {
+            ClearAllCaches();
+            Debug.Log("Cleared all Caches!");
+        }
+
         public static void ClearAllCaches()
         {
             PropertyCollection.ClearCollections();
