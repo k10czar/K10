@@ -105,8 +105,11 @@ namespace Rogue.REditor
 
             info.DrawButtons(headerRect, false, true);
 
-            if (canExpand && headerRect.TryUseClick(false))
-                isExpandedRef = !isExpandedRef;
+            using (IgnoreDisabledGUIScope.Start())
+            {
+                if (canExpand && headerRect.TryUseClick(false))
+                    isExpandedRef = !isExpandedRef;
+            }
 
             if (info.property != null)
                 PropertyContextMenu.ContextGUI(ref headerRect, info.property);
