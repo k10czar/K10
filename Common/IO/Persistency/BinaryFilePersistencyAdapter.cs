@@ -1,8 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-
-
-public interface IPersistencyAdapter
+﻿public interface IPersistencyAdapter
 {
 	void Save<T>( string path, T obj );
 	T Load<T>( string path );

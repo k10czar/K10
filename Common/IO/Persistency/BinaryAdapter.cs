@@ -1,8 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-
-
-public static class BinaryAdapter
+﻿public static class BinaryAdapter
 {
 	public static T Deserialize<T>( byte[] bytes )
 	{

@@ -4,7 +4,6 @@ using System.Linq;
 using Unity.Plastic.Newtonsoft.Json;
 using Unity.Plastic.Newtonsoft.Json.Linq;
 using UnityEditor;
-using UnityEngine;
 
 namespace Rogue.REditor
 {

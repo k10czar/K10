@@ -1,9 +1,7 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using UnityEngine;
 
 #if TRY_USE_NEW_MATH && !DO_NOT_USE_NEW_MATH //USE_NEW_MATHEMATICS
-using Unity.Mathematics;
 using v2 = Unity.Mathematics.float2;
 using v3 = Unity.Mathematics.float3;
 #else

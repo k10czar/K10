@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class AttachedComponent<T> : MonoBehaviour where T : Component
 {

@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public class AutoClearedReference<T> where T : UnityEngine.Component
 {
 	private T _reference;

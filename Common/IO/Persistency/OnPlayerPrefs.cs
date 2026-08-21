@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public static class OnPlayerPrefsInt<T> where T : struct, System.IConvertible
 {
 	static bool inited = false;

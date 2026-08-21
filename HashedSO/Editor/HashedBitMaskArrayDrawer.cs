@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using K10.EditorGUIExtention;
-using System.Collections;
 using System.Linq;
 using K10.Common;
 

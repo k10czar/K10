@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEditor;
 using K10.EditorGUIExtention;
-using System.Collections.Generic;
 
 public class PreviewButton
 {

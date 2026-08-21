@@ -30,7 +30,11 @@ namespace Rogue.REditor
 
             if (property.IsManagedRef())
             {
-                if (SerializedRefLib.TryDrawMissingRef(ref rect, property, info.name, !property.IsArrayEntry(), optionsAtt)) return;
+                using (new EditorGUI.DisabledGroupScope(info.contentIsDisabled))
+                {
+                    if (SerializedRefLib.TryDrawMissingRef(ref rect, property, info.name, !property.IsArrayEntry(), optionsAtt))
+                        return;
+                }
 
                 if (info.buttons.Count == 0 && info.scopeType is not EScopeType.Inline)
                     info.buttons.Add(ManagedPickerSkopeButton);

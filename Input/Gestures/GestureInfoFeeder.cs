@@ -1,7 +1,3 @@
-using UnityEngine;
-using System.Collections;
-
-
 public interface IGestureFeeder
 {
 //	public 

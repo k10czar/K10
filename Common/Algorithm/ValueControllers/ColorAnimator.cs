@@ -1,6 +1,4 @@
-﻿using System;
-using UnityEngine;
-using System.Runtime.CompilerServices;
+﻿using UnityEngine;
 
 [System.Serializable]
 public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand

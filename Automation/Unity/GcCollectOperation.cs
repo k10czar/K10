@@ -1,6 +1,5 @@
 using System.Collections;
 using System;
-using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Automation.Unity

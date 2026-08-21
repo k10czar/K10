@@ -8,9 +8,7 @@ using v2 = Unity.Mathematics.float2;
 using v3 = Unity.Mathematics.float3;
 using m44 = Unity.Mathematics.float4x4;
 #else
-using v2 = UnityEngine.Vector2;
 using v3 = UnityEngine.Vector3;
-using m44 = UnityEngine.Matrix4x4;
 #endif
 
 [CPD( typeof( BoolState ) )] public class BoolStatePropertyDrawer : ValueStatePropertyDrawer<bool> { }

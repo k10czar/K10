@@ -2,8 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Linq;
 using UnityEngine.SceneManagement;
 
 public static class K10UnityExtensions

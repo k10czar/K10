@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Rogue.RNG;
-using UnityEngine;
 
 namespace Rogue.Helpers
 {

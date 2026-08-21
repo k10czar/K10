@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEditor;
-using System.Collections.Generic;
 using K10.Common;
-using K10.EditorGUIExtention;
 
 [CustomPropertyDrawer( typeof( HashedSOBitMaskAttribute ) )]
 public class HashedSOBitMaskDrawer : PropertyDrawer

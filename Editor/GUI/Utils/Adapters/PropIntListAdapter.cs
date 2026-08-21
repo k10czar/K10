@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using UnityEditor;
-using System.Linq;
-using UnityEngine;
 
 public class PropIntListAdapter : PropReadOnlyIntListAdapter, IList<int>
 {

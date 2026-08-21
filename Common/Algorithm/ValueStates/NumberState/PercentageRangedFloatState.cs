@@ -1,5 +1,4 @@
 using UnityEngine;
-using static UnityEngine.Mathf;
 
 public interface IPercentageRangedFloatState : IRangedFloatState
 {

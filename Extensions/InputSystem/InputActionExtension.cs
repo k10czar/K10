@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using K10.DebugSystem;
-using UnityEngine;
 using UnityEngine.InputSystem;
 
 public static class InputActionExtension

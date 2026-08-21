@@ -3,13 +3,12 @@
 #endif
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using System.Collections.Generic;
 
 #if USE_NEW_MATHEMATICS
 using Unity.Mathematics;
 using v2 = Unity.Mathematics.float2;
 using v3 = Unity.Mathematics.float3;
-using v4 = Unity.Mathematics.float4;
+
 // using m33 = Unity.Mathematics.float3x3;
 // using m44 = Unity.Mathematics.float4x4;
 #else

@@ -1,5 +1,3 @@
-using System;
-
 public class FakeEvent : IEventRegister
 {
 	private static readonly FakeEvent _instance = new FakeEvent();

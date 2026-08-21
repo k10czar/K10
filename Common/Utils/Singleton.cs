@@ -1,6 +1,4 @@
 using UnityEngine;
-using System.Collections;
-using System;
 using K10.Common;
 using static Colors.Console;
 using Object = UnityEngine.Object;

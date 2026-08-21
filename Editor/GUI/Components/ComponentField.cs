@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System.Collections;
 using K10.Common;
 
 namespace K10.EditorGUIExtention

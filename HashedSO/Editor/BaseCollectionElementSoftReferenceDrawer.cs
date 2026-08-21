@@ -1,7 +1,6 @@
 using K10.Common;
 using UnityEditor;
 using UnityEngine;
-using static UnityEditor.Sprites.Packer;
 
 [CustomPropertyDrawer(typeof(BaseCollectionElementSoftReference), true)]
 public class BaseCollectionElementSoftReferenceDrawer : PropertyDrawer

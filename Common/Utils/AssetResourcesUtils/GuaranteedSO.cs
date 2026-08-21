@@ -1,5 +1,4 @@
-﻿using K10;
-using UnityEngine;
+﻿using UnityEngine;
 
 
 public class GuaranteedSO<T> where T : ScriptableObject, new()

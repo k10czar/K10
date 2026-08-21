@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 public static class ArrayExtensions
 {
     public static T[] With<T>( this T[] terms, params T[] newElements )

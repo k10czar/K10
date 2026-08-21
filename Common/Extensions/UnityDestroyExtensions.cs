@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using K10.Common;
 
 namespace K10.Common
 {

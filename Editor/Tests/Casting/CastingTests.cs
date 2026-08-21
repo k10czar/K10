@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using NUnit.Framework;
 
 public class CastingTests 

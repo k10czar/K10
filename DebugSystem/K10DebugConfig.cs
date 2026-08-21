@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using UnityEngine;
-using Application = UnityEngine.Application;
 
 namespace K10.DebugSystem
 {

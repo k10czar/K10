@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 [DefaultExecutionOrder(EXECUTION_ORDER)]

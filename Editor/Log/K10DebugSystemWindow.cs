@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using K10.DebugSystem;
 using K10.EditorUtils;
 using UnityEditor;

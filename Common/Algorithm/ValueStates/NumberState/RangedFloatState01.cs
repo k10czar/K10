@@ -1,5 +1,4 @@
 using UnityEngine;
-using static UnityEngine.Mathf;
 
 [System.Serializable]
 public class RangedFloatState01 : INumericValueState<float>, IValueStateObserver<float>, ISerializationCallbackReceiver, ICustomDisposableKill

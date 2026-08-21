@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System;
 
 namespace K10.EditorGUIExtention
 {

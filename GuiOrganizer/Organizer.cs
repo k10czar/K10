@@ -1,6 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 
 public enum EOrganizerType { VERTICAL, HORIZONTAL, DIAGONAL/*, GRID*/ }
 public enum EOrganizerSort { DIRECT, INVERSE }

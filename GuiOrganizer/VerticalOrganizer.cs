@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 public abstract class BaseOrganizer : MonoBehaviour { public abstract void UpdateOrganization(); }

@@ -1,7 +1,6 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEditorInternal;
-using System;
 using System.Collections.Generic;
 
 public static class EditorExtention
