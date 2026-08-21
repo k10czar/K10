@@ -77,7 +77,7 @@ namespace Rogue.REditor
             var value = (Enum) Enum.ToObject(enumType, property.intValue);
             using var colorScope = BackgroundColorScope.Set(color.Get());
 
-            var newValue = (int)(object) EditorGUI.EnumFlagsField(rect, value);
+            var newValue = Convert.ToInt32(EditorGUI.EnumFlagsField(rect, value));
 
             if (newValue != property.intValue)
             {
@@ -87,6 +87,39 @@ namespace Rogue.REditor
 
             var fullHint = $"[{enumType}] {hint}";
             SkyxGUI.DrawHintOverlay(ref rect, fullHint);
+        }
+
+        public static void DrawEnumMask<T>(Rect rect, SerializedProperty property, T[] validValues, bool drawLabel) where T : Enum
+        {
+            var currentValue = property.intValue;
+
+            var mask = 0;
+            for (var i = 0; i < validValues.Length; i++)
+            {
+                var enumValue = Convert.ToInt32(validValues[i]);
+                if ((currentValue & enumValue) == enumValue)
+                    mask |= 1 << i;
+            }
+
+            var displayNames = validValues.Select(entry => entry.ToString()).ToArray();
+
+            var newMask = drawLabel
+                ? EditorGUI.MaskField(rect, property.displayName, mask, displayNames)
+                : EditorGUI.MaskField(rect, mask, displayNames);
+
+            var newValue = 0;
+            for (var i = 0; i < validValues.Length; i++)
+            {
+                if ((newMask & (1 << i)) == 0) continue;
+                var enumValue = Convert.ToInt32(validValues[i]);
+                newValue |= enumValue;
+            }
+
+            if (newValue != currentValue)
+            {
+                property.intValue = newValue;
+                property.Apply();
+            }
         }
     }
 }

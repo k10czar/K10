@@ -535,11 +535,8 @@ namespace Rogue.REditor
 
         public bool TryGet(string propertyName, bool isBacking, out SerializedProperty property)
         {
-            if (isBacking) propertyName = $"<{propertyName}>k__BackingField";
-            if (properties.TryGetValue(propertyName, out property)) return true;
-
-            this.LogError($"{owner} does not contain {propertyName}");
-            return false;
+            if (isBacking) propertyName = propertyName.ToBackingFieldName();
+            return properties.TryGetValue(propertyName, out property);
         }
 
         public int PropertyCountExcluding(params string[] excludeFields) => properties.Keys.Except(excludeFields).Count();

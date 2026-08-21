@@ -13,11 +13,14 @@ namespace Skyx.Trees
 
         protected override TreeNodeInfo<T> GetNodeInfo(T value)
         {
-#if UNITY_EDITOR
-            var prettyName = UnityEditor.ObjectNames.NicifyVariableName(value.ToString());
-#else
+            #if UNITY_EDITOR
+            string prettyName;
+            try { prettyName = UnityEditor.ObjectNames.NicifyVariableName(value.ToString()); }
+            catch (Exception) { prettyName = value.ToString(); }
+            #else
             var prettyName = value.ToString();
-#endif
+            #endif
+
             var nodeInfo = new TreeNodeInfo<T>()
             {
                 value = value,
