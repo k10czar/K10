@@ -354,6 +354,7 @@ namespace Rogue.REditor
             rect = indentedRect;
 
             using var _ = EditorIndentScope.Set(0);
+            using var _1 = IgnoreDisabledGUIScope.Start();
 
             Rect buttonRect;
             bool isHovering;

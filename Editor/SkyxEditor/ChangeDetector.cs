@@ -6,7 +6,7 @@ namespace Rogue.REditor
     {
         private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
         {
-            if (importedAssets.Length > 0) PropertyCollection.AssetsChanged();
+            if (importedAssets.Length > 0) SkyxGUI.ClearAllCaches();
         }
     }
 }

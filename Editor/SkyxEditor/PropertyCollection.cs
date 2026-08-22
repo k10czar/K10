@@ -189,17 +189,7 @@ namespace Rogue.REditor
 
         #region ExternalChanges
 
-        public static void AssetsChanged()
-        {
-            Log("Assets changed! Releasing all collections.");
-            SkyxGUI.ClearAllCaches();
-        }
-
-        private static void OnUndoRedoPerformed()
-        {
-            LogVerbose("Undo performed!");
-            SkyxGUI.ClearAllCaches();
-        }
+        private static void OnUndoRedoPerformed() => SkyxGUI.ClearAllCaches();
 
         static PropertyCollection()
         {
