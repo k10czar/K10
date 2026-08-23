@@ -32,7 +32,7 @@ namespace Rogue.Explorer
         public abstract int FiltersCount { get; }
 
         public abstract IEnumerable<Object> Results { get; }
-        public abstract Dictionary<string, object> GetInternalResults(Object key);
+        public abstract Dictionary<(Object, string), object> GetInternalResults(Object key);
 
         public abstract void RunFilters();
         public abstract UniTask FetchSources(CancellationToken token);
@@ -56,10 +56,10 @@ namespace Rogue.Explorer
 
         public IEnumerable<T> Sources { get; private set; }
 
-        public Dictionary<T, Dictionary<string, object>> TResults { get; private set; } = new();
+        public Dictionary<T, Dictionary<(Object, string), object>> TResults { get; private set; } = new();
 
         public override IEnumerable<Object> Results => TResults.Keys;
-        public override Dictionary<string, object> GetInternalResults(Object key) => TResults[(T)key];
+        public override Dictionary<(Object, string), object> GetInternalResults(Object key) => TResults[(T)key];
 
         public override bool HasSources => Sources != null && SourcesCount > 0;
         public override int FiltersCount => filters.Count;
@@ -69,16 +69,16 @@ namespace Rogue.Explorer
 
         public override void RunFilters()
         {
-            if (TResults == null) TResults = new Dictionary<T, Dictionary<string, object>>();
+            if (TResults == null) TResults = new Dictionary<T, Dictionary<(Object, string), object>>();
             else TResults.Clear();
 
             if (!HasSources) return;
 
-            var filterProperties = new Dictionary<string, object>();
+            var filterProperties = new Dictionary<(Object, string), object>();
 
             foreach (var candidate in Sources)
             {
-                var selectedProperties = new Dictionary<string, object>();
+                var selectedProperties = new Dictionary<(Object, string), object>();
                 var valid = true;
                 var isFirst = true;
 
@@ -125,13 +125,13 @@ namespace Rogue.Explorer
             }
         }
 
-        private void MergeDictionaries(Dictionary<string, object> source, Dictionary<string, object> target)
+        private void MergeDictionaries(Dictionary<(Object, string), object> source, Dictionary<(Object, string), object> target)
         {
             foreach (var (key, value) in source)
                 target[key] = value;
         }
 
-        private void IntersectDictionaries(Dictionary<string, object> source, Dictionary<string, object> target)
+        private void IntersectDictionaries(Dictionary<(Object, string), object> source, Dictionary<(Object, string), object> target)
         {
             foreach (var key in target.Keys.ToList())
             {

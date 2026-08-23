@@ -81,8 +81,17 @@ namespace Rogue.Explorer
             RebuildContent(false);
         }
 
-        private static void OnTabClosed(Tab closedTab, int closedIndex)
-            => (closedTab.dataSource as IExplorerTabBuilder)?.TabClosed();
+        private void OnTabClosed(Tab closedTab, int closedIndex)
+        {
+            (closedTab.dataSource as IExplorerTabBuilder)?.TabClosed();
+
+            var allTabs = tabView.Query<Tab>().ToList();
+            if (allTabs.Count == 0)
+            {
+                selectedTab = null;
+                RebuildContent(false);
+            }
+        }
 
         #endregion
 

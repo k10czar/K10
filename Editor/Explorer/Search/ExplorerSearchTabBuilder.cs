@@ -61,10 +61,9 @@ namespace Rogue.Explorer
             foreach (var result in searchConfig!.Results)
             {
                 var innerProps = searchConfig.GetInternalResults(result);
-                var mainCacheID = result.GetInstanceID();
 
-                foreach (var path in innerProps.Keys)
-                    EditorPropertyHighlights.Release((mainCacheID, path));
+                foreach (var (owner, path) in innerProps.Keys)
+                    EditorPropertyHighlights.Release((owner.GetInstanceID(), path));
             }
         }
 
@@ -92,12 +91,11 @@ namespace Rogue.Explorer
                     resultsHolder.Add(newEntry);
 
                     var innerProps = searchConfig.GetInternalResults(result);
-                    var mainCacheID = result.GetInstanceID();
                     var breadcrumbs = new List<Object> { result };
 
-                    foreach (var path in innerProps.Keys)
+                    foreach (var (owner, path) in innerProps.Keys)
                     {
-                        EditorPropertyHighlights.Add((mainCacheID, path));
+                        EditorPropertyHighlights.Add((owner.GetInstanceID(), path));
                         var innerEntry = ExplorerEntryView.Create(window, result, path, breadcrumbs);
                         newEntry.AddInternalContent(innerEntry);
                     }

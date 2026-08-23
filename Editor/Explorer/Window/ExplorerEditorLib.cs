@@ -69,7 +69,8 @@ namespace Rogue.Explorer
                 var serializedObj = PropertyCollection.GetSerializedObject(target);
                 var property = serializedObj.FindProperty(propertyPath);
 
-                if (property.GetValue() is IContentEditorInfo propertyInfo)
+                // TODO: Allow property to belong to another target (for overrides)
+                if (property?.GetValue() is IContentEditorInfo propertyInfo)
                     return propertyInfo.ContentName;
 
                 return $"{target.name}:{propertyPath}";

@@ -10,9 +10,9 @@ namespace Rogue.Explorer
     [Serializable]
     public abstract class ExplorerBatchExecute<T> where T : Object
     {
-        protected abstract bool Run(T skillDataSource, Dictionary<string, object> innerProperties, ref string log);
+        protected abstract bool Run(T skillDataSource, Dictionary<(Object, string), object> innerProperties, ref string log);
 
-        protected virtual int ReallyRun(Dictionary<T, Dictionary<string, object>> targets)
+        protected virtual int ReallyRun(Dictionary<T, Dictionary<(Object, string), object>> targets)
         {
             var changes = 0;
 

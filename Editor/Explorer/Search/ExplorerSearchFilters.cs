@@ -11,13 +11,13 @@ namespace Rogue.Explorer
     {
         public bool Invert { get; }
 
-        public bool FitsFilter(T candidate, Dictionary<string, object> matchingProperties)
+        public bool FitsFilter(T candidate, Dictionary<(Object, string), object> matchingProperties)
         {
             var result = IsValid(candidate, matchingProperties);
             return Invert ? !result : result;
         }
 
-        public bool IsValid(T candidate, Dictionary<string, object> matchingProperties);
+        public bool IsValid(T candidate, Dictionary<(Object, string), object> matchingProperties);
     }
 
     [Serializable]
