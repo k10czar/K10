@@ -58,14 +58,13 @@ public static class DebugUtils
 		Debug.DrawLine( positions[0], positions[l-1], color );
 	}
 
-	public static void FakeSphere( Vector3 pos, Vector3 forward, Vector3 up, float radius, Color color )
+	public static void FakeSphere(Vector3 pos, Vector3 forward, Vector3 up, float radius, Color color, float duration = 0f)
 	{
 		var cam = Camera.main;
+		if (cam == null) return;
 
-		if( cam == null ) return;
-
-		DebugUtils.Circle( pos, cam.transform.right, cam.transform.forward, radius, color, false );
-		DebugUtils.Circle( pos, forward, up, radius, color, false );
+		Circle(pos, cam.transform.right, cam.transform.forward, radius, color, false, duration);
+		Circle(pos, forward, up, radius, color, false, duration);
 	}
 
 	public static void Elipse( Vector3 pos, Vector3 forward, Vector3 up, float a, float b, Color color, Vector3 scale, bool forwardGuide = false, float anglePrecision = K_DEFAULT_ANGLE_PRECISION )
