@@ -28,5 +28,9 @@ namespace Rogue.REditor
 
             return $"{baseString} | <color={targetColor.ToHexRGB()}><size={targetSize}>{infoString}</size></color>";
         }
+
+        public static string Highlight(this string baseString, EColor color) => $"<color={color.ToHexRGB()}><b>{baseString}</b></color>";
+        public static string Highlight(this Enum info, EColor color) => $"<color={color.ToHexRGB()}><b>{info}</b></color>";
+        public static string Highlight(this Enum info) => $"<b>{info}</b>";
     }
 }
