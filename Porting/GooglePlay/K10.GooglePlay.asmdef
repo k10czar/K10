@@ -1,0 +1,20 @@
+{
+    "name": "K10.GooglePlay",
+    "rootNamespace": "",
+    "references": [
+        "GUID:1ed07ff861e5f468287b0baef844706d",
+        "GUID:6ac568dd7a2af634895b6119885b2204"
+    ],
+    "includePlatforms": [
+        "Android",
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
