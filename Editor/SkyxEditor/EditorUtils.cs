@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
+using UnityEditor.ShortcutManagement;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -319,6 +320,7 @@ namespace Rogue.REditor
 
         #region Console Reflections
 
+        [MenuItem("Rogue/Editor/Clear Console (Ctrl+Alt+W)"), Shortcut("Clear Console", KeyCode.W, ShortcutModifiers.Control | ShortcutModifiers.Alt)]
         public static void ClearConsole()
         {
             var logEntries = Type.GetType("UnityEditor.LogEntries, UnityEditor");
