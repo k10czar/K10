@@ -133,10 +133,10 @@ namespace Rogue.REditor
             {
                 var innerProp = property.GetArrayElementAtIndex(index);
 
-                PropertyContextMenu.ContextGUI(ref rect, innerProp, newElementSetup);
-
                 if (customDrawElement == null) SkyxGUI.Draw(rect, innerProp);
                 else customDrawElement(property, rect, index, isActive, isFocused);
+
+                PropertyContextMenu.ContextGUI(ref rect, innerProp, newElementSetup);
             }
 
             float ElementHeightCallback(int index)
