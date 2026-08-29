@@ -56,33 +56,33 @@ namespace Rogue.RNG
 
         #region Default Source
 
-        private static readonly RandomSource defaultSource = new();
+        public static readonly RandomSource DefaultSource = new();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float NextFloat() => defaultSource.NextFloat();
+        public static float NextFloat() => DefaultSource.NextFloat();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float NextFloat(RandomSource rng) => (rng ?? defaultSource).NextFloat();
+        public static float NextFloat(RandomSource rng) => (rng ?? DefaultSource).NextFloat();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float NextFloat(float min, float max) => defaultSource.NextFloat(min, max);
+        public static float NextFloat(float min, float max) => DefaultSource.NextFloat(min, max);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float NextFloat(RandomSource rng, float min, float max) => (rng ?? defaultSource).NextFloat(min, max);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-
-        public static int NextInt() => defaultSource.NextInt();
+        public static float NextFloat(RandomSource rng, float min, float max) => (rng ?? DefaultSource).NextFloat(min, max);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 
-        public static int NextInt(RandomSource rng) => (rng ?? defaultSource).NextInt();
+        public static int NextInt() => DefaultSource.NextInt();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int NextInt(int minInclusive, int maxExclusive) => defaultSource.NextInt(minInclusive, maxExclusive);
+
+        public static int NextInt(RandomSource rng) => (rng ?? DefaultSource).NextInt();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int NextInt(RandomSource rng, int minInclusive, int maxExclusive) => (rng ?? defaultSource).NextInt(minInclusive, maxExclusive);
+        public static int NextInt(int minInclusive, int maxExclusive) => DefaultSource.NextInt(minInclusive, maxExclusive);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int NextInt(RandomSource rng, int minInclusive, int maxExclusive) => (rng ?? DefaultSource).NextInt(minInclusive, maxExclusive);
 
         #endregion
     }

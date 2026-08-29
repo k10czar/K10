@@ -61,7 +61,7 @@ namespace Rogue.REditor
 
                 var buttonRect = rect.ExtractMiniButton(true);
 
-                if (draw) SkyxGUI.Button(buttonRect, button.label, button.color, EElementSize.Mini, EButtonType.Default);
+                if (draw) SkyxGUI.Button(buttonRect, button.label, button.color, EElementSize.Mini, EButtonType.Default, button.tooltip);
 
                 if (getClicks && buttonRect.TryUseClick(false))
                     button.onClick(property);
