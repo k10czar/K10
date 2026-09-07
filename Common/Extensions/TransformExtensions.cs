@@ -36,6 +36,33 @@ namespace K10.Common
 			transform.localScale = Vector3.one;
 		}
 
+		public static void MatchLocal(this Transform transform, Transform target)
+		{
+			transform.localPosition = target.localPosition;
+			transform.localRotation = target.localRotation;
+			transform.localScale = target.localScale;
+		}
+
+		public static void Match(this Transform transform, Transform target)
+		{
+			transform.position = target.position;
+			transform.rotation = target.rotation;
+			transform.localScale = target.localScale;
+		}
+
+		public static void MatchLocalHierarchy(this Transform transform, Transform target)
+		{
+			MatchLocal(transform, target);
+
+			for (var i = 0; i < transform.childCount; i++)
+			{
+				var child = transform.GetChild(i);
+				var targetChild = target.GetChild(i);
+
+				MatchLocalHierarchy(child, targetChild);
+			}
+		}
+
 		public static GameObject CreateChild(this Transform parent, string name)
 		{
 			var newObj = new GameObject(name);
