@@ -63,7 +63,7 @@ namespace Rogue.REditor
 
         public override void OnInspectorGUI()
         {
-            if (skipDrawing)
+            if (SkyxGUI.IsTransitioningPlayMode)
             {
                 EditorGUILayout.HelpBox("Changing playmode...", MessageType.Info);
                 return;
@@ -136,21 +136,10 @@ namespace Rogue.REditor
 
         protected void ApplyPropertyChanges(string reason = null) => PropertyCollection.Apply(serializedObject, reason ?? $"Modified {serializedObject}");
 
-        protected virtual void OnPlayModeStateChanged(PlayModeStateChange playModeStateChange)
-        {
-            skipDrawing = playModeStateChange is PlayModeStateChange.ExitingEditMode or PlayModeStateChange.ExitingPlayMode;
-        }
-
-        protected virtual void OnEnable()
-        {
-            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
-            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-        }
+        protected virtual void OnEnable() {}
 
         protected virtual void OnDisable()
         {
-            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
-
             try
             {
                 if (serializedObject.targetObject != null)

@@ -9,6 +9,7 @@ using Object = UnityEngine.Object;
 
 namespace Rogue.REditor
 {
+    [InitializeOnLoad]
     public static class SkyxGUI
     {
         #region Property Drawers
@@ -451,6 +452,27 @@ namespace Rogue.REditor
             SkopeOverride.Release(mainCacheID);
             EditorPropertyHighlights.Release(mainCacheID);
         }
+
+        #region ExternalChanges
+
+        public static bool IsTransitioningPlayMode { get; private set; }
+
+        private static void OnUndoRedoPerformed() => ClearAllCaches();
+
+        private static void OnPlayModeStateChanged(PlayModeStateChange playModeStateChange)
+        {
+            IsTransitioningPlayMode = playModeStateChange is PlayModeStateChange.ExitingEditMode or PlayModeStateChange.ExitingPlayMode;
+        }
+
+        static SkyxGUI()
+        {
+            Undo.undoRedoPerformed -= OnUndoRedoPerformed;
+            Undo.undoRedoPerformed += OnUndoRedoPerformed;
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+        }
+
+        #endregion
 
         #endregion
 

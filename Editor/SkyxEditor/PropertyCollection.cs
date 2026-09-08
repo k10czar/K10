@@ -187,18 +187,6 @@ namespace Rogue.REditor
 
         private static string PropertyName(string path) => string.IsNullOrEmpty(path) ? "_ROOT_" : path;
 
-        #region ExternalChanges
-
-        private static void OnUndoRedoPerformed() => SkyxGUI.ClearAllCaches();
-
-        static PropertyCollection()
-        {
-            Undo.undoRedoPerformed -= OnUndoRedoPerformed;
-            Undo.undoRedoPerformed += OnUndoRedoPerformed;
-        }
-
-        #endregion
-
         #region Debug
 
         [MenuItem("Rogue/Editor/Log PropertyCollections")]
