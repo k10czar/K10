@@ -383,5 +383,11 @@ namespace Rogue.REditor
         }
 
         #endregion
+
+        public static void PingObject(GameObject target)
+        {
+            target.hideFlags &= ~(HideFlags.HideInHierarchy | HideFlags.HideInInspector);
+            EditorGUIUtility.PingObject(target);
+        }
     }
 }
