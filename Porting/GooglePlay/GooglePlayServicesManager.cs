@@ -16,12 +16,10 @@ public static class GooglePlayServicesManager
             if (status == SignInStatus.Success)
             {
                 IsAuthenticated = true;
-                NotificationConsole.Notify($"Sucessfully authenticated to Play Games");
-                // Debug.Log($"Sucessfully authenticated to Play Games");
+                Debug.Log($"Sucessfully authenticated to Play Games");
             }
             else
-                NotificationConsole.Notify($"Failed to authenticate to Play Games: {status}");
-                // Debug.LogError($"Failed to authenticate to Play Games: {status}");
+                Debug.LogError($"Failed to authenticate to Play Games: {status}");
 
             callback?.Invoke(status);
         });
@@ -33,12 +31,10 @@ public static class GooglePlayServicesManager
             if (status == SignInStatus.Success)
             {
                 IsAuthenticated = true;
-                NotificationConsole.Notify($"Sucessfully manually authenticated to Play Games");
-                // Debug.Log($"Sucessfully manually authenticated to Play Games");
+                Debug.Log($"Sucessfully manually authenticated to Play Games");
             }
             else
-                NotificationConsole.Notify($"Failed to manually authenticate to Play Games: {status}");
-                // Debug.LogError($"Failed to manually authenticate to Play Games: {status}");
+                Debug.LogError($"Failed to manually authenticate to Play Games: {status}");
 
             callback?.Invoke(status);
         });
@@ -71,8 +67,7 @@ public static class GooglePlayServicesManager
     {
         if (savedGame == null || !savedGame.IsOpen)
         {
-            NotificationConsole.Notify($"Couldn't save because ISavedGameMetadata is not valid");
-            // Debug.LogError($"Couldn't save because couldn't Open Saved Game");
+            Debug.LogError($"Couldn't save because couldn't Open Saved Game");
             return;
         }
 
@@ -85,11 +80,9 @@ public static class GooglePlayServicesManager
         SavedGameClient.CommitUpdate(savedGame, updatedMetadata, savedData, 
             (SavedGameRequestStatus status, ISavedGameMetadata game) => {
                 if (status == SavedGameRequestStatus.Success)
-                    NotificationConsole.Notify($"Sucessfully saved game to Play Games");
-                    // Debug.Log($"Sucessfully saved game to Play Games");
+                    Debug.Log($"Sucessfully saved game to Play Games");
                 else
-                    NotificationConsole.Notify($"Failed to save game to Play Games: {status}");
-                    // Debug.LogError($"Failed to save game to Play Games: {status}");
+                    Debug.LogError($"Failed to save game to Play Games: {status}");
 
                 callback?.Invoke(status);
             }
@@ -116,11 +109,9 @@ public static class GooglePlayServicesManager
         SavedGameClient.ReadBinaryData(savedGame, 
             (SavedGameRequestStatus status, byte[] data) => {
                 if (status == SavedGameRequestStatus.Success)
-                    NotificationConsole.Notify($"Sucessfully loaded game from Play Games");
-                    // Debug.Log($"Sucessfully loaded game from Play Games");
+                    Debug.Log($"Sucessfully loaded game from Play Games");
                 else
-                    NotificationConsole.Notify($"Failed to load game from Play Games: {status}");
-                    // Debug.LogError($"Failed to load game from Play Games: {status}");
+                    Debug.LogError($"Failed to load game from Play Games: {status}");
                 
                 callback?.Invoke(status, data);
             }
