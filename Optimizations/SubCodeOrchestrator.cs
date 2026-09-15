@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using K10.Common;
 
+[Serializable]
 public class SubCodeOrchestrator : IOrchestratedUpdate, IOrchestratedLateUpdate, IOrchestratedFixedUpdate, IDisposable
 {
 	BakedList<IOrchestratedUpdate> _updatables = new();

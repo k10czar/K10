@@ -2,15 +2,7 @@ using System;
 using UnityEngine;
 
 public class ToStringAttribute : PropertyAttribute { }
-public class ExtendedDrawerAttribute : PropertyAttribute
-{
-	public readonly bool ShowName;
 
-	public ExtendedDrawerAttribute( bool showName = false )
-	{
-		ShowName = showName;
-	}
-}
 public class BoxedAttribute : PropertyAttribute
 {
     public string ColorName { get; private set; }

@@ -50,16 +50,17 @@ public class IntRngPropertyDrawer : PropertyDrawer
         var maxV = max.intValue;
         var isRange = minV < maxV;
         var weights = property.FindPropertyRelative("_weights");
-        
+
         var buttonRect = rangeRect;
         if( isRange ) buttonRect = rangeRect.GetColumnRight( BIAS_BUTTON_WIDTH );
-        
-        IntRangePropertyDrawer.Draw( rangeRect, range, label, minRange, maxRange, minOverlayText, maxOverlayText, minColor, maxColor, minPropertyName, maxPropertyName );
+
+        EditorGUI.LabelField(rangeRect, $"Precisa refazer esse drawer!");
+        // IntRangePropertyDrawer.Draw( rangeRect, range, label, minRange, maxRange, minOverlayText, maxOverlayText, minColor, maxColor, minPropertyName, maxPropertyName );
 
         if( isRange )
         {
             var delta = maxV + 1 - minV;
-            
+
             var wCount = weights.arraySize;
             bool hasBias = wCount > 0;
             var bias = hasBias;
@@ -79,7 +80,7 @@ public class IntRngPropertyDrawer : PropertyDrawer
             var sumOfWeights = 0f;
             for( int i = 0; i < delta; i++ ) sumOfWeights += weights.GetArrayElementAtIndex( i ).floatValue;
             if( MathAdapter.Approximately( sumOfWeights, 0f ) ) sumOfWeights = 1;
-            
+
             if( bias )
             {
                 for ( int i = 0; i < delta; i++ )

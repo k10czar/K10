@@ -26,7 +26,7 @@ namespace K10.DebugSystem
 
                 categories = new List<DebugCategory>();
 
-                foreach (var catType in TypeListDataCache.GetFrom(typeof(DebugCategory)).GetTypes())
+                foreach (var catType in TypeCache.GetTypesDerivedFrom<DebugCategory>())
                 {
                     try
                     {

@@ -15,8 +15,6 @@ public sealed class K10AssetPostprocessor : AssetPostprocessor
 		var sw = new System.Diagnostics.Stopwatch();
 		sw.Start();
 
-		bool containsTags = false;
-
 		var collections = new List<IHashedSOCollection>();
 		var elements = new List<IHashedSO>();
 
@@ -26,7 +24,6 @@ public sealed class K10AssetPostprocessor : AssetPostprocessor
 
 			if (obj is IHashedSOCollection collection) collections.Add(collection);
 			if (obj is IHashedSO hso) elements.Add(hso);
-			if (obj is TagSO tag) containsTags = true;
 		}
 
 		for (int i = 0; i < collections.Count; i++)
@@ -85,7 +82,5 @@ public sealed class K10AssetPostprocessor : AssetPostprocessor
 #if LOG
 		Debug.Log(log);
 #endif //LOG
-
-		if (containsTags) TagsDebug.Instance.Rebuild();
 	}
 }

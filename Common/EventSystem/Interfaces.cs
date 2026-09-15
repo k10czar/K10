@@ -2,11 +2,6 @@
 using System.Collections.Generic;
 using K10.EventSystem;
 
-public interface IEventBinderReference : IEventRegister
-{
-
-}
-
 public interface IEvent : IEventRegister, IEventTrigger { }
 public interface IEvent<T> : IEventRegister<T>, IEventTrigger<T> { }
 public interface IEvent<T, K> : IEventRegister<T, K>, IEventTrigger<T, K> { }

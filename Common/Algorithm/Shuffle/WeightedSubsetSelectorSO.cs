@@ -47,7 +47,7 @@ public static class SubsetSelectorExtension
         }
         return maxRoll <= selector.Min;
     }
-    
+
     public static string Stringfy(this ISubsetSelector selector)
     {
         if (selector.IsEverMaxRoll())
@@ -59,28 +59,30 @@ public static class SubsetSelectorExtension
                 var entry = selector.GetEntryObject(i);
                 sbmr.Append($"{(i > 0 ? ", " : "")}{entry.Cap}:{entry.ElementAsObject.ToStringOrNull()}");
             }
+
             sbmr.Append("}");
             return sbmr.ReturnToPoolAndCast();
         }
 
         var totalWeight = 0f;
         for (int i = 0; i < selector.EntriesCount; i++) totalWeight += selector.GetEntryObject(i).Weight;
-        
+
         var sb = StringBuilderPool.RequestEmpty();
         for (int i = 0; i < selector.EntriesCount; i++)
         {
             var entry = selector.GetEntryObject(i);
-            sb.Append($"{(i > 0 ? ", " : "")}{entry.ElementAsObject.ToStringOrNull()}[{entry.Guaranteed},{entry.Cap}]({entry.Weight*100/totalWeight:N0}%)");
+            sb.Append($"{(i > 0 ? ", " : "")}{entry.ElementAsObject.ToStringOrNull()}[{entry.Guaranteed},{entry.Cap}]({entry.Weight * 100 / totalWeight:N0}%)");
         }
+
         var elements = sb.ReturnToPoolAndCast();
 
-        if( selector.IsBiased )
+        if (selector.IsBiased)
         {
             var ranges = $"[{selector.Min},{selector.Max}]";
             var sumRangesWeights = 0f;
             var delta = selector.Max + 1 - selector.Min;
-            for (int i = 0; i < delta; i++) sumRangesWeights += selector.GetBiasWeight( i );
-            if ( !MathAdapter.Approximately( sumRangesWeights, 0 ) )
+            for (int i = 0; i < delta; i++) sumRangesWeights += selector.GetBiasWeight(i);
+            if (!MathAdapter.Approximately(sumRangesWeights, 0))
             {
                 sb = StringBuilderPool.RequestEmpty();
                 sb.Append("{");
@@ -88,14 +90,13 @@ public static class SubsetSelectorExtension
                 sb.Append("}");
                 ranges = sb.ReturnToPoolAndCast();
             }
+
             return $"{ranges} of {{ {elements} }}";
         }
-        else
-        {
-            if( selector.Min == selector.Max ) return $"{selector.Max} of {{ {elements} }}";
-            else return $"[{selector.Min},{selector.Max}] of {{ {elements} }}";
-        }
-        return $"UNDENTIFIED";
+
+        if (selector.Min == selector.Max) return $"{selector.Max} of {{ {elements} }}";
+
+        return $"[{selector.Min},{selector.Max}] of {{ {elements} }}";
     }
 
     public static IEnumerable<T> Roll<T>(this ISubsetSelector<T> selector, float rollMultiplier) => ((ISubsetSelector)selector).Roll<T>(rollMultiplier);
@@ -122,7 +123,7 @@ public static class SubsetSelectorExtension
         }
 
         rolls = Mathf.FloorToInt(rolls * rollMultiplier);
-        
+
         var variableResult = new List<T>(rolls);
 
         var times = ObjectPool<Dictionary<IWeightedSubsetEntry, int>>.Request();
@@ -194,8 +195,8 @@ public abstract class BaseWeightedSubsetSelectorSO : ScriptableObject
 {
     [SerializeField] IntRng _rolls;
 
-    public int Min => _rolls.range.min;
-    public int Max => _rolls.range.max;
+    public int Min => _rolls.min;
+    public int Max => _rolls.max;
     public bool IsBiased => _rolls.IsBiased;
 
     public float GetBiasWeight(int rolls) => _rolls.GetBiasWeight(rolls);
@@ -216,8 +217,8 @@ public class WeightedSubsetSelector<T> : ISubsetSelector<T>
     [SerializeField] WeightedSubsetEntry<T>[] _entries;
     [SerializeField] IntRng _rolls;
 
-    public int Min => _rolls.range.min;
-    public int Max => _rolls.range.max;
+    public int Min => _rolls.min;
+    public int Max => _rolls.max;
     public int EntriesCount => _entries.Length;
     public bool IsBiased => _rolls.IsBiased;
     public IWeightedSubsetEntry<T> GetEntry(int id) => _entries[id];

@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-public class FakePlayerLog : IService
+public class FakePlayerLog
 {
     private string _basePath;
     private int _logsPendingWriting;
@@ -81,7 +81,7 @@ public class FakePlayerLog : IService
         _stringBuilder.Append(logMessage);
 
         if (++_logsPendingWriting >= MAX_LOGS_PENDING_WRITING)
-            WriteCompleteLogToFile();
+            _ = WriteCompleteLogToFile();
     }
 
     public async Task WriteCompleteLogToFile()

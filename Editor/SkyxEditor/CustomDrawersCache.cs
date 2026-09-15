@@ -45,7 +45,7 @@ namespace Rogue.REditor
 
             List<(Type drawerType, Type targetType)> potentialDrawers = new();
 
-            var propertyEditorTypes = TypeListDataCache.GetFrom(typeof(PropertyEditor)).GetTypes();
+            var propertyEditorTypes = TypeCache.GetTypesDerivedFrom<PropertyEditor>();
             foreach (var drawerType in propertyEditorTypes)
             {
                 var customAttributes = drawerType.GetCustomAttributes<CustomPropertyDrawer>(true);

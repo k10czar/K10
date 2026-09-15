@@ -1,11 +1,8 @@
-
-
 using System;
 using UnityEditor;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
-using K10.Common;
 using UnityEngine;
 
 public static class PropDrawerCache
@@ -36,7 +33,7 @@ public static class PropDrawerCache
             candidate = pd.CreateInstance() as PropertyDrawer;
             if( candidate != null ) break;
         }
-        
+
         if( candidate == null && type != typeof( Enum ) && type.IsSubclassOf( typeof( Enum ) ) )
         {
             candidate = From( typeof( Enum ) );

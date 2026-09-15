@@ -12,7 +12,7 @@ public abstract class FrameTimingDebugExhibitor : MonoBehaviour
 	protected float timer;
 
 	[SerializeField] protected float tickInterval = 0.333333f;
-	[ExtendedDrawer(true),SerializeReference] IEventBinderReference _deepToogle;
+	// [ExtendedDrawer(true),SerializeReference] IEventBinderReference _deepToogle;
     FpsCounter _fps;
 
 #if UNITY_EDITOR || DEBUG
@@ -29,7 +29,7 @@ public abstract class FrameTimingDebugExhibitor : MonoBehaviour
     void OnEnable()
 	{
 		FrameTimingDebug.Enable();
-		_deepToogle?.Register( TryToggleDeep );
+		// _deepToogle?.Register( TryToggleDeep );
         _fps = new FpsCounter( .3333f );
 #if !UNITY_EDITOR && DEBUG
 		_batchesRecorder = Unity.Profiling.ProfilerRecorder.StartNew( Unity.Profiling.ProfilerCategory.Render, "Batches Count" );
@@ -39,7 +39,7 @@ public abstract class FrameTimingDebugExhibitor : MonoBehaviour
 	void OnDisable()
 	{
 		FrameTimingDebug.Disable();
-		_deepToogle?.Unregister( TryToggleDeep );
+		// _deepToogle?.Unregister( TryToggleDeep );
 #if UNITY_EDITOR || DEBUG
 		_batchesSum = 0;
 		_batchesSamples = 0;
@@ -58,7 +58,7 @@ public abstract class FrameTimingDebugExhibitor : MonoBehaviour
 		return new string( ' ', left ) + text + new string( ' ', right );
 	}
 
-	void TryToggleDeep()
+	public void TryToggleDeep()
 	{
 		FrameTimingDebug.ToogleDeep();
 	}

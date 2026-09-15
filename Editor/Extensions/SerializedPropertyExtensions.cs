@@ -74,8 +74,6 @@ public static class SerializedPropertyExtensions
             return field.FieldType;
         }
 		return TryGetTypeRecursive( targetObject, property.propertyPath.Split( "." ) );
-
-        return null; // Or handle the case where the type is not found
     }
 
     private static System.Type TryGetTypeRecursive(object targetObject, string[] pathSplitted)
@@ -252,15 +250,6 @@ public static class SerializedPropertyExtensions
 		h += CalculateElementHeight( sp, childs ) + spacing;
 	}
 
-	public static float CalcSerializedReferenceHeight( this SerializedProperty prop, bool includeChildren = true, float spacing = 0 )
-	{
-		var calcChildsHeight = CalcChildPropsHeight( prop, includeChildren, spacing );
-		var h = EditorGUIUtility.singleLineHeight;
-		if( calcChildsHeight > Mathf.Epsilon ) h += spacing + calcChildsHeight;
-		CacheHeightFor( prop, h, includeChildren );
-		return h;
-	}
-
 	public static void TryDrawIsActiveLayout( this SerializedProperty prop, float size = 18f )
 	{
 		if( prop == null ) return;
@@ -284,29 +273,15 @@ public static class SerializedPropertyExtensions
 								isActive ? "Active" : "Inactive",
 								isActive ? Color.green : Color.red );
 
-	public static System.Type GetManagedType( this SerializedProperty prop )
+	public static System.Type GetSourceManagedType(this SerializedProperty prop)
 	{
-		var assType = prop.managedReferenceFieldTypename;
-		var splited = assType.Split( ' ' );
-		if( splited.Length <= 0 ) return null;
-		if( splited.Length == 1 ) return TypeFinder.WithName( splited[0] );
+		var typeName = prop.managedReferenceFieldTypename;
 
-		var assemblyName = splited[0];
-		if ( splited.Length > 2 )
-		{
-			var cut = splited[0].Length + 1;
-			var fullTypeName = assType.Substring( splited[0].Length + 1, assType.Length - cut );
+		var split = typeName.Split(' ');
+		var fullTypeName = split.Length > 1 ? split[1] : split[0];
 
-			var name = typeof(IEventRegister<Vector2>).FullName.Replace( "IEventRegister", "ITriggerValue" );
-			// Debug.Log( $"\"{fullTypeName}\" == \"{name}\" {name==fullTypeName}" );
-
-			// Debug.Log( $"({assemblyName}) {fullTypeName} 1{System.Type.GetType(fullTypeName).ToStringOrNull()} 2{TypeFinder.WithName(fullTypeName).ToStringOrNull()} 3{TypeFinder.WithNameFromAssembly( fullTypeName, assemblyName ).ToStringOrNull()}" );
-			return TypeFinder.WithNameFromAssembly( fullTypeName, assemblyName );
-			// TypeFinder.WithName( fullTypeName );
-		}
-		var typeName = splited[1];
-		var type = TypeFinder.WithNameFromAssembly( typeName, assemblyName );
-		return type;
+		return TypeCache.GetTypesDerivedFrom<object>()
+			.FirstOrDefault(t => t.FullName == fullTypeName);
 	}
 
 	public static void TryDrawIsActive( this SerializedProperty prop, ref Rect rect, float size = 18f )
@@ -344,95 +319,6 @@ public static class SerializedPropertyExtensions
 	}
 
 	public static bool ChangeActiveButton( Rect rect, bool isActive ) => IconButton.Draw( rect, isActive ? "greenLight" : "lightOff", isActive ? 'A' : '-' );
-
-	public static void DrawSerializedReference( this SerializedProperty prop, Rect rect, bool includeChildren = true, bool showName = false, float spacing = 0 )
-    {
-		var type = prop.GetManagedType();
-		if( type == null )
-		{
-			GUI.Label( rect, $"Cannot find type: {prop.managedReferenceFieldTypename}" );
-			return;
-		}
-
-		EditorGuiIndentManager.New( 0 );
-        var firstLine = rect.RequestTop(EditorGUIUtility.singleLineHeight);
-
-		var isActiveProp = prop.FindPropertyRelative( "_isActive" );
-		isActiveProp.TryDrawIsActive( ref firstLine, EditorGUIUtility.singleLineHeight );
-
-		if( showName )
-		{
-			var name = prop.displayName;
-			var content = new GUIContent( name );
-			var size = EditorStyles.label.CalcSize( content );
-			var width = size.x + EditorGUIUtility.standardVerticalSpacing * 2;
-			if( width > firstLine.width / 3 ) width = firstLine.width / 3;
-			var nameRect = firstLine.RequestLeft( width );
-			EditorGUI.LabelField( nameRect, name );
-			firstLine = firstLine.CutLeft( width );
-		}
-
-		var isInactive = IsInactive( isActiveProp );
-		if( isInactive ) GuiColorManager.Greyout();
-
-        rect = rect.CutTop(EditorGUIUtility.singleLineHeight + spacing);
-		var listingData = TypeListDataCache.GetFrom( type );
-		var popupWidth = Mathf.Min( rect.width / 2, listingData.MaxWidth + MAGIC_POPUP_SPACE );
-        var index = FindIndexOf( prop.managedReferenceValue, listingData ) + 1;
-        var newIndex = EditorGUI.Popup(firstLine.RequestLeft(popupWidth), index, listingData.GetGUIsWithIconWithNull());
-        CheckSelectionChange( prop, listingData, index - 1, newIndex - 1 );
-		var triggerSummarys = prop.managedReferenceFullTypename.Split( " " );
-        var triggerSummary = triggerSummarys.LastOrDefault().ToStringOrNull();
-		var triggerSummaryRect = firstLine.CutLeft(popupWidth + MAGIC_POPUP_SPACE);
-
-		var refType = prop?.managedReferenceValue?.GetType() ?? null;
-		var script = refType?.EditorGetScript() ?? null;
-		if( script != null )
-		{
-			var size = 18f;
-
-			if( IconButton.Draw( triggerSummaryRect.RequestRight( size ), UnityIcons.csScriptIcon ) ) AssetDatabase.OpenAsset( script );
-			triggerSummaryRect = triggerSummaryRect.CutRight( size );
-		}
-
-        prop.isExpanded = EditorGUI.BeginFoldoutHeaderGroup( triggerSummaryRect, prop.isExpanded, triggerSummary);
-        EditorGUI.EndFoldoutHeaderGroup();
-        if( prop.isExpanded )
-		{
-			GuiLabelWidthManager.New(rect.width - ( triggerSummaryRect.width + MAGIC_POPUP_SPACE ) );
-			prop.DrawChildProps( rect, includeChildren, spacing, isActiveProp );
-			GuiLabelWidthManager.Revert();
-		}
-
-		if( isInactive ) GuiColorManager.Revert();
-		EditorGuiIndentManager.Revert();
-    }
-
-	private static int FindIndexOf( object refField, TypeListData listingData )
-	{
-        if( refField == null ) return -1;
-		var types = listingData.GetTypes();
-		var triggerRefType = refField.GetType();
-		for( int i = 0; i < types.Length; i++ )
-		{
-			if( types[i] == triggerRefType ) return i;
-		}
-		 return -1;
-	}
-
-    private static bool CheckSelectionChange( SerializedProperty prop, TypeListData listingData, int oldIndex, int newIndex )
-    {
-        if( newIndex == oldIndex ) return false;
-		var types = listingData.GetTypes();
-		var newType = (newIndex >= 0) ? types[newIndex] : null;
-		var newTypeName = newType?.FullName ?? ConstsK10.NULL_STRING;
-		var oldTypeName = ( oldIndex < 0 || oldIndex >= types.Length ) ? "MISSING" : types[oldIndex]?.FullName ?? ConstsK10.NULL_STRING;
-		Debug.Log($"{"Changed".Colorfy( Colors.Console.Verbs )} {"SerializedReference".Colorfy( Colors.Console.TypeName )} {prop.propertyPath.Colorfy( Colors.Console.Interfaces )} type from {$"{oldTypeName}[{oldIndex}]".Colorfy(Colors.Console.TypeName)} to {$"{newTypeName}[{newIndex}]".Colorfy(Colors.Console.Numbers)}");
-		var newData = newType.CreateInstance();
-		Debug.Log( $"NewData:{newData.ToStringOrNull()}\nOld:{prop.managedReferenceValue.ToStringOrNull()}" );
-		prop.managedReferenceValue = newData;
-		return true;
-    }
 
 	public static string ToFileName( this SerializedProperty prop )
 	{

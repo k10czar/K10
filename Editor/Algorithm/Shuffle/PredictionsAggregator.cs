@@ -20,7 +20,7 @@ public class SubsetSelectorPropAdapter<T> : ISubsetSelector<T> where T : Scripta
     public int EntriesCount => _entriesProp.arraySize;
 
     public SerializedProperty Prop => _prop;
-	
+
     public void SetProp(SerializedProperty serializedProperty)
     {
         _prop = serializedProperty;
@@ -56,7 +56,7 @@ public class SubsetSelectorPropAdapter<T> : ISubsetSelector<T> where T : Scripta
 
     public IWeightedSubsetEntry GetEntryObject(int id) => GetEntry(id);
 
-    class EntryAdapter<T> : IWeightedSubsetEntry<T> where T : ScriptableObject
+    class EntryAdapter<U> : IWeightedSubsetEntry<U> where U : ScriptableObject
     {
 		SerializedProperty _entryProp;
 		SerializedProperty _weightProp;
@@ -64,7 +64,7 @@ public class SubsetSelectorPropAdapter<T> : ISubsetSelector<T> where T : Scripta
 		SerializedProperty _capProp;
 		SerializedProperty _elementProp;
 
-        public T Element => (T)_elementProp.objectReferenceValue;
+        public U Element => (U)_elementProp.objectReferenceValue;
         public object ElementAsObject => _elementProp.objectReferenceValue;
         public int Guaranteed => _guaranteedProp.intValue;
         public int Cap => _capProp.intValue;
@@ -144,7 +144,7 @@ public class PredictionsAggregator<T> where T : ScriptableObject
 
 	public void SetDirty()
 	{
-		
+
 	}
 
     public void Calculate()

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+[Serializable]
 public struct FpsCounter
 {
     const int MAX_COUNT = 1200;
