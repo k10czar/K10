@@ -344,7 +344,7 @@ public sealed class EditorAssetProcessingWindow : EditorWindow
 			{
 				if (_mbSelectionIgnore.Contains(j)) continue;
                 var typeClass = _mbTypes[j];
-				var objs = FindObjectsOfType( typeClass, true );
+				var objs = FindObjectsByType(typeClass, FindObjectsInactive.Include);
 				total += objs.Length;
                 for (int i = 0; i < objs.Length; i++)
 				{

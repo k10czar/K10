@@ -12,7 +12,7 @@ public class PlayerPrefsEditor : EditorWindow
 {
 	public enum PrefType { Float, Int, String }
 
-	public List<PlayerPrefStore> playerPrefs;
+	private List<PlayerPrefStore> playerPrefs;
 
 	private Vector2 scrollPosition;
 	private bool isCreatingNew;
@@ -20,7 +20,7 @@ public class PlayerPrefsEditor : EditorWindow
 	private PlayerPrefStore newPref;
 
 	private GUIStyle boxStyle;
-	
+
 	private GUIStyle BoxStyle
 	{
 		get
@@ -146,7 +146,7 @@ public class PlayerPrefsEditor : EditorWindow
 				if( playerPrefs[ i ].isMarkedForDelete )
 				{
 					GUI.color = Color.red;
-				} 
+				}
 				else if( playerPrefs[ i ].Changed )
 				{
 					GUI.color = Color.green;
@@ -218,7 +218,7 @@ public class PlayerPrefsEditor : EditorWindow
 	{
         var charEncoding = new System.Text.ASCIIEncoding();
         var decoder = charEncoding.GetDecoder();
-		// Unity stores prefs in the registry on Windows. 
+		// Unity stores prefs in the registry on Windows.
 
 		string regKey = @"Software\" + PlayerSettings.companyName + @"\" + PlayerSettings.productName;
 
@@ -248,8 +248,8 @@ public class PlayerPrefsEditor : EditorWindow
 				val = PlayerPrefsAdapter.GetFloat( keyName ).ToString();
 				newType = "real";
 			} else if( couldBeInt && ( PlayerPrefsAdapter.GetInt( keyName, testInt - 10 ) == testInt ) )
-			{		
-				newType = "integer";		
+			{
+				newType = "integer";
 			} else
 			{
 				newType = "string";
@@ -297,6 +297,3 @@ public class PlayerPrefsEditor : EditorWindow
 	}
 
 }
-
-
-

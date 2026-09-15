@@ -26,7 +26,7 @@ public class ImagesMonitor : EditorWindow
 
     private void UpdateSprites()
     {
-        var objs = FindObjectsOfType<Image>(_includeInactive);
+        var objs = FindObjectsByType<Image>(_includeInactive ? FindObjectsInactive.Include : FindObjectsInactive.Exclude);
 
         observeds.Clear();
         foreach (var sr in objs)
