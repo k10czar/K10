@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 [System.Serializable]
 public struct FastFloatAnimator
 {
@@ -9,7 +11,7 @@ public struct FastFloatAnimator
     public float _deacceleration;
     public float _currentSpeed;
     public float _maximumSpeed;
-    
+
     public FastFloatAnimator( float baseValue ) : this( 0, baseValue, baseValue, baseValue ) { }
     public FastFloatAnimator( float initialValue, float accel, float deaccel, float maximumSpeed, float min = float.MinValue, float max = float.MaxValue )
     {
@@ -83,6 +85,12 @@ public struct FastFloatAnimator
 		_currentSpeed = 0;
 	}
 
+	public void SetDesireToLimit( bool max )
+    {
+		SetDesire( max ? _max : _min );
+    }
+
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
 	public void SetDesire( float desired )
     {
 		var diff = desired - _desiredValue;
@@ -94,6 +102,7 @@ public struct FastFloatAnimator
         else _desiredValue = desired;
     }
 
+	[MethodImpl(Optimizations.INLINE_IF_CAN)]
     public bool Update( float deltaTime )
     {
 		if( deltaTime < float.Epsilon ) return false;

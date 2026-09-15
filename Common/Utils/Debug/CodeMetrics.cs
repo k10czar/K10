@@ -1,7 +1,9 @@
 #if CODE_METRICS
 #define LOG_ALL_METRICS
+#define NOTIFY_METRICS
 #define LOG_REPORT_ON_SUSPEND
 #define LOG_REPORT_PARTIAL
+#define WITH_EMOTICONS
 #endif
 #if LOG_ALL_METRICS || LOG_REPORT_ON_SUSPEND || LOG_REPORT_PARTIAL
 #define CODE_METRICS_ENABLED
@@ -78,9 +80,21 @@ public static class CodeMetrics
 		var ms = sw.ReturnToPoolAndGetElapsedMs();
 		_currentRunningMetrics.Remove( code );
 		var codeToUse = string.IsNullOrEmpty(newNameToUse) ? code : newNameToUse;
-#if LOG_ALL_METRICS
-		var logMessage = $"<color=#0080FF>CodeMetrics</color>: <color=#FF69B4>{codeToUse}</color> took <color=#DAA520>{ValueToString(ms)}ms</color>";
-		UnityEngine.Debug.Log( logMessage );
+		var alreadyLogged = false;
+#if NOTIFY_METRICS
+		alreadyLogged = true;
+#if WITH_EMOTICONS && !UNITY_ANDROID && !UNITY_IOS
+		NotificationConsole.Notify( $"📊<color=#0080FF>CodeMetrics</color>: <color=#FF69B4>{codeToUse}</color> took <color=#DAA520>{ValueToString(ms)}ms</color>", alsoLogOnUnityConsole:true );
+#else
+		NotificationConsole.Notify( $"<color=#0080FF>CodeMetrics</color>: <color=#FF69B4>{codeToUse}</color> took <color=#DAA520>{ValueToString(ms)}ms</color>", alsoLogOnUnityConsole:true );
+#endif //WITH_EMOTICONS && !UNITY_ANDROID && !UNITY_IOS
+#endif
+#if LOG_ALL_METRICS 
+		if( !alreadyLogged )
+		{
+			var logMessage = $"<color=#0080FF>CodeMetrics</color>: <color=#FF69B4>{codeToUse}</color> took <color=#DAA520>{ValueToString(ms)}ms</color>";
+			UnityEngine.Debug.Log( logMessage );
+		}
 #endif
 #if LOG_REPORT_ON_SUSPEND
 		_fullReport.Add( codeToUse, ms );

@@ -1,0 +1,24 @@
+{
+    "name": "K10.Social",
+    "rootNamespace": "",
+    "references": [
+        "GUID:6ac568dd7a2af634895b6119885b2204",
+        "GUID:2055633e2345dee4689cc97d1e36f4ee",
+        "GUID:5ee1933b8c8d484ea7cb408c3d679e50"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.microsoft.gdk",
+            "expression": "0.0",
+            "define": "MICROSOFT_GDK"
+        }
+    ],
+    "noEngineReferences": false
+}

@@ -51,7 +51,7 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 	{
 		_transitionTime = transitionTime;
 		_updater = updater;
-		var val = Mathf.Approximately( transitionTime, 0 ) ? Mathf.Infinity : ( 2 / ( transitionTime * transitionTime ) );
+		var val = MathAdapter.Approximately( transitionTime, 0 ) ? Mathf.Infinity : ( 2 / ( transitionTime * transitionTime ) );
 
 		_r.Rebuild01( _cachedColor.r, val, val, float.MaxValue );
 		_g.Rebuild01( _cachedColor.g, val, val, float.MaxValue );
@@ -87,7 +87,7 @@ public class ColorAnimator : IValueState<Color>, IUpdatableOnDemand
 	public void Reset(float transitionTime)
 	{
 		_transitionTime = transitionTime;
-		var val = Mathf.Approximately( transitionTime, 0 ) ? Mathf.Infinity : ( 2 / ( transitionTime * transitionTime ) );
+		var val = MathAdapter.Approximately( transitionTime, 0 ) ? Mathf.Infinity : ( 2 / ( transitionTime * transitionTime ) );
 
 		_r.Rebuild01(0, val, val, float.MaxValue);
 		_g.Rebuild01(0, val, val, float.MaxValue);

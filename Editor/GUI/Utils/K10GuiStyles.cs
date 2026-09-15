@@ -29,6 +29,7 @@ public static class K10GuiStyles
 	public static readonly GUIStyle basicStyle = new GUIStyle( EditorStyles.label ) { fontSize = NORMAL_FONT_SIZE };
 	public static readonly GUIStyle fieldStyle = new GUIStyle( EditorStyles.textField ) { fontSize = NORMAL_FONT_SIZE };
 	public static readonly GUIStyle boldStyle = new GUIStyle( EditorStyles.label ) { fontSize = NORMAL_FONT_SIZE, fontStyle = FontStyle.Bold };
+	public static readonly GUIStyle boldRightStyle = new GUIStyle( EditorStyles.label ) { fontSize = NORMAL_FONT_SIZE, alignment = TextAnchor.MiddleRight, fontStyle = FontStyle.Bold };
 	public static readonly GUIStyle buttonStyle = new GUIStyle( EditorStyles.miniButton ) { fontSize = SMALL_FONT_SIZE, /*fontStyle = FontStyle.Bold*/};
 	public static readonly GUIStyle midButtonStyle = new GUIStyle( EditorStyles.miniButton ) { fontSize = SMALL_FONT_SIZE, fontStyle = FontStyle.Bold, fixedHeight = 28 };
 	public static readonly GUIStyle midLeftButtonStyle = new GUIStyle( EditorStyles.miniButton ) { fontSize = SMALL_FONT_SIZE, alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Bold, fixedHeight = 28 };
@@ -56,4 +57,9 @@ public static class K10GuiStyles
 
 	public static readonly GUIStyle boxStyle = new GUIStyle( "CN Box" ) { padding = new RectOffset( 5, 5, 5, 5 ) };
 	public static readonly GUIStyle tabTitleStyle = new GUIStyle( "HelpBox" ) { alignment = TextAnchor.MiddleCenter };
+	public static readonly GUIStyle whiteBackgroundStyle = new GUIStyle( "WhiteBackgroung" ) { 
+                normal = new GUIStyleState()
+                {
+                    background = DefaultTextures.White
+                } };
 }

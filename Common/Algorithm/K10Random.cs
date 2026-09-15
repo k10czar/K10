@@ -3,12 +3,18 @@ using System.Collections.Generic;
 
 public static class K10Random
 {
+	private static Unity.Mathematics.Random _random = new(1);
+	private static bool _useSeed;
+
 	public static bool Bool { get { return ( Value < .5f ); } }
 
 	public static float Value
 	{
 		get
 		{
+			if (_useSeed)
+				return _random.NextFloat();
+
 			var val = Random.value;
 			Random.InitState( Random.Range( int.MinValue, int.MaxValue ) );
 			return val;
@@ -19,6 +25,9 @@ public static class K10Random
 	{
 		get
 		{
+			if (_useSeed)
+				return _random.NextInt(1, int.MaxValue);
+			
 			var val = Random.Range( 1, int.MaxValue );
 			Random.InitState( Random.Range( int.MinValue, int.MaxValue ) );
 			return val;
@@ -33,6 +42,9 @@ public static class K10Random
 
 	public static int Less( int max )
 	{
+		if (_useSeed)
+			return _random.NextInt(0, max);
+
 		var val = Random.Range( 0, max );
 		Random.InitState( Random.Range( int.MinValue, int.MaxValue ) );
 		return val;
@@ -43,6 +55,9 @@ public static class K10Random
 
 	public static int Exponential( int max, int power )
 	{
+		if (_useSeed)
+			return _random.NextInt(0, (int)Mathf.Pow(max, power));
+
 		var val = Random.Range( 0, (int)Mathf.Pow( max, power ) );
 		val = (int)Mathf.Pow( val, 1f / power );
 		Random.InitState( Random.Range( int.MinValue, int.MaxValue ) );
@@ -61,5 +76,29 @@ public static class K10Random
 		}
 
 		return rnd;
+	}
+
+	public static T RandomPop<T>(this IList<T> list)
+	{
+		var count = list.Count;
+		if (count == 0)
+			throw new System.IndexOutOfRangeException("Cannot take random element from an empty list");
+
+		var id = Less(count);
+		var element = list[id];
+		list.RemoveAt(id);
+		return element;
+	}
+
+	public static void SetRandomSeed(uint seed)
+	{
+		_random.InitState(seed);
+		_useSeed = true;
+	}
+
+	public static void UnsetRandomSeed()
+	{
+		_random.state = 1;
+		_useSeed = false;
 	}
 }

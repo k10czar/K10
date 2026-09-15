@@ -2,7 +2,7 @@ using UnityEngine;
 
 public interface ISpawnerService<T> : IService where T : MonoBehaviour
 {
-    T RequestInstance( Vector3? position = null, Quaternion? rotation = null, Transform parent = null );
+    T RequestInstance(Vector3? position = null, Quaternion? rotation = null, Transform parent = null);
 }
 
 public abstract class ObjectSpawnerService<T> : ISpawnerService<T> where T : MonoBehaviour
@@ -12,7 +12,7 @@ public abstract class ObjectSpawnerService<T> : ISpawnerService<T> where T : Mon
 	EventSlot<T> _onObjectSpawned = null;
     public IEventRegister<T> OnObjectSpawned  => _onObjectSpawned ??= new EventSlot<T>();
 
-    public T RequestInstance( Vector3? position = null, Quaternion? rotation = null, Transform parent = null )
+    public virtual T RequestInstance( Vector3? position = null, Quaternion? rotation = null, Transform parent = null )
     {
         T instance = default;
         if( position.HasValue && rotation.HasValue ) instance = GameObject.Instantiate( reference, position.Value, rotation.Value, parent );

@@ -1,0 +1,19 @@
+{
+    "name": "K10.Visibility.Editor",
+    "rootNamespace": "",
+    "references": [
+        "K10.Editor",
+        "K10.Visibility"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

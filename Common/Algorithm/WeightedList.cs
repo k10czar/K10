@@ -2,8 +2,48 @@
 using System.Collections;
 using System.Collections.Generic;
 
+public interface IWeighted
+{
+	float Weight { get; }
+}
+
+public static class WeightedExtensions
+{
+	public static float TotalWeight<T>(this IEnumerable<T> list) where T : IWeighted
+	{
+		float w = 0;
+		foreach( var item in list ) w += item.Weight;
+		return w;
+	}
+	
+	public static int RandomID<T>(this IReadOnlyList<T> list) where T : IWeighted => list.RandomID( K10Random.Value );
+	public static int RandomID<T>(this IReadOnlyList<T> list, float rng01) where T : IWeighted
+	{
+		var total = TotalWeight(list);
+		var rnd = rng01 * total;
+
+		var count = list.Count;
+		for (int i = 0; i < count; i++)
+		{
+			var element = list[i];
+			rnd -= element.Weight;
+			if (rnd <= 0) return i;
+		}
+
+		return -1;
+	}
+
+	public static T Random<T>(this IReadOnlyList<T> list) where T : IWeighted => list.Random( K10Random.Value );
+	public static T Random<T>(this IReadOnlyList<T> list, float rng01) where T : IWeighted
+	{
+		var id = RandomID(list,rng01);
+		if (id < 0) return default;
+		return list[id];
+	}
+}
+
 [System.Serializable]
-public abstract class Weighted
+public abstract class Weighted : IWeighted
 {
 	[SerializeField] protected float _weight = 1;
 	public float Weight { get { return _weight; } }

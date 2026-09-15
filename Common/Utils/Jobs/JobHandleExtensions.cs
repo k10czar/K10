@@ -11,11 +11,11 @@ public static class JobHandleExtensions
 	public static void TryMesureComplete(this JobHandle handle)
 	{
 #if CODE_METRICS
-		CodeTimingDebug.LogStart(METRICS_CODE_TAG);
+		FrameTimingDebug.LogStart(METRICS_CODE_TAG);
 #endif
 		handle.Complete();
 #if CODE_METRICS
-		CodeTimingDebug.LogEnd(METRICS_CODE_TAG);
+		FrameTimingDebug.LogEnd(METRICS_CODE_TAG);
 #endif
 	}
 
@@ -23,11 +23,11 @@ public static class JobHandleExtensions
 	public static void TryMesureCompleteWithTag(this JobHandle handle, string tag)
 	{
 #if CODE_METRICS
-		CodeTimingDebug.LogStart(tag);
+		FrameTimingDebug.LogStart(tag);
 #endif
 		handle.Complete();
 #if CODE_METRICS
-		CodeTimingDebug.LogEnd(tag);
+		FrameTimingDebug.LogEnd(tag);
 #endif
 	}
 }

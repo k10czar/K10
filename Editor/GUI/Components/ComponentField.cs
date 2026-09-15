@@ -127,7 +127,7 @@ namespace K10.EditorGUIExtention
 				if( create )
 				{
 					var selectedAssetPath = path;
-					if( string.IsNullOrEmpty( selectedAssetPath ) ) selectedAssetPath = $"{FALLBACK_CREATION_FOLDER}{type.ToString()}/{type.ToString()}";
+					if( string.IsNullOrEmpty( selectedAssetPath ) ) selectedAssetPath = $"{FALLBACK_CREATION_FOLDER}{type.ToString()}/{label}";
 					obj = ScriptableObjectUtils.CreationObjectAndFile( type, selectedAssetPath, focus );
 				}
 				r = r.CutLeft( iconSize + 2 );

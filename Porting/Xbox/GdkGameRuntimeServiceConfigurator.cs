@@ -1,28 +1,58 @@
-#if MICROSOFT_GDK_SUPPORT || UNITY_GAMECORE
-using K10.DebugSystem;
+#if UNITY_GAMECORE
 using UnityEngine;
+using K10.DebugSystem;
 
-public class GdkGameRuntimeServiceConfigurator : IService, IStartable, ILoggable<GdkLogCategory>
+public class GdkGameRuntimeServiceConfigurator : MonoBehaviour, IService, IStartable, ILoggable<GdkLogCategory>
 {
-    [SerializeField,InlineProperties] GdkPlatformSettingsData _gdkSettings;
-    GdkGameRuntimeService gdkRuntimeManager;
+    [SerializeField, InlineProperties] private GdkPlatformSettingsData _gdkSettings;
+    private GdkGameRuntimeService gdkRuntimeManager;
 
     public IGdkRuntimeService MainService => gdkRuntimeManager;
 
+    private void Awake()
+    {
+        Debug.Log("[GDK] Configurator Awake");
+        DontDestroyOnLoad(gameObject);
+    }
+
     public void Start()
     {
-        if( _gdkSettings == null )
+        Debug.Log("[GDK] Configurator Start");
+
+        if (_gdkSettings == null)
         {
-            this.LogError( "Cannot start <color=LawnGreen>GDKGameRuntime</color> because <color=LawnGreen>gdkSettings</color> is NULL" );
+            Debug.LogError("[GDK] gdkSettings is NULL (missing SO reference or serialization mismatch)");
             return;
         }
-        if( ServiceLocator.Contains<IGdkRuntimeService>() ) {
-            this.LogVerbose( $"Already has a IGdkRuntimeService {ServiceLocator.Get<IGdkRuntimeService>()}" );
+
+        if (ServiceLocator.Contains<GdkGameRuntimeService>())
+        {
+            Debug.Log("[GDK] Service already registered, skipping");
             return;
         }
-        this.Log( "Starting <color=LawnGreen>GdkGameRuntimeService</color>..." );
-        gdkRuntimeManager = new GdkGameRuntimeService( _gdkSettings.Scid, _gdkSettings.SaveScid, _gdkSettings.TitleId , _gdkSettings.Sandbox );
-        ServiceLocator.Register( gdkRuntimeManager );
+
+        Debug.Log("[GDK] Creating GdkGameRuntimeService...");
+        gdkRuntimeManager = new GdkGameRuntimeService(
+            _gdkSettings.Scid,
+            _gdkSettings.SaveScid,
+            _gdkSettings.TitleId,
+            _gdkSettings.Sandbox
+        );
+
+        ServiceLocator.Register(gdkRuntimeManager);
+
+        // Optional: if your ServiceLocator supports interface registration, add this too
+        // ServiceLocator.Register<IGdkRuntimeService>(gdkRuntimeManager);
+
+        Debug.Log("[GDK] Service registered OK");
+    }
+
+    private void OnDestroy()
+    {
+        Debug.Log("[GDK] Configurator OnDestroy");
+
+        if (gdkRuntimeManager != null)
+            gdkRuntimeManager.Dispose();
     }
 }
 #endif

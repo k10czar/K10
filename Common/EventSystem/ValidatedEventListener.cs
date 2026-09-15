@@ -15,29 +15,23 @@ public sealed class ValidatedEventListener : BaseConditionalEventListener, IEven
 		// if( _evnt != null || _condition != null ) _hashCode = _evnt.GetHashCode() + _condition.GetHashCode();
 	}
 
-	public void Clear() { _evnt = null; _condition = null; }
+	public void Clear() { _evnt = null; _condition = null; _hashCode = 0; }
 	public void Trigger() { _evnt.Trigger(); }
 
 	public override bool Equals( object obj )
 	{
-		if( _evnt != null && _condition != null && obj is ValidatedEventListener del )
+		if (obj == null) return this == null;
+		if (GetHashCode() != obj.GetHashCode()) return false;
+		if (_evnt != null && _condition != null && obj is ValidatedEventListener del)
 		{
-			if (_hashCode == -1)
-			{
-				if (_evnt != null || _condition != null) _hashCode = _evnt.GetHashCode() + _condition.GetHashCode();
-				else _hashCode = 0;
-			}
-			if (del._hashCode == -1)
-			{
-				if (del._evnt != null || del._condition != null) del._hashCode = del._evnt.GetHashCode() + del._condition.GetHashCode();
-				else del._hashCode = 0;
-			}
-			return _hashCode == del._hashCode && _evnt.Equals(del._evnt) && _condition.Equals(del._condition);
+			return _evnt.Equals(del._evnt) && _condition.Equals(del._condition);
 		}
 		return base.Equals( obj );
 	}
 
-	public override int GetHashCode() => _hashCode;
+	private int CalculateHashCode() => ( _evnt != null && _condition != null ) ? ( _evnt.GetHashCode() + _condition.GetHashCode() ) : 0;
+	public override int GetHashCode() => (_hashCode != -1) ? _hashCode : ( _hashCode = CalculateHashCode() );
+	public override string ToString() => $"Validated({_evnt.ToStringOrNull()})";
 }
 
 public sealed class ValidatedEventListener<T> : BaseConditionalEventListener, IEventTrigger<T>
@@ -57,29 +51,23 @@ public sealed class ValidatedEventListener<T> : BaseConditionalEventListener, IE
 		// if( _evnt != null || _condition != null ) _hashCode = _evnt.GetHashCode() + _condition.GetHashCode();
 	}
 
-	public void Clear() { _evnt = null; _condition = null; }
+	public void Clear() { _evnt = null; _condition = null; _hashCode = 0; }
 	public void Trigger( T t ) { _evnt.Trigger( t ); }
 
 	public override bool Equals( object obj )
 	{
-		if( _evnt != null && _condition != null && obj is ValidatedEventListener<T> del)
+		if (obj == null) return this == null;
+		if (GetHashCode() != obj.GetHashCode()) return false;
+		if (_evnt != null && _condition != null && obj is ValidatedEventListener<T> del)
 		{
-			if (_hashCode == -1)
-			{
-				if (_evnt != null && _condition != null) _hashCode = _evnt.GetHashCode() + _condition.GetHashCode();
-				else _hashCode = 0;
-			}
-			if (del._hashCode == -1)
-			{
-				if (del._evnt != null && del._condition != null) del._hashCode = del._evnt.GetHashCode() + del._condition.GetHashCode();
-				else del._hashCode = 0;
-			}
-			return _hashCode == del._hashCode && _evnt.Equals( del._evnt ) && _condition.Equals( del._condition );
+			return _evnt.Equals(del._evnt) && _condition.Equals(del._condition);
 		}
 		return base.Equals( obj );
 	}
 
-	public override int GetHashCode() => _hashCode;
+	private int CalculateHashCode() => ( _evnt != null && _condition != null ) ? ( _evnt.GetHashCode() + _condition.GetHashCode() ) : 0;
+	public override int GetHashCode() => (_hashCode != -1) ? _hashCode : ( _hashCode = CalculateHashCode() );
+	public override string ToString() => $"Validated({_evnt.ToStringOrNull()})";
 }
 
 public sealed class ValidatedEventListener<T, K> : BaseConditionalEventListener, IEventTrigger<T, K>
@@ -99,29 +87,24 @@ public sealed class ValidatedEventListener<T, K> : BaseConditionalEventListener,
 		// if( _evnt != null || _condition != null ) _hashCode = _evnt.GetHashCode() + _condition.GetHashCode();
 	}
 
-	public void Clear() { _evnt = null; _condition = null; }
+	public void Clear() { _evnt = null; _condition = null; _hashCode = 0; }
 	public void Trigger( T t, K k ) { _evnt.Trigger( t, k ); }
+
 
 	public override bool Equals( object obj )
 	{
-		if( _evnt != null && _condition != null && obj is ValidatedEventListener<T,K> del)
+		if (obj == null) return this == null;
+		if (GetHashCode() != obj.GetHashCode()) return false;
+		if (_evnt != null && _condition != null && obj is ValidatedEventListener<T,K> del)
 		{
-			if (_hashCode == -1)
-			{
-				if (_evnt != null || _condition != null) _hashCode = _evnt.GetHashCode() + _condition.GetHashCode();
-				else _hashCode = 0;
-			}
-			if (del._hashCode == -1)
-			{
-				if (del._evnt != null || del._condition != null) del._hashCode = del._evnt.GetHashCode() + del._condition.GetHashCode();
-				else del._hashCode = 0;
-			}
-			return _hashCode == del._hashCode && _evnt.Equals( del._evnt ) && _condition.Equals( del._condition );
+			return _evnt.Equals(del._evnt) && _condition.Equals(del._condition);
 		}
 		return base.Equals( obj );
 	}
 
-	public override int GetHashCode() => _hashCode;
+	private int CalculateHashCode() => ( _evnt != null && _condition != null ) ? ( _evnt.GetHashCode() + _condition.GetHashCode() ) : 0;
+	public override int GetHashCode() => (_hashCode != -1) ? _hashCode : ( _hashCode = CalculateHashCode() );
+	public override string ToString() => $"Validated({_evnt.ToStringOrNull()})";
 }
 
 public sealed class ValidatedEventListener<T,K,J> : BaseConditionalEventListener, IEventTrigger<T,K,J>
@@ -141,27 +124,22 @@ public sealed class ValidatedEventListener<T,K,J> : BaseConditionalEventListener
 		// if( _evnt != null || _condition != null ) _hashCode = _evnt.GetHashCode() + _condition.GetHashCode();
 	}
 
-	public void Clear() { _evnt = null; _condition = null; }
+	public void Clear() { _evnt = null; _condition = null; _hashCode = 0; }
 	public void Trigger( T t, K k, J j ) { _evnt.Trigger( t, k, j ); }
+
 
 	public override bool Equals( object obj )
 	{
-		if( _evnt != null && _condition != null && obj is ValidatedEventListener<T,K,J> del)
+		if (obj == null) return this == null;
+		if (GetHashCode() != obj.GetHashCode()) return false;
+		if (_evnt != null && _condition != null && obj is ValidatedEventListener<T,K,J> del)
 		{
-			if (_hashCode == -1)
-			{
-				if (_evnt != null || _condition != null) _hashCode = _evnt.GetHashCode() + _condition.GetHashCode();
-				else _hashCode = 0;
-			}
-			if (del._hashCode == -1)
-			{
-				if (del._evnt != null || del._condition != null) del._hashCode = del._evnt.GetHashCode() + del._condition.GetHashCode();
-				else del._hashCode = 0;
-			}
-			return _hashCode == del._hashCode && _evnt.Equals( del._evnt ) && _condition.Equals( del._condition );
+			return _evnt.Equals(del._evnt) && _condition.Equals(del._condition);
 		}
 		return base.Equals( obj );
 	}
 
-	public override int GetHashCode() => _hashCode;
+	private int CalculateHashCode() => ( _evnt != null && _condition != null ) ? ( _evnt.GetHashCode() + _condition.GetHashCode() ) : 0;
+	public override int GetHashCode() => (_hashCode != -1) ? _hashCode : ( _hashCode = CalculateHashCode() );
+	public override string ToString() => $"Validated({_evnt.ToStringOrNull()})";
 }

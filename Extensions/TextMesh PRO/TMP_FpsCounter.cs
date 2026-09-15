@@ -1,15 +1,9 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public sealed class TMP_FpsCounter : MonoBehaviour
 {
-    const int MAX_COUNT = 1200;
-
-    [Range(.1f,2),SerializeField] float _sampleSecond = .5f;
-    [SerializeField,HideInInspector] TMPro.TMP_Text _textMesh;
-    List<double> _frame = new List<double>();
-
-    string[] _fpsCounterStringsCache = new string[ MAX_COUNT ];
+    [SerializeField] TMPro.TMP_Text _textMesh;
+    [SerializeField] FpsCounter _fpsCounter = new( .5f );
 
     private int _lastFpsValue = -1;
 
@@ -20,39 +14,15 @@ public sealed class TMP_FpsCounter : MonoBehaviour
     }
 #endif
 
-    string RequestString( int value )
-    {
-        var maxFpsLabel = _fpsCounterStringsCache.Length - 1;
-        var clamped = Mathf.Clamp( value, 0, maxFpsLabel );
-
-        if( _fpsCounterStringsCache[clamped] == null )
-        {
-            var str = value.ToString() + " FPS";
-            if( clamped == 0 ) _fpsCounterStringsCache[ clamped ] = "<" + str;
-            else if( clamped == maxFpsLabel ) _fpsCounterStringsCache[ clamped ] = ">" + str;
-            else _fpsCounterStringsCache[ clamped ] = str;
-        }
-
-        return _fpsCounterStringsCache[ clamped ];
-    }
-
     void Update()
     {
-        var sampleTime = ( Time.unscaledTimeAsDouble - _sampleSecond );
-        while( _frame.Count > 1 && _frame[0] < sampleTime ) _frame.RemoveAt( 0 );
+        _fpsCounter.Update();
 
-        var currTime = Time.unscaledTimeAsDouble;
-
-        var sample = 1.0;
-        if( _frame.Count > 0 ) sample = currTime - _frame[0];
-
-        var fps = (int)( System.Math.Round( ( _frame.Count ) / sample ) + .01 );
-        if( _lastFpsValue != fps )
+        var currentFps = _fpsCounter.CurrentFps;
+        if( _lastFpsValue != _fpsCounter.CurrentFps )
         {
-            _textMesh.SetText( RequestString( fps ) );
-            _lastFpsValue = fps;
+            _lastFpsValue = currentFps;
+            _textMesh.SetText( _fpsCounter.RequestString( currentFps ) );
         }
-
-        _frame.Add( Time.unscaledTimeAsDouble );
     }
 }

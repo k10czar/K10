@@ -117,6 +117,17 @@ public static class ServiceLocator
 		public static readonly GenericsComparer Instance = new GenericsComparer();
 	}
 
+	public static void TryGet<T>(ref T serv) where T : IService
+	{
+		if (serv != null)
+		{
+        	LogVerbose( $"TryGet<{typeof(T)}>( {serv.ToStringOrNullColored( Colors.Console.Names )} ) already set" );
+			return;
+		}
+		serv = Get<T>();
+        LogVerbose( $"TryGet<{typeof(T)}>() returned {serv.ToStringOrNullColored( Colors.Console.Names )}" );
+	}
+
 	public static T Get<T>() where T : IService
 	{
 		return (T)Get(typeof(T));
@@ -310,6 +321,6 @@ public static class ServiceLocator
 		LogVerbose(SB.ToString());
 	}
 
-	[HideInCallstack] private static void LogVerbose( string message ) => K10Log<ServicesLogCategory>.LogVerbose( message );
-	[HideInCallstack] private static void LogError(string message) => K10Log<ServicesLogCategory>.Log( LogSeverity.Error, message );
+	private static void LogVerbose( string message ) => K10Log<ServicesLogCategory>.LogVerbose( message );
+	private static void LogError(string message) => K10Log<ServicesLogCategory>.Log( LogSeverity.Error, message );
 }

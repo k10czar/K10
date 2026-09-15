@@ -6,10 +6,11 @@ namespace K10.EditorGUIExtention
 {
     public static class DrawGUI
 	{
+		const float BOXING_SIZE = 10;
 		private const string SCRIPT_FIELD = "m_Script";
 		static readonly List<string> ignoreClassFullNames = new List<string> { "TMPro.TMP_FontAsset" };
 
-		public static void InlineEditorLayout( Object data )
+		public static void InlinePropertiesLayout( Object data )
 		{
 			EditorGUI.indentLevel++;
 			SerializedObject serializedObject = new SerializedObject( data );
@@ -32,12 +33,24 @@ namespace K10.EditorGUIExtention
 			EditorGUI.indentLevel--;
 		}
 
+		public static float CalculateInlinePropertiesEditorHeight( SerializedProperty property, GUIContent label, bool boxed = false )
+		{
+			float height = EditorGUIUtility.singleLineHeight;
+			if( boxed ) height += BOXING_SIZE;
+
+			if( ShowExpandedProp( property ) )
+				height += CalculateInlinePropertiesEditorHeight( property );
+
+			return height;
+		}
+
+
 		public static float CalculateInlineEditorHeight( SerializedProperty property, GUIContent label, bool boxed = false )
 		{
 			float height = EditorGUIUtility.singleLineHeight;
-			if( boxed ) height += 6;
+			if( boxed ) height += BOXING_SIZE;
 
-			if( property.isExpanded && property.propertyType == SerializedPropertyType.ObjectReference && property.objectReferenceValue != null )
+			if( ShowExpandedProp( property ) )
 				height += CalculateInlinePropertiesEditorHeight( property );
 
 			return height;
@@ -68,7 +81,7 @@ namespace K10.EditorGUIExtention
 			return height;
 		}
 
-		public static void InlinePropertiesEditor( Rect rect, Object data )
+		public static void PropertyFieldsFromObject( Rect rect, Object data )
 		{
 			EditorGUI.indentLevel++;
 			SerializedObject serializedObject = new SerializedObject( data );
@@ -94,16 +107,30 @@ namespace K10.EditorGUIExtention
 			EditorGUI.indentLevel--;
 		}
 
-		public static void InlineEditor( Rect area, SerializedProperty property, System.Type type, GUIContent label, bool boxed )
+		public static void EditorLayoutFromObject( Object data )
+		{
+			if( data == null ) return;
+
+			var editor = CustomEditorUtility.GetEditor( data );
+
+			if( editor == null ) return;
+
+			EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+			EditorGUI.indentLevel++;
+			editor.OnInspectorGUI();
+			EditorGUI.indentLevel--;
+			EditorGUILayout.EndVertical();
+		}
+
+		static void StartDrawRefPropField( ref Rect area, SerializedProperty property, System.Type type, GUIContent label, bool boxed = false )
 		{
 			var slh = EditorGUIUtility.singleLineHeight;
-			var svs = EditorGUIUtility.standardVerticalSpacing;
 			var lw = EditorGUIUtility.labelWidth;
 
 			if( boxed )
 			{
-				GUI.Box( new Rect( 0, area.y, Screen.width, area.height ), "" );
-				area = area.VerticalShrink( 6 );
+				GUI.Box( area, "" );
+				area = area.VerticalShrink( BOXING_SIZE );
 			}
 
 			EditorGUI.BeginProperty( area, label, property );
@@ -132,15 +159,60 @@ namespace K10.EditorGUIExtention
 			var propertyRect = area.CutLeft( lw ).RequestTop( slh );
 			ScriptableObjectField.Draw( propertyRect, property, type );
 			if( GUI.changed ) property.serializedObject.ApplyModifiedProperties();
-
-			if( property.isExpanded && property.propertyType == SerializedPropertyType.ObjectReference && property.objectReferenceValue != null )
-			{
-				var data = (ScriptableObject)property.objectReferenceValue;
-				InlinePropertiesEditor( area.CutTop( slh + svs ), data );
-			}
-
+			
+			var svs = EditorGUIUtility.standardVerticalSpacing;
+			area = area.CutTop( slh + svs );
+		}
+		
+		static void EndDrawRefPropField( SerializedProperty property )
+		{
 			property.serializedObject.ApplyModifiedProperties();
 			EditorGUI.EndProperty();
+		}
+
+        static bool ShowExpandedProp(SerializedProperty prop) => prop.isExpanded && prop.propertyType == SerializedPropertyType.ObjectReference && prop.objectReferenceValue != null;
+
+        public static void PropertyWithInlineProperties( Rect area, SerializedProperty property, System.Type type, GUIContent label, bool boxed )
+		{
+			StartDrawRefPropField( ref area, property, type, label, boxed );
+
+			if( ShowExpandedProp( property ) )
+			{
+				var data = (ScriptableObject)property.objectReferenceValue;
+				PropertyFieldsFromObject( area, data );
+			}
+
+			EndDrawRefPropField( property );
+		}
+
+        public static void PropertyWithInlineEditor( Rect area, SerializedProperty property, System.Type type, GUIContent label, bool boxed )
+		{
+			StartDrawRefPropField( ref area, property, type, label, boxed );
+
+			if( ShowExpandedProp( property ) )
+			{
+				var obj = (ScriptableObject)property.objectReferenceValue;
+				if( obj != null )
+				{
+					var editor = CustomEditorUtility.GetEditor( obj );
+					if( editor != null )
+					{
+						GUILayout.BeginArea( area );
+						EditorGUILayout.BeginVertical( EditorStyles.helpBox );
+						EditorGUI.indentLevel++;
+						editor.OnInspectorGUI();
+						EditorGUI.indentLevel--;
+						EditorGUILayout.EndVertical();
+						GUILayout.EndArea();
+					}
+					else
+					{
+						PropertyFieldsFromObject( area, obj );
+					}
+				}
+			}
+
+			EndDrawRefPropField( property );
 		}
 
 		static bool AreAnySubPropertiesVisible( SerializedProperty property )

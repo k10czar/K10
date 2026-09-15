@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEditor;
 using System;
+using System.Linq;
 
 public static class K10EditorMenuUtils
 {
@@ -36,4 +37,19 @@ public static class K10EditorMenuUtils
         System.Diagnostics.Process.Start("xdg-open", path.Replace('/', '\\'));
         #endif
     }
+
+    [MenuItem("Assets/Force Reserialize %&r", false, 1050)]
+    private static void ForceReserializeSelection()
+    {
+        var paths = Selection.objects
+            .Select( AssetDatabase.GetAssetPath )
+            .Where( p => !string.IsNullOrEmpty( p ) )
+            .ToArray();
+        AssetDatabase.ForceReserializeAssets( paths );
+        Debug.Log( $"Force reserialised {paths.Length} asset(s)." );
+    }
+
+    [MenuItem("Assets/Force Reserialize %&r", true)]
+    private static bool ValidateForceReserializeSelection()
+        => Selection.objects.Any( o => o is ScriptableObject );
 }

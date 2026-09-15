@@ -52,7 +52,7 @@ public class ImageDensityReporter : EditorWindow
         _lastReportMetrics = new System.Diagnostics.Stopwatch();
         _lastReportMetrics.Start();
 
-        var objs = FindObjectsByType<Image>(FindObjectsSortMode.None);
+        var objs = FindObjectsOfType<Image>();
 
         foreach (var uiImg in objs)
         {

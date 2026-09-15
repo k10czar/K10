@@ -38,7 +38,7 @@ public class ValueState<T> : IValueState<T>, ICustomDisposableKill where T : str
 		_onChange?.Trigger( value );
 	}
 
-	public IEventRegister<T> OnChange => Lazy.Request( ref _onChange );
+	public IEventRegister<T> OnChange => _onChange ??= new();
 
 	public ValueState( T initialValue = default( T ) ) { _value = initialValue; }
 
@@ -47,7 +47,7 @@ public class ValueState<T> : IValueState<T>, ICustomDisposableKill where T : str
 	public void Kill()
 	{
 		_onChange?.Kill();
-		_onChange = null;
+		//_onChange = null;
 	}
 }
 
