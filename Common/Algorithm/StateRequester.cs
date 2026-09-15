@@ -1,4 +1,3 @@
-using K10.Common;
 using UnityEngine;
 
 public interface IStateRequesterInfo

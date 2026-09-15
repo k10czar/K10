@@ -3,7 +3,6 @@ using UnityEditor;
 using System.Collections.Generic;
 using K10.EditorGUIExtention;
 using System.Linq;
-using K10.Common;
 
 [CustomPropertyDrawer( typeof( HashedElementFilterBitsAttribute ) )]
 public class HashedElementFilterBitsDrawer : PropertyDrawer

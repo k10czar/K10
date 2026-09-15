@@ -9,7 +9,6 @@ using CPD = UnityEditor.CustomPropertyDrawer;
 using Unity.Mathematics;
 using v3 = Unity.Mathematics.float3;
 #else
-using v3 = UnityEngine.Vector3;
 #endif
 
 [CPD( typeof( BoolState ) )] public class BoolStatePropertyDrawer : ValueStatePropertyDrawer<bool> { }

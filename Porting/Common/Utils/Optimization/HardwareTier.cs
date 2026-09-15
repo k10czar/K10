@@ -1,7 +1,6 @@
 #if CODE_METRICS
 #define DEBUG_NOTIFY
 #endif
-using System;
 using UnityEngine;
 
 public static class HardwareTier

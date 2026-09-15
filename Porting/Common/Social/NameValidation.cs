@@ -2,11 +2,8 @@
 using System.Collections;
 using UnityEngine;
 using K10.Promises;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using K10;
-using K10.Platforms;
 
 
 #if UNITY_GAMECORE || MICROSOFT_GDK_SUPPORT

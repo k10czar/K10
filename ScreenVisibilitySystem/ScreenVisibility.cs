@@ -1,5 +1,3 @@
-using System;
-using Unity.Mathematics;
 using UnityEngine;
 
 public interface IScreenVisibility : IScreenVisibilityObserver, IScreenVisibilitySetter { }

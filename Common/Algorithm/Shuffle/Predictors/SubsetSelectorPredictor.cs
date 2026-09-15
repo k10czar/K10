@@ -1,7 +1,4 @@
 using System;
-using System.CodeDom.Compiler;
-using System.Collections.ObjectModel;
-using UnityEngine;
 
 public class SubsetSelectorPredictor<T> : BaseSubsetSelectorPredictor<T>
 {

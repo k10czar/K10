@@ -1,7 +1,6 @@
 using UnityEditor;
 using UnityEngine;
 using System.Reflection;
-using System.Collections.Generic;
 using System;
 
 public static class PropertyDrawerUtility

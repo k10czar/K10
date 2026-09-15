@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Text;
 using K10;
-using K10.Common;
 using UnityEngine;
 
 public interface ISummarizable

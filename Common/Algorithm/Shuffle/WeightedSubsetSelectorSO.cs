@@ -2,7 +2,6 @@ using K10;
 using UnityEngine;
 using System.Collections.Generic;
 using System;
-using System.Linq;
 
 public interface ISubsetSelector
 {

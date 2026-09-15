@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEditor;
-using System;
 
 public struct ButtonWithIcon
 {

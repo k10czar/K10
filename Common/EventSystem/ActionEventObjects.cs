@@ -1,8 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
-using System.Linq;
-using K10;
 using System.Runtime.CompilerServices;
 
 public interface IActionEvent : IActionEventRegister, IEventTrigger { }

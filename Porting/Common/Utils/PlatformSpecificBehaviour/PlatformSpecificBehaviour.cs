@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 #if NAUGHTY_ATTRIBUTES
 using NaughtyAttributes;

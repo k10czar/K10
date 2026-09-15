@@ -1,5 +1,3 @@
-using K10.Common;
-
 public class BoolStateRelay : IBoolStateObserver, ICustomDisposableKill
 {
 	bool _killed = false;

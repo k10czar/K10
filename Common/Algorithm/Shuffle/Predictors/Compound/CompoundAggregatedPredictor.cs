@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System;
-using UnityEngine;
 
 public class CompoundAggregatedPredictor<T,K> : BaseAggregatedPredictor<T> where T : IAggregatedSubsetSelector<K>
 {

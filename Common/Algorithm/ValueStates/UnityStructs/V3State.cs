@@ -4,7 +4,6 @@
 using UnityEngine;
 
 #if USE_NEW_MATHEMATICS
-using Unity.Mathematics;
 using v3 = Unity.Mathematics.float3;
 #else
 using v3 = UnityEngine.Vector3;

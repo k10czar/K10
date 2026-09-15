@@ -1,5 +1,4 @@
 using System;
-using K10.Common;
 using UnityEngine;
 
 public interface IGuidStateObserver : IValueStateObserver<Guid>

@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using K10.Common;
 
 public static class MaskExtensions
 {
