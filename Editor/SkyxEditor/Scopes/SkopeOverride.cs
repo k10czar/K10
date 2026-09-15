@@ -2,6 +2,7 @@
 using System.Linq;
 using Skyx.RuntimeEditor;
 using UnityEditor;
+using UnityEngine;
 
 namespace Rogue.REditor
 {
@@ -12,7 +13,7 @@ namespace Rogue.REditor
         public const string RemovedMsg = "OVERRIDE REMOVED";
         // public const string ReplacedMsg = "OVERRIDE REPLACED";
 
-        private static readonly Dictionary<(int, string), SkopeOverride> overrides = new();
+        private static readonly Dictionary<(EntityId, string), SkopeOverride> overrides = new();
 
         public static bool TryGetOverride(SerializedProperty target, out SkopeOverride skopeOverride)
             => overrides.TryGetValue(target.GetCacheID(), out skopeOverride);
@@ -30,9 +31,9 @@ namespace Rogue.REditor
         }
 
         public static void Release(SerializedProperty target) => overrides.Remove(target.GetCacheID());
-        public static void Release((int, string) cacheID) => overrides.Remove(cacheID);
+        public static void Release((EntityId, string) cacheID) => overrides.Remove(cacheID);
 
-        public static void Release(int mainCacheID)
+        public static void Release(EntityId mainCacheID)
         {
             var keysToRemove = overrides.Keys.Where(k => k.Item1 == mainCacheID).ToList();
             foreach (var key in keysToRemove)

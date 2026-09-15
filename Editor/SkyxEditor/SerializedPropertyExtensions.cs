@@ -319,11 +319,11 @@ namespace Rogue.REditor
 
         #region Cache IDs
 
-        public static int GetMainCacheID(this SerializedObject serializedObject)
+        public static EntityId GetMainCacheID(this SerializedObject serializedObject)
         {
             try
             {
-                return serializedObject.targetObject.GetInstanceID();
+                return serializedObject.targetObject.GetEntityId();
             }
             catch (Exception)
             {
@@ -332,7 +332,7 @@ namespace Rogue.REditor
             }
         }
 
-        public static (int, string) GetCacheID(this SerializedProperty property)
+        public static (EntityId, string) GetCacheID(this SerializedProperty property)
         {
             try
             {
@@ -346,7 +346,7 @@ namespace Rogue.REditor
             }
         }
 
-        public static int GetMainCacheID(this SerializedProperty property)
+        public static EntityId GetMainCacheID(this SerializedProperty property)
         {
             try
             {

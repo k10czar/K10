@@ -36,7 +36,7 @@ public class LazyArrayOfComponent<T> where T : UnityEngine.Component
 		for( int i = 0; stillHasElementsToLook && i < _elementsCount; i++ )
 		{
 			var element = _elements[i];
-			if( element != null ) 
+			if( element != null )
 			{
 				lastValidElement = i;
 				continue;
@@ -67,11 +67,11 @@ public class LazyArrayOfComponent<T> where T : UnityEngine.Component
 	public bool Contains( T newElement )
 	{
 		if( newElement == null ) return false;
-		var instanceId = newElement.GetInstanceID();
-		for( int i = 0; i < _elementsCount; i++ ) 
+		var instanceId = newElement.GetEntityId();
+		for( int i = 0; i < _elementsCount; i++ )
 		{
 			var element = _elements[i];
-			if( element != null && element.GetInstanceID() == instanceId ) return true;
+			if( element != null && element.GetEntityId() == instanceId ) return true;
 		}
 		return false;
 	}
@@ -100,12 +100,12 @@ public class LazyArrayOfComponent<T> where T : UnityEngine.Component
 	public bool LazyRemove( T newElement )
 	{
 		if( newElement == null ) return false;
-		var instanceId = newElement.GetInstanceID();
+		var instanceId = newElement.GetEntityId();
 		for( int i = 0; i < _elementsCount; i++ )
 		{
 			var element = _elements[i];
 			if( element == null ) continue;
-			if( element.GetInstanceID() != instanceId ) continue;
+			if( element.GetEntityId() != instanceId ) continue;
 			_elements[i] = null;
 			_isDirty = true;
 			_dirtyElementsPrediction++;

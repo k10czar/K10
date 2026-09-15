@@ -443,7 +443,7 @@ namespace Rogue.REditor
             EditorPropertyHighlights.Release(cacheID);
         }
 
-        public static void ClearMyCaches(int mainCacheID, bool ignorePropertyCollections = false)
+        public static void ClearMyCaches(EntityId mainCacheID, bool ignorePropertyCollections = false)
         {
             if (!ignorePropertyCollections) PropertyCollection.Release(mainCacheID);
             SerializedTypeCache.Release(mainCacheID);

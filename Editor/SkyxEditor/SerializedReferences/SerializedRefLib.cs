@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Rogue.RuntimeEditor;
 using UnityEditor;
 using UnityEngine;
@@ -62,7 +63,7 @@ namespace Rogue.REditor
             fieldInfo.TryGetAttribute(out SerializedRefOptionsAttribute optionsAtt);
             var nullLabel = optionsAtt == null ? null : (optionsAtt.canBeNull ? optionsAtt.nullLabel : null);
 
-            ClassTreePicker.Draw(rect, property.GetManagedType(), property.managedReferenceValue?.GetType(), OnTypeSelected, validTypes, nullLabel);
+            ClassTreePicker.Draw(rect, property.GetSourceManagedType(), property.managedReferenceValue?.GetType(), OnTypeSelected, validTypes, nullLabel);
 
             void OnTypeSelected(Type newSelection)
             {
@@ -89,29 +90,15 @@ namespace Rogue.REditor
 
         public static bool IsManagedRef(this SerializedProperty property) => property.propertyType == SerializedPropertyType.ManagedReference;
 
-        #endregion
-
-        #region Utils
-
-        private static Type GetManagedType(this SerializedProperty prop)
+        public static Type GetSourceManagedType(this SerializedProperty prop)
         {
-            var assType = prop.managedReferenceFieldTypename;
-            var split = assType.Split(' ');
+            var typeName = prop.managedReferenceFieldTypename;
 
-            if (split.Length <= 0) return null;
-            if (split.Length == 1) return TypeFinder.WithName(split[0]);
+            var split = typeName.Split(' ');
+            var fullTypeName = split.Length > 1 ? split[1] : split[0];
 
-            var assemblyName = split[0];
-            if (split.Length > 2)
-            {
-                var cut = split[0].Length + 1;
-                var fullTypeName = assType.Substring(split[0].Length + 1, assType.Length - cut);
-                return TypeFinder.WithNameFromAssembly(fullTypeName, assemblyName);
-            }
-
-            var typeName = split[1];
-            var type = TypeFinder.WithNameFromAssembly(typeName, assemblyName);
-            return type;
+            return TypeCache.GetTypesDerivedFrom<object>()
+                .FirstOrDefault(t => t.FullName == fullTypeName);
         }
 
         #endregion

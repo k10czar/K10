@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using Rogue.RuntimeEditor;
 using UnityEditor;
 using UnityEngine;
@@ -8,8 +8,6 @@ namespace Rogue.REditor
     [CustomPropertyDrawer(typeof(WeightedDrawerAttribute))]
     public class WeightedDrawerAttributePropertyDrawer : PropertyDrawer
     {
-        private static readonly Dictionary<(int, string), (int, float)> sumCache = new();
-
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
         {
             var att = (WeightedDrawerAttribute)attribute;
@@ -62,7 +60,7 @@ namespace Rogue.REditor
                 return 0;
             }
 
-            if (!force && sumCache.TryGetValue(cacheID, out var entry))
+            if (!force && EditorDataCache.TryGet(cacheID, out ValueTuple<int, float> entry))
             {
                 var (prevCount, sum) = entry;
                 if (prevCount == parentProperty.arraySize)
@@ -73,7 +71,7 @@ namespace Rogue.REditor
             for (var i = 0; i < parentProperty.arraySize; i++)
                 newSum += parentProperty.GetArrayElementAtIndex(i).FindPropertyRelative(weightFieldName).floatValue;
 
-            sumCache[cacheID] = (parentProperty.arraySize, newSum);
+            EditorDataCache.Cache(cacheID, (parentProperty.arraySize, newSum));
 
             return newSum;
         }

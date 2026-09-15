@@ -29,19 +29,19 @@ namespace Rogue.REditor
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            var jsonObject = new JObject { { "instanceID", ((Object) value)!.GetInstanceID() } };
+            var jsonObject = new JObject { { "entityId", EntityId.ToULong(((Object) value)!.GetEntityId()) } };
             jsonObject.WriteTo(writer);
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             var jsonObject = JObject.Load(reader);
-            var instanceID = jsonObject["instanceID"]!.ToObject<int>();
+            var entityId = jsonObject["entityId"]!.ToObject<ulong>();
 
-            var unityObject = EditorUtility.EntityIdToObject(instanceID);
+            var unityObject = EditorUtility.EntityIdToObject(EntityId.FromULong(entityId));
             if (unityObject != null) return unityObject;
 
-            if (instanceID != 0) Debug.LogError($"Unity object with instanceID {instanceID} not found.");
+            if (entityId != 0) Debug.LogError($"Unity object with entityId {entityId} not found.");
 
             return null;
         }

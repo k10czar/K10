@@ -127,7 +127,7 @@ public static class SerializedPropertyExtensions
 
 	private static string CompletePath( this SerializedProperty sp )
 	{
-		return $"{{{string.Join(",",sp.serializedObject.targetObjects.Select( o => o.GetInstanceID()))}}}.{sp.propertyPath}";
+		return $"{{{string.Join(",",sp.serializedObject.targetObjects.Select( o => o.GetEntityId()))}}}.{sp.propertyPath}";
 	}
 
 	private static float GetCalculatedElementHeightCached( SerializedProperty sp, bool includeChildren = true )
@@ -214,45 +214,6 @@ public static class SerializedPropertyExtensions
 								isActive ? 'A' : '-',
 								isActive ? "Active" : "Inactive",
 								isActive ? Color.green : Color.red );
-
-	public static void DrawSerializedReferenceLayout( this SerializedProperty prop, bool includeChildren = true, float spacing = 0 )
-	{
-		var type = prop.GetManagedType();
-		if( type == null )
-		{
-			EditorGUILayout.LabelField( $"Cannot find type: {prop.managedReferenceFieldTypename}" );
-			return;
-		}
-        EditorGUILayout.BeginHorizontal();
-
-		var isActiveProp = prop.FindPropertyRelative( "_isActive" );
-		isActiveProp.TryDrawIsActiveLayout( EditorGUIUtility.singleLineHeight );
-
-		var isInactive = IsInactive( isActiveProp );
-		if( isInactive ) GuiColorManager.New( Colors.Console.GrayOut );
-
-		var listingData = TypeListDataCache.GetFrom( type );
-
-		var refSize = listingData.MaxWidth;
-		var refSizeLimited = Mathf.Min( EditorGUILayout.GetControlRect().width / 2, refSize );
-        var index = FindIndexOf( prop.managedReferenceValue, listingData ) + 1;
-        var newIndex = EditorGUILayout.Popup( index, listingData.GetGUIsWithIconWithNull(), GUILayout.Width(refSizeLimited) );
-        CheckSelectionChange( prop, listingData, index - 1, newIndex - 1 );
-        EditorGUILayout.Space( MAGIC_POPUP_SPACE, false );
-        var triggerSummary = prop.managedReferenceFullTypename;
-        prop.isExpanded = EditorGUILayout.BeginFoldoutHeaderGroup( prop.isExpanded, triggerSummary );
-        EditorGUILayout.EndFoldoutHeaderGroup();
-		var refType = prop?.managedReferenceValue.GetType() ?? null;
-		var script = refType?.EditorGetScript() ?? null;
-		if( script != null && IconButton.Layout( "script", 's', Colors.Celeste ) ) AssetDatabase.OpenAsset( script );
-        EditorGUILayout.EndHorizontal();
-        if (!prop.isExpanded) return;
-		GuiLabelWidthManager.New( refSize );
-		prop.DrawChildProps( includeChildren, spacing );
-		GuiLabelWidthManager.Revert();
-
-		if( isInactive ) GuiColorManager.Revert();
-	}
 
 	public static System.Type GetManagedType( this SerializedProperty prop )
 	{

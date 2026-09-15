@@ -11,10 +11,10 @@ namespace Rogue.REditor
     {
         #region Cache Interface
 
-        private static readonly Dictionary<(int, string), ReorderableList> cache = new();
+        private static readonly Dictionary<(EntityId, string), ReorderableList> cache = new();
 
         public static void Add(SerializedProperty property, ReorderableList list) => Add(property.GetCacheID(), list);
-        public static void Add((int, string) cacheID, ReorderableList list) => cache[cacheID] = list;
+        public static void Add((EntityId, string) cacheID, ReorderableList list) => cache[cacheID] = list;
 
         public static bool HasList(SerializedProperty property)
         {
@@ -37,7 +37,7 @@ namespace Rogue.REditor
             return list.serializedProperty == null || list.serializedProperty == property;
         }
 
-        public static bool TryGet((int, string) cacheID, out ReorderableList list) => cache.TryGetValue(cacheID, out list);
+        public static bool TryGet((EntityId, string) cacheID, out ReorderableList list) => cache.TryGetValue(cacheID, out list);
 
         public static ReorderableList GetOrCreate(SerializedProperty property, Func<SerializedProperty, ReorderableList> create)
         {
@@ -52,7 +52,7 @@ namespace Rogue.REditor
             return list;
         }
 
-        public static ReorderableList GetOrCreate((int, string) cacheID, Func<ReorderableList> create)
+        public static ReorderableList GetOrCreate((EntityId, string) cacheID, Func<ReorderableList> create)
         {
             if (cache.TryGetValue(cacheID, out var list)) return list;
 
@@ -64,7 +64,7 @@ namespace Rogue.REditor
             return list;
         }
 
-        public static void Release(int mainCacheID)
+        public static void Release(EntityId mainCacheID)
         {
             var keysToRemove = cache.Keys.Where(k => k.Item1 == mainCacheID).ToList();
 
@@ -72,7 +72,7 @@ namespace Rogue.REditor
                 cache.Remove(key);
         }
 
-        public static void Release((int, string) cacheID) => cache.Remove(cacheID);
+        public static void Release((EntityId, string) cacheID) => cache.Remove(cacheID);
 
         public static void Clear() => cache.Clear();
 

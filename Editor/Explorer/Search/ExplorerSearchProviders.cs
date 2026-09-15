@@ -12,6 +12,7 @@ using Object = UnityEngine.Object;
 
 namespace Rogue.Explorer
 {
+    [Serializable]
     public abstract class ExplorerSearchSourcesProvider<T> : IContentEditorInfo where T : Object
     {
         public abstract string ContentName { get; }
@@ -43,7 +44,7 @@ namespace Rogue.Explorer
         protected override IEnumerator<object> GetEqualityComponents()
         {
             foreach (var source in sources)
-                yield return source.GetInstanceID();
+                yield return source.GetEntityId();
         }
     }
 

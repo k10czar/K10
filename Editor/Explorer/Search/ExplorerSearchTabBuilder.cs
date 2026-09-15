@@ -22,7 +22,7 @@ namespace Rogue.Explorer
 
         public void Rebuild(IExplorerWindow _, VisualElement root)
         {
-            PropertyCollection.RegisterChanged(ExplorerEditorConfig.Instance.GetInstanceID(), ReRunFilters);
+            PropertyCollection.RegisterChanged(ExplorerEditorConfig.Instance.GetEntityId(), ReRunFilters);
 
             var newElement = ExplorerEditorLib.InstantiateSearchTab();
             root.Add(newElement);
@@ -63,7 +63,7 @@ namespace Rogue.Explorer
                 var innerProps = searchConfig.GetInternalResults(result);
 
                 foreach (var (owner, path) in innerProps.Keys)
-                    EditorPropertyHighlights.Release((owner.GetInstanceID(), path));
+                    EditorPropertyHighlights.Release((owner.GetEntityId(), path));
             }
         }
 
@@ -95,7 +95,7 @@ namespace Rogue.Explorer
 
                     foreach (var (owner, path) in innerProps.Keys)
                     {
-                        EditorPropertyHighlights.Add((owner.GetInstanceID(), path));
+                        EditorPropertyHighlights.Add((owner.GetEntityId(), path));
                         var innerEntry = ExplorerEntryView.Create(window, result, path, breadcrumbs);
                         newEntry.AddInternalContent(innerEntry);
                     }
@@ -160,7 +160,7 @@ namespace Rogue.Explorer
             cancellationToken?.Dispose();
             cancellationToken = null;
 
-            PropertyCollection.DeregisterChanged(ExplorerEditorConfig.Instance.GetInstanceID(), ReRunFilters);
+            PropertyCollection.DeregisterChanged(ExplorerEditorConfig.Instance.GetEntityId(), ReRunFilters);
         }
 
         public ExplorerSearchTabBuilder(IExplorerWindow window, ExplorerSearchConfigBase searchConfig, bool isNewConfig)

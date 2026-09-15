@@ -9,7 +9,7 @@ namespace Rogue.REditor
 {
     public static class SerializedTypeCache
     {
-        private static readonly Dictionary<(int, string), Type> cache = new();
+        private static readonly Dictionary<(EntityId, string), Type> cache = new();
 
         public static Type GetCachedType(this SerializedProperty property)
         {
@@ -60,7 +60,7 @@ namespace Rogue.REditor
             return null;
         }
 
-        public static void Release(int mainCacheID)
+        public static void Release(EntityId mainCacheID)
         {
             var keysToRemove = cache.Keys.Where(k => k.Item1 == mainCacheID).ToList();
 
@@ -68,7 +68,7 @@ namespace Rogue.REditor
                 cache.Remove(key);
         }
 
-        public static void Release((int, string) cacheID) => cache.Remove(cacheID);
+        public static void Release((EntityId, string) cacheID) => cache.Remove(cacheID);
 
         public static void Clear() => cache.Clear();
 

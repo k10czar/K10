@@ -18,13 +18,13 @@ namespace Rogue.REditor
         private static readonly ProfilerMarker getCollectionMarker = new("PropertyCollection.Get");
         private static readonly ProfilerMarker applyCollectionMarker = new("PropertyCollection.Apply");
 
-        [ResetedOnLoad] private static readonly Dictionary<int, Dictionary<string, PropertyCollection>> collections = new();
-        [ResetedOnLoad] private static readonly HashSet<int> scheduledResets = new();
-        [ResetedOnLoad] private static readonly Dictionary<int, Action> changedCallbacks = new();
+        [ResetedOnLoad] private static readonly Dictionary<EntityId, Dictionary<string, PropertyCollection>> collections = new();
+        [ResetedOnLoad] private static readonly HashSet<EntityId> scheduledResets = new();
+        [ResetedOnLoad] private static readonly Dictionary<EntityId, Action> changedCallbacks = new();
 
         public static SerializedObject GetSerializedObject(Object target)
         {
-            var mainCacheID = target.GetInstanceID();
+            var mainCacheID = target.GetEntityId();
             if (collections.TryGetValue(mainCacheID, out var objectCollections))
             {
                 if (objectCollections.Count > 0)
@@ -80,13 +80,13 @@ namespace Rogue.REditor
         public static void ApplyDirectChanges(Object target)
         {
             EditorUtility.SetDirty(target);
-            ScheduleReset(target.GetInstanceID());
+            ScheduleReset(target.GetEntityId());
         }
 
         public static void ScheduleReset(SerializedObject serializedObject)
             => ScheduleReset(serializedObject.GetMainCacheID());
 
-        private static void ScheduleReset(int mainCacheID)
+        private static void ScheduleReset(EntityId mainCacheID)
         {
             scheduledResets.Add(mainCacheID);
 
@@ -112,7 +112,7 @@ namespace Rogue.REditor
             }
         }
 
-        private static void ResetCollections(int mainCacheID)
+        private static void ResetCollections(EntityId mainCacheID)
         {
             if (!collections.TryGetValue(mainCacheID, out var objectCollections)) return;
 
@@ -154,7 +154,7 @@ namespace Rogue.REditor
         }
 
         public static void Release(SerializedObject root) => Release(root.GetMainCacheID());
-        public static void Release(int mainCacheID) => collections.Remove(mainCacheID);
+        public static void Release(EntityId mainCacheID) => collections.Remove(mainCacheID);
 
         public static void ClearCollections()
         {
@@ -163,7 +163,7 @@ namespace Rogue.REditor
             changedCallbacks.Clear();
         }
 
-        public static void RegisterChanged(int mainCacheID, Action callback)
+        public static void RegisterChanged(EntityId mainCacheID, Action callback)
         {
             if (changedCallbacks.TryGetValue(mainCacheID, out var existingCallbacks))
             {
@@ -175,7 +175,7 @@ namespace Rogue.REditor
             else changedCallbacks[mainCacheID] = callback;
         }
 
-        public static void DeregisterChanged(int mainCacheID, Action callback)
+        public static void DeregisterChanged(EntityId mainCacheID, Action callback)
         {
             if (!changedCallbacks.TryGetValue(mainCacheID, out var existingCallbacks)) return;
 
