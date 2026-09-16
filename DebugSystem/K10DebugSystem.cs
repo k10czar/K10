@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -25,7 +24,26 @@ namespace K10.DebugSystem
 
                 categories = new List<DebugCategory>();
 
-                foreach (var catType in TypeCache.GetTypesDerivedFrom<DebugCategory>())
+                #if UNITY_EDITOR
+                var categoryTypes = UnityEditor.TypeCache.GetTypesDerivedFrom<DebugCategory>();
+                #else
+                var targetType = typeof(DebugCategory);
+                var categoryTypes = new List<Type>();
+                foreach (var assembly in UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies())
+                {
+                    Type[] types;
+                    try { types = assembly.GetTypes(); }
+                    catch (Exception) { continue; }
+
+                    foreach (var candidate in types)
+                    {
+                        if (candidate != targetType && targetType.IsAssignableFrom(candidate) && !candidate.IsAbstract)
+                            categoryTypes.Add(candidate);
+                    }
+                }
+                #endif
+
+                foreach (var catType in categoryTypes)
                 {
                     try
                     {
@@ -130,7 +148,7 @@ namespace K10.DebugSystem
         };
 
         #if UNITY_EDITOR
-        private static bool IsSelection(Object candidate) => Selection.activeGameObject == GetGameObject(candidate);
+        private static bool IsSelection(Object candidate) => UnityEditor.Selection.activeGameObject == GetGameObject(candidate);
         #endif
 
         public static bool ForceCheckDebugOwners(params Object[] requesters) => CheckDebugOwners(requesters, true);

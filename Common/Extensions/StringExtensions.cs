@@ -13,12 +13,17 @@ namespace Rogue.REditor
         #if UNITY_EDITOR
         public static string Pretty(this Enum value) => UnityEditor.ObjectNames.NicifyVariableName(value.ToString());
         public static string Pretty(this string value) => UnityEditor.ObjectNames.NicifyVariableName(value);
-        #else
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string Pretty(this Enum value) => value.ToString();
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string Highlight(this string baseString, EColor color) => $"<color={color.ToHexRGB()}><b>{baseString}</b></color>";
+        public static string Highlight(this Enum info, EColor color) => $"<color={color.ToHexRGB()}><b>{info}</b></color>";
+        public static string Highlight(this Enum info) => $"<b>{info}</b>";
+        #else
+        public static string Pretty(this Enum value) => value.ToString();
         public static string Pretty(this string value) => value;
+
+        public static string Highlight(this string baseString, EColor color) => baseString;
+        public static string Highlight(this Enum info, EColor color) => info.ToString();
+        public static string Highlight(this Enum info) => info.ToString();
         #endif
     }
 }

@@ -45,7 +45,7 @@ namespace K10.DebugSystem
 
                 log = K10Log.ReplaceColorsNames(log);
                 #else
-                log = $"[{category.Name}] {Regex.Replace(log, "<.*?>", string.Empty)}";
+                log = $"[{category.Name}] {System.Text.RegularExpressions.Regex.Replace(log, "<.*?>", string.Empty)}";
                 #endif
 
                 if (severity == LogSeverity.Error) Debug.LogError(log, consoleTarget);
