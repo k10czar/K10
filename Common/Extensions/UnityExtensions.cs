@@ -210,24 +210,24 @@ public static class K10UnityExtensions
 	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static IEventTrigger UntilValidator( this Component c, System.Action act ) { return c.gameObject.EventRelay().LifetimeValidator.Validated( act ); }
 
 
-	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static void LockSemaphore( this MonoBehaviour mb, ISemaphoreInterection semaphore, float seconds, object code )
+	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static void LockSemaphore( this MonoBehaviour mb, ISemaphoreInteraction semaphore, float seconds, object code )
 	{
 		mb.StartCoroutine( LockSemaphore( semaphore, seconds, code ) );
 	}
 
-	[MethodImpl( Optimizations.INLINE_IF_CAN )] static IEnumerator LockSemaphore( ISemaphoreInterection semaphore, float seconds, object code )
+	[MethodImpl( Optimizations.INLINE_IF_CAN )] static IEnumerator LockSemaphore( ISemaphoreInteraction semaphore, float seconds, object code )
 	{
 		semaphore.Block( code );
 		yield return new WaitForSeconds( seconds );
 		semaphore.Release( code );
 	}
 
-	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static void LockSemaphore( this MonoBehaviour mb, ISemaphoreInterection semaphore, float seconds, object code, string debug )
+	[MethodImpl( Optimizations.INLINE_IF_CAN )] public static void LockSemaphore( this MonoBehaviour mb, ISemaphoreInteraction semaphore, float seconds, object code, string debug )
 	{
 		mb.StartCoroutine( LockSemaphoreDebuging( semaphore, seconds, code, debug ) );
 	}
 
-	static IEnumerator LockSemaphoreDebuging( ISemaphoreInterection semaphore, float seconds, object code, string debug )
+	static IEnumerator LockSemaphoreDebuging( ISemaphoreInteraction semaphore, float seconds, object code, string debug )
 	{
 		// UnityEngine.Debug.LogFormat( "Blocking {0}{2} for {4}s with code {1} at {3}", debug, code.ToString(), semaphore, Time.time, seconds );
 		semaphore.Block( code );
