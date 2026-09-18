@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Rogue.RNG;
 
@@ -132,6 +133,35 @@ namespace Rogue.Helpers
                 var realIndex = (i + startIndex) % count;
                 yield return list[realIndex];
             }
+        }
+
+        public static T WeightedRandom<T>(this IList<(T, float)> source, RandomSource rng)
+        {
+            var sum = source.Sum(entry => entry.Item2);
+            var random = RandomLib.NextFloat(rng, 0, sum);
+
+            foreach (var (key, chance) in source)
+            {
+                if (random <= chance) return key;
+                random -= chance;
+            }
+
+            throw new Exception("Weights misconfigured!");
+        }
+
+        public static T WeightedRandom<T>(this IList<(T, float)> source, HashSet<T> validSet, RandomSource rng)
+        {
+            var sum = source.Sum(entry => validSet.Contains(entry.Item1) ? entry.Item2 : 0);
+            var random = UnityEngine.Random.Range(0, sum);
+
+            foreach (var (key, chance) in source)
+            {
+                if (!validSet.Contains(key)) continue;
+                if (random <= chance) return key;
+                random -= chance;
+            }
+
+            throw new Exception("Weights misconfigured!");
         }
 
         #endregion
