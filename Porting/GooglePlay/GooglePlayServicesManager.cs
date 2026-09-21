@@ -1,8 +1,10 @@
+#if UNITY_ANDROID
+
 using UnityEngine;
+using System;
 using GooglePlayGames;
 using GooglePlayGames.BasicApi;
 using GooglePlayGames.BasicApi.SavedGame;
-using System;
 
 public static class GooglePlayServicesManager
 {
@@ -118,3 +120,4 @@ public static class GooglePlayServicesManager
         );
     }
 }
+#endif
