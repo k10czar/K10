@@ -20,22 +20,22 @@ namespace Rogue.REditor
 
     internal class ClassTreeAdvancedDropdown : AdvancedDropdown
     {
-        private readonly ClassTreeNode treeNode;
-        private readonly Type currentSelection;
-        private readonly Action<Type> callback;
-        private readonly string nullLabel;
+        private readonly ClassTreeNode _treeNode;
+        private readonly Type _currentSelection;
+        private readonly Action<Type> _callback;
+        private readonly string _nullLabel;
 
         public ClassTreeAdvancedDropdown(AdvancedDropdownState state, ClassTreeNode treeNode, Type currentSelection, Action<Type> callback, string nullLabel) : base(state)
         {
-            this.treeNode = treeNode;
-            this.callback = callback;
-            this.currentSelection = currentSelection;
-            this.nullLabel = nullLabel;
+            this._treeNode = treeNode;
+            this._callback = callback;
+            this._currentSelection = currentSelection;
+            this._nullLabel = nullLabel;
 
             minimumSize = new Vector2(300, 300);
         }
 
-        protected override AdvancedDropdownItem BuildRoot() => BuildNodeDropdown(treeNode, true);
+        protected override AdvancedDropdownItem BuildRoot() => BuildNodeDropdown(_treeNode, true);
 
         private AdvancedDropdownItem BuildNodeDropdown(TreeNode<Type> currentTreeNode, bool isRoot)
         {
@@ -49,7 +49,7 @@ namespace Rogue.REditor
             {
                 if (node.IsValid)
                 {
-                    var isSelected = currentSelection == node.Value;
+                    var isSelected = _currentSelection == node.Value;
                     dropdown.AddChild(new ClassTreeAdvancedDropdownItem(node, isSelected));
                     hasValidChildren = true;
                 }
@@ -57,8 +57,8 @@ namespace Rogue.REditor
                 if (node.HasChildren) hasNodesWithChildren = true;
             }
 
-            if (isRoot && !string.IsNullOrEmpty(nullLabel))
-                dropdown.AddChild(new ClassTreeAdvancedDropdownItem(nullLabel, currentSelection == null));
+            if (isRoot && !string.IsNullOrEmpty(_nullLabel))
+                dropdown.AddChild(new ClassTreeAdvancedDropdownItem(_nullLabel, _currentSelection == null));
 
             if (hasValidChildren && hasNodesWithChildren) dropdown.AddSeparator();
 
@@ -73,7 +73,7 @@ namespace Rogue.REditor
         private void TreeNodeSelected(ClassTreeAdvancedDropdownItem treeItem)
         {
             Debug.Assert(treeItem.isValid, $"Selected invalid entry! {treeItem.value}");
-            callback.Invoke(treeItem.value);
+            _callback.Invoke(treeItem.value);
         }
 
         protected override void ItemSelected(AdvancedDropdownItem item) => TreeNodeSelected(item as ClassTreeAdvancedDropdownItem);

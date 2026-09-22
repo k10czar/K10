@@ -93,12 +93,19 @@ namespace Rogue.REditor
         public static Type GetSourceManagedType(this SerializedProperty prop)
         {
             var typeName = prop.managedReferenceFieldTypename;
+            if (string.IsNullOrEmpty(typeName)) return null;
 
-            var split = typeName.Split(' ');
+            var split = typeName.Split(new[] { ' ' }, 2);
+
+            if (split.Length == 2)
+            {
+                var type = Type.GetType($"{split[1]}, {split[0]}");
+                if (type != null) return type;
+            }
+
             var fullTypeName = split.Length > 1 ? split[1] : split[0];
-
-            return TypeCache.GetTypesDerivedFrom<object>()
-                .FirstOrDefault(t => t.FullName == fullTypeName);
+            return Type.GetType(fullTypeName)
+                   ?? TypeCache.GetTypesDerivedFrom<object>().FirstOrDefault(t => t.FullName == fullTypeName);
         }
 
         #endregion
