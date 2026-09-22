@@ -78,6 +78,8 @@ namespace Rogue.Explorer
 
             foreach (var candidate in Sources)
             {
+                if (candidate == null) continue;
+
                 var selectedProperties = new Dictionary<(Object, string), object>();
                 var valid = true;
                 var isFirst = true;
