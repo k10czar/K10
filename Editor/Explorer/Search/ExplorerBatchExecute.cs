@@ -6,11 +6,10 @@ using Object = UnityEngine.Object;
 
 namespace Rogue.Explorer
 {
-
     [Serializable]
     public abstract class ExplorerBatchExecute<T> where T : Object
     {
-        protected abstract bool Run(T skillDataSource, Dictionary<(Object, string), object> innerProperties, ref string log);
+        protected abstract bool Run(T dataSource, Dictionary<(Object, string), object> innerProperties, ref string log);
 
         protected virtual int ReallyRun(Dictionary<T, Dictionary<(Object, string), object>> targets)
         {
