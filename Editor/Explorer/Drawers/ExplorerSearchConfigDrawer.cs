@@ -33,14 +33,14 @@ namespace Rogue.Explorer
 
             EnumTreeGUI.DrawEnum<EExplorerSearchMode>(modeRect, properties["searchMode"], EColor.Support, "How should we deal when multiple child properties are found?");
 
-            properties.DrawIncluding(ref rect, "batchExecute");
+            properties.DrawIncluding(ref rect, "_batchExecute");
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             var properties = GetProperties(property);
 
-            return properties.GetTotalHeightIncluding("name", "sourcesProvider", "batchExecute") +
+            return properties.GetTotalHeightIncluding("name", "sourcesProvider", "_batchExecute") +
                    SkyxStyles.FullLineHeight +
                    HeaderList.GetPropertyHeight(properties["filters"], EScopeType.Foldout, EElementSize.SingleLine);
         }

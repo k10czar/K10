@@ -11,7 +11,7 @@ public static class K10EditorMenuUtils
 
     static string GetCurrentFileName( int mag ) => $"{Application.productName}_{mag}x_{DateTime.Now:yyMMdd_HH-mm-ss-ffff}.{FILE_EXTENSION}";
     static string GetCurrentFilePath( int mag ) => $"{FOLDER_RELATIVE_PATH}/{GetCurrentFileName(mag)}";
-    static void CaptureScreenshot( int mag ) 
+    static void CaptureScreenshot( int mag )
     {
         FileAdapter.RequestDirectory( FOLDER_RELATIVE_PATH );
         var filePath = GetCurrentFilePath( mag );
@@ -25,7 +25,7 @@ public static class K10EditorMenuUtils
     [MenuItem("K10/Utils/Capture Screenshot/4x #&4")] static void CaptureScreenshot4x() => CaptureScreenshot(4);
     [MenuItem("K10/Utils/Capture Screenshot/Open Folder #&p")] static void OpenScreenshotsFolder() => OpenFolderOnExplorer(FOLDER_RELATIVE_PATH);
     [MenuItem("K10/Open Project Folder #&e",priority =-1)] static void OpenProjectFolder() => OpenFolderOnExplorer( Application.dataPath );
-    
+
     public static void OpenFolderOnExplorer( string path )
     {
         Debug.Log( $"<color=cyan>OpenFolderOnExplorer</color>( <color=magenta>{path}</color> )" );
@@ -38,18 +38,15 @@ public static class K10EditorMenuUtils
         #endif
     }
 
-    [MenuItem("Assets/Force Reserialize %&r", false, 1050)]
+    [MenuItem("Rogue/Editor/Force Reserialize Selected", false, 1050)]
     private static void ForceReserializeSelection()
     {
         var paths = Selection.objects
-            .Select( AssetDatabase.GetAssetPath )
-            .Where( p => !string.IsNullOrEmpty( p ) )
+            .Select(AssetDatabase.GetAssetPath)
+            .Where(entry => !string.IsNullOrEmpty(entry))
             .ToArray();
-        AssetDatabase.ForceReserializeAssets( paths );
-        Debug.Log( $"Force reserialised {paths.Length} asset(s)." );
-    }
 
-    [MenuItem("Assets/Force Reserialize %&r", true)]
-    private static bool ValidateForceReserializeSelection()
-        => Selection.objects.Any( o => o is ScriptableObject );
+        AssetDatabase.ForceReserializeAssets(paths);
+        Debug.Log($"Force reserialised {paths.Length} asset(s).");
+    }
 }

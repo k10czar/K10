@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Rogue.REditor;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -7,7 +8,15 @@ using Object = UnityEngine.Object;
 namespace Rogue.Explorer
 {
     [Serializable]
-    public abstract class ExplorerBatchExecute<T> where T : Object
+    public abstract class ExplorerBatchExecuteBase : IContentEditorInfo
+    {
+        public abstract string ContentName { get; }
+
+        public abstract void Run(ExplorerSearchConfigBase targetBase);
+    }
+
+    [Serializable]
+    public abstract class ExplorerBatchExecute<T> : ExplorerBatchExecuteBase where T : Object
     {
         protected abstract bool Run(T dataSource, Dictionary<(Object, string), object> innerProperties, ref string log);
 
@@ -37,8 +46,14 @@ namespace Rogue.Explorer
             return changes;
         }
 
-        public void Run(ExplorerSearchConfig<T> target)
+        public override void Run(ExplorerSearchConfigBase targetBase)
         {
+            if (targetBase is not ExplorerSearchConfig<T> target)
+            {
+                Debug.LogError("Something is really wrong! Batch and Explorer config generic types mismatch!");
+                return;
+            }
+
             Debug.Log($"Starting fixture {GetType().Name}");
 
             var changed = ReallyRun(target.TResults);

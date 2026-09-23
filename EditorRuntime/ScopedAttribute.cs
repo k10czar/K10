@@ -43,6 +43,7 @@ namespace Skyx.RuntimeEditor
 
         public bool isDisabled;
         public bool autoAddSkopeButtons = true;
+        public bool hasCustomExpand;
 
         #if UNITY_EDITOR
         public List<SkopeButton> buttons;

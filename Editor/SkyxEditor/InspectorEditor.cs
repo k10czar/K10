@@ -9,19 +9,16 @@ namespace Rogue.REditor
 {
     public abstract class InspectorEditor<T> : Editor where T : Object
     {
-        private static readonly ProfilerMarker drawMarker = new("InspectorEditor.Draw");
-        private static bool isConfigsExpanded;
+        private static readonly ProfilerMarker _drawMarker = new("InspectorEditor.Draw");
+        private static bool _isConfigsExpanded;
 
         protected T Target { get; private set; }
         protected PropertyCollection Properties { get; private set; }
 
-        private bool skipDrawing;
-        private bool willMakeDirectChanges;
+        private bool _willMakeDirectChanges;
 
         protected virtual bool ShouldDrawScript => false;
         protected virtual bool ShouldDrawTitle => true;
-        protected virtual bool ShouldDrawSaveFile => false;
-        protected virtual bool ShouldDrawReserialize => false;
         protected virtual bool HasRuntimeVisualization => false;
 
         protected virtual void DrawRuntimeInfo() {}
@@ -36,7 +33,7 @@ namespace Rogue.REditor
         public void DrawOnlyConfigs()
         {
             Initialize();
-            using var profilerMarker = drawMarker.Auto();
+            using var profilerMarker = _drawMarker.Auto();
             DrawConfigs();
         }
 
@@ -44,7 +41,7 @@ namespace Rogue.REditor
         {
             CacheProperties(false);
 
-            using var profilerMarker = drawMarker.Auto();
+            using var profilerMarker = _drawMarker.Auto();
 
             DrawScriptFile();
             DrawTitle();
@@ -82,7 +79,7 @@ namespace Rogue.REditor
                 DrawRuntimeInfo();
                 SkyxLayout.Space();
 
-                using var scope = HeaderScope.Open("Configs", ref isConfigsExpanded);
+                using var scope = HeaderScope.Open("Configs", ref _isConfigsExpanded);
                 if (scope.IsExpanded) DrawConfigsInternal();
             }
             else
@@ -119,14 +116,14 @@ namespace Rogue.REditor
 
         protected void PrepareForDirectChanges()
         {
-            willMakeDirectChanges = true;
+            _willMakeDirectChanges = true;
             Undo.RecordObject(target, $"Direct changes on {target.name}");
         }
 
         protected void ApplyDirectTargetChanges()
         {
-            if (!willMakeDirectChanges) Debug.LogError("PrepareForDirectChanges was not called!");
-            willMakeDirectChanges = false;
+            if (!_willMakeDirectChanges) Debug.LogError("PrepareForDirectChanges was not called!");
+            _willMakeDirectChanges = false;
 
             EditorUtility.SetDirty(Target);
             serializedObject.Update();
@@ -153,7 +150,7 @@ namespace Rogue.REditor
 
         #region Save Changes
 
-        private bool showModifications;
+        private bool _showModifications;
 
         protected bool DrawPrefabModifications(params string[] ignoredFields)
         {
@@ -210,7 +207,7 @@ namespace Rogue.REditor
 
         private void TryShowModifications(PropertyModification[] modifications)
         {
-            using var scope = FoldoutScope.Open($"⚠️ {modifications.Length} Modifications!", ref showModifications, EColor.Warning);
+            using var scope = FoldoutScope.Open($"⚠️ {modifications.Length} Modifications!", ref _showModifications, EColor.Warning);
             if (!scope.IsExpanded) return;
 
             foreach (PropertyModification modification in modifications)

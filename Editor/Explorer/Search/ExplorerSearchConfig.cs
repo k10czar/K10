@@ -51,8 +51,8 @@ namespace Rogue.Explorer
 
         [SerializeField] private EExplorerSearchMode searchMode = EExplorerSearchMode.Union;
 
-        [SerializeField, SerializeReference, Scoped(EScopePreset.FoldoutNameSummary), SerializedRefOptions("No Batch Execute")]
-        private ExplorerBatchExecute<T> batchExecute;
+        [SerializeField, SerializeReference, SerializedRefOptions("No Batch Execute")]
+        private ExplorerBatchExecute<T> _batchExecute;
 
         public IEnumerable<T> Sources { get; private set; }
 

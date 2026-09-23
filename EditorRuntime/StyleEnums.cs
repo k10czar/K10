@@ -51,7 +51,7 @@ namespace Skyx.RuntimeEditor
     {
         public static bool HasHeader(this EScopeType scope) => scope <= EScopeType.InlineHeader;
 
-        public static bool ShowNoChildProperties(this EScopeType scope) => scope is EScopeType.Header or EScopeType.InlineHeader;
+        public static bool ShowNoChildProperties(this EScopeType scope) => scope is EScopeType.Header or EScopeType.InlineHeader or EScopeType.Foldout;
 
         public static EElementSize PreferredSize(this EScopeType scopeType) => scopeType switch
         {

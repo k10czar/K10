@@ -17,7 +17,7 @@ namespace Rogue.REditor
         public readonly string name;
         public readonly string title;
         public readonly string description;
-        public readonly bool hasCustomExpand;
+        public bool hasCustomExpand;
 
         public readonly bool indent;
         public readonly bool contentIsDisabled;
@@ -183,6 +183,7 @@ namespace Rogue.REditor
             var info = new SkopeInfo(scopedAtt.scopeType, property, name, title, description, color, scopedAtt.elementSize, scopedAtt.indent, contentIsDisabled)
             {
                 autoAddSkopeButtons = scopedAtt.autoAddSkopeButtons,
+                hasCustomExpand = scopedAtt.hasCustomExpand,
             };
 
             if (hasOverrides && skopeOverride.ForcesButtons) info.buttons = skopeOverride.buttons;

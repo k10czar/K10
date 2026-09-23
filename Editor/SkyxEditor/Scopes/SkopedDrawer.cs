@@ -74,7 +74,11 @@ namespace Rogue.REditor
                 EditorGUI.EndDisabledGroup();
             }
             else if (info.scopeType.ShowNoChildProperties())
+            {
+                rect.AdjustToLine(false);
                 EditorGUI.LabelField(rect, "No properties.");
+                rect.NextSameLine();
+            }
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)

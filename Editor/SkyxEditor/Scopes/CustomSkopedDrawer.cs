@@ -13,8 +13,10 @@ namespace Rogue.REditor
         private void InitializeAttribute()
         {
             if (_scopedAttribute != null) return;
-            _scopedAttribute = new ScopedAttribute(ScopePreset);
+            _scopedAttribute = CreateScopedAttribute();
         }
+
+        protected virtual ScopedAttribute CreateScopedAttribute() => new(ScopePreset);
 
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
         {
