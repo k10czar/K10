@@ -23,8 +23,6 @@ public class K10DebugSystemWindow : EditorWindow
 
 	[MenuItem( "K10/Log/Filter" )] static void Open() { var i = Instance; }
 
-	// [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] static void Init() { }
-
 	static K10DebugSystemWindow _instance;
 	public static K10DebugSystemWindow Instance
 	{

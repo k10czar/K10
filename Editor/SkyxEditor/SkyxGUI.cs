@@ -418,6 +418,9 @@ namespace Rogue.REditor
             Debug.Log("Cleared all Caches!");
         }
 
+        [MenuItem("Rogue/Editor/Force Domain Reload")]
+        public static void TriggerReload() => EditorUtility.RequestScriptReload();
+
         public static void ClearAllCaches()
         {
             PropertyCollection.ClearCollections();
