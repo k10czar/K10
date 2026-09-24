@@ -7,7 +7,7 @@ namespace Skyx.Trees
     [NoAutoStaticsCleanup]
     public class EnumTreeNode<T> : TreeNode<T> where T: Enum
     {
-        private static EnumTreeNode<T> Instance { get; } = new();
+        public static EnumTreeNode<T> Instance { get; } = new();
         private static bool _useEnumAsKey;
 
         public static IEnumerable<T> GetChildrenValues(T value) => Instance.GetChildrenValues(Instance.GetNodeInfo(value).path);
