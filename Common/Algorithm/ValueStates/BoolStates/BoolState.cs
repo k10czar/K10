@@ -9,7 +9,6 @@ public interface IBoolStateObserver : IValueStateObserver<bool>
 {
 	IEventRegister OnTrueState { get; }
 	IEventRegister OnFalseState { get; }
-	IBoolStateObserver Not { get; }
 }
 
 [Serializable]
@@ -24,9 +23,6 @@ public class BoolState : IBoolState, ICustomDisposableKill
 	[NonSerialized] private EventSlot<bool> _onChange;
 	[NonSerialized] private EventSlot _onTrue;
 	[NonSerialized] private EventSlot _onFalse;
-	[NonSerialized] private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
-
-	public IBoolStateObserver Not => _not.Request( this );
 
 	public static implicit operator bool( BoolState v ) => v._value;
 
@@ -52,10 +48,17 @@ public class BoolState : IBoolState, ICustomDisposableKill
 		_onChange?.Kill();
 		_onTrue?.Kill();
 		_onFalse?.Kill();
-		_not.Kill();
 		_onChange = null;
 		_onTrue = null;
 		_onFalse = null;
+	}
+
+	public void Clear(bool newValue)
+	{
+		_value = newValue;
+		_onChange?.Clear();
+		_onTrue?.Clear();
+		_onFalse?.Clear();
 	}
 
 	public IEventRegister<bool> OnChange => _killed ? _onChange : _onChange ??= new();

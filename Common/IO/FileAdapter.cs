@@ -1,4 +1,5 @@
 ﻿using System;
+using Unity.Scripting.LifecycleManagement;
 
 public interface IFileAdapter
 {
@@ -15,21 +16,22 @@ public interface IFileAdapter
 	void SavePlayerPrefs();
 }
 
-public static class FileAdapter
+[AutoStaticsCleanup]
+public static partial class FileAdapter
 {
 #if UNITY_EDITOR || UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS || UNITY_WP_8 || UNITY_WP_8_1
 	private static IFileAdapter _implementation = new DefaultFileAdapter();
 #else
 	private static IFileAdapter _implementation = new FakeRuntimeFileAdapter();
 #endif
-	
+
 	public static void SetImplementation(IFileAdapter implementation) { _implementation = implementation; }
-	
+
 	public static string persistentDataPath => _implementation.GetPersistentDataPath();
 	public static string debugPersistentDataPath => _implementation.GetDebugPersistentDataPath();
 
 	public static bool Exists( string path ) { return _implementation.Exists( path ); }
-	
+
 	public static byte[] ReadAllBytes( string path ) { return _implementation.ReadAllBytes( path ); }
 	public static string ReadAsUTF8( byte[] bytes ) { return System.Text.Encoding.UTF8.GetString( bytes, 0, bytes.Length ); }
 	public static string ReadAsUTF8( string path ) { var bytes = ReadAllBytes( path ); return ReadAsUTF8( bytes ); }

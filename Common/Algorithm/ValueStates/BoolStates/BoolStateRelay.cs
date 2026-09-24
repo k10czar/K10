@@ -3,7 +3,6 @@ public class BoolStateRelay : IBoolStateObserver, ICustomDisposableKill
 	bool _killed = false;
 	IBoolStateObserver _currentSource;
 	ConditionalEventsCollection _validator;
-	private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
 
 	EventSlot<bool> _onChange;
 	EventSlot _onTrueState;
@@ -62,7 +61,6 @@ public class BoolStateRelay : IBoolStateObserver, ICustomDisposableKill
 			return _onFalseState;
 		}
 	}
-	public IBoolStateObserver Not => _not.Request( this );
 
 	public void ChangeSource( IBoolStateObserver newSource )
 	{

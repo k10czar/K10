@@ -1,3 +1,5 @@
+using Unity.Scripting.LifecycleManagement;
+
 public interface IPlayerPrefsAdapter
 {
     bool HasKey(string key);
@@ -13,16 +15,17 @@ public interface IPlayerPrefsAdapter
     void DeleteKey(string key);
 }
 
-public static class PlayerPrefsAdapter
+[AutoStaticsCleanup]
+public static partial class PlayerPrefsAdapter
 {
 #if UNITY_GAMECORE || MICROSOFT_GDK_SUPPORT
 	private static IPlayerPrefsAdapter _implementation = new FakeRuntimePlayerPrefs();
 #else
 	private static IPlayerPrefsAdapter _implementation = new DefaultPlayerPrefs();
 #endif
-	
+
 	public static void SetImplementation(IPlayerPrefsAdapter implementation) { _implementation = implementation; }
-	
+
 	public static bool HasKey(string key) => _implementation.HasKey(key);
     public static int GetInt(string key, int defaultValue = default) => _implementation.GetInt(key, defaultValue);
     public static float GetFloat(string key, float defaultValue = default) => _implementation.GetFloat(key, defaultValue);

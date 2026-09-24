@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
+using Unity.Scripting.LifecycleManagement;
 
-public class EditorPersistentBoolState : IBoolState, ISettingsValue
+[AutoStaticsCleanup]
+public partial class EditorPersistentBoolState : IBoolState, ISettingsValue
 {
 	bool _defaltValue;
 	bool _undoValue;
@@ -10,17 +12,13 @@ public class EditorPersistentBoolState : IBoolState, ISettingsValue
 	EventSlot _onTrueState;
 	EventSlot _onFalseState;
 
-	private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
-
-	static Dictionary<string, EditorPersistentBoolState> _dict = new();
+	private static readonly Dictionary<string, EditorPersistentBoolState> _dict = new();
 
 	public IEventRegister OnTrueState => Lazy.Request( ref _onTrueState );
 	public IEventRegister OnFalseState => Lazy.Request( ref _onFalseState );
 
 	public bool Value => _persistentValueState.Value;
 	public IEventRegister<bool> OnChange => _persistentValueState.OnChange;
-
-	public IBoolStateObserver Not => _not.Request( this );
 
 	private EditorPersistentBoolState( string path, bool initialValue )
 	{
@@ -61,7 +59,7 @@ public class EditorPersistentValueState<T> : ValueState<T>, ISettingsValue where
 	T _undoValue;
 	EditorPersistentValue<T> _persistentData;
 
-	static Dictionary<string, EditorPersistentValueState<T>> _dict = new Dictionary<string, EditorPersistentValueState<T>>();
+	private static Dictionary<string, EditorPersistentValueState<T>> _dict = new();
 
 	public static EditorPersistentValueState<T> At( string path, T startValue = default( T ) )
 	{
@@ -118,7 +116,7 @@ public class EditorPersistentValue<T> : IValueCapsule<T> where T : struct, Syste
 	public string PathToUse => FullPath( _realitvePath );
 	static string FullPath( string realitvePath ) => "Temp/Editor/" + realitvePath;
 
-	static Dictionary<string, EditorPersistentValue<T>> _dict = new Dictionary<string, EditorPersistentValue<T>>();
+	private static readonly Dictionary<string, EditorPersistentValue<T>> _dict = new();
 
 	public static bool Exists( string realitvePath ) { return _dict.ContainsKey( realitvePath ) || File.Exists( FullPath( realitvePath ) ); }
 
@@ -173,7 +171,7 @@ public class EditorPersistentValue<T> : IValueCapsule<T> where T : struct, Syste
 			{
 				_t = value;
 				// if( default( T ).Equals( value ) ) File.Delete( PathToUse );
-				// else 
+				// else
 				var filePath = PathToUse;
 				int pathFileDivisor = filePath.Length - 1;
 				while( pathFileDivisor > 0 && filePath[pathFileDivisor] != '/' && filePath[pathFileDivisor] != '\\' )

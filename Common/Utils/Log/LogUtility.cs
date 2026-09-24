@@ -1,9 +1,11 @@
 #define COLOR_ON_BUILD
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 
+[NoAutoStaticsCleanup]
 public static class LogUtility
 {
-	static readonly System.Text.StringBuilder SB = new System.Text.StringBuilder();
+	private static readonly System.Text.StringBuilder _stringBuilder = new();
 
 	public static string Colorfy( this string str, Color color, bool evenOutEditor = false )
 	{
@@ -28,13 +30,13 @@ public static class LogUtility
 		if( !isEditor && !evenOutEditor ) return str;
 		#endif
 
-		SB.Clear();
-        SB.Append( $"<color={colorName}>" );
-		SB.Append( str );
-        SB.Append( $"</color>" );
-		
-		var ret = SB.ToString();
-		SB.Clear();
+		_stringBuilder.Clear();
+        _stringBuilder.Append( $"<color={colorName}>" );
+		_stringBuilder.Append( str );
+        _stringBuilder.Append( $"</color>" );
+
+		var ret = _stringBuilder.ToString();
+		_stringBuilder.Clear();
 		return ret;
 	}
 }

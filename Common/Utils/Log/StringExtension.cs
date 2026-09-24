@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Scripting.LifecycleManagement;
 
 public enum ELogType
 {
@@ -8,10 +9,11 @@ public enum ELogType
     Error
 }
 
+[NoAutoStaticsCleanup]
 public static class StringExtension
 {
-    static readonly HashSet<char> INVALID_FILENAME_CHARS = new HashSet<char>( System.IO.Path.GetInvalidFileNameChars() );
-    static readonly HashSet<char> INVALID_PATH_CHARS = new HashSet<char>( System.IO.Path.GetInvalidPathChars() );
+    static readonly HashSet<char> INVALID_FILENAME_CHARS = new( System.IO.Path.GetInvalidFileNameChars() );
+    static readonly HashSet<char> INVALID_PATH_CHARS = new( System.IO.Path.GetInvalidPathChars() );
 
     public static void Log( this string[] log, ELogType logType = ELogType.Basic )
     {

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Unity.Scripting.LifecycleManagement;
 
 public interface IValueCapsule<T>
 {
@@ -7,7 +8,8 @@ public interface IValueCapsule<T>
 }
 
 //TO DO: Manage to update save on class fields an properties changes
-public class Persistent<T> : IValueCapsule<T> where T : class
+[AutoStaticsCleanup]
+public partial class Persistent<T> : IValueCapsule<T> where T : class
 {
 	string _realitvePath;
 	T _defaultValue = null;
@@ -77,7 +79,6 @@ public class Persistent<T> : IValueCapsule<T> where T : class
 	}
 }
 
-
 public class PersistentValue<T> : IValueCapsule<T> where T : struct, System.IComparable
 {
 	string _realitvePath;
@@ -141,7 +142,7 @@ public class PersistentValue<T> : IValueCapsule<T> where T : struct, System.ICom
 			{
 				_t = value;
 				// if( default( T ).Equals( value ) ) FileAdapter.Delete( PathToUse );
-				// else 
+				// else
 				FileAdapter.WriteAllBytes( PathToUse, BinaryAdapter.Serialize( value ) );
 			}
 		}
@@ -156,16 +157,16 @@ public interface ISettingsValue
 	void Undo();
 }
 
-public class PersistentBoolState : IBoolState, ISettingsValue
+[AutoStaticsCleanup]
+public partial class PersistentBoolState : IBoolState, ISettingsValue
 {
-	bool _defaltValue;
-	bool _undoValue;
-	PersistentValueState<bool> _persistentValueState;
+	private readonly PersistentValueState<bool> _persistentValueState;
+	private readonly bool _defaltValue;
+	private bool _undoValue;
 
 	EventSlot _onTrueState;
 	EventSlot _onFalseState;
 
-	private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
 
 	static Dictionary<string, PersistentBoolState> _dict = new Dictionary<string, PersistentBoolState>();
 
@@ -174,8 +175,6 @@ public class PersistentBoolState : IBoolState, ISettingsValue
 
 	public bool Value => _persistentValueState.Value;
 	public IEventRegister<bool> OnChange => _persistentValueState.OnChange;
-
-	public IBoolStateObserver Not => _not.Request( this );
 
 	private PersistentBoolState( string path, bool initialValue )
 	{

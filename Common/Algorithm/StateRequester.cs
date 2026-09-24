@@ -25,8 +25,6 @@ public interface IStateRequesterInteraction
 	void RequestOn( IBoolStateObserver source, IEventValidator validator );
 	void RequestOn(IBoolStateObserver source, IEventValidator validator, string nameGameObjectDebug);
 	void IgnoreOn( IBoolStateObserver source, IEventValidator validator );
-	void RequestOn( GameObject gameObject, IBoolStateObserver additionalCondition = null );
-	void IgnoreOn( GameObject gameObject, IBoolStateObserver additionalCondition = null );
 }
 
 public interface IStateRequester : IStateRequesterInfo, IStateRequesterInteraction, IBoolStateObserver { }
@@ -35,12 +33,9 @@ public class StateRequester : IStateRequester, ICustomDisposableKill
 {
 	private bool _killed = false;
 
-
 	// TODO: LazyOptimization
 	private Semaphore _semaphore;
 	private EventSlot<bool> _invertedSemaphoreStateChange;
-	// EventSlot<bool> _invertedSemaphoreStateChange = new EventSlot<bool>();
-	private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
 
 	private Semaphore SemaphoreToInvert
 	{
@@ -56,8 +51,6 @@ public class StateRequester : IStateRequester, ICustomDisposableKill
 	public IEventRegister<bool> OnStateChange => OnChange;
 	public IEventRegister OnIgnore { get { return SemaphoreToInvert.OnRelease; } }
 	public IEventRegister OnRequest { get { return SemaphoreToInvert.OnBlock; } }
-
-	public IBoolStateObserver Not => _not.Request( this );
 
 	public bool Value { get { return Requested; } }
 	public bool Get() { return Requested; }
@@ -79,9 +72,6 @@ public class StateRequester : IStateRequester, ICustomDisposableKill
 
 	public void RequestOn( IBoolStateObserver source ) { SemaphoreToInvert.BlockOn( source ); }
 	public void IgnoreOn( IBoolStateObserver source ) { SemaphoreToInvert.ReleaseOn( source ); }
-
-	public void RequestOn( GameObject gameObject, IBoolStateObserver additionalCondition = null ) { SemaphoreToInvert.BlockOn( gameObject, additionalCondition ); }
-	public void IgnoreOn( GameObject gameObject, IBoolStateObserver additionalCondition = null ) { SemaphoreToInvert.ReleaseOn( gameObject, additionalCondition ); }
 
 	public void RequestOn( IBoolStateObserver source, IEventValidator validator ) { SemaphoreToInvert.BlockOn( source, validator ); }
 

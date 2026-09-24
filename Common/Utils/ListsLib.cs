@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Rogue.RNG;
+using Unity.Scripting.LifecycleManagement;
 
 namespace Rogue.Helpers
 {
+    [NoAutoStaticsCleanup]
     public static class ListsLib
     {
         public static T Extract<T>(this IList<T> list, int index = 0)
@@ -43,7 +45,7 @@ namespace Rogue.Helpers
 
         #region Random Related
 
-        private static readonly HashSet<int> sharedUsedIndexes = new();
+        private static readonly HashSet<int> _sharedUsedIndexes = new();
 
         public static IList<T> Shuffle<T>(this IList<T> list, RandomSource rng) => list.Shuffle(list.Count, rng);
 
@@ -80,22 +82,22 @@ namespace Rogue.Helpers
 
         public static List<T> PickNUniqueRandom<T>(this IList<T> list, int num, RandomSource rng)
         {
-            sharedUsedIndexes.Clear();
+            _sharedUsedIndexes.Clear();
 
             var picked = new List<T>(num);
 
             for (var i = 0; i < num; i++)
-                picked.Add(list.PickUniqueRandom(sharedUsedIndexes, rng));
+                picked.Add(list.PickUniqueRandom(_sharedUsedIndexes, rng));
 
             return picked;
         }
 
         public static void PickNUniqueRandom<T>(this IList<T> list, List<T> aggregator, int num, RandomSource rng)
         {
-            sharedUsedIndexes.Clear();
+            _sharedUsedIndexes.Clear();
 
             for (var i = 0; i < num; i++)
-                aggregator.Add(list.PickUniqueRandom(sharedUsedIndexes, rng));
+                aggregator.Add(list.PickUniqueRandom(_sharedUsedIndexes, rng));
         }
 
         public static List<int> PickNRandomIndexes<T>(this IList<T> list, int num, RandomSource rng)

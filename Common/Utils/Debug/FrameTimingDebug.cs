@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 
-public static class FrameTimingDebug
+[AutoStaticsCleanup]
+public static partial class FrameTimingDebug
 {
 	class FunctionTime
 	{
@@ -154,7 +156,7 @@ public static class FrameTimingDebug
 
 		if( stackIdx == -1 ) return;
 		_callStack.RemoveAt( stackIdx );
-		
+
 		var startSize = _stackSizeStack[stackIdx];
 		_stackSizeStack.RemoveAt( stackIdx );
 

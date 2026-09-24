@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using Unity.Scripting.LifecycleManagement;
 
 namespace Skyx.Trees
 {
+    [NoAutoStaticsCleanup]
     public class EnumTreeNode<T> : TreeNode<T> where T: Enum
     {
-        public static EnumTreeNode<T> Instance { get; } = new();
-        private static bool useEnumAsKey;
+        private static EnumTreeNode<T> Instance { get; } = new();
+        private static bool _useEnumAsKey;
 
         public static IEnumerable<T> GetChildrenValues(T value) => Instance.GetChildrenValues(Instance.GetNodeInfo(value).path);
         private static IEnumerable<T> GetEnumValues() => (T[]) Enum.GetValues(typeof(T));
@@ -43,7 +45,7 @@ namespace Skyx.Trees
                 if (!string.IsNullOrEmpty(attribute.treeDisplayName)) nodeInfo.treeName = attribute.treeDisplayName;
             }
 
-            nodeInfo.path.Enqueue(useEnumAsKey ? value : value.ToString());
+            nodeInfo.path.Enqueue(_useEnumAsKey ? value : value.ToString());
 
             return nodeInfo;
         }
@@ -61,7 +63,7 @@ namespace Skyx.Trees
                 var attribute = GetEnumTreeAttribute(nodeValue);
                 if (attribute == null || attribute.path == null || attribute.path.Length == 0) continue;
 
-                useEnumAsKey = attribute.path[0] is not string;
+                _useEnumAsKey = attribute.path[0] is not string;
                 break;
             }
 

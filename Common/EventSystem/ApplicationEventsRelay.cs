@@ -1,34 +1,42 @@
 // #define LOG_EVENTS
 using System.Threading;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-public class ApplicationEventsRelay : MonoBehaviour
+[NoAutoStaticsCleanup]
+public partial class ApplicationEventsRelay : MonoBehaviour
 {
-    private static ApplicationEventsRelay instance;
-    private static Thread mainThread;
+    private static ApplicationEventsRelay _instance;
+    private static Thread _mainThread;
 
     public static readonly BoolState isQuitting = new();
     public static readonly BoolState isFocused = new();
     public static readonly BoolState isPaused = new();
     public static readonly BoolState isSuspended = new();
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void Initialize()
     {
-        if (instance != null) return;
+        if (_instance != null)
+            Destroy(_instance.gameObject);
 
         var obj = new GameObject("[ApplicationEventsRelay]");
-        instance = obj.AddComponent<ApplicationEventsRelay>();
+        _instance = obj.AddComponent<ApplicationEventsRelay>();
         DontDestroyOnLoad(obj);
+
+        isQuitting.Clear(false);
+        isFocused.Clear(false);
+        isPaused.Clear(false);
+        isSuspended.Clear(false);
     }
 
     private void Awake()
     {
-        mainThread ??= Thread.CurrentThread;
+        _mainThread ??= Thread.CurrentThread;
 
 #if LOG_EVENTS
         Debug.Log( $"<color=magenta>ApplicationEventsRelay</color>.Awake()" );
@@ -78,7 +86,7 @@ public class ApplicationEventsRelay : MonoBehaviour
 #if UNITY_EDITOR
         if( !Application.isPlaying ) return false;
 #endif
-        return mainThread != null && mainThread.Equals(Thread.CurrentThread);
+        return _mainThread != null && _mainThread.Equals(Thread.CurrentThread);
     }
 
     private void OnApplicationQuit()

@@ -1,34 +1,20 @@
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 using static Colors.Console;
 using Object = UnityEngine.Object;
 
-
-#if UNITY_EDITOR
-[ExecuteInEditMode]
-public class OnlyOnPlaymodeObject : MonoBehaviour
-{
-	void Start()
-	{
-		if( Application.isEditor && !Application.isPlaying )
-		{
-			GameObject.DestroyImmediate( gameObject );
-		}
-	}
-}
-#endif
-
 public abstract class Singleton
 {
-	public static void SayHello<T>( T candidate ) where T : UnityEngine.Component
+	public static void SayHello<T>( T candidate ) where T : Component
 	{
 		Singleton<T>.SayHello( candidate );
 	}
 }
 
-
-public abstract class Singleton<T> where T : UnityEngine.Component
+[NoAutoStaticsCleanup]
+public abstract class Singleton<T> where T : Component
 {
-	private readonly static AutoClearedReference<T> _instance = new AutoClearedReference<T>();
+	private static readonly AutoClearedReference<T> _instance = new();
 
 	public static T Instance
 	{

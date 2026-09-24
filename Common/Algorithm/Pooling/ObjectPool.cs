@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Unity.Scripting.LifecycleManagement;
 
 namespace K10
 {
@@ -35,7 +36,8 @@ namespace K10
 		}
 	}
 
-	public static class ObjectPool<T> where T : new()
+	[AutoStaticsCleanup]
+	public static partial class ObjectPool<T> where T : new()
 	{
 		private static readonly Dictionary<System.Threading.Thread,List<T>> _pools = new();
 

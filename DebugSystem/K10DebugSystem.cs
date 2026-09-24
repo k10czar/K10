@@ -1,28 +1,30 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace K10.DebugSystem
 {
+    [NoAutoStaticsCleanup]
     public static class K10DebugSystem
     {
-        private static readonly K10DebugConfig config;
+        private static readonly K10DebugConfig _config;
 
         #region Categories
 
-        private static readonly Type tempCategory = typeof(TempDebug);
+        private static readonly Type _tempCategory = typeof(TempDebug);
 
-        private static List<DebugCategory> categories;
+        private static List<DebugCategory> _categories;
         public static IEnumerable<DebugCategory> Categories
         {
             get
             {
-                if (categories != null) return categories;
+                if (_categories != null) return _categories;
 
-                categories = new List<DebugCategory>();
+                _categories = new List<DebugCategory>();
 
                 #if UNITY_EDITOR
                 var categoryTypes = UnityEditor.TypeCache.GetTypesDerivedFrom<DebugCategory>();
@@ -50,7 +52,7 @@ namespace K10.DebugSystem
                         var newCategory = (DebugCategory)catType.CreateInstance();
                         newCategory.Setup();
 
-                        categories.Add(newCategory);
+                        _categories.Add(newCategory);
                     }
                     catch (Exception ex)
                     {
@@ -58,9 +60,9 @@ namespace K10.DebugSystem
                     }
                 }
 
-                categories.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.Ordinal));
+                _categories.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.Ordinal));
 
-                return categories;
+                return _categories;
             }
         }
 
@@ -102,18 +104,18 @@ namespace K10.DebugSystem
 
         public static bool CanDebug(Type categoryType, EDebugType debugType = EDebugType.Default)
         {
-            return categoryType == tempCategory || config.CanDebug(categoryType, debugType);
+            return categoryType == _tempCategory || _config.CanDebug(categoryType, debugType);
         }
 
         public static void ToggleCategory(Type categoryType, EDebugType debugType)
         {
-            config.ToggleDebug(categoryType, debugType);
+            _config.ToggleDebug(categoryType, debugType);
             GetCategory(categoryType).changed?.Invoke(debugType);
         }
 
         public static void SetCategory(Type categoryType, EDebugType debugType, bool value, bool save = true)
         {
-            config.SetDebug(categoryType, debugType, value, save);
+            _config.SetDebug(categoryType, debugType, value, save);
             GetCategory(categoryType).changed?.Invoke(debugType);
         }
 
@@ -123,13 +125,13 @@ namespace K10.DebugSystem
 
         public static Func<Object, string> getOwnerKey;
 
-        public static EDebugOwnerBehaviour DebugOwnerBehaviour => config.ownerBehaviour;
-        public static void ToggleOwnerBehaviour() => config.ToggleOwnerBehaviour();
+        public static EDebugOwnerBehaviour DebugOwnerBehaviour => _config.ownerBehaviour;
+        public static void ToggleOwnerBehaviour() => _config.ToggleOwnerBehaviour();
 
-        public static List<string> ValidOwners => config.validOwners;
-        public static void ToggleValidOwner(string target) => config.ToggleValidOwner(target);
-        public static void ToggleValidOwner(Object target) => config.ToggleValidOwner(getOwnerKey(target));
-        public static void ClearValidOwners() => config.ClearValidOwners();
+        public static List<string> ValidOwners => _config.validOwners;
+        public static void ToggleValidOwner(string target) => _config.ToggleValidOwner(target);
+        public static void ToggleValidOwner(Object target) => _config.ToggleValidOwner(getOwnerKey(target));
+        public static void ClearValidOwners() => _config.ClearValidOwners();
 
         public static string DefaultGetOwnerKey(Object target) => target switch
         {
@@ -159,7 +161,7 @@ namespace K10.DebugSystem
 
             var count = requesters.Count();
             var keys = requesters.Select(getOwnerKey);
-            var intersectCount = config.validOwners.Intersect(keys).Count();
+            var intersectCount = _config.validOwners.Intersect(keys).Count();
 
             return DebugOwnerBehaviour switch
             {
@@ -179,8 +181,8 @@ namespace K10.DebugSystem
 
         #region Custom Debug Flags
 
-        public static bool CanDebugFlag(string flag) => config.CanDebugFlag(flag);
-        public static void ToggleFlag(string flag) => config.ToggleCustomFlag(flag);
+        public static bool CanDebugFlag(string flag) => _config.CanDebugFlag(flag);
+        public static void ToggleFlag(string flag) => _config.ToggleCustomFlag(flag);
 
         #endregion
 
@@ -195,7 +197,7 @@ namespace K10.DebugSystem
 
         static K10DebugSystem()
         {
-            config = K10DebugConfig.Load();
+            _config = K10DebugConfig.Load();
             getOwnerKey = DefaultGetOwnerKey;
 
             SceneManager.sceneUnloaded -= OnSceneUnloaded;

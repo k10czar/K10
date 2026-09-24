@@ -4,9 +4,11 @@ using K10.Reflection.Extensions;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using Unity.Scripting.LifecycleManagement;
 
 public enum EColor { Primary, Secondary, Info, Success, Warning, Danger, Support, Special, Disabled, Clear, Backdrop, Dark, Infer }
 
+[NoAutoStaticsCleanup]
 public static class Colors
 {
     private const float BYTE_TO_FLOAT = 1f / 255f;
@@ -99,6 +101,7 @@ public static class Colors
     private static string EDITOR_DebugColorCode( Color color, string name ) => $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>#{ColorUtility.ToHtmlStringRGB(color)}█</color>";
 #endif
 
+    [NoAutoStaticsCleanup]
     public static class Console
     {
         [LazyConst] private static Dictionary<string,Color> ALL_COLORS = null;

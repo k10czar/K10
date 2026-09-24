@@ -3,20 +3,22 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace K10.DebugSystem
 {
+    [NoAutoStaticsCleanup]
     public static class K10Log<T> where T : DebugCategory, new()
     {
-        private static readonly T category = K10DebugSystem.GetCategory<T>();
+        private static readonly T _category = K10DebugSystem.GetCategory<T>();
 
-        public static string Name => category.Name;
-        public static T Category => category;
-        public static Color Color => category.Color;
-        public static Color SecondaryColor => category.SecondaryColor;
+        public static string Name => _category.Name;
+        public static T Category => _category;
+        public static Color Color => _category.Color;
+        public static Color SecondaryColor => _category.SecondaryColor;
 
         private static bool ShouldAlwaysDebug(LogSeverity severity)
             => severity is LogSeverity.Error || typeof(T) == typeof(TempDebug);
@@ -40,8 +42,8 @@ namespace K10.DebugSystem
             try
             {
                 #if UNITY_EDITOR
-                if (!string.IsNullOrEmpty(category.Name))
-                    log = $"<b><color={category.Color.ToHexRGB()}>[{category.Name}]</color></b> {log}{GetOwnersDebugStr(owners)}";
+                if (!string.IsNullOrEmpty(_category.Name))
+                    log = $"<b><color={_category.Color.ToHexRGB()}>[{_category.Name}]</color></b> {log}{GetOwnersDebugStr(owners)}";
 
                 log = K10Log.ReplaceColorsNames(log);
                 #else
@@ -56,7 +58,7 @@ namespace K10.DebugSystem
         }
 
         [HideInCallstack, Conditional(K10Log.ConditionalDirective)]
-        public static void Log(LogSeverity severity, string log) => Log(severity, log, severity is LogSeverity.Warning, null, LoggableDefaults.nullOwners);
+        public static void Log(LogSeverity severity, string log) => Log(severity, log, severity is LogSeverity.Warning, null, LoggableDefaults.NullOwners);
 
         [HideInCallstack, Conditional(K10Log.ConditionalDirective)]
         public static void Log(LogSeverity severity, string log, Object consoleTarget) => Log(severity, log, severity is LogSeverity.Warning, consoleTarget, new[] { consoleTarget });
@@ -69,12 +71,13 @@ namespace K10.DebugSystem
 
         private static string GetOwnersDebugStr(IEnumerable<Object> owners)
         {
-            return owners != LoggableDefaults.nullOwners && owners != null && owners.Any()
+            return owners != LoggableDefaults.NullOwners && owners != null && owners.Any()
                 ? $"\nOwners: {string.Join(", ", owners)}"
                 : string.Empty;
         }
     }
 
+    [NoAutoStaticsCleanup]
     public static class K10Log
     {
         public const string ConditionalDirective = "ENABLE_K10LOG";

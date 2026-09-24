@@ -109,34 +109,6 @@ public static class ISemaphoreInterectionExtentions
 		eventValidation.OnVoid.Register( semaphore.Validator.Validated( new CallOnceCapsule( releaseAction ) ) );
 	}
 
-	public static void BlockOn( this IValidatedSemaphoreInteraction semaphore, UnityEngine.GameObject go, IBoolStateObserver additionalCondition = null )
-	{
-		var goEvents = go.EventRelay();
-		var name = go.HierarchyNameOrNull();
-		var condition = goEvents.IsActive;
-		if( additionalCondition != null ) condition = new BoolStateOperations.And( condition, additionalCondition );
-		var goLifetime = goEvents.LifetimeValidator;
-		Action releaseLambda = () => semaphore.Release( condition );
-		var validator = semaphore.Validator;
-		condition.RegisterOnTrue( validator.Validated( () => semaphore.Block( condition ), goLifetime ) );
-		condition.RegisterOnFalse( validator.Validated( releaseLambda, goLifetime ) );
-		goEvents.OnDestroy.Register( validator.Validated( releaseLambda ) );
-	}
-
-	public static void ReleaseOn( this IValidatedSemaphoreInteraction semaphore, UnityEngine.GameObject go, IBoolStateObserver additionalCondition = null )
-	{
-		var goEvents = go.EventRelay();
-		var name = go.HierarchyNameOrNull();
-		var validator = semaphore.Validator;
-		IBoolStateObserver condition = goEvents.IsActive.Not;
-		if( additionalCondition != null ) condition = new BoolStateOperations.And( condition, additionalCondition );
-		var goLifetime = goEvents.LifetimeValidator;
-		Action releaseLambda = () => semaphore.Release( condition );
-		condition.RegisterOnTrue( validator.Validated( releaseLambda, goLifetime ) );
-		condition.RegisterOnFalse( validator.Validated( () => semaphore.Block( condition ), goLifetime ) );
-		goEvents.OnDestroy.Register( validator.Validated( new CallOnceCapsule( releaseLambda ) ) );
-	}
-
 	public static void UnvalidatedBlockOn( this ISemaphoreInteraction semaphore, IValueStateObserver<bool> condition )
 	{
 		condition.OnChange.Register(
@@ -196,13 +168,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 	private EventSlot _releaseEvent;
 	private EventSlot<bool> _changeStateEvent;
 	private EventSlot _onInteraction;
-	// private EventSlot _blockEvent = new EventSlot();
-	// private EventSlot _releaseEvent = new EventSlot();
-	// private EventSlot<bool> _changeStateEvent = new EventSlot<bool>();
-	// private EventSlot _onInteraction = new EventSlot();
-	private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
 
-	public IBoolStateObserver Not => _not.Request( this );
 	public IEventRegister OnBlock => _blockEvent ??= new();
 	public IEventRegister OnRelease => _releaseEvent ??= new();
 	public IEventRegister<bool> OnStateChange => _changeStateEvent ??= new();

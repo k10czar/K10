@@ -1,3 +1,4 @@
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 
 public interface IInterpolationFunction
@@ -25,6 +26,7 @@ public static class InterpolationExtensions
 	}
 }
 
+[NoAutoStaticsCleanup]
 public class LinearInterpolation : IInterpolationFunction
 {
 	public static readonly IInterpolationFunction Instance = new LinearInterpolation();
@@ -32,6 +34,7 @@ public class LinearInterpolation : IInterpolationFunction
 	public float Evaluate( float normilizedDuration ) => normilizedDuration;
 }
 
+[NoAutoStaticsCleanup]
 public class SmoothStepInterpolation : IInterpolationFunction
 {
 	public static readonly IInterpolationFunction Instance = new SmoothStepInterpolation();
@@ -39,6 +42,7 @@ public class SmoothStepInterpolation : IInterpolationFunction
 	public float Evaluate( float normilizedDuration ) => MathAdapter.smoothStep( 0, 1, normilizedDuration );
 }
 
+[NoAutoStaticsCleanup]
 public class SineInterpolation : IInterpolationFunction
 {
 	public static readonly IInterpolationFunction Instance = new SineInterpolation();
@@ -46,6 +50,7 @@ public class SineInterpolation : IInterpolationFunction
 	public float Evaluate( float normilizedDuration ) => ( MathAdapter.sin( ( normilizedDuration - .5f ) * MathAdapter.PI ) + 1 ) / 2;
 }
 
+[NoAutoStaticsCleanup]
 public class PowerInterpolation : IInterpolationFunction
 {
 	//TODO: Optimize Iterpolation with fast operation
@@ -65,6 +70,7 @@ public class PowerInterpolation : IInterpolationFunction
 	}
 }
 
+[NoAutoStaticsCleanup]
 public class SCurveInterpolation : IInterpolationFunction
 {
 	public static readonly IInterpolationFunction SCurveP2 = SCurveP2Interpolation.Instance;
@@ -73,7 +79,7 @@ public class SCurveInterpolation : IInterpolationFunction
 	public static readonly IInterpolationFunction SCurveR3 = new SCurveInterpolation( 1f/3f );
 	private readonly float _power;
 	public SCurveInterpolation( float power ) { _power = power; }
-	public float Evaluate( float normilizedDuration ) 
+	public float Evaluate( float normilizedDuration )
 	{
 		var val = normilizedDuration * 2 - 1;
 		var sign = Mathf.Sign( val );
@@ -82,6 +88,7 @@ public class SCurveInterpolation : IInterpolationFunction
 	}
 
 
+	[NoAutoStaticsCleanup]
 	private class SCurveP2Interpolation : IInterpolationFunction
 	{
 		public static readonly IInterpolationFunction Instance = new SCurveP2Interpolation();
@@ -93,6 +100,7 @@ public class SCurveInterpolation : IInterpolationFunction
 		}
 	}
 
+	[NoAutoStaticsCleanup]
 	private class SCurveP3Interpolation : IInterpolationFunction
 	{
 		public static readonly IInterpolationFunction Instance = new SCurveP3Interpolation();
@@ -101,10 +109,11 @@ public class SCurveInterpolation : IInterpolationFunction
 		{
 			var val = normilizedDuration * 2 - 1;
 			return ( val * val * val + 1 ) / 2;
-		} 
+		}
 	}
 }
 
+[NoAutoStaticsCleanup]
 public class SinInterpolation : IInterpolationFunction
 {
 	public static readonly IInterpolationFunction Pi = new SinInterpolation( Mathf.PI );

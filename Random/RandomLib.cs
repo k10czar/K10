@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Rogue.Helpers;
+using Unity.Scripting.LifecycleManagement;
 
 namespace Rogue.RNG
 {
+    [NoAutoStaticsCleanup]
     public static class RandomLib
     {
         public static uint GenerateSeed()

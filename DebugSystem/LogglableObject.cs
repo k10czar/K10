@@ -1,18 +1,20 @@
 using System.Diagnostics;
 using System.Linq;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
 namespace K10.DebugSystem
 {
+    [NoAutoStaticsCleanup]
     public static class LoggableDefaults
     {
-        public static readonly Object[] nullOwners = { null };
+        public static readonly Object[] NullOwners = { null };
     }
 
     public interface ILoggableBase
     {
-        Object[] LogOwners => LoggableDefaults.nullOwners;
+        Object[] LogOwners => LoggableDefaults.NullOwners;
         Object MainLogOwner => LogOwners[0];
     }
 

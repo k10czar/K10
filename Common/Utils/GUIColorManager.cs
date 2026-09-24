@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using Unity.Scripting.LifecycleManagement;
 
-public class GuiColorManager
+[AutoStaticsCleanup]
+public static partial class GuiColorManager
 {
-	static List<Color> _colors = new List<Color>();
+	private static readonly List<Color> _colors = new();
 
 	public static void New( Color color )
 	{
@@ -25,7 +27,7 @@ public class GuiColorManager
 	{
 		if( count <= 0 ) return;
 		var len = _colors.Count;
-		
+
 		if( len >= count )
 		{
 			var firstToRemoveID = len - count;
@@ -43,10 +45,10 @@ public class GuiColorManager
 	}
 }
 
-
-public class GizmosColorManager
+[AutoStaticsCleanup]
+public static partial class GizmosColorManager
 {
-	static List<Color> _colors = new List<Color>();
+	private static readonly List<Color> _colors = new();
 
 	public static void New( Color color )
 	{
@@ -58,7 +60,7 @@ public class GizmosColorManager
 	{
 		if( count <= 0 ) return;
 		var len = _colors.Count;
-		
+
 		if( len >= count )
 		{
 			var firstToRemoveID = len - count;
@@ -73,9 +75,10 @@ public class GizmosColorManager
 	}
 }
 
-public class GuiBackgroundColorManager
+[AutoStaticsCleanup]
+public static partial class GuiBackgroundColorManager
 {
-	static List<Color> _colors = new List<Color>();
+	private static readonly List<Color> _colors = new();
 
 	public static void New( Color color )
 	{
@@ -87,7 +90,7 @@ public class GuiBackgroundColorManager
 	{
 		if( count <= 0 ) return;
 		var len = _colors.Count;
-		
+
 		if( len >= count )
 		{
 			var firstToRemoveID = len - count;

@@ -41,7 +41,10 @@ public class CodeOrchestrator : MonoBehaviour
 				_sceneOrchestrator = orc;
 				var eternal = Eternal;
 				eternal.Add(orc);
-				var sceneRelay = GameObjectEventsRelay.SceneObject;
+
+				GameObject obj = new GameObject($"SceneObjectEventRelay");
+				var sceneRelay = obj.AddComponent<GameObjectEventsRelay>();
+
 				Debug.Log( $"Created Scene CodeOrchestrator".Colorfy( Colors.Violet ) );
 				sceneRelay.OnDestroyEvent.Register(() =>
 				{

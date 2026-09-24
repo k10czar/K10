@@ -2,24 +2,26 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Unity.Scripting.LifecycleManagement;
 
 namespace Skyx.Trees
 {
+    [NoAutoStaticsCleanup]
     public class ClassTreeNode : TreeNode<Type>
     {
         #region Static
 
-        private static readonly Dictionary<Type, ClassTreeNode> cache = new();
+        private static readonly Dictionary<Type, ClassTreeNode> _cache = new();
 
         public static ClassTreeNode Get(Type target, IEnumerable<Type> validTypes)
         {
             if (validTypes != null)
                 return new ClassTreeNode(target, validTypes.ToHashSet());
 
-            if (cache.TryGetValue(target, out var result)) return result;
+            if (_cache.TryGetValue(target, out var result)) return result;
 
             var newEntry = new ClassTreeNode(target);
-            cache.Add(target, newEntry);
+            _cache.Add(target, newEntry);
 
             return newEntry;
         }
@@ -88,6 +90,6 @@ namespace Skyx.Trees
             return attribute as ClassTreeAttribute;
         }
 
-        public static void ClearCache() => cache.Clear();
+        public static void ClearCache() => _cache.Clear();
     }
 }

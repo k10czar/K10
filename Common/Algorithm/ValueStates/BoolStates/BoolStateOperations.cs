@@ -12,7 +12,6 @@ namespace BoolStateOperations
 		[System.NonSerialized] private EventSlot<bool> _onChange;
 		[System.NonSerialized] private EventSlot _onTrue;
 		[System.NonSerialized] private EventSlot _onFalse;
-		[System.NonSerialized] private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
 
 		public BoolStateOperation( IEventValidator validator, params IBoolStateObserver[] variables )
 		{
@@ -35,13 +34,11 @@ namespace BoolStateOperations
 			_onChange?.Kill();
 			_onTrue?.Kill();
 			_onFalse?.Kill();
-			_not.Kill();
 			_onChange = null;
 			_onTrue = null;
 			_onFalse = null;
 		}
 
-		public IBoolStateObserver Not => _not.Request( this );
 		public IEventRegister<bool> OnChange => Lazy.Request( ref _onChange, _killed );
 		public IEventRegister OnTrueState => Lazy.Request( ref _onTrue, _killed );
 		public IEventRegister OnFalseState => Lazy.Request( ref _onFalse, _killed );

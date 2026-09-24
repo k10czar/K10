@@ -1,31 +1,14 @@
 using System;
 using System.Collections;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 
 namespace K10
 {
+	[NoAutoStaticsCleanup]
 	public class ExternalCoroutine : MonoBehaviour
 	{
-		private static ExternalCoroutine instance;
-
-		public static ExternalCoroutine Instance
-		{
-			get
-			{
-				TryCreateInstance();
-				return instance;
-			}
-		}
-
-		private static void TryCreateInstance()
-		{
-			if (instance != null) return;
-
-			var go = new GameObject("External Coroutine");
-			DontDestroyOnLoad(go);
-
-			instance = go.AddComponent<ExternalCoroutine>();
-		}
+		private static ExternalCoroutine _instance;
 
 		public static Coroutine Play(IEnumerator coroutine, ref Coroutine cacheVariable)
 		{
@@ -35,16 +18,10 @@ namespace K10
 			return cacheVariable;
 		}
 
-		public static Coroutine Play(IEnumerator coroutine)
-		{
-			TryCreateInstance();
-			return instance.StartCoroutine(coroutine);
-		}
+		public static Coroutine Play(IEnumerator coroutine) => _instance.StartCoroutine(coroutine);
 
 		public static IEnumerator AwaitAll(params IEnumerator[] routines)
 		{
-			TryCreateInstance();
-
 			var coroutines = new Coroutine[routines.Length];
 
 			for (var index = 0; index < routines.Length; index++)
@@ -52,7 +29,7 @@ namespace K10
 				var routine = routines[index];
 				if (routine == null) continue;
 
-				coroutines[index] = instance.StartCoroutine(routine);
+				coroutines[index] = _instance.StartCoroutine(routine);
 			}
 
 			foreach (var routine in coroutines)
@@ -67,11 +44,7 @@ namespace K10
 			cacheVariable = null;
 		}
 
-		public static void Stop(Coroutine coroutine)
-		{
-			TryCreateInstance();
-			instance.StopCoroutine(coroutine);
-		}
+		public static void Stop(Coroutine coroutine) => _instance.StopCoroutine(coroutine);
 
 		public static Coroutine DelayedCall(Action callback, float delay) => Play(DelayedCallCoroutine(callback, delay));
 
@@ -87,6 +60,18 @@ namespace K10
 		{
 			yield return new WaitForEndOfFrame();
 			callback.Invoke();
+		}
+
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+		private static void Initialize()
+		{
+			if (_instance != null)
+				Destroy(_instance.gameObject);
+
+			var go = new GameObject("External Coroutine");
+			DontDestroyOnLoad(go);
+
+			_instance = go.AddComponent<ExternalCoroutine>();
 		}
 	}
 }

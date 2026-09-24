@@ -5,7 +5,6 @@ namespace NumberStateOperations
 	public abstract class NumberBinaryComparerState : IBoolStateObserver
 	{
 		protected readonly BoolState _operation = new BoolState();
-		private LazyBoolStateReverterHolder _not = new LazyBoolStateReverterHolder();
 		object _refA, _refB;
 		protected readonly ConditionalEventsCollection _events = new ConditionalEventsCollection();
 		~NumberBinaryComparerState() { _events.Void(); }
@@ -19,7 +18,6 @@ namespace NumberStateOperations
 		public IEventRegister<bool> OnChange => _operation.OnChange;
 		public bool Value => _operation.Value;
 		public bool Get() => _operation.Get();
-		public IBoolStateObserver Not => _not.Request( this );
 
 		public override string ToString() => $"( {Value} => ( {_refA.ToStringOrNull()} {SIGN} {_refB.ToStringOrNull()} ) )";
 	}
