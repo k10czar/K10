@@ -187,6 +187,9 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 	public void RegisterAndStart( IEventTrigger<bool> evnt ) { Lazy.Request( ref _changeStateEvent ).Register( Validator.Validated( evnt ) ); evnt.Trigger( Free ); }
 	public void RegisterAndStart( System.Action<bool> evnt ) { Lazy.Request( ref _changeStateEvent ).Register( Validator.Validated( evnt ) ); evnt( Free ); }
 
+	public Semaphore() {}
+	public Semaphore(object startingBlock) => Block(startingBlock);
+
 	public void Kill()
 	{
 		_onInteraction?.Kill();
