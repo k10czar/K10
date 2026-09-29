@@ -111,15 +111,17 @@ namespace Rogue.REditor
 
         #region Reflection Getters / Setters
 
-        private static readonly Regex arrayIndexRegex = new(@"\.Array\.data\[(\d+)\]$", RegexOptions.Compiled);
-        private static readonly Regex arrayPieceRegex = new(@"^(?<name>[^\[]+)\[(?<index>\d+)\]$", RegexOptions.Compiled);
+        private static readonly Regex _arrayIndexRegex = new(@"\.Array\.data\[(\d+)\]$", RegexOptions.Compiled);
+        private static readonly Regex _arrayPieceRegex = new(@"^(?<name>[^\[]+)\[(?<index>\d+)\]$", RegexOptions.Compiled);
 
         private const BindingFlags Bindings = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
         private const BindingFlags InstanceOnlyBindings = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
         public static object GetParentValue(this SerializedProperty property, Type targetType, bool canInherit = false)
         {
-            object obj = property.serializedObject.targetObject;
+            var serializedObj = property.serializedObject;
+            object obj = serializedObj.targetObject;
+            var pathSoFar = string.Empty;
             var fieldStructure = GetPathStructure(property);
 
             if (canInherit)
@@ -128,11 +130,16 @@ namespace Rogue.REditor
             }
             else if (obj.GetType() == targetType) return obj;
 
-            foreach (var pathPiece in fieldStructure)
+            for (var index = 0; index < fieldStructure.Length; index++)
             {
-                obj = pathPiece.Contains("[")
-                    ? GetFieldValueWithIndex(pathPiece, obj)
-                    : GetFieldValue(pathPiece, obj);
+                var pathPiece = fieldStructure[index];
+                if (pathPiece.Contains("["))
+                {
+                    bool wasDict;
+                    (obj, wasDict) = GetFieldValueWithIndex(pathPiece, obj, serializedObj, ref pathSoFar);
+                    if (wasDict) index++;
+                }
+                else obj = GetFieldValue(pathPiece, obj, serializedObj, ref pathSoFar);
 
                 if (canInherit)
                 {
@@ -149,14 +156,21 @@ namespace Rogue.REditor
 
         public static object GetValue(this SerializedProperty property)
         {
-            object obj = property.serializedObject.targetObject;
+            var serializedObj = property.serializedObject;
+            object obj = serializedObj.targetObject;
+            var pathSoFar = string.Empty;
             var fieldStructure = GetPathStructure(property);
 
-            foreach (var pathPiece in fieldStructure)
+            for (var index = 0; index < fieldStructure.Length; index++)
             {
-                obj = pathPiece.Contains("[")
-                    ? GetFieldValueWithIndex(pathPiece, obj)
-                    : GetFieldValue(pathPiece, obj);
+                var pathPiece = fieldStructure[index];
+                if (pathPiece.Contains("["))
+                {
+                    bool wasDict;
+                    (obj, wasDict) = GetFieldValueWithIndex(pathPiece, obj, serializedObj, ref pathSoFar);
+                    if (wasDict) index++;
+                }
+                else obj = GetFieldValue(pathPiece, obj, serializedObj, ref pathSoFar);
             }
 
             return obj;
@@ -164,15 +178,22 @@ namespace Rogue.REditor
 
         public static FieldInfo GetFieldInfo(this SerializedProperty property)
         {
-            object obj = property.serializedObject.targetObject;
+            var serializedObj = property.serializedObject;
+            object obj = serializedObj.targetObject;
+            var pathSoFar = string.Empty;
             var fieldStructure = GetPathStructure(property);
 
             for (var index = 0; index < fieldStructure.Length - 1; index++)
             {
                 var pathPiece = fieldStructure[index];
-                obj = pathPiece.Contains("[")
-                    ? GetFieldValueWithIndex(pathPiece, obj)
-                    : GetFieldValue(pathPiece, obj);
+                if (pathPiece.Contains("["))
+                {
+                    bool wasDict;
+                    (obj, wasDict) = GetFieldValueWithIndex(pathPiece, obj, serializedObj, ref pathSoFar);
+                    if (wasDict) index++;
+                }
+                else obj = GetFieldValue(pathPiece, obj, serializedObj, ref pathSoFar);
+
             }
 
             var lastField = fieldStructure[^1];
@@ -188,15 +209,21 @@ namespace Rogue.REditor
 
         public static bool SetValue(this SerializedProperty property, object value)
         {
-            object obj = property.serializedObject.targetObject;
+            var serializedObj = property.serializedObject;
+            object obj = serializedObj.targetObject;
+            var pathSoFar = string.Empty;
             var fieldStructure = GetPathStructure(property);
 
             for (var index = 0; index < fieldStructure.Length - 1; index++)
             {
                 var pathPiece = fieldStructure[index];
-                obj = pathPiece.Contains("[")
-                    ? GetFieldValueWithIndex(pathPiece, obj)
-                    : GetFieldValue(pathPiece, obj);
+                if (pathPiece.Contains("["))
+                {
+                    bool wasDict;
+                    (obj, wasDict) = GetFieldValueWithIndex(pathPiece, obj, serializedObj, ref pathSoFar);
+                    if (wasDict) index++;
+                }
+                else obj = GetFieldValue(pathPiece, obj, serializedObj, ref pathSoFar);
             }
 
             var lastPathPiece = fieldStructure.Last();
@@ -219,24 +246,42 @@ namespace Rogue.REditor
             return null;
         }
 
-        private static object GetFieldValue(string fieldName, object obj)
+        private static object GetFieldValue(string fieldName, object obj, SerializedObject source, ref string pathSoFar)
         {
             var field = GetField(fieldName, obj);
+            pathSoFar = ConcatPath(pathSoFar, fieldName);
+
             return field?.GetValue(obj);
         }
 
-        private static object GetFieldValueWithIndex(string pathPiece, object obj)
+        private static (object value, bool wasDict) GetFieldValueWithIndex(string pathPiece, object obj, SerializedObject source, ref string pathSoFar)
         {
             var (fieldName, index) = ParseArrayPiece(pathPiece);
+            pathSoFar = ConcatPath(pathSoFar, $"{fieldName}.Array.data[{index}]");
 
             var field = GetField(fieldName, obj);
-            if (field == null) return null;
+            if (field == null) return (null, false);
 
             var list = field.GetValue(obj);
 
-            if (list is Array array) return array.GetValue(index);
-            if (list is IList iList) return iList[index];
-            return null;
+            if (list is Array array) return (array.GetValue(index), false);
+            if (list is IList iList) return (iList[index], false);
+            if (list is IDictionary iDict)
+            {
+                var keyProp = source.FindProperty($"{pathSoFar}.key");
+                var keyType = GetDictionaryKeyType(list.GetType());
+
+                if (typeof(Enum).IsAssignableFrom(keyType))
+                    return (iDict[Enum.ToObject(keyType, keyProp.enumValueFlag)], true);
+                if (keyType == typeof(string))
+                    return (iDict[keyProp.stringValue], true);
+                if (keyType == typeof(int))
+                    return (iDict[keyProp.intValue], true);
+
+                Debug.LogError($"Dict serialization with key '{keyType}' is currently not supported!");
+            }
+
+            return (null, false);
         }
 
         private static bool SetFieldValue(string fieldName, object obj, object value)
@@ -269,12 +314,15 @@ namespace Rogue.REditor
                 return true;
             }
 
+            if (list is IDictionary dict)
+                Debug.LogError("Dict SetValue is currently not supported!");
+
             return false;
         }
 
         private static (string fieldName, int index) ParseArrayPiece(string pathPiece)
         {
-            var match = arrayPieceRegex.Match(pathPiece);
+            var match = _arrayPieceRegex.Match(pathPiece);
             if (!match.Success)
                 throw new ArgumentException($"Invalid piece: {pathPiece}");
 
@@ -284,6 +332,22 @@ namespace Rogue.REditor
             return (name, index);
         }
 
+        private static Type GetDictionaryKeyType(Type type)
+        {
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IDictionary<,>))
+                return type.GetGenericArguments()[0];
+
+            foreach (var candidate in type.GetInterfaces())
+            {
+                if (candidate.IsGenericType && candidate.GetGenericTypeDefinition() == typeof(IDictionary<,>))
+                    return candidate.GetGenericArguments()[0];
+            }
+
+            return null;
+        }
+
+        private static string ConcatPath(string pathSoFar, string piece) => string.IsNullOrEmpty(pathSoFar) ? piece : $"{pathSoFar}.{piece}";
+
         private static string[] GetPathStructure(SerializedProperty property) => property.propertyPath.Replace(".Array.data", "").Split('.');
 
         public static void RemoveSelfFromArrayDelayed(this SerializedProperty property)
@@ -292,7 +356,7 @@ namespace Rogue.REditor
         public static void RemoveSelfFromArray(this SerializedProperty property)
         {
             var path = property.propertyPath;
-            var match = arrayIndexRegex.Match(path);
+            var match = _arrayIndexRegex.Match(path);
 
             if (!match.Success)
             {
@@ -363,7 +427,7 @@ namespace Rogue.REditor
 
         #region Utils
 
-        public static bool IsArrayEntry(this SerializedProperty property) => arrayIndexRegex.IsMatch(property.propertyPath);
+        public static bool IsArrayEntry(this SerializedProperty property) => _arrayIndexRegex.IsMatch(property.propertyPath);
         public static string PrettyName(this SerializedProperty property) => ObjectNames.NicifyVariableName(property.name);
 
         public static bool CanExpand(this SerializedProperty property)

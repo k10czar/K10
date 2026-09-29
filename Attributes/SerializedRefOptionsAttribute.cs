@@ -14,10 +14,11 @@ namespace Rogue.RuntimeEditor
             this.forceCompact = forceCompact;
         }
 
-        public SerializedRefOptionsAttribute(string nullLabel)
+        public SerializedRefOptionsAttribute(string nullLabel, bool forceCompact = false)
         {
             this.canBeNull = true;
             this.nullLabel = nullLabel;
+            this.forceCompact = forceCompact;
         }
     }
 }
