@@ -7,6 +7,9 @@ namespace Rogue.REditor
         public static void SetVisible(this VisualElement element, bool isVisible)
             => element.style.display = isVisible ? DisplayStyle.Flex : DisplayStyle.None;
 
+        public static void SetVisibleOpacity(this VisualElement element, bool isVisible)
+            => element.style.opacity = isVisible ? 1f : 0f;
+
         public static void ToggleClassList(this VisualElement element, string className, bool shouldAdd)
         {
             if (shouldAdd) element.AddToClassList(className);
