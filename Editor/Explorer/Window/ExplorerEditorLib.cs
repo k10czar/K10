@@ -106,7 +106,7 @@ namespace Rogue.Explorer
 
             var closeButton = isInternal ? new ExplorerButtonDef("✕", ToggleInspectorOpen, "Close inspector", EColor.Danger) { isDisabled = !isOpened } : null;
 
-            var infoColor = SkopedDrawer.isShowingDescriptions ? EColor.Info : EColor.Clear;
+            var infoColor = SkopedDrawer.IsShowingDescriptions ? EColor.Info : EColor.Clear;
             var infoButton = isInternal ? new ExplorerButtonDef("?", ToggleDescriptions, "Show descriptions and extra info on genOperators", infoColor) : null;
 
             ExplorerButtonDef[] buttons;
@@ -182,7 +182,7 @@ namespace Rogue.Explorer
 
         private static void ToggleDescriptions(ExplorerEntryDef entry)
         {
-            SkopedDrawer.isShowingDescriptions = !SkopedDrawer.isShowingDescriptions;
+            SkopedDrawer.IsShowingDescriptions = !SkopedDrawer.IsShowingDescriptions;
             entry.window.Rebuild(false);
         }
 

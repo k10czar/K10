@@ -10,13 +10,13 @@ namespace Rogue.REditor
     {
         #region Default Skope Buttons
 
-        public static readonly SkopeButton DescriptionToggleSkopeButton = new("?", EColor.Info, _ => isShowingDescriptions = !isShowingDescriptions);
+        public static readonly SkopeButton DescriptionToggleSkopeButton = new("?", EColor.Info, _ => IsShowingDescriptions = !IsShowingDescriptions);
         public static readonly SkopeButton ManagedPickerSkopeButton = new("⚙️", EColor.Support, SerializedRefLib.ShowTypePicker);
         public static readonly SkopeButton ArrayRemovalSkopeButton = new("X", EColor.Warning, SerializedPropertyExtension.RemoveSelfFromArrayDelayed);
 
         #endregion
 
-        public static bool isShowingDescriptions;
+        public static bool IsShowingDescriptions;
 
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
             => OnGUI(rect, property, (ScopedAttribute) attribute);
@@ -44,7 +44,7 @@ namespace Rogue.REditor
             {
                 if (info.HasDescription)
                 {
-                    DescriptionToggleSkopeButton.color = isShowingDescriptions ? EColor.Info : EColor.Support;
+                    DescriptionToggleSkopeButton.color = IsShowingDescriptions ? EColor.Info : EColor.Support;
                     info.AddUniqueButton(DescriptionToggleSkopeButton);
                 }
 
@@ -54,7 +54,7 @@ namespace Rogue.REditor
             using var scope = Skope.Open(ref rect, info);
             if (!scope.IsExpanded) return;
 
-            if (isShowingDescriptions && info.HasDescription)
+            if (IsShowingDescriptions && info.HasDescription)
             {
                 rect.height = SkyxStyles.GetHelpBoxHeight(info.description.LineCount(), false);
                 EditorGUI.HelpBox(rect, info.description, MessageType.Info);
@@ -95,7 +95,7 @@ namespace Rogue.REditor
 
             if (property.isExpanded)
             {
-                if (isShowingDescriptions && info.HasDescription)
+                if (IsShowingDescriptions && info.HasDescription)
                     height += SkyxStyles.GetHelpBoxHeight(info.description.LineCount(), true);
 
                 height += GetContentHeight(property, info);

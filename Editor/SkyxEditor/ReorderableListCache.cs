@@ -11,21 +11,21 @@ namespace Rogue.REditor
     {
         #region Cache Interface
 
-        private static readonly Dictionary<(EntityId, string), ReorderableList> cache = new();
+        private static readonly Dictionary<(EntityId, string), ReorderableList> _cache = new();
 
         public static void Add(SerializedProperty property, ReorderableList list) => Add(property.GetCacheID(), list);
-        public static void Add((EntityId, string) cacheID, ReorderableList list) => cache[cacheID] = list;
+        public static void Add((EntityId, string) cacheID, ReorderableList list) => _cache[cacheID] = list;
 
         public static bool HasList(SerializedProperty property)
         {
             var cacheID = property.GetCacheID();
-            return cache.ContainsKey(cacheID);
+            return _cache.ContainsKey(cacheID);
         }
 
         public static ReorderableList Get(SerializedProperty property)
         {
             var cacheID = property.GetCacheID();
-            if (cache.TryGetValue(cacheID, out var list)) return list;
+            if (_cache.TryGetValue(cacheID, out var list)) return list;
 
             Debug.LogError($"ReorderableList for {property} not found!");
             return null;
@@ -37,44 +37,44 @@ namespace Rogue.REditor
             return list.serializedProperty == null || list.serializedProperty == property;
         }
 
-        public static bool TryGet((EntityId, string) cacheID, out ReorderableList list) => cache.TryGetValue(cacheID, out list);
+        public static bool TryGet((EntityId, string) cacheID, out ReorderableList list) => _cache.TryGetValue(cacheID, out list);
 
         public static ReorderableList GetOrCreate(SerializedProperty property, Func<SerializedProperty, ReorderableList> create)
         {
             var cacheID = property.GetCacheID();
-            if (cache.TryGetValue(cacheID, out var list)) return list;
+            if (_cache.TryGetValue(cacheID, out var list)) return list;
 
             list = create(property);
             list.FixFooterHeight();
 
-            cache.Add(cacheID, list);
+            _cache.Add(cacheID, list);
 
             return list;
         }
 
         public static ReorderableList GetOrCreate((EntityId, string) cacheID, Func<ReorderableList> create)
         {
-            if (cache.TryGetValue(cacheID, out var list)) return list;
+            if (_cache.TryGetValue(cacheID, out var list)) return list;
 
             list = create();
             list.FixFooterHeight();
 
-            cache.Add(cacheID, list);
+            _cache.Add(cacheID, list);
 
             return list;
         }
 
         public static void Release(EntityId mainCacheID)
         {
-            var keysToRemove = cache.Keys.Where(k => k.Item1 == mainCacheID).ToList();
+            var keysToRemove = _cache.Keys.Where(k => k.Item1 == mainCacheID).ToList();
 
             foreach (var key in keysToRemove)
-                cache.Remove(key);
+                _cache.Remove(key);
         }
 
-        public static void Release((EntityId, string) cacheID) => cache.Remove(cacheID);
+        public static void Release((EntityId, string) cacheID) => _cache.Remove(cacheID);
 
-        public static void Clear() => cache.Clear();
+        public static void Clear() => _cache.Clear();
 
         static ReorderableListCache() => Selection.selectionChanged += Clear;
 
