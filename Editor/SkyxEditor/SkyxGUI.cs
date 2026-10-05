@@ -460,7 +460,12 @@ namespace Rogue.REditor
 
         public static bool IsTransitioningPlayMode { get; private set; }
 
-        private static void OnUndoRedoPerformed() => ClearAllCaches();
+        private static void OnUndoRedoPerformed()
+        {
+            if (Application.isPlaying) return;
+
+            ClearAllCaches(); 
+        }
 
         private static void OnPlayModeStateChanged(PlayModeStateChange playModeStateChange)
         {
