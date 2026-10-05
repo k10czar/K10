@@ -54,6 +54,12 @@ namespace Rogue.REditor
             return (T) JsonConvert.DeserializeObject(json, targetType, GetSerializationSettings(null));
         }
 
+        public static object CreateCopy(object source, Type targetType)
+        {
+            var json = GetJson(source);
+            return JsonConvert.DeserializeObject(json, targetType, GetSerializationSettings(null));
+        }
+
         public static void CopyValues(object source, object target, bool fixPasting)
         {
             var json = GetJson(source);
