@@ -409,7 +409,7 @@ namespace Rogue.REditor
 
         #region Caches
 
-        public static Action cachesCleared;
+        public static Action CachesCleared;
 
         [MenuItem("Rogue/Editor/Clear All Caches (Ctrl+Alt+Q)"), Shortcut("Clear Editor Caches", KeyCode.Q, ShortcutModifiers.Control | ShortcutModifiers.Alt)]
         private static void ClearAllCachesHotkey()
@@ -432,7 +432,7 @@ namespace Rogue.REditor
             SkopeOverride.Clear();
             EditorPropertyHighlights.Clear();
 
-            cachesCleared?.Invoke();
+            CachesCleared?.Invoke();
         }
 
         public static void ClearMyCaches(SerializedProperty property)
@@ -460,12 +460,7 @@ namespace Rogue.REditor
 
         public static bool IsTransitioningPlayMode { get; private set; }
 
-        private static void OnUndoRedoPerformed()
-        {
-            if (Application.isPlaying) return;
-
-            ClearAllCaches(); 
-        }
+        private static void OnUndoRedoPerformed() => ClearAllCaches();
 
         private static void OnPlayModeStateChanged(PlayModeStateChange playModeStateChange)
         {
