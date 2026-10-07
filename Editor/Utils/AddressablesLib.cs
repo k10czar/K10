@@ -29,6 +29,8 @@ namespace K10.EditorUtils
             if (settings == null) return;
 
             var guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(obj));
+            if (string.IsNullOrEmpty(guid)) return;
+
             var entry = settings.FindAssetEntry(guid);
 
             var needsGroupChange = entry == null || entry.parentGroup?.Name != groupName;
