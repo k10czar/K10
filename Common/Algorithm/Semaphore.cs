@@ -185,7 +185,7 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 	public IEventValidator Validator => _validator ??= new OneTimeValidator();
 
 	public void RegisterAndStart( IEventTrigger<bool> evnt ) { Lazy.Request( ref _changeStateEvent ).Register( Validator.Validated( evnt ) ); evnt.Trigger( Free ); }
-	public void RegisterAndStart( System.Action<bool> evnt ) { Lazy.Request( ref _changeStateEvent ).Register( Validator.Validated( evnt ) ); evnt( Free ); }
+	public void RegisterAndStart( Action<bool> evnt ) { Lazy.Request( ref _changeStateEvent ).Register( Validator.Validated( evnt ) ); evnt( Free ); }
 
 	public Semaphore() {}
 	public Semaphore(object startingBlock) => Block(startingBlock);
@@ -331,11 +331,12 @@ public class Semaphore : ISemaphore, ICustomDisposableKill
 	int _toStringCount;
 	public override string ToString()
 	{
-		var freeStr = ( Free ? "Free" : "Blocked" );
-		if( _toStringCount > 0 ) return $"**InfinityLoopCondition_{freeStr}Semaphore({this.GetHashCode()})**";
+		if (Free) return $"Free Semaphore({GetHashCode()})";
+
+		if( _toStringCount > 0 ) return $"**InfinityLoopCondition_BlockedSemaphore({GetHashCode()})**";
 		_toStringCount++;
-		var elements = _semaphores != null ? String.Join( ", \n", _semaphores.ToList().ConvertAll( ( obj ) => $"{obj.Value.NameDebug}{KeyName( obj.Key.ToStringOrNull() )}({obj.Value.Value})" ) ) : "NULL";
+		var elements = _semaphores != null ? string.Join( ", \n", _semaphores.ToList().ConvertAll( ( obj ) => $"{obj.Value.NameDebug}{KeyName( obj.Key.ToStringOrNull() )}({obj.Value.Value})" ) ) : "NULL";
 		_toStringCount--;
-		return $"( [{freeStr} Semaphore({this.GetHashCode()}) => {{ {elements} }}] )";
+		return $"( [Blocked Semaphore({GetHashCode()}) => {{ {elements} }}] )";
 	}
 }

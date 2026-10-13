@@ -3,7 +3,7 @@ using UnityEngine;
 [System.Serializable]
 public class RayState : IValueState<Ray>, ICustomDisposableKill
 {
-    [SerializeField] Ray _value;
+    private Ray _value;
     [System.NonSerialized] EventSlot<Ray> _onChange = new EventSlot<Ray>();
 
     public Ray Value { get { return _value; } set { Setter( value ); } }
