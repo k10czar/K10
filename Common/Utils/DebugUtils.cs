@@ -58,6 +58,9 @@ public static class DebugUtils
 		Debug.DrawLine( positions[0], positions[l-1], color );
 	}
 
+	public static void FakeSphere(Vector3 pos, float radius, Color color, float duration = 0f)
+		=> FakeSphere(pos, Vector3.forward, Vector3.up, radius, color, duration);
+
 	public static void FakeSphere(Vector3 pos, Vector3 forward, Vector3 up, float radius, Color color, float duration = 0f)
 	{
 		var cam = Camera.main;
