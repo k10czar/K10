@@ -6,43 +6,43 @@ using UnityEngine;
 
 public class ActionSet
 {
-    private readonly List<IVoidable> registeredActions = ObjectPool<List<IVoidable>>.Request();
+    private readonly List<IVoidable> _registeredActions = ObjectPool<List<IVoidable>>.Request();
 
     #region Register Interface
 
-    public void Track(IVoidable capsule) => registeredActions.Add(capsule);
+    public void Track(IVoidable capsule) => _registeredActions.Add(capsule);
 
     public IVoidable Register(IEventRegister target, Action action)
     {
         var capsule = new ActionCapsule(action, target);
-        registeredActions.Add(capsule);
+        _registeredActions.Add(capsule);
         return capsule;
     }
 
     public void Register(Action action, IEnumerable<IEventRegister> targets)
     {
         foreach (var target in targets)
-            registeredActions.Add(new ActionCapsule(action, target));
+            _registeredActions.Add(new ActionCapsule(action, target));
     }
 
     public IVoidable Register<T>(IEventRegister<T> target, Action<T> action)
     {
         var capsule = new ActionCapsule<T>(action, target);
-        registeredActions.Add(capsule);
+        _registeredActions.Add(capsule);
         return capsule;
     }
 
     public IVoidable Register<T, K>(IEventRegister<T, K> target, Action<T, K> action)
     {
         var capsule = new ActionCapsule<T, K>(action, target);
-        registeredActions.Add(capsule);
+        _registeredActions.Add(capsule);
         return capsule;
     }
 
     public IVoidable Register<T, K, L>(IEventRegister<T, K, L> target, Action<T, K, L> action)
     {
         var capsule = new ActionCapsule<T, K, L>(action, target);
-        registeredActions.Add(capsule);
+        _registeredActions.Add(capsule);
         return capsule;
     }
 
@@ -52,15 +52,15 @@ public class ActionSet
 
     public void Void(IVoidable voidable)
     {
-        var removed = registeredActions.Remove(voidable);
+        var removed = _registeredActions.Remove(voidable);
         Debug.Assert(removed, "Trying to void non tracked IVoidable!");
         voidable.Void();
     }
 
     public void Void()
     {
-        var entries = registeredActions.ToList();
-        registeredActions.Clear();
+        var entries = _registeredActions.ToList();
+        _registeredActions.Clear();
 
         foreach (var capsule in entries)
             capsule.Void();
@@ -68,5 +68,5 @@ public class ActionSet
 
     #endregion
 
-    ~ActionSet() => ObjectPool<List<IVoidable>>.Return(registeredActions);
+    ~ActionSet() => ObjectPool<List<IVoidable>>.Return(_registeredActions);
 }
