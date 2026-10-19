@@ -22,7 +22,8 @@ namespace Rogue.REditor
         protected virtual bool HasRuntimeVisualization => false;
 
         protected virtual void DrawRuntimeInfo() {}
-        protected abstract void DrawConfigs();
+
+        protected virtual void DrawConfigs() => Properties.DrawExcept();
 
         protected void Initialize()
         {

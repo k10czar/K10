@@ -6,7 +6,7 @@ namespace Rogue.REditor
 {
     public abstract class PropertyEditor : PropertyDrawer
     {
-        private static readonly ProfilerMarker drawMarker = new("PropertyEditor.Draw");
+        private static readonly ProfilerMarker _drawMarker = new("PropertyEditor.Draw");
 
         protected virtual bool FlagPropertyBounds => true;
 
@@ -17,7 +17,7 @@ namespace Rogue.REditor
 
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
         {
-            using var profilerMarker = drawMarker.Auto();
+            using var profilerMarker = _drawMarker.Auto();
 
             if (FlagPropertyBounds) EditorGUI.BeginProperty(rect, label, property);
             Draw(rect, property, label);
