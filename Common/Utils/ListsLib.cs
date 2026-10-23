@@ -38,6 +38,15 @@ namespace Rogue.Helpers
             return -1;
         }
 
+        public static void EnsureSize<T>(this IList<T> list, int size)
+        {
+            while (list.Count < size)
+                list.Add(default);
+
+            while (list.Count > size)
+                list.RemoveAt(list.Count - 1);
+        }
+
         public static bool HasSameItems<T>(this IList<T> list1, IList<T> list2)
             => list1 != null && new HashSet<T>(list1).SetEquals(list2);
 
