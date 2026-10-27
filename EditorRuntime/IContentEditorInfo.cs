@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Rogue.REditor
+namespace Rogue.RuntimeEditor
 {
     public interface IContentEditorInfo
     {
