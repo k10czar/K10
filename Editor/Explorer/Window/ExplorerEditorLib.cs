@@ -84,7 +84,7 @@ namespace Rogue.Explorer
         }
 
         public static ExplorerEntryDef CreateExplorerEntry(ExplorerInspectorInfo info, bool isInternal)
-            => CreateExplorerEntry(info.window, info.target, info.propertyPath, info.breadcrumbs, isInternal);
+            => CreateExplorerEntry(info.Window, info.Target, info.PropertyPath, info.Breadcrumbs, isInternal);
 
         public static ExplorerEntryDef CreateExplorerEntry(IExplorerWindow window, Object target, string propertyPath, List<Object> breadcrumbs, bool isInternal)
         {

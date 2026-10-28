@@ -16,13 +16,13 @@ namespace Rogue.Explorer
             var entryDef = ExplorerEditorLib.CreateExplorerEntry(info, true);
             options.SetOptions(entryDef);
 
-            var hasBreadcrumbs = info.breadcrumbs is { Count: > 0 };
+            var hasBreadcrumbs = info.Breadcrumbs is { Count: > 0 };
             breadcrumbs.style.display = hasBreadcrumbs ? DisplayStyle.Flex : DisplayStyle.None;
 
             if (hasBreadcrumbs)
             {
                 breadcrumbs.Clear();
-                foreach (var entry in info.breadcrumbs)
+                foreach (var entry in info.Breadcrumbs)
                 {
                     var entryName = ExplorerEditorLib.GetDisplayName(entry, string.Empty);
                     breadcrumbs.PushItem(entryName, () => ExplorerEditorLib.OpenOrHighlightInspector(window, entry, string.Empty, null));

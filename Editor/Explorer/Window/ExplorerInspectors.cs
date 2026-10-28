@@ -21,7 +21,7 @@ namespace Rogue.Explorer
         public bool HasOpenedInspectors => openedInspectors.Count > 0;
 
         public ExplorerInspectorInfo GetInspectorInfo(Object target, string propertyPath)
-            => openedInspectors.FirstOrDefault(entry => entry.target == target && entry.propertyPath == propertyPath);
+            => openedInspectors.FirstOrDefault(entry => entry.Target == target && entry.PropertyPath == propertyPath);
 
         public bool IsOpened(Object target, string propertyPath)
             => GetInspectorInfo(target, propertyPath) != null;
@@ -33,7 +33,7 @@ namespace Rogue.Explorer
             if (HasOpenedInspectors)
             {
                 var lastInspector = openedInspectors[0];
-                if (!lastInspector.isPinned) openedInspectors.RemoveAt(0);
+                if (!lastInspector.IsPinned) openedInspectors.RemoveAt(0);
             }
 
             openedInspectors.Insert(0, info);
@@ -43,7 +43,7 @@ namespace Rogue.Explorer
         {
             var inspector = GetInspectorInfo(target, propertyPath);
 
-            if (inspector.isPinned) RemovePin(target, propertyPath);
+            if (inspector.IsPinned) RemovePin(target, propertyPath);
             else openedInspectors.Remove(inspector);
         }
 
@@ -78,7 +78,7 @@ namespace Rogue.Explorer
 
             var targetInspector = GetInspectorInfo(target, propertyPath);
             if (targetInspector == null) OpenInspector(target, propertyPath, entryBreadcrumbs, true);
-            else targetInspector.isPinned = true;
+            else targetInspector.IsPinned = true;
         }
 
         public void RemovePin(Object target, string propertyPath)
@@ -106,7 +106,7 @@ namespace Rogue.Explorer
 
         public void HighlightInspector(Object target, string propertyPath)
         {
-            var index = openedInspectors.FindIndex(entry => entry.target == target && entry.propertyPath == propertyPath);
+            var index = openedInspectors.FindIndex(entry => entry.Target == target && entry.PropertyPath == propertyPath);
             if (index == -1) return;
 
             var (toolbar, _) = inspectorsHolder[index];
@@ -156,14 +156,14 @@ namespace Rogue.Explorer
 
         private static void DrawInspector(ExplorerInspectorInfo info)
         {
-            if (info.objectEditor != null)
-                info.objectEditor.OnInspectorGUI();
+            if (info.ObjectEditor != null)
+                info.ObjectEditor.OnInspectorGUI();
             else
             {
-                if (SkyxLayout.DrawTitle(info.target))
-                    EditorGUIUtility.PingObject(info.target);
+                if (SkyxLayout.DrawTitle(info.Target))
+                    EditorGUIUtility.PingObject(info.Target);
 
-                EditorGUILayout.PropertyField(info.property, GUIContent.none, true);
+                EditorGUILayout.PropertyField(info.Property, GUIContent.none, true);
             }
         }
 

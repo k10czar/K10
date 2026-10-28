@@ -7,31 +7,31 @@ namespace Rogue.Explorer
 {
     public class ExplorerInspectorInfo
     {
-        public readonly IExplorerWindow window;
+        public readonly IExplorerWindow Window;
 
-        public readonly Object target;
-        public readonly SerializedObject serializedObject;
-        public readonly SerializedProperty property;
-        public readonly Editor objectEditor;
-        public readonly string propertyPath;
-        public bool isPinned;
+        public readonly Object Target;
+        public readonly SerializedObject SerializedObject;
+        public readonly SerializedProperty Property;
+        public readonly Editor ObjectEditor;
+        public readonly string PropertyPath;
+        public bool IsPinned;
 
-        public readonly List<Object> breadcrumbs;
+        public readonly List<Object> Breadcrumbs;
 
         public ExplorerInspectorInfo(IExplorerWindow window, Object target, string propertyPath, List<Object> breadcrumbs, bool isPinned)
         {
-            this.window = window;
-            this.target = target;
-            this.propertyPath = propertyPath;
-            this.breadcrumbs = breadcrumbs ?? (string.IsNullOrEmpty(propertyPath) ? null : new List<Object> { target });
-            this.isPinned = isPinned;
+            Window = window;
+            Target = target;
+            PropertyPath = propertyPath;
+            Breadcrumbs = breadcrumbs ?? (string.IsNullOrEmpty(propertyPath) ? null : new List<Object> { target });
+            IsPinned = isPinned;
 
             if (string.IsNullOrEmpty(propertyPath))
-                objectEditor = Editor.CreateEditor(target);
+                ObjectEditor = Editor.CreateEditor(target);
             else
             {
-                serializedObject = PropertyCollection.GetSerializedObject(target);
-                property = serializedObject.FindProperty(propertyPath);
+                SerializedObject = PropertyCollection.GetSerializedObject(target);
+                Property = SerializedObject.FindProperty(propertyPath);
             }
         }
     }
