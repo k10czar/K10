@@ -5,7 +5,7 @@ using System.Collections;
 using K10.EditorGUIExtention;
 
 [CanEditMultipleObjects]
-[CustomEditor(typeof(Transform))]
+//[CustomEditor(typeof(Transform))]
 public class K10TransformInspector : Editor
 {
 	GUIStyle _labelStyle;

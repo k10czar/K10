@@ -14,8 +14,13 @@ public abstract class HashedSOCollection<T> : BaseHashedSOCollection, IEnumerabl
 	public override System.Type GetElementType() => typeof( T );
 	public override IHashedSO GetElementBase( int hashId ) => this[hashId];
 
-	public override bool ContainsHashID( int hashID ) => ( hashID < _list.Count || _list[hashID] != null );
+	public override bool ContainsHashID( int hashID ) => !( hashID >= _list.Count || _list[hashID] == null );
 	public override bool Contains( IHashedSO obj ) => _list.Contains( obj as T );
+
+	public T Find( System.Predicate<T> search )
+    {
+		return _list.Find(search);
+    }
 
 	public IEnumerator<T> GetEnumerator() => _list.GetEnumerator();
 

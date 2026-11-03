@@ -3,7 +3,7 @@
 public class GuaranteedSO<T> where T : ScriptableObject, new()
 {
 	private T _reference;
-	readonly string _path;
+	readonly string _path ;
 	public T Reference
 	{
 		get
