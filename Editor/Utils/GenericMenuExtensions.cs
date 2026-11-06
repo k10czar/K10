@@ -11,7 +11,7 @@ namespace K10.EditorUtils
             => menu.AddItem(new GUIContent(label), false, action);
 
         public static void AddDisabledItem(this GenericMenu menu, string label)
-            => menu.AddDisabledItem(new GUIContent(label), true);
+            => menu.AddDisabledItem(new GUIContent(label), false);
 
         public static void AddItem(this GenericDropdownMenu menu, string label, Action action)
             => menu.AddItem(label, false, action);
