@@ -8,25 +8,6 @@ namespace Rogue.REditor
 {
     public static class SkyxLayout
     {
-        public static void Draw(SerializedProperty property, string label = null)
-        {
-            var labelGUI = new GUIContent(label ?? property.displayName);
-
-            switch (property.propertyType)
-            {
-                case SerializedPropertyType.String:
-                    EditorGUILayout.DelayedTextField(property, labelGUI); break;
-
-                case SerializedPropertyType.Integer:
-                    EditorGUILayout.DelayedIntField(property, labelGUI); break;
-
-                case SerializedPropertyType.Float:
-                    EditorGUILayout.DelayedFloatField(property, labelGUI); break;
-
-                default: EditorGUILayout.PropertyField(property, labelGUI); break;
-            }
-        }
-
         #region Buttons
 
         public static bool PlainBGButton(string label, EColor color, EElementSize size = EElementSize.SingleLine)

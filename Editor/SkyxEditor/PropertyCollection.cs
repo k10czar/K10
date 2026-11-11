@@ -227,7 +227,7 @@ namespace Rogue.REditor
 
             if (indent) EditorGUI.indentLevel++;
             EditorGUI.BeginChangeCheck();
-            SkyxLayout.Draw(property);
+            EditorGUILayout.PropertyField(property, new GUIContent(property.displayName));
             if (EditorGUI.EndChangeCheck()) property.Apply();
             if (indent) EditorGUI.indentLevel--;
         }
@@ -237,16 +237,6 @@ namespace Rogue.REditor
             var property = Get(propertyName, isBacking);
             var list = GetOrRegisterList(property, displayHeader);
             list.DoLayoutList();
-        }
-
-        public void Draw(string propertyName, string label, bool isBacking = false, bool useDefaultDrawer = false)
-        {
-            if (!TryGet(propertyName, isBacking, out var property)) return;
-
-            EditorGUI.BeginChangeCheck();
-            if (useDefaultDrawer) EditorGUILayout.PropertyField(property, new GUIContent(label));
-            else SkyxLayout.Draw(property, label);
-            if (EditorGUI.EndChangeCheck()) property.Apply();
         }
 
         public void DrawIncluding(params string[] including)

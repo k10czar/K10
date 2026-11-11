@@ -91,6 +91,8 @@ namespace K10.DebugSystem
 
         public static Color LogColor<T>(this ILoggable<T> obj) where T : DebugCategory, new() => K10Log<T>.Category.Color;
 
+        public static T GetCategory<T>(this ILoggable<T> obj) where T : DebugCategory, new() => K10Log<T>.Category;
+
         #endregion
     }
 }
