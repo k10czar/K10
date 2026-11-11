@@ -10,6 +10,16 @@ namespace Rogue.REditor
     {
         #region Buttons
 
+        public static void LabelWithExternalRef(string label, Object externalRef)
+        {
+            var rect = EditorGUILayout.GetControlRect(false);
+
+            if (SkyxGUI.MiniButton(ref rect, "⊙", EColor.Support))
+                EditorGUIUtility.PingObject(externalRef);
+
+            EditorGUI.LabelField(rect, label, SkyxStyles.DefaultLabel);
+        }
+
         public static bool PlainBGButton(string label, EColor color, EElementSize size = EElementSize.SingleLine)
             => Button(label, SkyxStyles.HeaderColor(color), size.GetPlainBG());
 
