@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "K10",
-        "Unity.Addressables.Editor"
+        "Unity.Addressables.Editor",
+        "SkyxEditor"
     ],
     "includePlatforms": [
         "Editor"

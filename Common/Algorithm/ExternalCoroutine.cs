@@ -18,6 +18,7 @@ namespace K10
 			return cacheVariable;
 		}
 
+		[HideInCallstack]
 		public static Coroutine Play(IEnumerator coroutine) => _instance.StartCoroutine(coroutine);
 
 		public static IEnumerator AwaitAll(params IEnumerator[] routines)
