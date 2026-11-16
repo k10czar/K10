@@ -66,6 +66,7 @@ public static class EventExtensions
 
 	public static void RegisterOnce(this IEventRegister register, Action act) => register.Register(new CallOnceCapsule(act));
 	public static void RegisterOnce<T>(this IEventRegister<T> register, Action<T> act) => register.Register(new CallOnceCapsule<T>(act));
+	public static void RegisterOnce<T,K>(this IEventRegister<T,K> register, Action<T,K> act) => register.Register(new CallOnceCapsule<T,K>(act));
 
 	#region Enumerables
 	public static void Register( this IEnumerable<IEventRegister> registers, Action act ) => registers.Register( new ActionCapsule( act ) );
