@@ -20,6 +20,16 @@ namespace Rogue.REditor
             EditorGUI.LabelField(rect, label, SkyxStyles.DefaultLabel);
         }
 
+        public static bool LabelWithMiniButton(string label, string miniButton = "⊙")
+        {
+            var rect = EditorGUILayout.GetControlRect(false);
+
+            var clicked = SkyxGUI.MiniButton(ref rect, miniButton, EColor.Support);
+            EditorGUI.LabelField(rect, label, SkyxStyles.DefaultLabel);
+
+            return clicked;
+        }
+
         public static bool PlainBGButton(string label, EColor color, EElementSize size = EElementSize.SingleLine)
             => Button(label, SkyxStyles.HeaderColor(color), size.GetPlainBG());
 
