@@ -40,5 +40,9 @@ namespace K10.DebugSystem
     {
         public override string Name => "Editor";
         public override Color Color => Colors.Beige;
+
+        public override DebugFlag[] Flags { get; } = { SkipPauses };
+
+        public static readonly DebugFlag SkipPauses = new(nameof(SkipPauses));
     }
 }
