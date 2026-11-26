@@ -36,8 +36,16 @@ namespace Skyx.Trees
             return values;
         }
 
-        protected IEnumerable<T> GetChildrenValues(Queue<object> keyOrder)
-            => GetChildren(keyOrder)?.Select(node => node.Value);
+        protected IEnumerable<T> GetChildrenValues(Queue<object> keyOrder, bool includeFolders)
+        {
+            var result = GetChildren(keyOrder);
+            if (result == null)
+                return null;
+
+            return includeFolders
+                ? result.Select(node => node.Value)
+                : result.Where(entry => !entry.HasChildren).Select(node => node.Value);
+        }
 
         protected List<TreeNode<T>> GetChildren(Queue<object> keyOrder)
         {

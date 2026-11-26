@@ -10,7 +10,9 @@ namespace Skyx.Trees
         public static EnumTreeNode<T> Instance { get; } = new();
         private static bool _useEnumAsKey;
 
-        public static IEnumerable<T> GetChildrenValues(T value) => Instance.GetChildrenValues(Instance.GetNodeInfo(value).path);
+        public static IEnumerable<T> GetChildrenValues(T value, bool includeFolders = false)
+            => Instance.GetChildrenValues(Instance.GetNodeInfo(value).path, includeFolders);
+
         private static IEnumerable<T> GetEnumValues() => (T[]) Enum.GetValues(typeof(T));
 
         protected override TreeNodeInfo<T> GetNodeInfo(T value)
