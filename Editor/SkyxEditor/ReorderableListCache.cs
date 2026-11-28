@@ -118,7 +118,8 @@ namespace Rogue.REditor
 
             void DrawElementBackgroundCallback(Rect rect, int index, bool isActive, bool isFocused)
             {
-                if (index < 0) ReorderableList.defaultBehaviours.DrawElementBackground(rect, index, isActive, isFocused, draggable);
+                if (index < 0)
+                    ReorderableList.defaultBehaviours.DrawElementBackground(rect, index, isActive, isFocused, draggable);
                 else
                 {
                     var color = isElementHighlighted?.Invoke(property.GetArrayElementAtIndex(index)) ?? false
@@ -133,7 +134,11 @@ namespace Rogue.REditor
             {
                 var innerProp = property.GetArrayElementAtIndex(index);
 
-                if (customDrawElement == null) SkyxGUI.Draw(rect, innerProp);
+                if (customDrawElement == null)
+                {
+                    if (SkyxGUI.Draw(rect, innerProp))
+                        throw new ExitGUIException();
+                }
                 else customDrawElement(property, rect, index, isActive, isFocused);
 
                 PropertyContextMenu.ContextGUI(ref rect, innerProp, newElementSetup);
@@ -149,7 +154,8 @@ namespace Rogue.REditor
             {
                 PropertyContextMenu.ContextGUI(ref rect, property, newElementSetup);
 
-                if (customHeader == null) EditorGUI.LabelField(rect, property.PrettyName());
+                if (customHeader == null)
+                    EditorGUI.LabelField(rect, property.PrettyName());
                 else customHeader(property, rect);
             }
 
@@ -161,17 +167,22 @@ namespace Rogue.REditor
 
                 var newElement = property.GetArrayElementAtIndex(index);
                 newElement.ResetDefaultValues(newElementSetup, false, true);
+
+                throw new ExitGUIException();
             }
 
             void OnRemoveCallback(ReorderableList thisList)
             {
                 ReorderableList.defaultBehaviours.DoRemoveButton(thisList);
                 property.Apply($"Remove array element: {property.propertyPath}");
+
+                throw new ExitGUIException();
             }
 
             void OnReorderCallback(ReorderableList thisList)
             {
                 property.Apply($"Reorder array element: {property.propertyPath}");
+                throw new ExitGUIException();
             }
         }
 

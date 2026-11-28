@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Linq;
 using System;
+using System.Threading.Tasks;
 using K10.DebugSystem;
 using Skyx.RuntimeEditor;
 using Unity.Profiling;
@@ -15,20 +16,20 @@ namespace Rogue.REditor
     {
         #region Static
 
-        private static readonly ProfilerMarker getCollectionMarker = new("PropertyCollection.Get");
-        private static readonly ProfilerMarker applyCollectionMarker = new("PropertyCollection.Apply");
+        private static readonly ProfilerMarker _getCollectionMarker = new("PropertyCollection.Get");
+        private static readonly ProfilerMarker _applyCollectionMarker = new("PropertyCollection.Apply");
 
-        [ResetedOnLoad] private static readonly Dictionary<EntityId, Dictionary<string, PropertyCollection>> collections = new();
-        [ResetedOnLoad] private static readonly HashSet<EntityId> scheduledResets = new();
-        [ResetedOnLoad] private static readonly Dictionary<EntityId, Action> changedCallbacks = new();
+        private static readonly Dictionary<EntityId, Dictionary<string, PropertyCollection>> _collections = new();
+        private static readonly HashSet<EntityId> _scheduledResets = new();
+        private static readonly Dictionary<EntityId, Action> _changedCallbacks = new();
 
         public static SerializedObject GetSerializedObject(Object target)
         {
             var mainCacheID = target.GetEntityId();
-            if (collections.TryGetValue(mainCacheID, out var objectCollections))
+            if (_collections.TryGetValue(mainCacheID, out var objectCollections))
             {
                 if (objectCollections.Count > 0)
-                    return objectCollections.First().Value.root;
+                    return objectCollections.First().Value._root;
             }
 
             return new SerializedObject(target);
@@ -39,13 +40,13 @@ namespace Rogue.REditor
 
         public static PropertyCollection Get(SerializedObject root, string path)
         {
-            using var profilerMarker = getCollectionMarker.Auto();
+            using var profilerMarker = _getCollectionMarker.Auto();
 
             var id = root.GetMainCacheID();
-            if (!collections.TryGetValue(id, out var objectCollections))
+            if (!_collections.TryGetValue(id, out var objectCollections))
             {
                 objectCollections = new Dictionary<string, PropertyCollection>();
-                collections.Add(id, objectCollections);
+                _collections.Add(id, objectCollections);
             }
 
             if (objectCollections.TryGetValue(path, out var collection)) return collection;
@@ -61,7 +62,7 @@ namespace Rogue.REditor
 
         public static void Apply(SerializedObject serializedObject, string reason)
         {
-            using var profilerMarker = applyCollectionMarker.Auto();
+            using var profilerMarker = _applyCollectionMarker.Auto();
 
             var target = serializedObject.targetObject;
 
@@ -88,48 +89,57 @@ namespace Rogue.REditor
 
         private static void ScheduleReset(EntityId mainCacheID)
         {
-            scheduledResets.Add(mainCacheID);
+            _scheduledResets.Add(mainCacheID);
 
-            if (scheduledResets.Count == 1)
+            if (_scheduledResets.Count == 1)
                 EditorUtils.RunDelayedOnce(ResetCollections);
         }
 
-        private static void ResetCollections()
+        private static async void ResetCollections()
         {
-            var resets = scheduledResets.ToList();
-            scheduledResets.Clear();
-
-            foreach (var mainCacheID in resets)
+            try
             {
-                SkyxGUI.ClearMyCaches(mainCacheID, true);
-                ResetCollections(mainCacheID);
+                await Task.Delay(50);
 
-                if (changedCallbacks.TryGetValue(mainCacheID, out var callbacks))
+                var resets = _scheduledResets.ToList();
+                _scheduledResets.Clear();
+
+                foreach (var mainCacheID in resets)
                 {
-                    try { callbacks(); }
-                    catch (Exception exception) { Debug.LogException(exception); }
+                    SkyxGUI.ClearMyCaches(mainCacheID, true);
+                    ResetCollections(mainCacheID);
+
+                    if (_changedCallbacks.TryGetValue(mainCacheID, out var callbacks))
+                    {
+                        try { callbacks(); }
+                        catch (Exception exception) { Debug.LogException(exception); }
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
             }
         }
 
         private static void ResetCollections(EntityId mainCacheID)
         {
-            if (!collections.TryGetValue(mainCacheID, out var objectCollections)) return;
+            if (!_collections.TryGetValue(mainCacheID, out var objectCollections)) return;
 
             if (objectCollections.Count == 0)
             {
-                collections.Remove(mainCacheID);
+                _collections.Remove(mainCacheID);
                 return;
             }
 
             var first = objectCollections.First().Value;
-            if (first.root == null || first.root.targetObject == null)
+            if (first._root == null || first._root.targetObject == null)
             {
-                collections.Remove(mainCacheID);
+                _collections.Remove(mainCacheID);
                 return;
             }
 
-            first.root.Update();
+            first._root.Update();
 
             foreach (var (path, collection) in objectCollections.ToList())
             {
@@ -148,41 +158,41 @@ namespace Rogue.REditor
                     // ignored
                 }
 
-                LogVerbose($"Collection for {first.root.targetObject} @ {PropertyName(path)} was corrupted! Deleting...");
+                LogVerbose($"Collection for {first._root.targetObject} @ {PropertyName(path)} was corrupted! Deleting...");
                 objectCollections.Remove(path);
             }
         }
 
         public static void Release(SerializedObject root) => Release(root.GetMainCacheID());
-        public static void Release(EntityId mainCacheID) => collections.Remove(mainCacheID);
+        public static void Release(EntityId mainCacheID) => _collections.Remove(mainCacheID);
 
         public static void ClearCollections()
         {
-            collections.Clear();
-            scheduledResets.Clear();
-            changedCallbacks.Clear();
+            _collections.Clear();
+            _scheduledResets.Clear();
+            _changedCallbacks.Clear();
         }
 
         public static void RegisterChanged(EntityId mainCacheID, Action callback)
         {
-            if (changedCallbacks.TryGetValue(mainCacheID, out var existingCallbacks))
+            if (_changedCallbacks.TryGetValue(mainCacheID, out var existingCallbacks))
             {
                 existingCallbacks -= callback;
                 existingCallbacks += callback;
 
-                changedCallbacks[mainCacheID] = existingCallbacks;
+                _changedCallbacks[mainCacheID] = existingCallbacks;
             }
-            else changedCallbacks[mainCacheID] = callback;
+            else _changedCallbacks[mainCacheID] = callback;
         }
 
         public static void DeregisterChanged(EntityId mainCacheID, Action callback)
         {
-            if (!changedCallbacks.TryGetValue(mainCacheID, out var existingCallbacks)) return;
+            if (!_changedCallbacks.TryGetValue(mainCacheID, out var existingCallbacks)) return;
 
             existingCallbacks -= callback;
 
-            if (existingCallbacks == null) changedCallbacks.Remove(mainCacheID);
-            else changedCallbacks[mainCacheID] = existingCallbacks;
+            if (existingCallbacks == null) _changedCallbacks.Remove(mainCacheID);
+            else _changedCallbacks[mainCacheID] = existingCallbacks;
         }
 
         private static string PropertyName(string path) => string.IsNullOrEmpty(path) ? "_ROOT_" : path;
@@ -192,8 +202,8 @@ namespace Rogue.REditor
         [MenuItem("Rogue/Editor/Log PropertyCollections")]
         private static void LogPropertyCollections()
         {
-            var total = collections.Sum(entry => entry.Value.Count);
-            Log($"{collections.Count} serializedObjects tracked, with a total of {total} collections.");
+            var total = _collections.Sum(entry => entry.Value.Count);
+            Log($"{_collections.Count} serializedObjects tracked, with a total of {total} collections.");
         }
 
         [HideInCallstack]
@@ -206,29 +216,40 @@ namespace Rogue.REditor
 
         #endregion
 
-        private readonly SerializedObject root;
-        private readonly Object owner;
-        private readonly string propertyPath;
+        private readonly SerializedObject _root;
+        private readonly Object _owner;
+        private readonly string _propertyPath;
 
         public SerializedProperty MainProperty { get; private set; }
 
-        private readonly Dictionary<string, SerializedProperty> properties = new();
-        public int PropertiesCount => properties.Count;
+        private readonly Dictionary<string, SerializedProperty> _properties = new();
+        public int PropertiesCount => _properties.Count;
 
-        public void Apply(string reason) => Apply(root, reason);
+        public void Apply(string reason) => Apply(_root, reason);
 
-        public void ResyncProperties() => root.Update();
+        public void ResyncProperties() => _root.Update();
 
         #region Layout Draw
 
         public void Draw(string propertyName, bool isBacking = false, bool indent = false)
         {
-            if (!TryGet(propertyName, isBacking, out var property)) return;
+            if (!TryGet(propertyName, isBacking, out var property))
+                return;
 
             if (indent) EditorGUI.indentLevel++;
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(property, new GUIContent(property.displayName));
-            if (EditorGUI.EndChangeCheck()) property.Apply();
+
+            if (property.IsIList())
+            {
+                var list = GetOrRegisterList(property);
+                list.DoLayoutList();
+            }
+            else
+            {
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.PropertyField(property, new GUIContent(property.displayName));
+                if (EditorGUI.EndChangeCheck()) property.Apply();
+            }
+
             if (indent) EditorGUI.indentLevel--;
         }
 
@@ -241,7 +262,8 @@ namespace Rogue.REditor
 
         public void DrawIncluding(params string[] including)
         {
-            foreach (var entry in including) Draw(entry);
+            foreach (var entry in including)
+                Draw(entry);
         }
 
         public void DrawIncluding(params (string, bool)[] including)
@@ -252,22 +274,13 @@ namespace Rogue.REditor
 
         public void DrawExcept(params string[] except)
         {
-            foreach (var key in properties.Keys)
+            foreach (var key in _properties.Keys)
             {
-                if (except.Contains(key)) continue;
+                if (except.Contains(key))
+                    continue;
+
                 Draw(key);
             }
-        }
-
-        public void DrawEnum<T>(string propertyName, EColor color = EColor.Primary, string hint = null, bool isMask = false, bool isBacking = false) where T: Enum
-        {
-            var property = Get(propertyName, isBacking);
-
-            var inner = EditorGUILayout.GetControlRect(false);
-            EditorGUI.LabelField(inner.ExtractLabelRect(), property.displayName);
-
-            if (isMask) EnumTreeGUI.DrawEnumMask<T>(inner, property, color, hint);
-            else EnumTreeGUI.DrawEnum<T>(inner, property, color, hint);
         }
 
         #endregion
@@ -283,105 +296,6 @@ namespace Rogue.REditor
             return hasChanged;
         }
 
-        public void DrawFloat(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false, bool alwaysDrawInlaid = false)
-            => Draw(ref rect, Get(propertyName, isBacking), Get(propertyName, isBacking).floatValue != 0, inlaidHint, overlayHint, slideRect, alwaysDrawInlaid);
-
-        public void DrawInt(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false, bool alwaysDrawInlaid = false)
-            => Draw(ref rect, Get(propertyName, isBacking), Get(propertyName, isBacking).intValue != 0, inlaidHint, overlayHint, slideRect, alwaysDrawInlaid);
-
-        public void DrawString(ref Rect rect, string propertyName, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool isBacking = false, bool alwaysDrawInlaid = false)
-            => Draw(ref rect, Get(propertyName, isBacking), !string.IsNullOrEmpty(Get(propertyName, isBacking).stringValue), inlaidHint, overlayHint, slideRect, alwaysDrawInlaid);
-
-        public void DrawCleanString(ref Rect rect, string propertyName, bool isBacking = false, ERectSlideDir slideDir = ERectSlideDir.Vertical)
-        {
-            var property = Get(propertyName, isBacking);
-
-            EditorGUI.BeginChangeCheck();
-            EditorGUI.DelayedTextField(rect, property);
-            if (EditorGUI.EndChangeCheck())
-            {
-                property.stringValue = property.stringValue.Clean();
-                property.Apply();
-            }
-
-            rect.Slide(slideDir);
-        }
-
-        private static void Draw(ref Rect rect, SerializedProperty property, bool hasValue, string inlaidHint = null, string overlayHint = null, bool slideRect = true, bool alwaysDrawInlaid = false)
-        {
-            SkyxGUI.Draw(rect, property);
-
-            SkyxGUI.DrawHintOverlay(ref rect, overlayHint ?? inlaidHint);
-            if (alwaysDrawInlaid || !hasValue) SkyxGUI.DrawHindInlaid(rect, inlaidHint);
-
-            if (slideRect) rect.SlideSame();
-        }
-
-        public void DrawEnumAndLabel<T>(ref Rect rect, string propertyName, EColor color = EColor.Primary, string label = null, string hint = null, bool isBacking = false) where T: Enum
-        {
-            var property = Get(propertyName, isBacking);
-
-            var inner = rect;
-            EditorGUI.LabelField(inner.ExtractLabelRect(), label ?? property.displayName);
-            EnumTreeGUI.DrawEnum<T>(inner, property, color, hint);
-
-            rect.NextSameLine();
-        }
-
-        public void DrawEnum<T>(ref Rect rect, string propertyName, EColor color = EColor.Primary, string hint = null, bool slideRect = true, bool isBacking = false) where T: Enum
-        {
-            EnumTreeGUI.DrawEnum<T>(rect, Get(propertyName, isBacking), color, hint);
-            if (slideRect) rect.SlideSame();
-        }
-
-        public void DrawSwitch<T>(ref Rect rect, string propertyName, string hint = null, bool slideRect = true, bool isBacking = false) where T: Enum
-        {
-            EnumTreeGUI.DrawSwitch<T>(rect, Get(propertyName, isBacking), hint);
-            if (slideRect) rect.SlideSame();
-        }
-
-        public void DrawEnumMask<T>(ref Rect rect, string propertyName, EColor color = EColor.Primary, string hint = null, bool slideRect = true, bool isBacking = false) where T: Enum
-        {
-            EnumTreeGUI.DrawEnumMask<T>(rect, Get(propertyName, isBacking), color, hint);
-            if (slideRect) rect.SlideSame();
-        }
-
-        public void DrawObjectField<T>(ref Rect rect, string propertyName, string hint = null, bool allowSceneObjects = false, bool slideRect = true, bool isBacking = false) where T: Object
-        {
-            SkyxGUI.DrawObjectField<T>(rect, Get(propertyName, isBacking), hint, allowSceneObjects);
-            if (slideRect) rect.SlideSame();
-        }
-
-        public bool DrawChoiceToggle(ref Rect rect, string propertyName, string onLabel, string offLabel, string hint = null, bool slideRect = true, bool isBacking = false)
-        {
-            var property = Get(propertyName, isBacking);
-            SkyxGUI.DrawChoiceToggle(rect, onLabel, offLabel, property, hint);
-
-            if (slideRect) rect.SlideSame();
-
-            return property.boolValue;
-        }
-
-        public bool DrawSuccessToggle(ref Rect rect, string propertyName, string label = null, string hint = null, bool slideRect = true, bool isBacking = false)
-        {
-            var property = Get(propertyName, isBacking);
-            SkyxGUI.DrawSuccessToggle(rect, string.IsNullOrEmpty(label) ? property.PrettyName() : label, property, hint);
-
-            if (slideRect) rect.SlideSame();
-
-            return property.boolValue;
-        }
-
-        public bool DrawMiniToggle(ref Rect rect, string propertyName, EColor onColor, EColor offColor = EColor.Support, string label = null, string hint = null, bool fromEnd = false, bool isBacking = false)
-        {
-            var property = Get(propertyName, isBacking);
-
-            label = string.IsNullOrEmpty(label) ? property.PrettyName() : label;
-            SkyxGUI.MiniToggle(ref rect, property, label, label, hint, onColor.Get(), offColor.Get(), false, fromEnd);
-
-            return property.boolValue;
-        }
-
         public void DrawList(Rect rect, string propertyName, bool displayHeader = true, bool isBacking = false)
         {
             var property = Get(propertyName, isBacking);
@@ -389,28 +303,41 @@ namespace Rogue.REditor
             list.DoList(rect);
         }
 
+        private void ResetAndDraw(ref Rect rect, SerializedProperty property)
+        {
+            if (property.IsIList())
+            {
+                var list = GetOrRegisterList(property);
+                rect.height = list.GetHeight();
+                list.DoList(rect);
+                rect.y += rect.height + SkyxStyles.ElementsMargin;
+            }
+            else
+                SkyxGUI.ResetHeightAndDraw(ref rect, property);
+        }
+
         public void DrawIncluding(ref Rect rect, params string[] including)
         {
             foreach (var key in including)
-                SkyxGUI.ResetHeightAndDraw(ref rect, properties[key]);
+                ResetAndDraw(ref rect, _properties[key]);
         }
 
         public void DrawIncludingB(ref Rect rect, params (string, bool)[] including)
         {
             foreach (var (key, isBacking) in including)
-                SkyxGUI.ResetHeightAndDraw(ref rect, Get(key, isBacking));
+                ResetAndDraw(ref rect, Get(key, isBacking));
         }
 
         public void DrawExcept(ref Rect rect, params string[] except)
         {
             foreach (var property in IterateExcluding(except))
-                SkyxGUI.ResetHeightAndDraw(ref rect, property);
+                ResetAndDraw(ref rect, property);
         }
 
         public void DrawExceptB(ref Rect rect, params (string, bool)[] except)
         {
             foreach (var property in IterateExcludingB(except))
-                SkyxGUI.ResetHeightAndDraw(ref rect, property);
+                ResetAndDraw(ref rect, property);
         }
 
         #endregion
@@ -443,7 +370,8 @@ namespace Rogue.REditor
             ReorderableListCache.DrawListHeader customHeader = null,
             ReorderableListCache.IsElementHighlighted isElementHighlighted = null)
         {
-            if (ReorderableListCache.TryGet(property, out var list)) return list;
+            if (ReorderableListCache.TryGet(property, out var list))
+                return list;
 
             list = ReorderableListCache.CreateDefaultList(property, displayHeader, draggable, displayAddButton, displayRemoveButton, customDrawElement, newElementSetup, customHeader, isElementHighlighted);
             ReorderableListCache.Add(property, list);
@@ -475,7 +403,7 @@ namespace Rogue.REditor
         {
             var total = 0f;
 
-            foreach (var (field, property) in properties)
+            foreach (var (field, property) in _properties)
             {
                 if (excludeFields.Contains(field)) continue;
 
@@ -497,24 +425,24 @@ namespace Rogue.REditor
                 : EditorGUI.GetPropertyHeight(property, true);
         }
 
-        public SerializedProperty this[string key] => properties[key];
+        public SerializedProperty this[string key] => _properties[key];
 
-        public SerializedProperty Get(string propertyName, bool isBacking) => properties[isBacking ? $"<{propertyName}>k__BackingField" : propertyName];
+        public SerializedProperty Get(string propertyName, bool isBacking) => _properties[isBacking ? $"<{propertyName}>k__BackingField" : propertyName];
 
         public bool TryGet(string propertyName, bool isBacking, out SerializedProperty property)
         {
             if (isBacking) propertyName = propertyName.ToBackingFieldName();
-            return properties.TryGetValue(propertyName, out property);
+            return _properties.TryGetValue(propertyName, out property);
         }
 
-        public int PropertyCountExcluding(params string[] excludeFields) => properties.Keys.Except(excludeFields).Count();
+        public int PropertyCountExcluding(params string[] excludeFields) => _properties.Keys.Except(excludeFields).Count();
 
         public IEnumerable<SerializedProperty> IterateExcluding(params string[] except)
         {
-            foreach (var key in properties.Keys)
+            foreach (var key in _properties.Keys)
             {
                 if (except.Contains(key)) continue;
-                yield return properties[key];
+                yield return _properties[key];
             }
         }
 
@@ -522,10 +450,10 @@ namespace Rogue.REditor
         {
             var parsedKeys = except.Select(entry => entry.Item2 ? entry.Item1.ToBackingFieldName() : entry.Item1);
 
-            foreach (var key in properties.Keys)
+            foreach (var key in _properties.Keys)
             {
                 if (parsedKeys.Contains(key)) continue;
-                yield return properties[key];
+                yield return _properties[key];
             }
         }
 
@@ -535,8 +463,8 @@ namespace Rogue.REditor
 
         private (SerializedProperty, bool) GetRootProperty()
         {
-            var fromObject = string.IsNullOrEmpty(propertyPath);
-            return (fromObject ? root.GetIterator() : root.FindProperty(propertyPath), fromObject);
+            var fromObject = string.IsNullOrEmpty(_propertyPath);
+            return (fromObject ? _root.GetIterator() : _root.FindProperty(_propertyPath), fromObject);
         }
 
         private void Setup()
@@ -553,28 +481,28 @@ namespace Rogue.REditor
             {
                 if (SerializedProperty.EqualContents(iterator, endProperty)) break;
                 if (iterator.name == "m_Script") continue;
-                properties.Add(iterator.name, iterator.Copy());
+                _properties.Add(iterator.name, iterator.Copy());
             }
             while (iterator.NextVisible(false));
         }
 
         private void Reset()
         {
-            properties.Clear();
+            _properties.Clear();
             Setup();
         }
 
         private PropertyCollection(SerializedObject root, string path)
         {
-            this.root = root;
+            this._root = root;
 
-            owner = root.targetObject;
-            propertyPath = path;
+            _owner = root.targetObject;
+            _propertyPath = path;
 
             root.Update();
             Setup();
 
-            LogOwners = new[] { owner };
+            LogOwners = new[] { _owner };
         }
 
         public Object[] LogOwners { get; }

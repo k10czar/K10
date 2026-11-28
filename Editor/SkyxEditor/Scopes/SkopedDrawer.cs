@@ -69,8 +69,10 @@ namespace Rogue.REditor
         {
             if (property.hasVisibleChildren)
             {
+                var properties = PropertyCollection.Get(property);
+
                 EditorGUI.BeginDisabledGroup(info.contentIsDisabled);
-                property.DrawAllInnerProperties(ref rect, true);
+                properties.DrawExcept(ref rect);
                 EditorGUI.EndDisabledGroup();
             }
             else if (info.scopeType.ShowNoChildProperties())
@@ -87,7 +89,8 @@ namespace Rogue.REditor
         protected float GetPropertyHeight(SerializedProperty property, ScopedAttribute scopedAtt)
         {
             var isSerialized = property.IsManagedRef();
-            if (isSerialized && property.managedReferenceValue == null) return SkyxStyles.FullLineHeight;
+            if (isSerialized && property.managedReferenceValue == null)
+                return SkyxStyles.FullLineHeight;
 
             SkopeOverride.TryGetOverride(property, out var overrideData);
             var info = scopedAtt.GetInfo(property, overrideData);
@@ -106,12 +109,11 @@ namespace Rogue.REditor
 
         protected virtual float GetContentHeight(SerializedProperty property, SkopeInfo info)
         {
-            var height = property.GetPropertyHeight(true);
-
             if (info.scopeType.ShowNoChildProperties() && !property.hasVisibleChildren)
-                height += SkyxStyles.FullLineHeight;
+                return SkyxStyles.FullLineHeight;
 
-            return height;
+            var properties = PropertyCollection.Get(property);
+            return properties.GetTotalHeightExcluding();
         }
     }
 }

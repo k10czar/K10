@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Unity.Scripting.LifecycleManagement;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -11,6 +12,7 @@ using Object = UnityEngine.Object;
 
 namespace Rogue.REditor
 {
+    [NoAutoStaticsCleanup]
     public static class SerializedPropertyExtension
     {
         #region Property Content Manipulation
@@ -427,8 +429,28 @@ namespace Rogue.REditor
 
         #region Utils
 
-        public static bool IsArrayEntry(this SerializedProperty property) => _arrayIndexRegex.IsMatch(property.propertyPath);
-        public static string PrettyName(this SerializedProperty property) => ObjectNames.NicifyVariableName(property.name);
+        private static readonly Dictionary<(EntityId, string), bool> _isList = new();
+
+        public static bool IsIList(this SerializedProperty property)
+        {
+            if (!property.isArray || property.propertyType != SerializedPropertyType.Generic)
+                return false;
+
+            var cacheID = property.GetCacheID();
+            if (_isList.TryGetValue(cacheID, out var isArray))
+                return isArray;
+
+            isArray = property.GetValue() is IList;
+            _isList.Add(cacheID, isArray);
+
+            return isArray;
+        }
+
+        public static bool IsArrayEntry(this SerializedProperty property)
+            => _arrayIndexRegex.IsMatch(property.propertyPath);
+
+        public static string PrettyName(this SerializedProperty property)
+            => ObjectNames.NicifyVariableName(property.name);
 
         public static bool CanExpand(this SerializedProperty property)
         {
